@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { identityAliases } from './identity-vocabulary.ts'
 import { canonicalizeSchema, isArbitraryJsonSchema, schemaDigest, type SchemaNode, type SourceCompatibility } from './persistence-schema-model.ts'
 
 const string: SchemaNode = { kind: 'primitive', type: 'string' }
@@ -105,5 +106,20 @@ describe('policy-aware graph normalization', () => {
     const unannotated = canonicalizeSchema([{ kind: 'object', indices: [], properties: [{ name: 'source', type: 1, optional: false }] }, string], 0)
     expect(schemaDigest(left)).not.toBe(schemaDigest(unannotated))
     expect(schemaDigest(canonicalizeSchema(left.nodes, 1))).toBe(schemaDigest(canonicalizeSchema([string], 0)))
+  })
+
+  it('fingerprints a type independently of the identity spelling the writer uses', () => {
+    const [current, sealed] = identityAliases().find(([value]) => value.startsWith('huoli-')) as readonly [string, string]
+    const literal = (value: string): SchemaNode[] => [{ kind: 'object', indices: [], properties: [
+      { name: 'tag', type: 1, optional: false },
+    ] }, { kind: 'literal', value }]
+    const renamed = canonicalizeSchema(literal(`${current}-session-title`), 0)
+    expect(renamed).not.toEqual(canonicalizeSchema(literal(`${sealed}-session-title`), 0))
+    expect(schemaDigest(renamed)).toBe(schemaDigest(canonicalizeSchema(literal(`${sealed}-session-title`), 0)))
+    expect(schemaDigest(renamed)).not.toBe(schemaDigest(canonicalizeSchema(literal(`${sealed}-session-title-v2`), 0)))
+  })
+
+  it('keeps the recorded fingerprint of an unchanged primitive', () => {
+    expect(schemaDigest(canonicalizeSchema([string], 0))).toBe('4cd48f3e5108bd6ebedf7301c3638839b8b2b9db8dbd493974177fbdeb91a01b')
   })
 })
