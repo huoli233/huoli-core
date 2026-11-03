@@ -150,14 +150,21 @@ describe('publishableImage', () => {
     expect(publishableImage(join(root, 'packages/logo.svg'), realpathSync(root))).toBe(real)
   })
 
-  it('refuses a target whose real path escapes the repository', () => {
+  it('refuses a target whose real path escapes the repository', (context) => {
     // Publication copies the bytes onto the site, so a reference reaching a
     // build-machine file must not be treated as an image the repository owns.
     const { root } = fixture()
     const outside = mkdtempSync(join(tmpdir(), 'huoli-doc-site-outside-'))
     roots.push(outside)
     writeFileSync(join(outside, 'secret.png'), 'not really a png\n')
-    symlinkSync(join(outside, 'secret.png'), join(root, 'packages/linked.png'))
+    // 没有符号链接权限的 Windows 上跳这条，跳过不等于通过，其它平台照跑
+    try {
+      symlinkSync(join(outside, 'secret.png'), join(root, 'packages/linked.png'))
+    } catch (error) {
+      if (!['EPERM', 'EACCES', 'UNKNOWN'].includes((error as NodeJS.ErrnoException).code ?? '')) throw error
+      context.skip()
+      return
+    }
 
     expect(publishableImage(join(root, 'packages/linked.png'), realpathSync(root))).toBeUndefined()
     expect(publishableImage(join(outside, 'secret.png'), realpathSync(root))).toBeUndefined()

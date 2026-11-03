@@ -191,10 +191,11 @@ async function collectHelp(): Promise<HelpPage[]> {
       NO_COLOR: '1',
     }
     for (const name of ['NODE_OPTIONS', 'FORCE_COLOR']) Reflect.deleteProperty(environment, name)
+    // tsx 源码启动在并行门禁下会慢到一分钟以上，30 秒超时会把正常输出判成失败
     const help = execFileAsync(process.execPath, [
       '--import', 'tsx/esm', 'apps/cli/src/bin.ts', ...args, '--help',
     ], {
-      cwd: root, env: environment, encoding: 'utf8', timeout: 30_000,
+      cwd: root, env: environment, encoding: 'utf8', timeout: 180_000,
       killSignal: 'SIGKILL', maxBuffer: 2 * 1024 * 1024,
     })
     // Killing directly, not through execFile's signal option, settles the read only after the child closes.
