@@ -507,6 +507,7 @@
       "@huoli/huoli-qq-memory": ["./packages/qq/qq-memory/src"],
       "@huoli/huoli-qq-pacing": ["./packages/qq/qq-pacing/src"],
       "@huoli/huoli-qq-policy": ["./packages/qq/qq-policy/src"],
+      "@huoli/huoli-qq-proactive": ["./packages/qq/qq-proactive/src"],
       "@huoli/huoli-qq-subject": ["./packages/qq/qq-subject/src"],
       "@huoli/huoli-remote-mock": ["./packages/test-support/remote-mock/src"],
       "@huoli/huoli-repeat-tool-reminder": ["./packages/guard/repeat-tool-reminder/src"],
