@@ -188,8 +188,8 @@ Options:
   --port <port>                  listen port; pass 0 to let the OS pick a free
                                  one
   --public-url <url>             advertise this HTTP(S) root in the printed,
-                                 opened, runtime-context, and HUOLI_WEB_URL forms;
-                                 grants no trust
+                                 opened, runtime-context, and HUOLI_WEB_URL
+                                 forms; grants no trust
   --trusted-host <authority...>  extra authority the /api browser-trust fence
                                  accepts (host or host:port; repeatable)
   --tls-cert <file>              PEM server certificate chain; requires
