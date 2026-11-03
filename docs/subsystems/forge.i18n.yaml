@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/forge.md
 /forges:
-  en: 1b51f9d385dafe76
-  zh: 4bb73627aa69d652
+  en: 6c2724835c514c5b
+  zh: 89b1150e8660eb46
 /forges/providers-and-change-requests:
   en: 4ec7d1892b4067db
   zh: 6bb70d21ae3d7a89
 /forges/status-polling:
-  en: 26ccfa2e342e3e67
-  zh: fe6cc2a622757c48
+  en: d72b2a5d2c125b7b
+  zh: 953d3b86b083aa42
 /forges/change-request-actions:
-  en: 87d2c81d9514267f
-  zh: 1daf31c5b0127a1c
+  en: 991d4f4321de4eca
+  zh: d883ba218aea649d
 /forges/session-bindings:
-  en: 13dfd36f2166bba0
-  zh: a369434f52f04d57
+  en: f9a4c235d009e391
+  zh: e735e49e41449085
 /forges/panel:
-  en: 9a84a26d97cb46f0
-  zh: 5e1e03b7714bcbae
+  en: b03e61f69a337f7b
+  zh: bf78e3296937d6e4

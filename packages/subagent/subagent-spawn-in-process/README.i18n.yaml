@@ -6,32 +6,32 @@
   en: d510765ec1bebc28
   zh: 35efb9f71f05f326
 /huoli-huoli-subagent-spawn-in-process:
-  en: c949befcfe1e376c
-  zh: 13c78d0fbbd323ae
+  en: 6813bab2ee769469
+  zh: 182f4f3c23b8a893
 /huoli-huoli-subagent-spawn-in-process/summary:
-  en: 84d0a0acfc4251fe
-  zh: 8480ddf68e377522
+  en: 33ebabcc7306b80a
+  zh: a7707d379177d921
 /huoli-huoli-subagent-spawn-in-process/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-subagent-spawn-in-process/use-this-package:
-  en: ca895c3af2ec6371
-  zh: 51dbe9e2fa79de30
+  en: b4a70a68fcec3b3a
+  zh: a3232c5892914c69
 /huoli-huoli-subagent-spawn-in-process/use-this-package/when-to-choose-it:
   en: 5f14443940e59bb5
   zh: 3e8610aec21c55e8
 /huoli-huoli-subagent-spawn-in-process/use-this-package/minimal-configuration:
-  en: 3f53b0d5f4037171
-  zh: e0f2ac931cfbef95
+  en: 6a45bab6aea6abc8
+  zh: d2fac7f4315e785f
 /huoli-huoli-subagent-spawn-in-process/use-this-package/what-a-delegation-does:
-  en: 0c90404ed53cf451
-  zh: 161e38b7d7c10182
+  en: 55d498ba3c7ced47
+  zh: 32a142c8d933d777
 /huoli-huoli-subagent-spawn-in-process/understand-the-implementation:
   en: 7f34637751939818
   zh: 2937553168e1aee5
 /huoli-huoli-subagent-spawn-in-process/understand-the-implementation/design-concept:
-  en: a5b418fb260e2b9f
-  zh: 06dd949e350e9585
+  en: dbd377ddec9de4f9
+  zh: 2b5b268aabe44692
 /huoli-huoli-subagent-spawn-in-process/understand-the-implementation/source-map:
   en: b7c55a4bff3ae1f0
   zh: 9d0f514f433250c6
@@ -42,8 +42,8 @@
   en: 1288272d1eabfdc1
   zh: 6efde7517f434179
 /huoli-huoli-subagent-spawn-in-process/further-exploration:
-  en: c247efa590d8b78a
-  zh: 999f8281df521384
+  en: 1768c62e08601fa5
+  zh: 2d0858502eba358e
 /huoli-huoli-subagent-spawn-in-process/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -63,8 +63,8 @@
   en: 75d061c2151624a7
   zh: 71e58e020b60ff90
 /huoli-huoli-subagent-spawn-in-process/model-experience/parent-tool-result-indirectly/what-the-model-sees:
-  en: caf11edef2516b8c
-  zh: 25bcb16cceaad06d
+  en: 72a272e5646c0b08
+  zh: 62ab4269471179cc
 /huoli-huoli-subagent-spawn-in-process/model-experience/parent-tool-result-indirectly/token-effect:
   en: ff8045aa0f466c2a
   zh: e38fc5c6af2ce076

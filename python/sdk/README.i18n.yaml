@@ -3,26 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write python/sdk/README.md
 /huoli-core-python-sdk:
-  en: 43f7de064985e731
-  zh: 9ad59629660b1f13
+  en: 0e4d56814ec209c2
+  zh: 1ec6ce7d5a3537a6
 /huoli-core-python-sdk/optional-office-operations:
-  en: ddf4dabea526cef1
-  zh: 6e31cab10d2f3ed8
+  en: edbe44e1942ffa00
+  zh: bfc1966d3295e14c
 /huoli-core-python-sdk/start-a-runtime:
-  en: ac793c588b13ce87
-  zh: 502015cda46de3ac
+  en: d7f7f54d414b88d8
+  zh: 4c51c654f0221688
 /huoli-core-python-sdk/run-text-and-commands:
-  en: b2c847c1452e137d
-  zh: c595c5e82151d0cb
+  en: 2cf950be142da66c
+  zh: 7b5bdca4c4947374
 /huoli-core-python-sdk/client-approvals:
   en: 1d18c09832dd4a42
   zh: 6e7260b650a1f987
 /huoli-core-python-sdk/customize-plugins:
-  en: 0cfa22d329a704db
-  zh: ff04b5e01e2c5936
+  en: 3007918301cf02c8
+  zh: 94d9a3848513e8a1
 /huoli-core-python-sdk/native-user-questions:
   en: 979ad00fe498b2be
   zh: 4b656bd268292a13
 /huoli-core-python-sdk/results-and-notifications:
-  en: 6b81899ea865ffd2
-  zh: d9e326a3fb04e696
+  en: 761c64b424ea8d3b
+  zh: 29420fb9a4eaaf67

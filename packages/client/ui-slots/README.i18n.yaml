@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-slots/README.md
 /:
-  en: 5a5d547e129dd834
-  zh: 40cd5d61ef91e908
+  en: 4b5c4d8238011b63
+  zh: 68983fe1be8943cf
 /huoli-huoli-client-ui-slots:
-  en: e708fcaf0caa1989
-  zh: 7b9d19291b159f7b
+  en: c8f43385fc71d1b5
+  zh: 221133bdfe566546
 /huoli-huoli-client-ui-slots/summary:
-  en: 486631f9cc7b5d6f
-  zh: 61fdcd066fcd1402
+  en: 2dd7dc959f754fde
+  zh: ae6897b4eb91a294
 /huoli-huoli-client-ui-slots/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -39,8 +39,8 @@
   en: 2b6058e98fb1efe7
   zh: f32e37c8381809b9
 /huoli-huoli-client-ui-slots/further-exploration:
-  en: 101dd3b53de52c79
-  zh: 6ccda0a7d0153b21
+  en: 9201f0d86e02a25e
+  zh: ac0689be95f92374
 /huoli-huoli-client-ui-slots/model-experience:
   en: 3120df665299c634
   zh: 67bb5e1fe59dae19

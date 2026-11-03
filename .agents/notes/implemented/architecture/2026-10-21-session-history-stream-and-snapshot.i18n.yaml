@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-21-session-history-stream-and-snapshot.md
 /agent-note-session-snapshots-passive-subscriptions-and-web-aggregation:
-  en: 0c9a7bc6591feb16
-  zh: 3606a2c1caffd36f
+  en: e88743ec88edef0f
+  zh: 7e8042731705bcae
 /agent-note-session-snapshots-passive-subscriptions-and-web-aggregation/problem:
   en: ac1583e7ae1377f8
   zh: c60bdbda9ee89144
@@ -24,5 +24,5 @@
   en: c5fb06ab9df9e7ad
   zh: b20adf151018111c
 /agent-note-session-snapshots-passive-subscriptions-and-web-aggregation/consequences:
-  en: dc1da262b4911a31
-  zh: 2a4e503696fc477b
+  en: 149317b5ec25a11e
+  zh: c3c499676703bb16

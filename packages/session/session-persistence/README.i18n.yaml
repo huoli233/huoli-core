@@ -6,11 +6,11 @@
   en: 99acbd5c1e2a16ce
   zh: 31342508a4e1bf09
 /huoli-huoli-session-persistence:
-  en: e80e5f59ceadaa37
-  zh: f80ca64a74ca6e21
+  en: 225e52b730ee3479
+  zh: 9ced5985070ff2c9
 /huoli-huoli-session-persistence/summary:
-  en: 31d5eec7694aa83f
-  zh: b91ea5b6daaec8a5
+  en: cef1bb1ff7e63fb9
+  zh: 26cd225f5325c3b1
 /huoli-huoli-session-persistence/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,8 +18,8 @@
   en: bd48e96d14122170
   zh: f8a06e7246b55a6f
 /huoli-huoli-session-persistence/use-this-package/choosing-a-backend:
-  en: 170892270261aae0
-  zh: 7daf1edd4f764409
+  en: 3f3b5bce1a05236e
+  zh: d468f28fed0c9b07
 /huoli-huoli-session-persistence/use-this-package/what-the-service-provides:
   en: c10b9c7d9bad305c
   zh: 0e9c391e9df37da6
@@ -36,8 +36,8 @@
   en: 3b536d66137e8f2a
   zh: e1f0fbbad61f515e
 /huoli-huoli-session-persistence/understand-the-implementation:
-  en: 9e303bd09a71fef1
-  zh: 1f631925081ae101
+  en: 271a6e199b836398
+  zh: 8b30d8800b8eca11
 /huoli-huoli-session-persistence/understand-the-implementation/design-concept:
   en: 3d21cded1f7e74ff
   zh: 5f624aefebb1f63d
@@ -51,11 +51,11 @@
   en: c920cf9262f4a563
   zh: 0f8e3ff17e39c861
 /huoli-huoli-session-persistence/understand-the-implementation/stored-record-validation:
-  en: b93ec8187f7f86b0
-  zh: 578aa5c6cadafd5a
+  en: 353b2d87e1ae2816
+  zh: 8c857bfe58b6294f
 /huoli-huoli-session-persistence/further-exploration:
-  en: eae3982f64497a9c
-  zh: bfca52edcaeff828
+  en: 9156b44e73e012e8
+  zh: 1482aa590e576a3d
 /huoli-huoli-session-persistence/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90

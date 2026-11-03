@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-tool/README.md
 /:
-  en: d5ef8fa5a5ebfbc2
-  zh: 9870b3f207a248cc
+  en: 6d5718f44f50b96d
+  zh: 90ff2b9d7c6e23d6
 /huoli-huoli-client-ui-tool:
-  en: 03bfcfbf7f1cea76
-  zh: 142abbf07affee63
+  en: 2a4b8025fd02ae4d
+  zh: 0981b4ccdb658bfd
 /huoli-huoli-client-ui-tool/summary:
-  en: e7ef510d1764f9b2
-  zh: 236bc66607211f0f
+  en: 8d2f81f3e4771370
+  zh: 95b7c1a56f8c81b5
 /huoli-huoli-client-ui-tool/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -21,23 +21,23 @@
   en: e458aff61e634190
   zh: 650e417f450b3edf
 /huoli-huoli-client-ui-tool/use-this-package/built-in-views:
-  en: 153498fd97c03524
-  zh: 210731b119db29a5
+  en: 14868a256a201d8d
+  zh: 3491500ef993bcf0
 /huoli-huoli-client-ui-tool/understand-the-implementation:
   en: 00bc7b0c84edc603
   zh: 1cfcf5b435248a91
 /huoli-huoli-client-ui-tool/understand-the-implementation/rendering-contract:
-  en: 672e63b2f92e689b
-  zh: ba950ecb480325a6
+  en: 6823a2578bc71868
+  zh: 0c82b517c210f102
 /huoli-huoli-client-ui-tool/understand-the-implementation/cards:
-  en: 50c77d8a90aab9d1
-  zh: 0edf7a97867acb8d
+  en: b09dfc4a904d8356
+  zh: 2aa44e3ee3b2b528
 /huoli-huoli-client-ui-tool/understand-the-implementation/declared-optional-capabilities:
   en: c1926deb4e5f3734
   zh: c5845f465b94a459
 /huoli-huoli-client-ui-tool/further-exploration:
-  en: b37600769951cbca
-  zh: 816589549d21d176
+  en: 62cd606a3ef79add
+  zh: 1d5c6c16026dcde1
 /huoli-huoli-client-ui-tool/model-experience:
   en: 1e5e72dd269855d5
   zh: 81a4756d460e3af9

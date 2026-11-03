@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-13-chat-single-fold-motion.md
 /agent-note-one-fold-motion-for-collapsing-on-the-next-message:
-  en: 45594545dabfaa78
-  zh: a1eac669647b2bac
+  en: 8c9f3806957c392f
+  zh: b061f746581ba82c
 /agent-note-one-fold-motion-for-collapsing-on-the-next-message/problem:
-  en: 88faaf0c589e12cb
-  zh: dda7efc5eaed2788
+  en: 0978dc3f9c45bae7
+  zh: 90b9bfaa56b9343a
 /agent-note-one-fold-motion-for-collapsing-on-the-next-message/decision:
   en: 972bbe45fe8ac28e
   zh: 593b851c142894e1

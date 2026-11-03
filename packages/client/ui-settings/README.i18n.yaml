@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-settings/README.md
 /:
-  en: a68df653048eed14
-  zh: 2b117acaec0165a8
+  en: 57f265f255cd683e
+  zh: 9c7f7022880d7eea
 /huoli-huoli-client-ui-settings:
-  en: 720600abd76a4a91
-  zh: 822bda08efbfc3e4
+  en: 1fbfca177425bdef
+  zh: 44314ab802dd03eb
 /huoli-huoli-client-ui-settings/summary:
   en: 0404ff8b4ec867e0
   zh: 9c3f03dfd1306cc9
@@ -18,8 +18,8 @@
   en: 2417d8409aad6ca7
   zh: 449eee623a2f334b
 /huoli-huoli-client-ui-settings/use-this-package/configuration-forms:
-  en: c2b31046779bab9e
-  zh: ce183f67e63114b3
+  en: fc64161ccc25a7f4
+  zh: 41a200c4a1f71006
 /huoli-huoli-client-ui-settings/use-this-package/following-served-namespaces:
   en: 2edd420502bebce1
   zh: 6624abe01110c012
@@ -42,8 +42,8 @@
   en: 34872bda24dc50c6
   zh: dcccef423906c408
 /huoli-huoli-client-ui-settings/further-exploration:
-  en: 57e3fe18940ecc83
-  zh: 165bd696250de5dc
+  en: 0a2ce2c3ab95b13a
+  zh: cd522ab578730105
 /huoli-huoli-client-ui-settings/model-experience:
   en: 3120df665299c634
   zh: 1d9f365d091d0d2a

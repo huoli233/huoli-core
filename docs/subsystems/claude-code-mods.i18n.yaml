@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/claude-code-mods.md
 /claude-code-mods-compatibility:
-  en: e520df3bf44e1160
-  zh: 557956eaf6faf4a7
+  en: 973c86fd5a136f55
+  zh: 17bc1ba628cae1c3
 /claude-code-mods-compatibility/packaging-and-loading:
-  en: 75cf021ce8babaab
-  zh: caa20540f8bce11a
+  en: 7d3764c48e679741
+  zh: 54856b0838fa0de9
 /claude-code-mods-compatibility/events:
-  en: cea776ec0063c311
-  zh: 6b8c8b32f2f7ede9
+  en: a505a9610cb185e8
+  zh: 69bf6c30d562226a
 /claude-code-mods-compatibility/the-chain:
   en: 111c186536345342
   zh: 8ddc81c78c05a840
@@ -21,8 +21,8 @@
   en: 1bd1a60970fcf426
   zh: 8f6a8e069f742fb7
 /claude-code-mods-compatibility/testing:
-  en: 8b3530b79e09a067
-  zh: c041e63f7fd8de5a
+  en: 19f0b8d2b2f01875
+  zh: 50c7bcbeb3939608
 /claude-code-mods-compatibility/the-example-mods:
   en: b3ef5ea831c5c48f
   zh: fa64186430e7c772

@@ -6,8 +6,8 @@
   en: 93b346254eff025a
   zh: 69aa6364ca2ffa7d
 /huoli-huoli-tool-executor-ptc:
-  en: e253ed9cec03a396
-  zh: 922fde282e2b0fd2
+  en: 2c92dfde3de08997
+  zh: 1a49d0dcab9a9d6d
 /huoli-huoli-tool-executor-ptc/summary:
   en: 66e159c308afb6c1
   zh: 29b1a646ae7f918a
@@ -15,17 +15,17 @@
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-tool-executor-ptc/use-this-package:
-  en: b6b7ffab35e1a725
-  zh: fc5db2524e1507d6
+  en: 5351a472cd2761cd
+  zh: c5398fc3738e9bca
 /huoli-huoli-tool-executor-ptc/understand-the-implementation:
   en: 9d4f61c351945d30
   zh: 1c575526230b0e02
 /huoli-huoli-tool-executor-ptc/understand-the-implementation/ptc-mode:
-  en: 48f90d4c78ba69d7
-  zh: 5dcbbf23ebc1b803
+  en: 7c2f6f0179820e63
+  zh: d6fac69c63d86932
 /huoli-huoli-tool-executor-ptc/further-exploration:
-  en: ee69078c38c655a9
-  zh: fb0873407f23c8c5
+  en: cbdcaae050466f13
+  zh: 23d2fc3454883ee5
 /huoli-huoli-tool-executor-ptc/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -33,8 +33,8 @@
   en: eaefd7303f22977d
   zh: 9c425f9501128224
 /huoli-huoli-tool-executor-ptc/model-experience/ptc-mode-schema-and-system-prompt/what-the-model-sees:
-  en: 52e1437dc292ad3a
-  zh: 43fcfb76a3715f51
+  en: 48ce693db59389e8
+  zh: 10b314d6d103b1f8
 /huoli-huoli-tool-executor-ptc/model-experience/ptc-mode-schema-and-system-prompt/what-the-model-sees/typescript-ptc-mode-sdk-instructions-with-bash:
   en: 3a8df15e4ae32f9e
   zh: fc4a800ba363e835

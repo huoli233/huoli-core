@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-19-concrete-web-bind-address.md
 /agent-note-bind-one-concrete-web-address:
-  en: f70f2b6b24ef16dd
-  zh: 64100dbc55eee33d
+  en: b2bbfa732c2e23a9
+  zh: be6f9377663c22b2
 /agent-note-bind-one-concrete-web-address/problem:
   en: ffc265e61eadc31b
   zh: fcc70f0a8817914c
 /agent-note-bind-one-concrete-web-address/decision:
-  en: 5fe4f2ddba2ee2da
-  zh: bb140a16f056d4b4
+  en: 7fed45a958ee9082
+  zh: 28b6b2838dbaa7bd
 /agent-note-bind-one-concrete-web-address/alternatives-considered:
   en: 0e4d475347796821
   zh: e621e606bc5b1045
 /agent-note-bind-one-concrete-web-address/consequences:
-  en: ba7a839bca09992d
-  zh: a11171005405d1e2
+  en: 1cbae9803f2a1c58
+  zh: 8d0df5879650f11b
 /agent-note-bind-one-concrete-web-address/testing:
   en: 4bb8f4bf4ad943c3
   zh: 2e24d56d01b52574

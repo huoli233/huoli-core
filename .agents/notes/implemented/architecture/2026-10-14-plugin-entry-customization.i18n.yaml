@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-14-plugin-entry-customization.md
 /agent-note-plugin-entry-customization-region-owned-pins-and-more-menus:
-  en: 2fdf5b95d5603955
-  zh: bfdc61e7db5f5f5b
+  en: 8c37a620b72f03d2
+  zh: 3cd4e66b6e4c1742
 /agent-note-plugin-entry-customization-region-owned-pins-and-more-menus/problem:
-  en: 896876f139383cba
-  zh: 42a4aae7e5885780
+  en: e67beaa0f8b92844
+  zh: 4a9d274fad56b1ea
 /agent-note-plugin-entry-customization-region-owned-pins-and-more-menus/decision:
   en: a6cfc29cb9caa83c
   zh: 21bbeb6a7ab20018
@@ -18,14 +18,14 @@
   en: d6a2816ca55b1c38
   zh: 53217016f1595755
 /agent-note-plugin-entry-customization-region-owned-pins-and-more-menus/decision/package-changes-relative-to-release-huoli-0-2-1:
-  en: 18ed81fee1ca7d41
-  zh: fc298457e54b6488
+  en: aedda882a65b9802
+  zh: aebb5274c3e7dee9
 /agent-note-plugin-entry-customization-region-owned-pins-and-more-menus/decision/actions-slots-and-menu-content:
   en: c87e2fdd911714b5
   zh: 074426fdc7abafa9
 /agent-note-plugin-entry-customization-region-owned-pins-and-more-menus/decision/the-three-regions:
-  en: 770c6150e84742ba
-  zh: 1d619388c8f38646
+  en: 11c82cb24edf98a0
+  zh: 32b8a962e471f3fd
 /agent-note-plugin-entry-customization-region-owned-pins-and-more-menus/alternatives-considered:
   en: 79355028387c4094
   zh: 5b518166e4803ebe

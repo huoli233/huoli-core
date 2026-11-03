@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-20-routed-model-context-and-compaction-policy.md
 /agent-note-routed-model-context-and-compaction-policy:
-  en: eca190695d4857f5
-  zh: f9d6411b8a8612ae
+  en: 94ee4af5ce481d1a
+  zh: 88a833e4006ba4f4
 /agent-note-routed-model-context-and-compaction-policy/problem:
   en: f7d1f343e487d725
   zh: c7f736180e44d586
@@ -15,8 +15,8 @@
   en: 7bcf0ae2c74a0eb7
   zh: bc0e04a25492d5ba
 /agent-note-routed-model-context-and-compaction-policy/decision/token-measurement-remains-model-agnostic:
-  en: 51d1b39d06407320
-  zh: 85c88f6b5d8508d6
+  en: 2512d439b1680df4
+  zh: 4c29f0899b2aee48
 /agent-note-routed-model-context-and-compaction-policy/decision/compact-basic-resolves-a-target-spec:
   en: d8827f9fa70aa65f
   zh: a9d29e05dcb0cfdb

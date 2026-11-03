@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/cookbook/maintaining-huoli-code-review.md
 /maintaining-the-huoli-code-review-skill:
-  en: 7356eb0a9cc41144
-  zh: 3194fbcf27f4fac1
+  en: 8581ffd77aa15c99
+  zh: edace223bb03401f
 /maintaining-the-huoli-code-review-skill/what-the-maintainer-receives:
-  en: 1c4d0f340591ca39
-  zh: 81bd728a7c2296cb
+  en: f183d13a6a6f8f09
+  zh: ab070e1ec989394e
 /maintaining-the-huoli-code-review-skill/what-the-operator-does-with-a-candidate-diff:
-  en: 1423d67e7c440cc6
-  zh: bc6d30d6615377f5
+  en: eaf21d2f774ff9ca
+  zh: 4849d15e87735b90
 /maintaining-the-huoli-code-review-skill/when-a-run-produces-no-candidate:
   en: feb6d261939d6c19
   zh: 044d8238cd6537d3
 /maintaining-the-huoli-code-review-skill/interruptions-and-handoff:
-  en: f6e8cab2266e6a3e
-  zh: e6e950fa8807bfb4
+  en: 4d2e66f107ef9779
+  zh: 95cf741e510f635b
 /maintaining-the-huoli-code-review-skill/where-the-operator-s-private-setup-lives:
   en: ae06145764738c16
   zh: d527b944db8c52be

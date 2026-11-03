@@ -6,23 +6,23 @@
   en: 0abe764a4bc3e3db
   zh: 280ff3a1c1a8bc5c
 /huoli-huoli-jobs-local:
-  en: 20bc108b32378c74
-  zh: 8d1121f0a70f454a
+  en: fa136df7836e2cbb
+  zh: 06583255f7587876
 /huoli-huoli-jobs-local/summary:
-  en: b76227a7ed290b11
-  zh: 866fd04f48303a89
+  en: 0b2204caa7df64f7
+  zh: c600f4b001db70cd
 /huoli-huoli-jobs-local/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-jobs-local/use-this-package:
-  en: e0e242161dda0c28
-  zh: 30c058b5a3d1cc56
+  en: be0229965b0b5239
+  zh: 4f514b0802ab425d
 /huoli-huoli-jobs-local/use-this-package/when-to-choose-it:
   en: 17479310883edc0a
   zh: f1cea41c704dabe2
 /huoli-huoli-jobs-local/use-this-package/minimal-configuration:
-  en: 5861bb20182aef3b
-  zh: 23d595dad299b6c8
+  en: 71473841ae2a1c03
+  zh: 7d39048775e278b9
 /huoli-huoli-jobs-local/use-this-package/what-each-owner-gets:
   en: 9ab66aa770694092
   zh: 38de930bcfbc132c
@@ -30,11 +30,11 @@
   en: 91dd372f742dcdb8
   zh: 58eeee0254d33cd1
 /huoli-huoli-jobs-local/use-this-package/session-timing-records:
-  en: ae926795d8aaa88f
-  zh: 0e6ec0265eefccf7
+  en: b8ef04dca01c6478
+  zh: 10a2d64af65ea21a
 /huoli-huoli-jobs-local/use-this-package/what-can-go-wrong:
-  en: e1f4511c458dff3b
-  zh: bea247c2a365a646
+  en: 0848738b2cd03085
+  zh: 00023a8be6adaa7a
 /huoli-huoli-jobs-local/understand-the-implementation:
   en: f782557ca8da3138
   zh: e8f0082b9692cacc
@@ -48,17 +48,17 @@
   en: 2c53e11a60965985
   zh: 63adc1628c71e62e
 /huoli-huoli-jobs-local/understand-the-implementation/admission-and-settlement:
-  en: b9634939c81b46cb
-  zh: a18f90caf7c61e87
+  en: 9a73aa6e228a13fc
+  zh: 2ed9eb422c41638b
 /huoli-huoli-jobs-local/understand-the-implementation/teardown:
   en: 49e8bd5e2c1f6ffd
   zh: ad3e1aa712fd59b3
 /huoli-huoli-jobs-local/further-exploration:
-  en: bb0334d20bfb0b5f
-  zh: 1b02ec08f9618bef
+  en: c856278b38265146
+  zh: ad883c84e5f4b85d
 /huoli-huoli-jobs-local/model-experience:
-  en: 873ef364fc8d6f2f
-  zh: 4d0bb38a9c9639c0
+  en: f246c89ff055bbf2
+  zh: 00c66b16393c69b9
 /huoli-huoli-jobs-local/model-experience/kv-cache-effect:
   en: e290ccc9b3c92c08
   zh: d75d48f485447a74

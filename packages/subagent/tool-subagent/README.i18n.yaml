@@ -6,8 +6,8 @@
   en: c6db6e2344a91be8
   zh: 4febc8331d506a22
 /huoli-huoli-tool-subagent:
-  en: 686fb5136bef0a3b
-  zh: d25d6569174a01b5
+  en: 2b409caea4f91d96
+  zh: 433ef1311c2b2012
 /huoli-huoli-tool-subagent/summary:
   en: c09d40329253a9d8
   zh: 91c1bbe5557bdda9
@@ -18,17 +18,17 @@
   en: 93f1701f5209ecb5
   zh: 6310fd012400aead
 /huoli-huoli-tool-subagent/use-this-package/minimal-configuration:
-  en: 1a23808ca32b8f2d
-  zh: e637a35220da0564
+  en: 16996a270758d9cb
+  zh: 635661ae03812ae5
 /huoli-huoli-tool-subagent/use-this-package/managed-delegation:
-  en: bb715d037cde14bd
-  zh: a88e98c07115fbd1
+  en: cacaf57cbb346499
+  zh: cf363fd6cd18c698
 /huoli-huoli-tool-subagent/use-this-package/selecting-a-child-preset:
-  en: e28a206c65151ec0
-  zh: 1372242076549ca4
+  en: b4981123f5d3a5da
+  zh: d598191d7df68713
 /huoli-huoli-tool-subagent/use-this-package/selecting-a-child-llm:
-  en: 5cf892e4acab3f38
-  zh: c282b79620bc3de5
+  en: 2513d80321fd415f
+  zh: 075dd6ae2897b7e0
 /huoli-huoli-tool-subagent/understand-the-implementation:
   en: 6ce5f749256a7e6c
   zh: a4f2adb04a70d9cf
@@ -48,8 +48,8 @@
   en: 181b32db8839119a
   zh: a9e8625b236d6fc4
 /huoli-huoli-tool-subagent/further-exploration:
-  en: fa3c9a967b636afb
-  zh: a9ce930a9766d5cb
+  en: 1359a92f62bf8c6b
+  zh: a55be288c4916b8f
 /huoli-huoli-tool-subagent/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -57,8 +57,8 @@
   en: e4c7376d4f29dbd5
   zh: 6b7a9eaf69c9ea53
 /huoli-huoli-tool-subagent/model-experience/tool-schema/what-the-model-sees:
-  en: 2e7844a04f0456ea
-  zh: 7aaaa033b700aa3d
+  en: 1123cba352df3e39
+  zh: be39d3561baa8158
 /huoli-huoli-tool-subagent/model-experience/tool-schema/token-effect:
   en: c04242443b8fbdb0
   zh: 8779ef72c4eaee35
@@ -81,8 +81,8 @@
   en: cf78b9dd5596495f
   zh: bd44560f8c2435e8
 /huoli-huoli-tool-subagent/model-experience/system-prompt/what-the-model-sees:
-  en: 571d1dcec395c549
-  zh: 6e9b6bf1cfa7e915
+  en: 41e62a0771005491
+  zh: fbc0c7f5eb37cd91
 /huoli-huoli-tool-subagent/model-experience/system-prompt/what-the-model-sees/tool-guidance-section:
   en: 82b3cd08b3961c98
   zh: bdc2a34bcea16cac

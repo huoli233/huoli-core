@@ -3,17 +3,17 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/office-to-pdf.md
 /office-to-pdf:
-  en: 9a24c6158f9fb214
-  zh: 773155d0e59fffe2
+  en: 7d8eea36d55d23e0
+  zh: d9e90cf80eafbb11
 /office-to-pdf/ownership:
-  en: b21c1a3345590b3a
-  zh: d402b06930599e07
+  en: e0c11809c9a310e2
+  zh: 59b4f051df6e8548
 /office-to-pdf/requests-and-results:
-  en: 8a1fa9eb6e82ef8f
-  zh: e263ca49c5c957d6
+  en: 8dca59cfedadbc4c
+  zh: 00d46aca59ae96c3
 /office-to-pdf/preview-reads:
-  en: 715105e6fff89e7c
-  zh: a7fe63c7dd0be17f
+  en: 6817810d3b5d8d20
+  zh: ca2402b0fe7d9fa8
 /office-to-pdf/engine-selection-and-limits:
-  en: 3908dab1b7d78890
-  zh: 8f2aed6e27c5b5dd
+  en: f54551baa51db95e
+  zh: d3f8ab361a493cad

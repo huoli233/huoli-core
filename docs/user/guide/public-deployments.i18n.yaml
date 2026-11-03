@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/user/guide/public-deployments.md
 /publish-the-web-ui-behind-a-reverse-proxy:
-  en: 867565aa675f3fb3
-  zh: c60606b5e5bdb778
+  en: 9a20b75eecde950f
+  zh: 4f4502add1c80650
 /publish-the-web-ui-behind-a-reverse-proxy/what-public-url-advertises:
-  en: 924b28b211478f01
-  zh: b098d5a53a29c883
+  en: b5d2e6b514313d6c
+  zh: e4f92e9a2bc3cc20
 /publish-the-web-ui-behind-a-reverse-proxy/what-the-proxy-must-do:
   en: 2f93051763125365
   zh: 1dd699cb84ecf034
@@ -15,5 +15,5 @@
   en: 08e5a6cc45918876
   zh: d59178e10e915748
 /publish-the-web-ui-behind-a-reverse-proxy/secure-the-external-leg:
-  en: 2afac1f10e2d2e88
-  zh: f9b4b03a5aad27e1
+  en: 7defcc0944d867c1
+  zh: 4c4ef37573d669ee

@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-09-message-node-factories-and-delegates.md
 /agent-note-domain-image-slots-and-a-shared-gallery-factory:
-  en: bce6358fb4211261
-  zh: bfebd3bbdb1affb1
+  en: ecd16fbaeebbc14e
+  zh: 43873020a892bad8
 /agent-note-domain-image-slots-and-a-shared-gallery-factory/problem:
   en: ec6ffd7f737a1f56
   zh: 5e368f87ce52e28c
 /agent-note-domain-image-slots-and-a-shared-gallery-factory/decision:
-  en: b807777fd48560eb
-  zh: e7b1625bd4448ce1
+  en: 4f12e7127823e6c9
+  zh: 4dcac14ef129f8e1
 /agent-note-domain-image-slots-and-a-shared-gallery-factory/alternatives-considered:
   en: db14fd6d0e2ce78b
   zh: c29a19cde692a1dd

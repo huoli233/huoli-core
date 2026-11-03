@@ -6,11 +6,11 @@
   en: ef9fab89ad1a57aa
   zh: 6d434e8a3dae16ca
 /huoli-huoli-skill-filesystem:
-  en: e0af59069c89278b
-  zh: 913d0088b2a7296d
+  en: 915da16ba2154811
+  zh: e2a27923caa41910
 /huoli-huoli-skill-filesystem/summary:
-  en: ef659bb1fd748f41
-  zh: 9d40999be52526f5
+  en: e82c04afafbf4db8
+  zh: 78a2b86cc063e391
 /huoli-huoli-skill-filesystem/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -24,11 +24,11 @@
   en: 78ac4e731c6a24c1
   zh: e8c33db4aa0cc527
 /huoli-huoli-skill-filesystem/use-this-package/roots-and-priority:
-  en: 265594f30ba5d848
-  zh: 5de6a94864cab8d6
+  en: 12c8ec6e875bc7ac
+  zh: 60f792b9cb5ccb13
 /huoli-huoli-skill-filesystem/use-this-package/mount-and-configure:
-  en: 5e7a4ff37f33f8a5
-  zh: 2f6dd45e696cb92b
+  en: db4f94c46080b231
+  zh: 793b87e3d437f8b6
 /huoli-huoli-skill-filesystem/use-this-package/change-detection:
   en: 77acbd43e89b6043
   zh: 8169bbbc55f3f114
@@ -51,11 +51,11 @@
   en: e1f03485692f61a0
   zh: 7c3ce24eacc3a047
 /huoli-huoli-skill-filesystem/further-exploration:
-  en: 4d1bb82d69fadd8a
-  zh: 91f6f8fb6533c976
+  en: 10b8eecc4ba53de6
+  zh: c8fd204d3c1a6d86
 /huoli-huoli-skill-filesystem/model-experience:
-  en: 2276cca067cd120a
-  zh: 9986d49d39228243
+  en: 8618a0b232c6ab44
+  zh: 797d91a7686f6889
 /huoli-huoli-skill-filesystem/model-experience/kv-cache-effect:
   en: 14ddbda337682082
   zh: 2e4dc3c26b45f62c

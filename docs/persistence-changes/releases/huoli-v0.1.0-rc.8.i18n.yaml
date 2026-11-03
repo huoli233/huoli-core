@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/releases/huoli-v0.1.0-rc.8.md
 /:
-  en: b1b7c72c7d191c74
-  zh: b047337f23d0b97f
+  en: 258024650274cba5
+  zh: fd887ffc387c3028
 /persistence-release-huoli-v0-1-0-rc-8:
-  en: a6d3d52e747b211c
-  zh: c9a993a331c25c50
+  en: 88e5cee3f1dae578
+  zh: 907a4d0bbeafb4c7
 /persistence-release-huoli-v0-1-0-rc-8/summary:
   en: 383af4927f199bc3
   zh: fe5b6f453a844bc8
@@ -15,8 +15,8 @@
   en: 0ff4a6f3c6af323f
   zh: f5c7bd70cc1585c7
 /persistence-release-huoli-v0-1-0-rc-8/release-evidence:
-  en: 7e4de3397921e6ca
-  zh: 5910dd99741e4807
+  en: 64a2927779ecc8e4
+  zh: ab0f2df0ac55bb76
 /persistence-release-huoli-v0-1-0-rc-8/declaration:
   en: af9cea43334ee692
   zh: c6c8bd0d6a17718a

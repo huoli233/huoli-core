@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-07-30-generated-third-party-notices.md
 /agent-note-generated-third-party-notices:
-  en: 762fe10c2750eb0a
-  zh: 24f5efdf4cc1755e
+  en: bf8bf880779a0c7b
+  zh: d643720eae551572
 /agent-note-generated-third-party-notices/problem:
   en: e6929494e60041a2
   zh: 15bec8e8baabcab2
 /agent-note-generated-third-party-notices/decision:
-  en: e0a339aa86f13898
-  zh: 9ab0c7de7bb185b5
+  en: ff4c810b07814dec
+  zh: 93ff60e4049ad28d
 /agent-note-generated-third-party-notices/testing:
   en: 194f87f780991068
   zh: 58096d2339576d20

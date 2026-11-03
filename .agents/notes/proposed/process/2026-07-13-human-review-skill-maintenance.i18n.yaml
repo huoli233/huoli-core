@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/process/2026-07-13-human-review-skill-maintenance.md
 /agent-note-periodic-human-review-maintenance-for-huoli-code-review:
-  en: 7c3dc085ce13a5e9
-  zh: e24659d5088e7e46
+  en: 6c93fde0aacfa0ca
+  zh: f406d6d844e5bfa7
 /agent-note-periodic-human-review-maintenance-for-huoli-code-review/problem:
-  en: 7525ad5821b12c44
-  zh: 7daef3ed8aa176e9
+  en: ac5ad12cc8a682ba
+  zh: 352adadab5e61367
 /agent-note-periodic-human-review-maintenance-for-huoli-code-review/proposal:
-  en: ea478f77c2f26d85
-  zh: dc6208e15615d5af
+  en: 3f4e94a011f384e0
+  zh: 5d71e931d589d57f
 /agent-note-periodic-human-review-maintenance-for-huoli-code-review/proposal/acquisition-contract:
   en: a95dea3f6b37af6f
   zh: 29cfc8f03a8b487b
@@ -27,14 +27,14 @@
   en: dd6810cf423430bc
   zh: 0c81e470f64af150
 /agent-note-periodic-human-review-maintenance-for-huoli-code-review/proposal/where-the-mechanism-lives:
-  en: 2f9ffbf8619445a9
-  zh: 1dd0144e9a00d8fe
+  en: 3bfc42704b1ddf68
+  zh: d38babd48a0a90c6
 /agent-note-periodic-human-review-maintenance-for-huoli-code-review/alternatives-considered:
   en: 1673a2138ddd34c2
   zh: 81c91a50ea0703d6
 /agent-note-periodic-human-review-maintenance-for-huoli-code-review/acceptance-criteria:
-  en: a9354faa1dc793a3
-  zh: f0b8da665facaecc
+  en: 634e9b9e500e381f
+  zh: 89d3fd2029c134b6
 /agent-note-periodic-human-review-maintenance-for-huoli-code-review/risks:
   en: b26ffb43c1c35b3a
   zh: c2c8b81a8317cd55

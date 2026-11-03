@@ -6,20 +6,20 @@
   en: 97d39db1617684ea
   zh: de11ba354583a044
 /huoli-huoli-client-modules:
-  en: ee2f6f3ccafafa13
-  zh: 3a37d4c4b69708dd
+  en: cbc5c569ffa4ca24
+  zh: df59ea1fc59fbbac
 /huoli-huoli-client-modules/summary:
-  en: ab7ece5891dd6289
-  zh: b9b5baab328be517
+  en: 5bce74e102626643
+  zh: a0d63e505505e835
 /huoli-huoli-client-modules/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-client-modules/use-this-package:
-  en: 25f536f156ec0bcc
-  zh: a522355b3e0edeae
+  en: 379000536dea76a4
+  zh: 64e80c0933d800b1
 /huoli-huoli-client-modules/use-this-package/declaring-a-client-plugin:
-  en: cc0eb2c35a7a0998
-  zh: 0e1df23869410c7a
+  en: e6b5bd236606737d
+  zh: 5f2d64570a3954c6
 /huoli-huoli-client-modules/use-this-package/package-assets:
   en: 529af1eb8bf1acf2
   zh: 7d891a5dfa90c625
@@ -33,8 +33,8 @@
   en: 5c0aa6f1d8df8e1c
   zh: 34005131c9bdce3b
 /huoli-huoli-client-modules/use-this-package/sharing-modules:
-  en: 1778b5a63ecde5e8
-  zh: 537b4f8c755af8ad
+  en: f60d4f0b7b1e4313
+  zh: 6019260fa4aa1207
 /huoli-huoli-client-modules/use-this-package/build-requirements:
   en: b6a4d3b901c89efe
   zh: 615b5f3eec41f281
@@ -42,14 +42,14 @@
   en: 7ab11d2c2bdc6eaa
   zh: 54c3c9091cf59711
 /huoli-huoli-client-modules/understand-the-implementation/design-concept:
-  en: 49dcadc166c2d06e
-  zh: bbf67c6dc47f4ead
+  en: 80bef2bdd9d52d27
+  zh: ba716237b1ab35d2
 /huoli-huoli-client-modules/understand-the-implementation/lazy-cjs-model:
   en: 6d16b74acb333e3b
   zh: fcb3a20cc8c39e4a
 /huoli-huoli-client-modules/understand-the-implementation/incremental-composition:
-  en: 99483432e6390ca4
-  zh: f92c018273aa07e4
+  en: 4c74870c1f8b053a
+  zh: d7fc9c20c8b77fa6
 /huoli-huoli-client-modules/understand-the-implementation/boot-manifest-injection:
   en: 253d9f265cd83ed0
   zh: 9d0f8df84d9d3ac9
@@ -57,11 +57,11 @@
   en: df2994f9ff8872c9
   zh: cd776526ed2b51e6
 /huoli-huoli-client-modules/understand-the-implementation/source-map:
-  en: d8b5407a0279a3f9
-  zh: 27af3437fad78672
+  en: 0a9a79af0b6ee5c1
+  zh: ee0067634bfdfd39
 /huoli-huoli-client-modules/further-exploration:
-  en: 7e5b283efe4f1d16
-  zh: 79472b64a0d759fe
+  en: ca5bf79ef69ee21a
+  zh: eaabd88b9a646b5a
 /huoli-huoli-client-modules/model-experience:
   en: abb2fc0416e1482c
   zh: 0e8a913d424a0c28

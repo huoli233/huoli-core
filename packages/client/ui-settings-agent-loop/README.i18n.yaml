@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-settings-agent-loop/README.md
 /:
-  en: 12adb999b01b035a
-  zh: 15ac17dd70c78e07
+  en: 77c8dfd5a7cd0b4d
+  zh: 8b01f7840029e429
 /huoli-huoli-client-ui-settings-agent-loop:
-  en: 375e454589cac6c8
-  zh: 7d609e69bc62fa77
+  en: cb0166d9aca90d20
+  zh: 25ae3d815ce264d3
 /huoli-huoli-client-ui-settings-agent-loop/summary:
   en: 42fc4bae4890b0f7
   zh: b11cbdc801aefb56
@@ -21,8 +21,8 @@
   en: 6412d65e7c17da6a
   zh: 530d8b53c355efba
 /huoli-huoli-client-ui-settings-agent-loop/further-exploration:
-  en: 14267229f22a17b0
-  zh: e59359820f0c2c2f
+  en: 49ccb6f642ea8f5d
+  zh: c892fae231e9c0d0
 /huoli-huoli-client-ui-settings-agent-loop/model-experience:
   en: 6b7c6f82ab6c8435
   zh: 4517689c899abcbe

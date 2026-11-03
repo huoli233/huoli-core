@@ -6,26 +6,26 @@
   en: 0be8ffbf23193557
   zh: ce2c69aa86875171
 /tool-schema-catalog:
-  en: 6cc2cd9ced70bb09
-  zh: 1c0e6cb4ba2ed637
+  en: c9b77ed58aeba921
+  zh: 3caa8d377bc1f2e1
 /tool-schema-catalog/tool-package-map:
-  en: fd4d90071c13dcbd
-  zh: 87867027203f0354
+  en: 52eec61969edaef0
+  zh: 5870ffdde133ef7a
 /tool-schema-catalog/huoli-huoli-plugin-manager:
-  en: e0143916bb634762
-  zh: e0143916bb634762
+  en: 42c8f37c52f50c72
+  zh: 42c8f37c52f50c72
 /tool-schema-catalog/huoli-huoli-plugin-manager/plugin-manager:
-  en: 2fbe2e5b88e81a54
-  zh: a9de46c13bda53d8
+  en: c56ebc9e8b401776
+  zh: 1a6243efbf9b4678
 /tool-schema-catalog/huoli-huoli-plugin-market:
-  en: 1ec7b4cbc3d98e28
-  zh: 1ec7b4cbc3d98e28
+  en: f4f5ece1e03f2d96
+  zh: f4f5ece1e03f2d96
 /tool-schema-catalog/huoli-huoli-plugin-market/plugin-market:
-  en: ecb8ee73c7bc68b8
-  zh: 59af75c81d7d529d
+  en: 83ddd0ed30d70a98
+  zh: 20e59b39de9033ca
 /tool-schema-catalog/huoli-huoli-mcp-resources:
-  en: dd78bd55ec83a539
-  zh: dd78bd55ec83a539
+  en: 2efc440db7a58b6e
+  zh: 2efc440db7a58b6e
 /tool-schema-catalog/huoli-huoli-mcp-resources/list-mcp-resource-templates:
   en: 96275ece9d040944
   zh: 1fa9744642601ece
@@ -33,11 +33,11 @@
   en: bf4236607199d61e
   zh: 82f4f749dcabc89f
 /tool-schema-catalog/huoli-huoli-mcp-resources/read-mcp-resource:
-  en: 5d92c07fa062734f
-  zh: 2d6f0cb8116cf567
+  en: 23cfd09adca9566b
+  zh: 46fa500023271133
 /tool-schema-catalog/huoli-huoli-experimental-browser-use-stagehand-native:
-  en: 19e7df8d692b4375
-  zh: 19e7df8d692b4375
+  en: 3657fcbea2babb40
+  zh: 3657fcbea2babb40
 /tool-schema-catalog/huoli-huoli-experimental-browser-use-stagehand-native/stagehand-act:
   en: c4b27bf62c534dcc
   zh: 70c53824ed57ac23
@@ -54,80 +54,80 @@
   en: 4910ab327694ee97
   zh: 17e79e4366cb636d
 /tool-schema-catalog/huoli-huoli-experimental-browser-use-stagehand-native/stagehand-tabs:
-  en: a0d5b9b891358120
-  zh: 25793a62709770b5
+  en: 04720207ef80562c
+  zh: 1f6f87ce400184d9
 /tool-schema-catalog/huoli-huoli-action-cards:
-  en: 60c9df6ffda98a1d
-  zh: 60c9df6ffda98a1d
+  en: 3a2d719c9487a30d
+  zh: 3a2d719c9487a30d
 /tool-schema-catalog/huoli-huoli-action-cards/propose-action:
-  en: 633c32b6df889830
-  zh: b88ea00b2033c11b
+  en: 0240f592050b7c4c
+  zh: 63252c04c495c464
 /tool-schema-catalog/huoli-huoli-tool-ask-user:
-  en: e713a4a11a15d13c
-  zh: e713a4a11a15d13c
+  en: f36ab1da94f26650
+  zh: f36ab1da94f26650
 /tool-schema-catalog/huoli-huoli-tool-ask-user/ask-user-question:
-  en: 664dae29d0eae65f
-  zh: 2efa5d3f2cb31bf9
+  en: bb5225a19f0220cb
+  zh: 7e5d3d49162d034d
 /tool-schema-catalog/huoli-huoli-tool-executor-ptc:
-  en: 8c8643ef46fd075f
-  zh: 8c8643ef46fd075f
+  en: 7d61bcd98fe7047e
+  zh: 7d61bcd98fe7047e
 /tool-schema-catalog/huoli-huoli-tool-executor-ptc/run-code:
-  en: a5d49232a604a2fb
-  zh: 720040d11a3e31c2
+  en: 0280cdc5f280240d
+  zh: 2f1e15d53f69410d
 /tool-schema-catalog/huoli-huoli-plan-mode:
-  en: b500b530845e26a9
-  zh: b500b530845e26a9
+  en: 1c47edbe9b5412ab
+  zh: 1c47edbe9b5412ab
 /tool-schema-catalog/huoli-huoli-plan-mode/exit-plan-mode:
-  en: b410483c2bd0c1a1
-  zh: a07ceea6abf1dda3
+  en: 099972c7ba146c15
+  zh: e6b95096234ef39b
 /tool-schema-catalog/huoli-huoli-tool-bash:
-  en: 408ff0a5189bd7ec
-  zh: 408ff0a5189bd7ec
+  en: d03acc143400292b
+  zh: d03acc143400292b
 /tool-schema-catalog/huoli-huoli-tool-bash/bash:
-  en: 5efe055aae48993c
-  zh: e0653e51ef1344ce
+  en: b890728539e6e798
+  zh: 9d8e04e0419816f4
 /tool-schema-catalog/huoli-huoli-tool-present:
-  en: f656575e6df094f6
-  zh: f656575e6df094f6
+  en: d0408b0f4eb8b2aa
+  zh: d0408b0f4eb8b2aa
 /tool-schema-catalog/huoli-huoli-tool-present/present:
-  en: c3ab3e71f3c5fd20
-  zh: d6afeb62bac77a24
+  en: 2d945b206f6d842c
+  zh: 6cb38d1928390202
 /tool-schema-catalog/huoli-huoli-tool-pwsh:
-  en: b222fc05f3f8ee4a
-  zh: b222fc05f3f8ee4a
+  en: 3289f3aa20c4ad0a
+  zh: 3289f3aa20c4ad0a
 /tool-schema-catalog/huoli-huoli-tool-pwsh/pwsh:
-  en: 00489572a7e8cb3e
-  zh: c0ecb3909392ee89
+  en: d216446d9d444d3a
+  zh: 9514a511a3303d8f
 /tool-schema-catalog/huoli-huoli-tool-cordis:
-  en: 76c7c62f9029b6f5
-  zh: 76c7c62f9029b6f5
+  en: 18c0f3b2006d5191
+  zh: 18c0f3b2006d5191
 /tool-schema-catalog/huoli-huoli-tool-cordis/cordis-inspect-list:
   en: 594e5b42047969cc
   zh: 72189ca21345c210
 /tool-schema-catalog/huoli-huoli-tool-cordis/cordis-inspect-query:
-  en: 42a647ba98527f9e
-  zh: c53ade6a47ea523f
+  en: fe2ba6b46c1d785d
+  zh: 87ca55072da67034
 /tool-schema-catalog/huoli-huoli-tool-bash-persistent:
-  en: bdd9e88c49029e05
-  zh: bdd9e88c49029e05
+  en: 0c7c34d4f340f5cb
+  zh: 0c7c34d4f340f5cb
 /tool-schema-catalog/huoli-huoli-tool-bash-persistent/bash:
-  en: 86421501a9d65ccc
-  zh: d1dc400507952331
+  en: c8846749e99daf11
+  zh: ff0152bd257c9e47
 /tool-schema-catalog/huoli-huoli-tool-pwsh-persistent:
-  en: 40a053607298a4c5
-  zh: 40a053607298a4c5
+  en: c50e20d0c3c1d074
+  zh: c50e20d0c3c1d074
 /tool-schema-catalog/huoli-huoli-tool-pwsh-persistent/pwsh:
-  en: 214866b3419c8e12
-  zh: c23368fc61772d52
+  en: 7a28e608ed2b3d57
+  zh: 206544e377dee4e9
 /tool-schema-catalog/huoli-huoli-tool-str-replace-editor:
-  en: 591f6e54dbbc38fe
-  zh: 591f6e54dbbc38fe
+  en: ef661bba085fc750
+  zh: ef661bba085fc750
 /tool-schema-catalog/huoli-huoli-tool-str-replace-editor/str-replace-editor:
-  en: 3d11196a13e69228
-  zh: 56019c74cf0633cd
+  en: 8214f6f4bb0c1cd4
+  zh: e090fbdcf391eba2
 /tool-schema-catalog/huoli-huoli-tool-fs:
-  en: 07d595ce1f1a5184
-  zh: 07d595ce1f1a5184
+  en: a60f3a58c93b06c2
+  zh: a60f3a58c93b06c2
 /tool-schema-catalog/huoli-huoli-tool-fs/apply-patch:
   en: 882f2fa9fac236d6
   zh: e8320796a5cb038f
@@ -141,20 +141,20 @@
   en: f6f7a1140066ce04
   zh: d528e01a0939795a
 /tool-schema-catalog/huoli-huoli-tool-fs/write:
-  en: af50ae531075cf26
-  zh: 974da3c5fbfa5959
+  en: dc56677c39bd7079
+  zh: 46a9cde74d25e95c
 /tool-schema-catalog/huoli-huoli-tool-fs-search:
-  en: 703fea005ce84c50
-  zh: 703fea005ce84c50
+  en: 98b66a625ebea63d
+  zh: 98b66a625ebea63d
 /tool-schema-catalog/huoli-huoli-tool-fs-search/glob:
   en: 3ba734ba7852cdd5
   zh: c6ce31ff2c195520
 /tool-schema-catalog/huoli-huoli-tool-fs-search/grep:
-  en: 6e1f7da62cc9a35b
-  zh: 594817b0befeea86
+  en: 3bf57f385404a622
+  zh: 4e11d77f78ba1023
 /tool-schema-catalog/huoli-huoli-tool-terminal:
-  en: 77501c1b592b6a88
-  zh: 77501c1b592b6a88
+  en: 54ce9cde3949237f
+  zh: 54ce9cde3949237f
 /tool-schema-catalog/huoli-huoli-tool-terminal/terminal-close:
   en: 4da73ab1c95aadc6
   zh: 998471bc4f5af00a
@@ -171,11 +171,11 @@
   en: 60a8805611533884
   zh: 50e4ac6e7f7b9b0a
 /tool-schema-catalog/huoli-huoli-tool-terminal/terminal-signal:
-  en: 0191964f5be70426
-  zh: 501c2769633a2a0b
+  en: 59d7ce2e05dab49b
+  zh: a5ac88b46770bb10
 /tool-schema-catalog/huoli-huoli-tool-goal:
-  en: 74fff3741e7c13de
-  zh: 74fff3741e7c13de
+  en: f4a0e9d06a68e82b
+  zh: f4a0e9d06a68e82b
 /tool-schema-catalog/huoli-huoli-tool-goal/create-goal:
   en: 9ae877cdf8a641a3
   zh: f83c3c09e80e4190
@@ -183,11 +183,11 @@
   en: 0b517f13dfde11fe
   zh: b7ee7482e8ecde56
 /tool-schema-catalog/huoli-huoli-tool-goal/update-goal:
-  en: 5f8a1d6e44e57d09
-  zh: d757489fdacde22d
+  en: 1cf552a25053c6ac
+  zh: 95e505d9966dddbf
 /tool-schema-catalog/huoli-huoli-tool-schedule:
-  en: 9fd2eccb1ee51372
-  zh: 9fd2eccb1ee51372
+  en: be9099aa6f3f428f
+  zh: be9099aa6f3f428f
 /tool-schema-catalog/huoli-huoli-tool-schedule/schedule-create:
   en: 7237e492f01fb8fb
   zh: 2fd2bea81919baf6
@@ -198,29 +198,29 @@
   en: e2c657d431fd02a8
   zh: 7651bf05938eff69
 /tool-schema-catalog/huoli-huoli-tool-schedule/schedule-view:
-  en: 008cd46ab3c05305
-  zh: 8ef5a0f40640013e
+  en: 6324ededcb6fed36
+  zh: 25a6339660d8ac9e
 /tool-schema-catalog/huoli-huoli-tool-lsp:
-  en: 32982123b1f0e5bc
-  zh: 32982123b1f0e5bc
+  en: 7feff01d620dc7ff
+  zh: 7feff01d620dc7ff
 /tool-schema-catalog/huoli-huoli-tool-lsp/lsp:
-  en: 877f1dc0f69e2038
-  zh: 5dda8001fb614315
+  en: dbbfb924cdc20bfd
+  zh: 941203576831e86d
 /tool-schema-catalog/huoli-huoli-tool-ralph:
-  en: 45bd083870e2c92d
-  zh: 45bd083870e2c92d
+  en: 9c66f1a1f07f1bf0
+  zh: 9c66f1a1f07f1bf0
 /tool-schema-catalog/huoli-huoli-tool-ralph/ralph:
-  en: e97552156225cf10
-  zh: 9ea32b8485e950ec
+  en: 5c53899b29625142
+  zh: bc5a8f4b5ee51158
 /tool-schema-catalog/huoli-huoli-tool-skill:
-  en: 927a5ac0974b7642
-  zh: 927a5ac0974b7642
+  en: a525cd88115d475d
+  zh: a525cd88115d475d
 /tool-schema-catalog/huoli-huoli-tool-skill/skill:
-  en: 9b159d5831855afb
-  zh: 275ee82af0e0f59a
+  en: 5a442f86bd40e94a
+  zh: e533de88ae5cab33
 /tool-schema-catalog/huoli-huoli-tool-session-query:
-  en: eac1dff4b6d9e195
-  zh: eac1dff4b6d9e195
+  en: e484406282738e95
+  zh: e484406282738e95
 /tool-schema-catalog/huoli-huoli-tool-session-query/session-event-read:
   en: 285bab0bd6b50949
   zh: 9c839e05237a7226
@@ -234,26 +234,26 @@
   en: c7bc2ee2892bf0e9
   zh: 1cd6a5d6f7494ca1
 /tool-schema-catalog/huoli-huoli-tool-session-query/session-trace:
-  en: 73d2146c02eaa16a
-  zh: 34caad3065de7148
+  en: 434ed340fa0c8b64
+  zh: f16bc41028f8e376
 /tool-schema-catalog/huoli-huoli-experimental-tool-subagent-oar:
-  en: 8daafae6faf7898e
-  zh: 8daafae6faf7898e
+  en: bf03039cd4fb8db9
+  zh: bf03039cd4fb8db9
 /tool-schema-catalog/huoli-huoli-experimental-tool-subagent-oar/subagent-oar:
-  en: 6283c3023d6ea436
-  zh: 9c018b8c12a3f1e7
+  en: 7d114e27a4049770
+  zh: 6e29157e5e009b3d
 /tool-schema-catalog/huoli-huoli-tool-subagent:
-  en: 841abe0dd5913ea7
-  zh: 841abe0dd5913ea7
+  en: 971ec959d744028a
+  zh: 971ec959d744028a
 /tool-schema-catalog/huoli-huoli-tool-subagent/list-subagent-models:
   en: 207228068bc61885
   zh: 36e9344ee1af8869
 /tool-schema-catalog/huoli-huoli-tool-subagent/subagent:
-  en: 140c965c2b04d02f
-  zh: 95495dad5c77046d
+  en: 03e8987d4d9ac3e8
+  zh: 3945bc296c4c447f
 /tool-schema-catalog/huoli-huoli-tool-subagent-control:
-  en: ab82e130c3413f04
-  zh: ab82e130c3413f04
+  en: 18a3d28cbbee56f1
+  zh: 18a3d28cbbee56f1
 /tool-schema-catalog/huoli-huoli-tool-subagent-control/interrupt-agent:
   en: 9190a32df5e10ddd
   zh: 48e1b05956d63e26
@@ -261,11 +261,11 @@
   en: ae22e8543d123c39
   zh: 0991a73ef49bcdea
 /tool-schema-catalog/huoli-huoli-tool-subagent-control/send-message:
-  en: 9d180d8811903366
-  zh: d63f94cffcb952d1
+  en: 02c6883cc34c4033
+  zh: a03eca8c9403e30c
 /tool-schema-catalog/huoli-huoli-tool-jobs:
-  en: 9be673b1604d0114
-  zh: 9be673b1604d0114
+  en: a689af8b8d98cec8
+  zh: a689af8b8d98cec8
 /tool-schema-catalog/huoli-huoli-tool-jobs/job-kill:
   en: 14294cc1988ae768
   zh: 80a9152bdc02723f
@@ -273,11 +273,11 @@
   en: 0c37fb1fed979d72
   zh: 5ea9d07f5a4a8a6c
 /tool-schema-catalog/huoli-huoli-tool-jobs/job-output:
-  en: 1e084359a8cd42b3
-  zh: 3f6c245dbbb2b920
+  en: eb2f5b7f30d336e1
+  zh: 14a997fc3a1a6667
 /tool-schema-catalog/huoli-huoli-experimental-tool-agent-team:
-  en: 6b1106f417b50db6
-  zh: 6b1106f417b50db6
+  en: 90a352dd3fe45114
+  zh: 90a352dd3fe45114
 /tool-schema-catalog/huoli-huoli-experimental-tool-agent-team/interrupt-agent:
   en: c3c7af05ceb9f8c9
   zh: ec379e0b42110c6a
@@ -303,41 +303,41 @@
   en: 2eac7360ba68b1bd
   zh: b5d676bf288c245e
 /tool-schema-catalog/huoli-huoli-experimental-tool-agent-team/wait-agent:
-  en: e70c77a45832bb28
-  zh: 7d03bec294b65452
+  en: c4ce022a98b847b3
+  zh: e585c2f179799af7
 /tool-schema-catalog/huoli-huoli-tool-todo:
-  en: dea62d26fb18ff68
-  zh: dea62d26fb18ff68
+  en: 9dfaae2c9a4489e3
+  zh: 9dfaae2c9a4489e3
 /tool-schema-catalog/huoli-huoli-tool-todo/todo-write:
-  en: f252137b940b38d1
-  zh: 25bd9c6b1ce783d8
+  en: 4bf8d96269c4caee
+  zh: 7d1661ef5bb29392
 /tool-schema-catalog/huoli-huoli-tool-working-directory:
-  en: 1bdc4627ca4fff29
-  zh: 1bdc4627ca4fff29
+  en: 4aa266472e928dfd
+  zh: 4aa266472e928dfd
 /tool-schema-catalog/huoli-huoli-tool-working-directory/working-directory:
-  en: ac1944f6035b8b50
-  zh: f5fc005c13185211
+  en: 41dd0a7ee0d5d72c
+  zh: 4a731a95faf159c7
 /tool-schema-catalog/huoli-huoli-experimental-tool-worktree:
-  en: d5f5679abe86e316
-  zh: d5f5679abe86e316
+  en: 0897c38b8754dfa9
+  zh: 0897c38b8754dfa9
 /tool-schema-catalog/huoli-huoli-experimental-tool-worktree/create-worktree:
-  en: d8fe3c566ba2147c
-  zh: baf372cb9242670c
+  en: f624ba0110afca90
+  zh: cd04b29d4607befc
 /tool-schema-catalog/huoli-huoli-tool-workflow:
-  en: bb38a9d29f46563c
-  zh: bb38a9d29f46563c
+  en: 936742de8d746c35
+  zh: 936742de8d746c35
 /tool-schema-catalog/huoli-huoli-tool-workflow/workflow:
-  en: fdd667cfe21481e8
-  zh: 88864d3b958398a4
+  en: c21513f4d630ff1f
+  zh: 8b2a098a0332b276
 /tool-schema-catalog/huoli-huoli-tool-workspace-dependencies:
-  en: 96bffc40b80df4b8
-  zh: 96bffc40b80df4b8
+  en: 0396e3811244ef99
+  zh: 0396e3811244ef99
 /tool-schema-catalog/huoli-huoli-tool-workspace-dependencies/load-workspace-dependencies:
-  en: 77b88764ff3464e9
-  zh: a9ca7eeb15ada747
+  en: b00910447923e7cc
+  zh: e7c123eb9774f500
 /tool-schema-catalog/huoli-huoli-tool-web:
-  en: 4b9918342d3aa931
-  zh: 4b9918342d3aa931
+  en: 298a3c98f39eaa2c
+  zh: 298a3c98f39eaa2c
 /tool-schema-catalog/huoli-huoli-tool-web/web-fetch:
   en: 8673f203aea9bdf2
   zh: 4e17783ffdf34c83

@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-settings-plugin-inventory/README.md
 /:
-  en: 9121298d88fe8ea6
-  zh: 5da705491f951d0e
+  en: 29ce5bc93dc90766
+  zh: 180a9171e6055830
 /huoli-huoli-client-ui-settings-plugin-inventory:
-  en: 463eecf002ec0f54
-  zh: b8dc6003ddccd14a
+  en: c0cb1f5698e10e95
+  zh: b8935559a18d82c3
 /huoli-huoli-client-ui-settings-plugin-inventory/summary:
   en: f52353cf99816eb8
   zh: e172c1751289882f
@@ -18,8 +18,8 @@
   en: 67637808e7940157
   zh: d4d0716ea4d33e4a
 /huoli-huoli-client-ui-settings-plugin-inventory/use-this-package/reading-a-card:
-  en: 3cb7d3a63d5c0fea
-  zh: d127dfbb58e50e4b
+  en: b1ec0ed7550c6aec
+  zh: 0e0813786f413dbe
 /huoli-huoli-client-ui-settings-plugin-inventory/use-this-package/the-preset-switcher:
   en: 84e5938329199a22
   zh: 6f5cfaac56433e8b
@@ -36,8 +36,8 @@
   en: 779146e3d3732803
   zh: 0dfafa328dfeda75
 /huoli-huoli-client-ui-settings-plugin-inventory/further-exploration:
-  en: ae3819f0c5da95bd
-  zh: 40972ab96d5c95e2
+  en: a3ab31139d24d25d
+  zh: fbba5c0a6402d3ca
 /huoli-huoli-client-ui-settings-plugin-inventory/model-experience:
   en: 69fb187ac2361233
   zh: d4d3ec4ed3e3d98d

@@ -6,17 +6,17 @@
   en: 2e7d205b959bad5b
   zh: 78111c063c98c309
 /huoli-huoli-fs-observation-policy:
-  en: 7fddbb6d5b42812b
-  zh: 2894feecfbdcc099
+  en: 81a542922f4f5a79
+  zh: 809b34a735a872ea
 /huoli-huoli-fs-observation-policy/summary:
-  en: e74517566c1827b2
-  zh: 803c6ddf5cbd3842
+  en: b8920eaa092e9a29
+  zh: d14a5f1c3ef9d056
 /huoli-huoli-fs-observation-policy/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-fs-observation-policy/use-this-package:
-  en: e45098c59fc9b3ba
-  zh: 2a12cf800bca1ef6
+  en: cd23413746df45fd
+  zh: 7e1f3c9ae207bdd0
 /huoli-huoli-fs-observation-policy/use-this-package/minimal-composition:
   en: d85e3b814b43768e
   zh: 89d3672dbb2f6d30
@@ -30,8 +30,8 @@
   en: 612e69f76edc8795
   zh: 55edab9956941616
 /huoli-huoli-fs-observation-policy/understand-the-implementation/design-concept:
-  en: 54eef802ac087112
-  zh: f30b2ed5dbc268ac
+  en: 9cb903546009f701
+  zh: d7af06892dbb9926
 /huoli-huoli-fs-observation-policy/understand-the-implementation/source-map:
   en: b9833b0ab790a500
   zh: ba7c3108c61e1727
@@ -45,8 +45,8 @@
   en: 02a1e3e7707706fb
   zh: eff587af0445d032
 /huoli-huoli-fs-observation-policy/further-exploration:
-  en: c89ef001db3d1efe
-  zh: 382165321299c86c
+  en: b649184df75d8769
+  zh: 9d79a535c8b6ccfc
 /huoli-huoli-fs-observation-policy/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -54,8 +54,8 @@
   en: ee1f02dc1bb69955
   zh: 9ba9205a9b15d132
 /huoli-huoli-fs-observation-policy/model-experience/filesystem-tool-outcome/what-the-model-sees:
-  en: d4ec7d7b302845c8
-  zh: 6e412aa23798524e
+  en: 53a6d67b7ecc7827
+  zh: 3cc7a8350d725f0d
 /huoli-huoli-fs-observation-policy/model-experience/filesystem-tool-outcome/token-effect:
   en: 425ccc7dafa6218d
   zh: d2c1a29955a60e3d
@@ -63,8 +63,8 @@
   en: 2fbf2175168e8244
   zh: 3d6bc05b9eadfbc2
 /huoli-huoli-fs-observation-policy/known-limitations-and-deferred-work:
-  en: 2a9237f283f57b96
-  zh: fbd53b396d3076fa
+  en: b7f1c94cdbac7301
+  zh: d806342233966d73
 /huoli-huoli-fs-observation-policy/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

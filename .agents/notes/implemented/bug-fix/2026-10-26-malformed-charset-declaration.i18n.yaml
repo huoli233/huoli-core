@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-10-26-malformed-charset-declaration.md
 /agent-note-malformed-charset-recovery-prefers-utf-8:
-  en: d8a759b84c36b308
-  zh: 3b6ff2eb5519afb1
+  en: b982dd081c4d5774
+  zh: 4d1b3c115d0e8853
 /agent-note-malformed-charset-recovery-prefers-utf-8/problem:
   en: dce96445b3801a7f
   zh: e026d26fa680556a

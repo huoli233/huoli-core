@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-19-windows-acl-mandatory-integrity-confinement.md
 /agent-note-windows-sandbox-delete-confinement-mandatory-integrity-plus-an-ambient-delete-deny:
-  en: 2255e36ca94e90fa
-  zh: 7bfa70db175ce842
+  en: 9d86300a1c24df91
+  zh: a45b4ebfae206aa9
 /agent-note-windows-sandbox-delete-confinement-mandatory-integrity-plus-an-ambient-delete-deny/problem:
-  en: adb85f1842b69545
-  zh: 42a0ebb3b8015a74
+  en: c5f65a2bff84e4ef
+  zh: 99db7aa3e49d1ae6
 /agent-note-windows-sandbox-delete-confinement-mandatory-integrity-plus-an-ambient-delete-deny/decision:
   en: 08406f9c720d66c1
   zh: b9c81901488d73b5
@@ -21,8 +21,8 @@
   en: 5f53545a83ccd02c
   zh: f8fd05c1f3440e41
 /agent-note-windows-sandbox-delete-confinement-mandatory-integrity-plus-an-ambient-delete-deny/alternatives-considered/why-not-deny-file-delete-child-with-oi-ci:
-  en: 78a36aa70395d214
-  zh: 0dd32d8ca513cb43
+  en: 6b5a51958689aea0
+  zh: fc92b578439ddf67
 /agent-note-windows-sandbox-delete-confinement-mandatory-integrity-plus-an-ambient-delete-deny/alternatives-considered/why-not-drop-the-confinement-layer-and-document-the-escape:
   en: 9ff963493255783c
   zh: 41b5577792e977cd
@@ -30,11 +30,11 @@
   en: c39c82f7b745d672
   zh: 7b38d3c4b889dac6
 /agent-note-windows-sandbox-delete-confinement-mandatory-integrity-plus-an-ambient-delete-deny/consequences:
-  en: 4930b2596686d377
-  zh: 022a62051a58181e
+  en: 3bc10d875d3e9a8c
+  zh: 95656a9b7b689cb5
 /agent-note-windows-sandbox-delete-confinement-mandatory-integrity-plus-an-ambient-delete-deny/testing:
   en: 6c1deeacdbff418d
   zh: 4d7c546e19da5e53
 /agent-note-windows-sandbox-delete-confinement-mandatory-integrity-plus-an-ambient-delete-deny/related:
-  en: 7bcd65866358de4a
-  zh: a0fbb85274736365
+  en: 6816c6b007f6be51
+  zh: bce2394d9ad4a4c9

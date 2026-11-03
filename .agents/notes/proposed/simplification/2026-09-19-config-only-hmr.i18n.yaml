@@ -3,17 +3,17 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-09-19-config-only-hmr.md
 /agent-note-limit-huoli-hmr-to-live-profile-configuration:
-  en: c46e2d07a9e6143f
-  zh: f75300d70300c324
+  en: 5f6733830c6d907f
+  zh: 3f97f5512e8c670c
 /agent-note-limit-huoli-hmr-to-live-profile-configuration/problem:
-  en: e81dd5edb54b05ad
-  zh: 601b28ef74134ac1
+  en: 607568f2b51c6c6e
+  zh: 460675f67486db6c
 /agent-note-limit-huoli-hmr-to-live-profile-configuration/proposal:
-  en: 15a88d4c7db728e2
-  zh: 6fb1a28c03930a5e
+  en: b2b3705ea0170ff3
+  zh: af30f00dd0e9a4f2
 /agent-note-limit-huoli-hmr-to-live-profile-configuration/alternatives-considered:
-  en: 9ca293c37f4df4af
-  zh: c8e1a8815e1c9d3f
+  en: 3e13a8db6f64edea
+  zh: bec61f3dffbc05db
 /agent-note-limit-huoli-hmr-to-live-profile-configuration/acceptance-criteria:
   en: ea1dbf4681f60fcf
   zh: fa7b9f7888bfc24f

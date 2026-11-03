@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write apps/cli/README.md
 /huoli-huoli:
-  en: ebdc75fa0da18801
-  zh: 5c6cd2554b8f8a98
+  en: 573a0197b0d4cde5
+  zh: 6b5883dab688fafe
 /huoli-huoli/entry-modes:
-  en: a1e035a813554366
-  zh: b87053214afe71b6
+  en: 12197719d467faab
+  zh: a697925821cfb13a
 /huoli-huoli/app-arguments:
-  en: cc03e6b75206661b
-  zh: 99e41f4143198352
+  en: 6855ed7cf038deb5
+  zh: 9288d9eddc9679e6
 /huoli-huoli/profiles:
-  en: 523477a093beb0c2
-  zh: f88ea21e5fbea969
+  en: 896e44c3b992baf1
+  zh: b5af926a7703e5b9
 /huoli-huoli/optional-overlays:
-  en: 3a40ddc44e55f79c
-  zh: 8d3949132e1ef93c
+  en: 9964dbe55ab4006d
+  zh: a22f04ad829d83c4
 /huoli-huoli/development:
-  en: 0a289c1235869927
-  zh: a1f473f70036ad37
+  en: 84205267021098ad
+  zh: d43d68c5fc7e0aa1

@@ -3,23 +3,23 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/ui-radius.md
 /huoli-unified-corner-radius-standard:
-  en: e29e91bf80386fff
-  zh: 0bfca32865bcdfff
+  en: 02dc5f0f871953dd
+  zh: 93927b2dc5c7715a
 /huoli-unified-corner-radius-standard/summary:
-  en: 9f7d83fc6c1e56ff
-  zh: 1bfd616392982482
+  en: 5bd50bacfd91b72c
+  zh: b9b54603b2285e0f
 /huoli-unified-corner-radius-standard/table-of-contents:
   en: aad65e4a8399adbb
   zh: e76b80d421b17992
 /huoli-unified-corner-radius-standard/scope-and-authority:
-  en: cd8120cba5566e19
-  zh: 65359436088c8bc5
+  en: 17aefd37cef00efc
+  zh: 8256625074bcc047
 /huoli-unified-corner-radius-standard/select-the-radius:
   en: e736416ec85d6e16
   zh: 0edf60fccc867295
 /huoli-unified-corner-radius-standard/reuse-tokens-and-preserve-deliberate-shapes:
-  en: fb6d50f3139ad186
-  zh: 668cb0c02bd22167
+  en: e270510a73b11e64
+  zh: 4fbb1409c10f8c6f
 /huoli-unified-corner-radius-standard/nested-geometry-and-hover:
   en: 7fe4eb7707e6a9f3
   zh: be7530a05c205e27

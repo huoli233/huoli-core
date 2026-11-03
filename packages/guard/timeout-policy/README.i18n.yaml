@@ -6,23 +6,23 @@
   en: 7020f47046dc8148
   zh: 191dea4c788f374b
 /huoli-huoli-tool-call-timeout-policy:
-  en: 0bab94e0d9903464
-  zh: 417ef898055734ba
+  en: db6860f2c36d7b86
+  zh: ab25da4f3601f0a6
 /huoli-huoli-tool-call-timeout-policy/summary:
-  en: 745e3c8642ed9ea9
-  zh: c8cfd6a3b0c3c9bf
+  en: e7bfc61b0f6d2f23
+  zh: 5bb3eeab517776e5
 /huoli-huoli-tool-call-timeout-policy/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-tool-call-timeout-policy/use-this-package:
-  en: 1235dce86c24bdd6
-  zh: d96b544b0b745766
+  en: f3df20d18702b08a
+  zh: 1c0711fef9be5141
 /huoli-huoli-tool-call-timeout-policy/use-this-package/when-to-choose-it:
   en: 2c6495054dfaf09c
   zh: 7f2d65c3202d75f3
 /huoli-huoli-tool-call-timeout-policy/use-this-package/setting-it-up:
-  en: 42c3fee6ddf0e952
-  zh: 6b7728300cf5bfdc
+  en: 171b63b026289421
+  zh: 5f2d4cda920879d1
 /huoli-huoli-tool-call-timeout-policy/use-this-package/what-you-get:
   en: 339ff1d6001f3def
   zh: c3e378abc7c58fa4
@@ -30,8 +30,8 @@
   en: 9bdd0f9388915825
   zh: c101ec504869d187
 /huoli-huoli-tool-call-timeout-policy/understand-the-implementation/design-philosophy:
-  en: 39f08d20a467b458
-  zh: 61f9e8ba3a5479d2
+  en: 4f059d4722360ae6
+  zh: f45b6b64b99f6f81
 /huoli-huoli-tool-call-timeout-policy/understand-the-implementation/how-a-deadline-is-armed-and-mapped:
   en: 4c2f31d760d5ad4b
   zh: 42e5c42675c32dcc
@@ -42,8 +42,8 @@
   en: 1fa5646d5e9d18eb
   zh: d09dfc46cbc654f4
 /huoli-huoli-tool-call-timeout-policy/further-exploration:
-  en: fb2426b1c4c3da4a
-  zh: ff9a7cd6a6b9f631
+  en: bddcc3c6e85aa0b1
+  zh: 64b97c01dae7c29e
 /huoli-huoli-tool-call-timeout-policy/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -63,5 +63,5 @@
   en: 8b51b07b2fc6d1bc
   zh: f65e3760a6ea5f2f
 /huoli-huoli-tool-call-timeout-policy/known-limitations-and-deferred-work/dev-note:
-  en: 93e2b2a5ae84f266
-  zh: 63283f6b1b2da63f
+  en: 1b6aaad41cbe4c8c
+  zh: 29601ba0e9771839

@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-11-plugin-owned-message-projections.md
 /agent-note-plugin-owned-message-projections:
-  en: 534c84d25c21d930
-  zh: 30964b3e14ffaeac
+  en: ddb93d7be1beae4a
+  zh: 93a20eedb8adc511
 /agent-note-plugin-owned-message-projections/problem:
-  en: bd3ad5505204ec0b
-  zh: 770b6089c760d99f
+  en: 36957461ad9c335e
+  zh: e597c3ece2a6ca47
 /agent-note-plugin-owned-message-projections/decision:
   en: 50c02960b1f087c6
   zh: fa3f5c18b897eab9

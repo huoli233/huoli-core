@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-settings-web-search/README.md
 /:
-  en: 88147277504a84c5
-  zh: 7262e02458f31515
+  en: 58d0842ef9dbabe6
+  zh: dbd322c0aebd98ce
 /huoli-huoli-client-ui-settings-web-search:
-  en: 968c0f6ba2415331
-  zh: aaf9e2aa22eafc98
+  en: c06f2efa4d32fb14
+  zh: 5d79410e6b0d489c
 /huoli-huoli-client-ui-settings-web-search/summary:
   en: f0f8d6a8f0f74de3
   zh: 1926ea7e173eea51
@@ -15,14 +15,14 @@
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-client-ui-settings-web-search/use-this-package:
-  en: ba0053e60d4a5e9e
-  zh: 1e79aad162155e9c
+  en: 6fa18615c4f06125
+  zh: d45495e6259244ac
 /huoli-huoli-client-ui-settings-web-search/understand-the-implementation:
   en: d200933a35bf4972
   zh: 2484eb9635102357
 /huoli-huoli-client-ui-settings-web-search/further-exploration:
-  en: 72585c993e443510
-  zh: 90cf6894ccfe8588
+  en: 9f319ace5c476ce7
+  zh: 48edbbeff6c0f141
 /huoli-huoli-client-ui-settings-web-search/model-experience:
   en: 6b7c6f82ab6c8435
   zh: 4517689c899abcbe

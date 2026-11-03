@@ -6,29 +6,29 @@
   en: c6924d7c0d7c82ff
   zh: 95fbf06db428f532
 /huoli-huoli-llm-deepseek:
-  en: e66a018af9e2de3c
-  zh: d7188003d01964bb
+  en: 26c9cb0947c885c4
+  zh: 2a1bc37a6bcc2a58
 /huoli-huoli-llm-deepseek/summary:
-  en: a8871f9ce192ac6a
-  zh: 7d642e993f4ca71c
+  en: a5cbaa5a4b4c2dc0
+  zh: 516059aba9152082
 /huoli-huoli-llm-deepseek/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-llm-deepseek/use-this-package:
-  en: fe27b41cb85cd031
-  zh: 52d833f0909d94f1
+  en: e5c72317de33c634
+  zh: 0f508e6027fdfd11
 /huoli-huoli-llm-deepseek/use-this-package/when-to-choose-it:
-  en: 6850d08bc091ad23
-  zh: 2906e6cf1dfed6ce
+  en: aa7e9baf86cdde18
+  zh: fdb976d93f486925
 /huoli-huoli-llm-deepseek/use-this-package/minimal-configuration:
-  en: 6a15f2e0efec4c37
-  zh: 7fb5f1e4a92b01ad
+  en: 9a7db557d77d48a0
+  zh: 1ad7815b03928750
 /huoli-huoli-llm-deepseek/use-this-package/endpoint-and-wire-format:
   en: 522e74b770e9d4ca
   zh: a8b261b41677bfe7
 /huoli-huoli-llm-deepseek/use-this-package/account-credentials:
-  en: 3853ba1a1ffbb46c
-  zh: 97203e80ad933e59
+  en: 5acda4e543fe9846
+  zh: d84735079a567c60
 /huoli-huoli-llm-deepseek/use-this-package/streaming-with-thinking-and-images:
   en: 81bf213499f015ba
   zh: e9107ef322213e56
@@ -36,11 +36,11 @@
   en: 49290fc5647136b4
   zh: 96fa9ce0f9e83c13
 /huoli-huoli-llm-deepseek/use-this-package/provider-specific-request-fields:
-  en: f13f24b504dcfb50
-  zh: 69b0ed9e2adf3394
+  en: 2584fc6af48bfe9d
+  zh: 3c63bffaa69e9e42
 /huoli-huoli-llm-deepseek/use-this-package/failures-and-recovery:
-  en: 63b17e204a764a7d
-  zh: dafcd75c80796d35
+  en: 458faee51e863229
+  zh: 2355202e1989b83a
 /huoli-huoli-llm-deepseek/understand-the-implementation:
   en: 1598ac8a8bb9b6bf
   zh: fdd089c5ae7722cd
@@ -54,8 +54,8 @@
   en: 9477d8af3d762450
   zh: 52a2967518509f94
 /huoli-huoli-llm-deepseek/further-exploration:
-  en: d3e6e29335c54987
-  zh: 3461235b93dfd697
+  en: 25c2f54556afa8d8
+  zh: d7e15103e86c5d9f
 /huoli-huoli-llm-deepseek/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -66,8 +66,8 @@
   en: 14110610860656e8
   zh: 995e28d6931ebe4e
 /huoli-huoli-llm-deepseek/model-experience/deepseek-request/token-effect:
-  en: 67f4bfa42cbee911
-  zh: 5e9dc9bc07253686
+  en: 5d6877512b1fb2b3
+  zh: 3959a0d4859e4cb9
 /huoli-huoli-llm-deepseek/model-experience/deepseek-request/kv-cache-effect:
   en: 87ac92776176ee15
   zh: bb49edf3a68dda07
@@ -84,8 +84,8 @@
   en: ddfbea043596878d
   zh: 4fbf5864a684c053
 /huoli-huoli-llm-deepseek/known-limitations-and-deferred-work:
-  en: 05fe57d81d8d8202
-  zh: 61e85a6f610842dd
+  en: 51fafbbd155f6123
+  zh: 12e3f5a5fc39e019
 /huoli-huoli-llm-deepseek/known-limitations-and-deferred-work/dev-note:
-  en: fc7d8c8a6258331a
-  zh: 491b454fe920a17e
+  en: 39f7a1246d3cdcf1
+  zh: 72d9e74fd8c893e3

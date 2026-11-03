@@ -3,17 +3,17 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-04-configuration-source-ownership.md
 /agent-note-one-ordering-for-configuration-sources-and-what-a-discovered-file-may-not-decide:
-  en: 35dea8a3a8bdc842
-  zh: 7a1cdf184ffd889f
+  en: c8e5c13b3c70f16a
+  zh: b8d399311767666e
 /agent-note-one-ordering-for-configuration-sources-and-what-a-discovered-file-may-not-decide/problem:
-  en: d94bb81479bfa4a1
-  zh: af44ceaecf84ee51
+  en: 6afb62fab2e0b36b
+  zh: 2bf01fd4b2f66108
 /agent-note-one-ordering-for-configuration-sources-and-what-a-discovered-file-may-not-decide/decision:
-  en: aea80ece13f2905b
-  zh: a880bc1a7839cf12
+  en: eb97887be321d0dc
+  zh: 8d5212464b062f87
 /agent-note-one-ordering-for-configuration-sources-and-what-a-discovered-file-may-not-decide/consequences:
-  en: 640b7ee4e8c57ed0
-  zh: 1c17b3fba16861a8
+  en: 779daa8b81955f69
+  zh: 86703528c25b996a
 /agent-note-one-ordering-for-configuration-sources-and-what-a-discovered-file-may-not-decide/alternatives-considered:
-  en: ac43499cfe7b8495
-  zh: e5ab599e7d3ed753
+  en: a92a3460ca87e76a
+  zh: ab31ff6fd716532e

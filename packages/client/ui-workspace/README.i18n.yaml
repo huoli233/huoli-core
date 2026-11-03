@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-workspace/README.md
 /:
-  en: 7c0f613105d4008a
-  zh: c36c0cdff7e77576
+  en: 2b8c600fae58001c
+  zh: ea90b66d19479d34
 /huoli-huoli-client-ui-workspace:
-  en: b286adf3aca51710
-  zh: 6122f6e7c8015197
+  en: 6afd5e801a41241d
+  zh: e4f12a1310ab94b9
 /huoli-huoli-client-ui-workspace/summary:
   en: 1a76ace6a18e3ab5
   zh: b274d1e98e133851
@@ -27,38 +27,38 @@
   en: 148f2ab562fecc09
   zh: 9ba7c07999705b31
 /huoli-huoli-client-ui-workspace/use-this-package/managing-sessions:
-  en: 29b6b357fc6be99a
-  zh: 182996efed35029c
+  en: a8a39df20da70b2d
+  zh: a3de7c2cae234bf3
 /huoli-huoli-client-ui-workspace/use-this-package/pending-interactions:
   en: 9fb88260380bf093
   zh: 3bace2b96ecd4a82
 /huoli-huoli-client-ui-workspace/use-this-package/active-schedule-markers:
-  en: cb2dea9fe7e3b060
-  zh: f8d65c3920ff2cff
+  en: 032fb944851b8b97
+  zh: 0ac53b6ff1f464c9
 /huoli-huoli-client-ui-workspace/understand-the-implementation:
-  en: e14859b6f1043860
-  zh: 7cd95796084b2158
+  en: ea42317e69f5481f
+  zh: 1b467be75e4723a1
 /huoli-huoli-client-ui-workspace/understand-the-implementation/the-directory-flow-hole:
   en: 868904dbfb5713f8
   zh: 35d3c285ed770885
 /huoli-huoli-client-ui-workspace/understand-the-implementation/session-row-actions:
-  en: 511408e373ff8c70
-  zh: 7ae3b396171821a4
+  en: 24b089ccdab81143
+  zh: b842b0a9beb9bb39
 /huoli-huoli-client-ui-workspace/understand-the-implementation/session-row-actions/packaged-client-plugin:
   en: 36934671b80b11ae
   zh: 8e0aea6162e35e77
 /huoli-huoli-client-ui-workspace/understand-the-implementation/session-row-actions/dynamic-client-package:
-  en: ad4a333892f2fe92
-  zh: 3a670fd401f4d7a7
+  en: 585cea09edca5d8f
+  zh: 4056670e9fc763e0
 /huoli-huoli-client-ui-workspace/understand-the-implementation/view-state:
-  en: d6a49581b099985d
-  zh: 7bd58bf5566213de
+  en: e9534fedceeeba61
+  zh: fc41cc9cf2b90e9e
 /huoli-huoli-client-ui-workspace/understand-the-implementation/hover-cards:
   en: 8bcb7bd90d7c5773
   zh: 17663be926a099d2
 /huoli-huoli-client-ui-workspace/further-exploration:
-  en: 2abbf27abbd71ba4
-  zh: ace33fa2ea042357
+  en: e367d939e23f010c
+  zh: d190826471a2b513
 /huoli-huoli-client-ui-workspace/model-experience:
   en: 3120df665299c634
   zh: 1d9f365d091d0d2a

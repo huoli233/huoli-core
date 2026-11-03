@@ -6,8 +6,8 @@
   en: 80da396fec6cc3d9
   zh: 35d4d8c713d9450c
 /huoli-fs-patch:
-  en: ad2970c594c3b669
-  zh: fee247cad74b6191
+  en: 51355f46a6c5a79e
+  zh: d91e2893aefb26d4
 /huoli-fs-patch/summary:
   en: 614121759671f168
   zh: 7cea460bb8940793
@@ -24,14 +24,14 @@
   en: 06644a9c38f7d569
   zh: 91ca563d4e789087
 /huoli-fs-patch/compatibility/matching-and-text-updates:
-  en: fcd630c121472565
-  zh: 35cc062e2f76b195
+  en: 029e8590e84178a5
+  zh: 08cec720d92134b2
 /huoli-fs-patch/understand-the-implementation:
-  en: 2ded4719a85a20bc
-  zh: e04f2614167a6c1c
+  en: 37ffb6ae10c5850d
+  zh: befec87fb7480af8
 /huoli-fs-patch/further-exploration:
-  en: d7d750bd71805956
-  zh: 8d33c76f5895d286
+  en: bac9fac4929a72a1
+  zh: e965e4eeeceba81c
 /huoli-fs-patch/known-limitations-and-deferred-work:
   en: b18ead2791224bc2
   zh: a4a8ab319c072445

@@ -6,23 +6,23 @@
   en: 8904d5f5d5251a83
   zh: 69b48f289b0416f0
 /huoli-huoli-ptc-runtime:
-  en: cced8c691b58657a
-  zh: 3da9cdf76a1a07ff
+  en: e315dd1aceb8c9b7
+  zh: 26d92e4ad97dc03b
 /huoli-huoli-ptc-runtime/summary:
-  en: 6bf8184a933be9fa
-  zh: 19fe0bb198744a77
+  en: 3712ba514eacb216
+  zh: 1269b282a6c190b3
 /huoli-huoli-ptc-runtime/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-ptc-runtime/use-this-package:
-  en: 346f62bbfd0e6d9d
-  zh: bf86b2d7a26e8193
+  en: 9b2d43effd2afc26
+  zh: e68747588fbd0c0e
 /huoli-huoli-ptc-runtime/use-this-package/run-a-program:
-  en: aa58e5977dc6c33b
-  zh: cfa416436582b1cc
+  en: a662010b740285ce
+  zh: 25a6089cbe67564e
 /huoli-huoli-ptc-runtime/use-this-package/choose-a-backend:
-  en: fc0d515f0c3664f3
-  zh: 0a1b646b5cf92232
+  en: 540ac7114262b2bc
+  zh: 48f57e84c29c94f1
 /huoli-huoli-ptc-runtime/use-this-package/name-your-bindings-portably:
   en: 4e46c1672701b8df
   zh: 0353c5855c9ff6be
@@ -33,26 +33,26 @@
   en: 686d570f5e669fa4
   zh: 2075cf27c30f251a
 /huoli-huoli-ptc-runtime/understand-the-implementation/design-concept:
-  en: ea0b622628e418c6
-  zh: 230d7f9ef73513a7
+  en: 4449b0e2c9355906
+  zh: 5781d84347b6eb8b
 /huoli-huoli-ptc-runtime/understand-the-implementation/service-api:
-  en: 1d7a792c9a78a517
-  zh: b49bddf18c259edc
+  en: 298d38d9eed2b709
+  zh: a4cedc52f8d869d0
 /huoli-huoli-ptc-runtime/understand-the-implementation/vocabulary:
   en: 855cb8366e3bd293
   zh: da6d7a0ce51f97fc
 /huoli-huoli-ptc-runtime/understand-the-implementation/portable-identifiers:
-  en: 01c82c6e73180979
-  zh: e29b066f9f82c8b4
+  en: 98a2a1e46073f5c8
+  zh: dddef5fdd95561b4
 /huoli-huoli-ptc-runtime/understand-the-implementation/source-map:
   en: 85b65ceb9be0c49f
   zh: 52df7f06d4e49d6e
 /huoli-huoli-ptc-runtime/further-exploration:
-  en: a77e68bc4f5e66d9
-  zh: 101a57bcad581668
+  en: 6f0dc410fee2b91e
+  zh: be10c544016023b5
 /huoli-huoli-ptc-runtime/model-experience:
-  en: 711163291bdd8157
-  zh: 4e05f1e7c60058a0
+  en: beb23ae1a76e22fa
+  zh: 46eb214fedd4708e
 /huoli-huoli-ptc-runtime/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
   zh: 081cebc2e2650f03

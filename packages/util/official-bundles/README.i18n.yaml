@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/util/official-bundles/README.md
 /:
-  en: 6ef5705aaf6fee34
-  zh: e587b9572fc644bf
+  en: cefc675c781e326d
+  zh: 955173235c3442c1
 /huoli-huoli-official-bundles:
-  en: 9095133679593012
-  zh: ac6b05dc3eff68b6
+  en: 5b9df4b22574f00b
+  zh: edc9977eb4e7d167
 /huoli-huoli-official-bundles/summary:
-  en: fa3e54ab1672f7ea
-  zh: 6ab2abb75f1365b4
+  en: 2a1258216effe525
+  zh: 4855db3969ed3d7d
 /huoli-huoli-official-bundles/table-of-contents:
   en: 80b31a934611cb4a
   zh: 05f3f7f9cb2fd881
@@ -18,17 +18,17 @@
   en: 1cb89d16a6de115c
   zh: 75925ae7a16278ad
 /huoli-huoli-official-bundles/use-this-package/profile-templates:
-  en: 60ef21314c76c3ec
-  zh: f769091957235e12
+  en: 987f0322a5aa29e5
+  zh: ca46e6461cbb451a
 /huoli-huoli-official-bundles/use-this-package/optional-and-retired-bundles:
-  en: 8d94e2b44efb9c1d
-  zh: c049a19e471d188b
+  en: 4c618965bbc69fa0
+  zh: d6a7aebf5b519f20
 /huoli-huoli-official-bundles/use-this-package/plugin-manager-lists:
-  en: 27c22abdfff69a41
-  zh: e60d828cdb75c263
+  en: e79ef2e3cc50019c
+  zh: 0f86333c9cd26eb4
 /huoli-huoli-official-bundles/use-this-package/on-demand-bundles:
-  en: ba4f412474854ba1
-  zh: 17dae8155c013367
+  en: 3546e88f0a081c8c
+  zh: 6f3a901ac6032038
 /huoli-huoli-official-bundles/understand-the-implementation:
   en: 3fb2b58db529d8be
   zh: 46064459a23d458d
@@ -36,11 +36,11 @@
   en: bbd3b4f82e6349d9
   zh: f1e056d14620519d
 /huoli-huoli-official-bundles/further-exploration:
-  en: 16a331e64c81b2a5
-  zh: abfe9b1a1294b6b3
+  en: bd98aa44c961e375
+  zh: e48312e569a5fb11
 /huoli-huoli-official-bundles/known-limitations-and-deferred-work:
-  en: 6631976cc7404166
-  zh: edb2094b17bc4009
+  en: 1d403ac25852ca7f
+  zh: a590642b2ff87d85
 /huoli-huoli-official-bundles/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

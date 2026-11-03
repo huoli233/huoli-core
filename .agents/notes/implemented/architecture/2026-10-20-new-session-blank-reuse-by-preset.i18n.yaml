@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-20-new-session-blank-reuse-by-preset.md
 /agent-note-new-session-reuses-a-blank-session-matching-a-requested-preset:
-  en: ff1fe8bacfb05cee
-  zh: b03fa775407f8aa2
+  en: be95eecaaac5dc66
+  zh: cdd620c7f60fc3f2
 /agent-note-new-session-reuses-a-blank-session-matching-a-requested-preset/problem:
-  en: 5e6529a1ff3c1af5
-  zh: 7d08e27fd9e4ccac
+  en: 8aad5004a3f8e13e
+  zh: ff73d0bee2608d85
 /agent-note-new-session-reuses-a-blank-session-matching-a-requested-preset/decision:
   en: a06d2e45382320f0
   zh: 3eb09fc03c69eced
@@ -18,8 +18,8 @@
   en: bcfd62fdd75b53c4
   zh: 040ca441c67030c2
 /agent-note-new-session-reuses-a-blank-session-matching-a-requested-preset/consequences:
-  en: 88d1152b67ab392d
-  zh: 8c95b9fa7c1b2a04
+  en: c5533a2ebad06374
+  zh: 0943f5e3a4966dd1
 /agent-note-new-session-reuses-a-blank-session-matching-a-requested-preset/deferred-work:
   en: a7a8e49adae7b4fc
   zh: a835f0e39b981fc6

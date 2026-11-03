@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/defensive-patterns/general.md
 /defensive-patterns:
-  en: 324de84cf5239e89
-  zh: b3bdfb17d01e5a6c
+  en: 89178e6ba53db8d1
+  zh: 66012ee62e2ec4de
 /defensive-patterns/report-orthogonal-outcomes-independently:
   en: c16f636f8f522db4
   zh: 94c523b536df786d
@@ -21,8 +21,8 @@
   en: 243e275fee74f54e
   zh: a58e04b6e3ac0e7a
 /defensive-patterns/one-value-states-one-fact:
-  en: 598d9041ccfaba7c
-  zh: 2ac9f98c97015f66
+  en: e629e86e006b4c00
+  zh: c1444b684f3088c7
 /defensive-patterns/a-new-active-current-singleton-is-refused:
   en: 8bf36acf96fa4c33
   zh: bb6db31a63bcf383
@@ -30,8 +30,8 @@
   en: 053e2c485eec2613
   zh: 2817da00572c789f
 /defensive-patterns/a-business-capability-owns-itself:
-  en: f74f2467e507455f
-  zh: fe1bae04be5ad63a
+  en: 7373c742fe58925f
+  zh: 75282999d08fadfb
 /defensive-patterns/changes-carry-performance-evidence:
   en: 0d6855d1ae0ef4ae
   zh: 0f771999398ce052
@@ -42,8 +42,8 @@
   en: d487ad57fdb16472
   zh: eb5efe8b079b9521
 /defensive-patterns/contain-callback-exceptions-in-the-dispatcher:
-  en: ae2332afa54cb253
-  zh: db51fedb070d9a83
+  en: cf62be309d9260cb
+  zh: c5b840dc9053f748
 /defensive-patterns/never-hand-untrusted-output-the-ambient-environment-or-predictable-paths:
   en: 6fb7938f5197f520
   zh: 01eb670a852f24e6

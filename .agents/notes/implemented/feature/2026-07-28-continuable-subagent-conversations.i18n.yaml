@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-28-continuable-subagent-conversations.md
 /agent-note-continuable-subagents:
-  en: 110c0660aacfa3e4
-  zh: cf405fad1c5834f7
+  en: f6c7574eff35e683
+  zh: 5f1545f442ab9ae3
 /agent-note-continuable-subagents/problem:
   en: a72071eeedb77402
   zh: 818d16ce429fd610
 /agent-note-continuable-subagents/decision:
-  en: 3420195435e02a8f
-  zh: 6156eedb3c23d360
+  en: c882f2732a33a736
+  zh: 826c7b035816bde8
 /agent-note-continuable-subagents/decision/materialization-and-public-operations:
   en: c3a83ff748a02143
   zh: 468bf62c8ddabf70
@@ -27,8 +27,8 @@
   en: b6b62a4c083562b6
   zh: 86d02714e997942d
 /agent-note-continuable-subagents/decision/adjacent-agent-messaging:
-  en: a6899f5a82d5dceb
-  zh: 0671b89b2dca9c4e
+  en: ef941b3064f22316
+  zh: 8f53dfbb5b37d2fa
 /agent-note-continuable-subagents/decision/agent-and-human-scheduling:
   en: 8c861f3846fef1b5
   zh: 8cc3d668d73c7748
@@ -36,17 +36,17 @@
   en: f5ba7e9c5339ceef
   zh: 31ae1b2f57e44463
 /agent-note-continuable-subagents/decision/durability-disposal-and-recovery:
-  en: 0bbc18843aa04ad3
-  zh: d56fab1d12a28a96
+  en: 33193203c7b479b8
+  zh: 459ed66d34427071
 /agent-note-continuable-subagents/decision/scope:
-  en: bb3e8b2f8054e075
-  zh: 15c126d51031fcb3
+  en: e9ccc103ed7609bd
+  zh: 5c33341a2151a501
 /agent-note-continuable-subagents/alternatives-considered:
   en: d786fd413fabe0f5
   zh: c5d66f5b880d9758
 /agent-note-continuable-subagents/consequences:
-  en: d7ba8e86c3f14eaa
-  zh: b31ba49dee6aa85d
+  en: 8326cacda01e779b
+  zh: 809b7655b1c31144
 /agent-note-continuable-subagents/consequences/accepted-costs:
-  en: 95199dfb2adab107
-  zh: e7644bcb70169368
+  en: 7685d06fb24936c4
+  zh: cdf828ddaaab2402

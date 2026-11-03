@@ -6,23 +6,23 @@
   en: b6bcf3c8b941d336
   zh: 28b5d2aa43fdd026
 /huoli-huoli-agent:
-  en: e6513350f94898d8
-  zh: feb04fc389801a62
+  en: 0d33656f6e1ca25c
+  zh: b857a3907e99d425
 /huoli-huoli-agent/summary:
-  en: 717e7d19a6f72e56
-  zh: 152c18689fe4f377
+  en: cdc486e5fbfbc04f
+  zh: c5bc951e193c0cf9
 /huoli-huoli-agent/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-agent/use-this-package:
-  en: 7d1ae2375bd4fbfc
-  zh: b6b4b2e943174cb2
+  en: 6fabdd27dfce1568
+  zh: 717ee443cff42585
 /huoli-huoli-agent/use-this-package/create-or-resume-an-agent:
   en: 26d49c76bce41e30
   zh: 9710f54e24b190d1
 /huoli-huoli-agent/use-this-package/select-a-model:
-  en: 85b0ff72a187110f
-  zh: 3f61c1568d27b8bc
+  en: 55f275a199cddfbe
+  zh: 9161ac96a27ee6d3
 /huoli-huoli-agent/use-this-package/drive-an-agent-s-conversation:
   en: 71e258897e2e7d73
   zh: abf0991012faa17e
@@ -30,20 +30,20 @@
   en: 2594a1e02adea801
   zh: cae8860369728efb
 /huoli-huoli-agent/use-this-package/intercept-or-observe-work-in-flight:
-  en: 371511fb13093dd2
-  zh: 4be81d246cf299b2
+  en: 8887e1e019647610
+  zh: 8355f0de8b5eea92
 /huoli-huoli-agent/understand-the-implementation:
   en: ce7e776e9d516bdb
   zh: 59d2751743db7795
 /huoli-huoli-agent/understand-the-implementation/design-concept:
-  en: 7c850051d2857bfa
-  zh: 4cab817553114e15
+  en: 97a62892e8645143
+  zh: cf5e96f9e687d817
 /huoli-huoli-agent/understand-the-implementation/step-admission:
   en: c5ebf07dbc1a883f
   zh: 847735016e1727a3
 /huoli-huoli-agent/understand-the-implementation/durable-inbox:
-  en: 8f3fe9303468d735
-  zh: 52162010ae1ed29e
+  en: a5f8b481f6681dcb
+  zh: 502387ac007312fd
 /huoli-huoli-agent/understand-the-implementation/durable-model-selection:
   en: 692ec951bbb16b33
   zh: 5a650805ae8943c3
@@ -51,17 +51,17 @@
   en: bdeb146a53d8eee6
   zh: 38024efe70a2776f
 /huoli-huoli-agent/understand-the-implementation/registry-and-lifecycle:
-  en: df92e97cedd0d02e
-  zh: f6040c145bffd933
+  en: c5230a461eb9f667
+  zh: 101f935c6aa59ff7
 /huoli-huoli-agent/understand-the-implementation/initiator-scope:
-  en: 3ca29c07144b36db
-  zh: 93580213b3de2004
+  en: 50f17feedfb7c807
+  zh: 31f522745ec378a8
 /huoli-huoli-agent/understand-the-implementation/ownership-invariants:
   en: e48eae6c7de88cf8
   zh: 1f5b37bdb0e53788
 /huoli-huoli-agent/further-exploration:
-  en: 4ef57cfafa344581
-  zh: 73575876bfdc7a18
+  en: 76d6e4f410dcf490
+  zh: 510814a6f6843a52
 /huoli-huoli-agent/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90

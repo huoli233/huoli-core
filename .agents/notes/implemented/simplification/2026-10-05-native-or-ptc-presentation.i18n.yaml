@@ -3,17 +3,17 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-10-05-native-or-ptc-presentation.md
 /agent-note-one-tool-invocation-form-per-agent:
-  en: d45e87191f6e7667
-  zh: 4350b7a9ff83b310
+  en: 6ab474da647f7232
+  zh: ee0a39bd86b5d5cc
 /agent-note-one-tool-invocation-form-per-agent/problem:
-  en: 55d25e331b37b260
-  zh: d1b091a38d1b106d
+  en: 1e5fd3acb51c709d
+  zh: c6dd0e8c6d53bc37
 /agent-note-one-tool-invocation-form-per-agent/decision:
   en: 42e5b09fbab63e84
   zh: 883ab2072a60a138
 /agent-note-one-tool-invocation-form-per-agent/alternatives-considered:
-  en: 62b0c9c4470b241d
-  zh: 4cf40e5dc6eebd63
+  en: f63137ff11656623
+  zh: 91e65a436d305733
 /agent-note-one-tool-invocation-form-per-agent/consequences:
   en: a08a45bec640e3f6
   zh: 9f61a47d8133f3ee

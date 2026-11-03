@@ -6,8 +6,8 @@
   en: 3f9127c3981e9453
   zh: b4fcc1468319b9b2
 /huoli-huoli-experimental-browser-use-stagehand-native:
-  en: 4b88ed0b7d903e32
-  zh: 6375e389216d981c
+  en: 05d6e4de88a177fd
+  zh: 3e2307cf5fff23a9
 /huoli-huoli-experimental-browser-use-stagehand-native/summary:
   en: 05c2fd0d2d2856a0
   zh: fd90ef7fce885498
@@ -21,14 +21,14 @@
   en: 1554d55fd5be9735
   zh: d39e7dd0b8ff1b7d
 /huoli-huoli-experimental-browser-use-stagehand-native/use-this-package/verification:
-  en: fea3ad16a77fc478
-  zh: cf551a8a2d183f93
+  en: a675b59d42c2844a
+  zh: eb6a21809df28cd4
 /huoli-huoli-experimental-browser-use-stagehand-native/understand-the-implementation:
-  en: 123351a7c3d46f3e
-  zh: bf1cc2628edeb8d7
+  en: 1f405c5e778941fa
+  zh: 5d2f9d83365006bc
 /huoli-huoli-experimental-browser-use-stagehand-native/further-exploration:
-  en: eff8f4541eb26ca7
-  zh: 76a61fe9bd48df2a
+  en: 7643f9ef95c418f5
+  zh: b3e477cb41e11b4e
 /huoli-huoli-experimental-browser-use-stagehand-native/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -51,17 +51,17 @@
   en: 0295a32030d24cd0
   zh: 65ef3d8920d811c2
 /huoli-huoli-experimental-browser-use-stagehand-native/model-experience/native-browser-tools-and-results/what-the-model-sees:
-  en: 615b72f1971846c8
-  zh: d0ec71a9905137df
+  en: e570c861dc859348
+  zh: bf9c23fe5b2f26f8
 /huoli-huoli-experimental-browser-use-stagehand-native/model-experience/native-browser-tools-and-results/token-effect:
-  en: 8c75c58031e659c8
-  zh: b40294201e358ce3
+  en: dc3a1e5d24c3e4ec
+  zh: 33a21dc2e29ba0fe
 /huoli-huoli-experimental-browser-use-stagehand-native/model-experience/native-browser-tools-and-results/kv-cache-effect:
   en: 2bd36c8da753a1e5
   zh: 172e2151f7c7b0cd
 /huoli-huoli-experimental-browser-use-stagehand-native/known-limitations-and-deferred-work:
-  en: 27754d9785e555ae
-  zh: 89fef432cebabef6
+  en: a23bfde1595c895d
+  zh: 3472dd63e836f2b6
 /huoli-huoli-experimental-browser-use-stagehand-native/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: e88aeb617ffb74ea

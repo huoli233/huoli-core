@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-10-18-parse-ssh-policy-once.md
 /agent-note-parse-ssh-policies-once-at-request-admission:
-  en: 0c215d7a2d291857
-  zh: df3c91383d122974
+  en: 2bcc5b2a59efeca2
+  zh: fc108bae5893b0cd
 /agent-note-parse-ssh-policies-once-at-request-admission/problem:
   en: 3cb8bcfb464726d4
   zh: f87f7cc23e7d161c
 /agent-note-parse-ssh-policies-once-at-request-admission/proposal:
-  en: 71eb2e823861a3b0
-  zh: 0f6fb08df9b3217f
+  en: 513c02aa9cfe337a
+  zh: 994baeecb74264e7
 /agent-note-parse-ssh-policies-once-at-request-admission/alternatives-considered:
   en: 98230674c8b68772
   zh: 068c70ede9914a05

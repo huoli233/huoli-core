@@ -6,23 +6,23 @@
   en: 3d90ab1819787962
   zh: d5279e899341168a
 /huoli-huoli-terminal:
-  en: 51faab4a45b4d0a3
-  zh: c026cbe279584a55
+  en: 247ace59b0240d12
+  zh: 7bd835a8fbe507dd
 /huoli-huoli-terminal/summary:
-  en: b275cca5aa0ccbd6
-  zh: 0452420c4b45c7db
+  en: 6a4708942c80a7e1
+  zh: 246fe51dbbba1426
 /huoli-huoli-terminal/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-terminal/use-this-package:
-  en: 51bfe428d2b44ee2
-  zh: 557154468269985e
+  en: 5ed6c3556040496f
+  zh: b6a3c5465d249105
 /huoli-huoli-terminal/use-this-package/when-to-choose-it:
   en: c4244a1757ca3584
   zh: b6fb10e30146b347
 /huoli-huoli-terminal/use-this-package/composition:
-  en: c6562461d8c66517
-  zh: 8bab392367901144
+  en: 63cc089cbf7b8f7e
+  zh: c66664c8034e00b2
 /huoli-huoli-terminal/use-this-package/what-sessions-give-you:
   en: 6527302f4ad84cbb
   zh: 8edc988f1d0a3cee
@@ -51,8 +51,8 @@
   en: 5815723cd0c6089c
   zh: 0c612ffa4b8c466c
 /huoli-huoli-terminal/further-exploration:
-  en: 8459a3b70a9f8bad
-  zh: 21372aa8939d2182
+  en: 781cba7c3b67e01e
+  zh: 1fbbf409da8a2b7c
 /huoli-huoli-terminal/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -60,14 +60,14 @@
   en: a601a3c4f5b848cd
   zh: ec617f79f706aaa1
 /huoli-huoli-terminal/model-experience/indirect-consumer/what-the-model-sees:
-  en: be5049f4851a1b2a
-  zh: 056ddf9f9f1fc112
+  en: dea490f79cf83fb6
+  zh: f910bdd87562d561
 /huoli-huoli-terminal/model-experience/indirect-consumer/token-effect:
   en: 477da21b0a5be3a6
   zh: 3ae1d37fe671ef96
 /huoli-huoli-terminal/model-experience/indirect-consumer/kv-cache-effect:
-  en: 2d1f12c1eb4164e5
-  zh: 7d22b2cd3f9649ff
+  en: 445095e49a939263
+  zh: d0314f9da454e61c
 /huoli-huoli-terminal/known-limitations-and-deferred-work:
   en: a133ebc47a4df34f
   zh: 9bb949487ee566d5

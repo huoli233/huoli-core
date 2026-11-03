@@ -3,26 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-06-timeout-deadline-library.md
 /agent-note-a-shared-timeout-deadline-primitive-with-hard-kill-left-to-each-capability:
-  en: 4a9921fef5e65cc8
-  zh: 672cd27d68310cb1
+  en: 8206a7ecc0ee3968
+  zh: d05d262db907a9eb
 /agent-note-a-shared-timeout-deadline-primitive-with-hard-kill-left-to-each-capability/problem:
-  en: f3fb995aaf40ac76
-  zh: 95bbc4d7d79e558c
+  en: c8e351d3d47549ee
+  zh: 3c4744c42bd4e162
 /agent-note-a-shared-timeout-deadline-primitive-with-hard-kill-left-to-each-capability/decision:
-  en: 18645d82d9e40107
-  zh: 73e510f1ed1106e6
+  en: 3847769c88a07cc5
+  zh: 94d10577fec81f45
 /agent-note-a-shared-timeout-deadline-primitive-with-hard-kill-left-to-each-capability/decision/the-library-api:
   en: c62681afef60a0db
   zh: 69827b4b3165b3da
 /agent-note-a-shared-timeout-deadline-primitive-with-hard-kill-left-to-each-capability/decision/the-division-of-labor:
-  en: 263c8e17bbc87ba0
-  zh: d75a74f47713e79f
+  en: a846e4152f786dff
+  zh: 244b27f2bcb7788f
 /agent-note-a-shared-timeout-deadline-primitive-with-hard-kill-left-to-each-capability/decision/how-each-capability-consumes-it:
-  en: 333eab4967d753ec
-  zh: dd7537bb82cc717f
+  en: 2890bb80884730a9
+  zh: 3ae0d7331861675f
 /agent-note-a-shared-timeout-deadline-primitive-with-hard-kill-left-to-each-capability/consequences:
-  en: 0f723f16456c343d
-  zh: 52b7aab9a6c4f7be
+  en: 3eee57a9a9b668ae
+  zh: e7e46ff02afce6ff
 /agent-note-a-shared-timeout-deadline-primitive-with-hard-kill-left-to-each-capability/alternatives-considered:
   en: 0f3e3ecfa399c81a
   zh: 951c2ee71047b11a

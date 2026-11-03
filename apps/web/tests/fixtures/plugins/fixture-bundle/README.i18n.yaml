@@ -3,5 +3,5 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write apps/web/tests/fixtures/plugins/fixture-bundle/README.md
 /fixture-bundle:
-  en: 987d3ae4a4d79382
-  zh: 4b7ce36da8833efe
+  en: c7c76bc012cd26bb
+  zh: c8714fde1c36e00b

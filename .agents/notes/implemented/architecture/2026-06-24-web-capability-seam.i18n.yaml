@@ -3,38 +3,38 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-06-24-web-capability-seam.md
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers:
-  en: ca120635fc40431c
-  zh: 6be7c5ae3c86cdcc
+  en: eed57504fa8390f6
+  zh: bc5757967b710706
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/problem:
-  en: c8b932b02a4e1c80
-  zh: 96c466be1a521f3f
+  en: 884ea149c29da5d7
+  zh: 8a94240392217a01
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/decision:
-  en: 2e08d801099cbe18
-  zh: 8c5ab162ada9cc41
+  en: 929b2ae4a01a9640
+  zh: aa8770a81cfa52c5
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/package-topology:
-  en: 5ea3ddfae82df181
-  zh: 2d05d95e51081696
+  en: 58785fc47732ac79
+  zh: 71b42744a604e8e4
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/ctx-web-contract:
-  en: b432f80a424c3e49
-  zh: faa26925fdd98387
+  en: fa462be00b3877c8
+  zh: 405cc65f1c99eac2
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/provider-availability-and-selection:
-  en: 4e4ec068c2a22383
-  zh: b7030d0f00bfdb74
+  en: 085ebb5dde836738
+  zh: 528dfb50fec80748
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/search-request-and-result-schema:
-  en: ec3703b7e7c6b23d
-  zh: 325755e6e90092da
+  en: 7b75a1eb3faba064
+  zh: 7a63d4901b2d6ec4
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/fetch-request-and-result-schema:
-  en: 6dba3b9a51c28b6d
-  zh: 58a93f6ba2d269ea
+  en: e8658df5bc5de409
+  zh: 35d3fbad9c5cf4a5
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/tool-consumer-behavior:
-  en: 62127883453dd79c
-  zh: 01503a8177a0ddab
+  en: 3b8138eece02f6f7
+  zh: 788ca683093a5f2a
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/errors:
-  en: 3440f2b34b93f4a1
-  zh: 57a8f784c7e26eff
+  en: 7b2fd2a5b4e7261b
+  zh: f642f6b14b487133
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/testing:
-  en: 7f73699ac4459432
-  zh: c16be49ac50c34c8
+  en: 479816703148314f
+  zh: e972c104dd861b2d
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered:
   en: 6119e2aff3b6be5a
   zh: 76136ef5249c23eb
@@ -42,11 +42,11 @@
   en: e0d84a9b1b9c2123
   zh: 9e116a7b96751563
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/put-provider-dispatch-directly-in-huoli-tool-web:
-  en: dc01d014d03b49d2
-  zh: b956b02f41c62682
+  en: 434155de153f3dda
+  zh: 1e932d39d1d1be95
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/split-search-and-fetch-into-two-seams-huoli-search-huoli-fetch:
-  en: 3fb72ba3e554f20a
-  zh: aff5f0add5773388
+  en: 0665d90f7bd2b7c5
+  zh: a4cda573fb3350d7
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/choose-the-first-registered-provider:
   en: 1800706ea0f6b90b
   zh: ced985b7657e2d7f
@@ -54,8 +54,8 @@
   en: fc22e6a8bfaeaa20
   zh: 64032ea6ab61b836
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/mirror-claude-code-s-url-prompt-webfetch-shape:
-  en: 56a080de39e96056
-  zh: 937336a73de70518
+  en: 94c2b3dd4377293c
+  zh: 703331d98c5386fd
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/restrict-fetch-to-public-addresses:
   en: af3014c0de7ff66f
   zh: 509040c9183327fe
@@ -66,8 +66,8 @@
   en: 9774448fd6b21c41
   zh: 8411c590ad70d5c4
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/deferred-work:
-  en: 48b7b8e7310cd56b
-  zh: d406cd6a8a649e58
+  en: f239e98a7cb6813f
+  zh: 2567ed4dd4923159
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/open-questions:
   en: 63848c6ef9a6ab44
   zh: 041b340802091e60

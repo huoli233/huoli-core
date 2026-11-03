@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-10-28-forge-git-session-permissions.md
 /agent-note-session-permissions-for-forge-git-queries:
-  en: a06c42342d1f0bad
-  zh: 88b063883336cb0b
+  en: a1aa2cb5c89520b2
+  zh: 26fac7456c2cb426
 /agent-note-session-permissions-for-forge-git-queries/problem:
-  en: ee1e5ba8190a9419
-  zh: 88d6c35a3a400eb0
+  en: c80f9398776bf63e
+  zh: 67bd5d2178bdaedb
 /agent-note-session-permissions-for-forge-git-queries/decision:
-  en: 77d7706b2577e552
-  zh: a4538a19656d5945
+  en: 29b1e056250d9e59
+  zh: ce0ae001d3930d3b
 /agent-note-session-permissions-for-forge-git-queries/alternatives-considered:
   en: 69f0bbbc412a546f
   zh: 9527e87b5adfc7c3

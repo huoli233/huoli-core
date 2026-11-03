@@ -6,11 +6,11 @@
   en: 860509fb08c860f4
   zh: b2c4448e8afc1f12
 /huoli-huoli-llm:
-  en: 919467ab4b4ef583
-  zh: cb5752f140e58813
+  en: 725841b04ba98c42
+  zh: 0a95ced3b90b0f13
 /huoli-huoli-llm/summary:
-  en: 9b9ea6fea3088244
-  zh: 09f2eb6606a030da
+  en: d52b6f945dd66a3e
+  zh: 47df9f9bab51bd25
 /huoli-huoli-llm/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,17 +18,17 @@
   en: b8fbcecd62f6cad0
   zh: d6eb81611ef0f3c5
 /huoli-huoli-llm/use-this-package/when-to-choose-it:
-  en: c3ecb5a1421f27db
-  zh: 4bbd3c0e513845e1
+  en: cdce472dcdc01879
+  zh: 004d982cd655476f
 /huoli-huoli-llm/use-this-package/minimal-composition:
-  en: cf221d60fb42a278
-  zh: 0ea17503495d386b
+  en: 4029f54c29bf0583
+  zh: a9b62d12f67b95d0
 /huoli-huoli-llm/use-this-package/what-you-can-do:
   en: dc61eb86585f6e0d
   zh: 9c0d6b240dfd2cda
 /huoli-huoli-llm/use-this-package/failures-and-recovery:
-  en: 311d8c92447b7094
-  zh: 68cf5cb1c3853cc1
+  en: 899f3dd6c16a917a
+  zh: 3f3346be2bf91e18
 /huoli-huoli-llm/understand-the-implementation:
   en: 9630d7e26193a512
   zh: 94222c2a487c4b8c
@@ -39,14 +39,14 @@
   en: ae1618577f4e8364
   zh: a6e8ab1563c08dfb
 /huoli-huoli-llm/understand-the-implementation/main-flow:
-  en: c95d4947745e39bb
-  zh: ec37b969f27629e2
+  en: 91f0cfe9a82e5e08
+  zh: d69d9e7d0b1ff9e8
 /huoli-huoli-llm/understand-the-implementation/invariants:
   en: 0163a050239248e5
   zh: 885c95bedcbe2ff4
 /huoli-huoli-llm/further-exploration:
-  en: 37e1d696afef8a88
-  zh: 81f99c4507663cad
+  en: 6d3e725f8a9efad5
+  zh: d228181c1bef7f4f
 /huoli-huoli-llm/model-experience:
   en: fa5677003ad6bc0a
   zh: ba33cfc860d9c37c
@@ -54,11 +54,11 @@
   en: a81634136baef72f
   zh: b92dda883986b0e1
 /huoli-huoli-llm/known-limitations-and-deferred-work:
-  en: d60b9121545c99ec
-  zh: 3d4434a0e427470b
+  en: 85cc7d0d60324d67
+  zh: 1a7dc5bdc70d7326
 /huoli-huoli-llm/known-limitations-and-deferred-work/dev-note:
   en: ecbc333b88e14d88
   zh: 77c725d92efd8646
 /huoli-huoli-llm/known-limitations-and-deferred-work/dev-note/open-items:
-  en: 6b1a7e903e13ee21
-  zh: bb62f2b1cc484bd5
+  en: 4a90d56548d3c606
+  zh: f015cd410da15ab0

@@ -6,26 +6,26 @@
   en: b2fce08b0fa865da
   zh: 97e214d87ded4b54
 /huoli-huoli-sdk-minimal:
-  en: 807c43eedba7d53e
-  zh: 9f1efe5d6ac393f7
+  en: a3a51aeb71337b5a
+  zh: 4fb0031b58295424
 /huoli-huoli-sdk-minimal/summary:
-  en: 31b83af058b212f9
-  zh: 289678ac3738ee5e
+  en: 15f7af70803d1012
+  zh: 8fb06471562e45c3
 /huoli-huoli-sdk-minimal/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-sdk-minimal/use-this-package:
-  en: 44072e053b253924
-  zh: fecb1b7986ac05d4
+  en: 36cb3b08ace54b2d
+  zh: f4ade13b062f9c32
 /huoli-huoli-sdk-minimal/understand-the-implementation:
-  en: 5db5d8f041867958
-  zh: bff5ef3a2e140712
+  en: 29a31d80e3e5f728
+  zh: bb2a01bbefa5b09b
 /huoli-huoli-sdk-minimal/understand-the-implementation/source-map:
   en: 3784c554e96ab004
   zh: 0a05d4fe1e26b3b1
 /huoli-huoli-sdk-minimal/further-exploration:
-  en: 6909fc128c321153
-  zh: 7d2a0866efdc5a69
+  en: 6177d56bdb78f2be
+  zh: 40da83053448c350
 /huoli-huoli-sdk-minimal/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -33,17 +33,17 @@
   en: bd87e16b0c6e0506
   zh: c8ee5e3b4578754e
 /huoli-huoli-sdk-minimal/model-experience/minimal-coding-agent-composition/what-the-model-sees:
-  en: df40d9529b566cfa
-  zh: 4678769b4f85120b
+  en: c13f6f24ca1234c7
+  zh: 830db88c2d2e8bd5
 /huoli-huoli-sdk-minimal/model-experience/minimal-coding-agent-composition/token-effect:
-  en: 9b7a23c7a447eb22
-  zh: e01bfd06d19b7d18
+  en: 158a87bf06397c03
+  zh: 5cbf449bf8154023
 /huoli-huoli-sdk-minimal/model-experience/minimal-coding-agent-composition/kv-cache-effect:
   en: dd887b6519f40ab3
   zh: a98e56411fdc79df
 /huoli-huoli-sdk-minimal/known-limitations-and-deferred-work:
-  en: 00c4192d6af9f621
-  zh: 460451ab6dc07c3a
+  en: 21e2b46ffca3a38b
+  zh: fb6b42c5399b0d10
 /huoli-huoli-sdk-minimal/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: e88aeb617ffb74ea

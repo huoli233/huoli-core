@@ -6,17 +6,17 @@
   en: d42333572a114759
   zh: 7de2bc8a30baf573
 /huoli-huoli-pwsh-sandbox:
-  en: e31fa5a5c2977440
-  zh: 72eac87630e20992
+  en: 81ea9c52de06f4f2
+  zh: 34a92d7207bdaab5
 /huoli-huoli-pwsh-sandbox/summary:
-  en: b628a56aa2afe34b
-  zh: a6759e4d067f2e22
+  en: 87af11b05a063a89
+  zh: 815e7eb2271ddef5
 /huoli-huoli-pwsh-sandbox/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-pwsh-sandbox/use-this-package:
-  en: 665eb9d5f77bcfe5
-  zh: 0fc5adf8b49167e2
+  en: c386b8f7f537c304
+  zh: 5f77d19b4e1d5166
 /huoli-huoli-pwsh-sandbox/use-this-package/when-to-choose-it:
   en: 8a43fa466bcf6fc7
   zh: 28d2381299d1e592
@@ -24,8 +24,8 @@
   en: a097100674539423
   zh: 6c25043f90650113
 /huoli-huoli-pwsh-sandbox/use-this-package/minimal-configuration:
-  en: b025d0473f259364
-  zh: 3c6f2153a68189e1
+  en: bb6f2542b862537c
+  zh: 403bc1a3ff9d258a
 /huoli-huoli-pwsh-sandbox/use-this-package/denials-and-escalation:
   en: b3deb62991a7388a
   zh: 2b500e1912f95f28
@@ -36,8 +36,8 @@
   en: 05e2abe4a25886fd
   zh: 3f7f1326dc3c1d3f
 /huoli-huoli-pwsh-sandbox/understand-the-implementation/design-concept:
-  en: 0209cfdeae41c9b5
-  zh: f968694c21c96ec2
+  en: e9e62cdd3996aff5
+  zh: 506bafce1afa5f40
 /huoli-huoli-pwsh-sandbox/understand-the-implementation/source-map:
   en: e7af8c5552806441
   zh: 2ad6a90d828bbd73
@@ -48,8 +48,8 @@
   en: 56b6b8d45b5fc463
   zh: fe1a53e4ad514bc6
 /huoli-huoli-pwsh-sandbox/further-exploration:
-  en: ff69a14d11ec46e4
-  zh: fd4994f0796fb9d2
+  en: 9a7ba1885c9f8429
+  zh: 0504a2511bc7a937
 /huoli-huoli-pwsh-sandbox/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -66,8 +66,8 @@
   en: 796af37d6f6add68
   zh: 7975ff2a21c1b4f3
 /huoli-huoli-pwsh-sandbox/known-limitations-and-deferred-work:
-  en: 9afb663f40e5b8fd
-  zh: 76ceb6bfb2a5148e
+  en: 73f72876327bdc8c
+  zh: e10caad08a3a3d5d
 /huoli-huoli-pwsh-sandbox/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

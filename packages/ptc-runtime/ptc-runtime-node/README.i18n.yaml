@@ -6,8 +6,8 @@
   en: 66cfe944c731a54f
   zh: 30b9e7f852723301
 /huoli-huoli-ptc-runtime-node:
-  en: 7e1a8657a212c70b
-  zh: afb7a8c6a3afd718
+  en: 714c66ca233f3245
+  zh: 065047ec2455ecb3
 /huoli-huoli-ptc-runtime-node/summary:
   en: 79d30a488dfb61a9
   zh: 6b375f440656da9c
@@ -15,20 +15,20 @@
   en: d152484eb41ac6b4
   zh: 725b47765ee8f30b
 /huoli-huoli-ptc-runtime-node/use-this-package:
-  en: 9c742ab3175c4f80
-  zh: 5fa7d1ce9c3920d2
+  en: faebbe4646274388
+  zh: 3123cfb5273b12e3
 /huoli-huoli-ptc-runtime-node/use-this-package/configuration:
-  en: 34b5a336733ea39f
-  zh: 7604b03999b61517
+  en: 941fdcac3d1ec925
+  zh: 25dfed4d8652a5cb
 /huoli-huoli-ptc-runtime-node/use-this-package/execution-and-results:
   en: 2a9fa3292bf07355
   zh: db0b5684820915eb
 /huoli-huoli-ptc-runtime-node/use-this-package/in-memory-modes:
-  en: 647286ffa607df3b
-  zh: ddf6d548e914cf4c
+  en: aa6da64b8bc68003
+  zh: 8d01baaa6b18a46d
 /huoli-huoli-ptc-runtime-node/use-this-package/deadlines-and-cancellation:
-  en: 3e7ab293fac35688
-  zh: 617ed4930bbef6c7
+  en: 661da28284f93673
+  zh: 1d151200717be481
 /huoli-huoli-ptc-runtime-node/use-this-package/failures:
   en: 34a221d0f26b8e47
   zh: 2fd20ac9c9953c7f
@@ -45,11 +45,11 @@
   en: 9d4f795c1a17885c
   zh: fd72fb6e35009650
 /huoli-huoli-ptc-runtime-node/further-exploration:
-  en: ac2e2ae13d3f1394
-  zh: 5d08b9c658fcf83a
+  en: 8565ebf5d18a6131
+  zh: bc24fdcaa2824381
 /huoli-huoli-ptc-runtime-node/model-experience:
-  en: 4e89db2b3ccd585a
-  zh: 461b5e1e9caaf959
+  en: 508d85d5433597fa
+  zh: d0b52defdfc06817
 /huoli-huoli-ptc-runtime-node/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
   zh: d91e7b78c0619c7e
@@ -57,5 +57,5 @@
   en: 450fb60c7ec2faa3
   zh: 3dd2fc1c295e7865
 /huoli-huoli-ptc-runtime-node/known-limitations-and-deferred-work/dev-note:
-  en: 6373aba4e08f7205
-  zh: 2a8c33d1f2839df4
+  en: b68ac3ce41bd519c
+  zh: ba64c8969e35bc2e

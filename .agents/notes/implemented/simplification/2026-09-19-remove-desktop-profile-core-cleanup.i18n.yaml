@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-09-19-remove-desktop-profile-core-cleanup.md
 /agent-note-remove-the-desktop-production-profile-core-package-cleanup:
-  en: c0f7b1fb34a21423
-  zh: 2ed4b90f28d21faa
+  en: 41ac56ceb73c18b6
+  zh: 4a4991fd428db623
 /agent-note-remove-the-desktop-production-profile-core-package-cleanup/problem:
-  en: 7176d7d629dd9e9f
-  zh: f0e02f220e3ae72b
+  en: 9b1d922b0f9fda98
+  zh: d7c8651757d40928
 /agent-note-remove-the-desktop-production-profile-core-package-cleanup/decision:
-  en: 411b72fcdcb37d61
-  zh: 7fac6dfd6d0ab0e4
+  en: a395bd040ff94789
+  zh: 8a739a97460ff7d6
 /agent-note-remove-the-desktop-production-profile-core-package-cleanup/alternatives-considered:
-  en: 92f74de20afec309
-  zh: 6ace8389378cc343
+  en: 1f88794b693810ec
+  zh: 8ce2bdfbca01bb98
 /agent-note-remove-the-desktop-production-profile-core-package-cleanup/verification:
   en: dfb7a6977452f472
   zh: 424f2003f8372fe3
 /agent-note-remove-the-desktop-production-profile-core-package-cleanup/consequences:
-  en: 1012a408f055e2f3
-  zh: 48329f673f2e440f
+  en: f2d455ff4a2f7c9d
+  zh: abae83f4d1fd095f

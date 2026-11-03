@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/releases/README.md
 /:
-  en: 813000c665a9a00b
-  zh: 7585184354024644
+  en: 3cc5af37aac598e1
+  zh: 5784828f6f9186b1
 /persistence-changes-across-huoli-prereleases:
-  en: 779cdacb7f259aae
-  zh: 0e180dd42e04a81b
+  en: 4bb33bdcaaa16d67
+  zh: 17620397dcddb0a6
 /persistence-changes-across-huoli-prereleases/summary:
-  en: 2fb5f2079645f85f
-  zh: 4be7bb6cec10b388
+  en: a2979f27e29e8477
+  zh: e8ddce1fbd809d9e
 /persistence-changes-across-huoli-prereleases/table-of-contents:
   en: 66af6c63111e0d4f
   zh: d2cda8c92eda8473
 /persistence-changes-across-huoli-prereleases/archived-releases:
-  en: 995581f72b7d7bf7
-  zh: 7f73f08036618bed
+  en: f87edfda31d851a2
+  zh: e0c5afe009fab492
 /persistence-changes-across-huoli-prereleases/files-and-scope:
   en: c7b3012355eec9c6
   zh: c31da79dc5cf326c
@@ -24,8 +24,8 @@
   en: 2212c587e280c935
   zh: e1e12ec7d87f9bd2
 /persistence-changes-across-huoli-prereleases/verification:
-  en: 5ae84a4b450733df
-  zh: 7bd0f834534aae4c
+  en: e21d89cc13942a2b
+  zh: 40173c2a73c43090
 /persistence-changes-across-huoli-prereleases/dev-note:
   en: 5de1d6304e00c58f
   zh: e58fc8dda0bea8d5

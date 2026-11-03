@@ -6,11 +6,11 @@
   en: fdb9237f7c9ddfa6
   zh: 3bb572e4a945183f
 /huoli-huoli-experimental-auto-review:
-  en: 566562e610f1b52b
-  zh: 88796a19ab0b98b8
+  en: 255f6dd6df1b256b
+  zh: 353469840107dda8
 /huoli-huoli-experimental-auto-review/summary:
-  en: 10e8e61034f7706a
-  zh: 439e21bcff62a12d
+  en: af164fa2d19a9132
+  zh: a644a59ad5315de4
 /huoli-huoli-experimental-auto-review/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,20 +18,20 @@
   en: 8f9e85817f05aa4d
   zh: f60136fb39abcf29
 /huoli-huoli-experimental-auto-review/use-this-package/install-into-a-profile:
-  en: 6198fc176a1e77fc
-  zh: f486661a0658f313
+  en: 41ca015e5348601f
+  zh: 9e1a8a11a85af59a
 /huoli-huoli-experimental-auto-review/use-this-package/headless-supervision:
   en: 599d308cb426b48d
   zh: 946e5d2dae183b2e
 /huoli-huoli-experimental-auto-review/use-this-package/what-you-get:
-  en: 68fbe81265de3d55
-  zh: ad41f2353ba94a07
+  en: 264f2563fbc32e2a
+  zh: 43031dcef9e5f98b
 /huoli-huoli-experimental-auto-review/understand-the-implementation:
-  en: 0d76e9a60573ee84
-  zh: 3297ae0898852b7d
+  en: 1d5718b85168a629
+  zh: 0bc68d507cc4ec8c
 /huoli-huoli-experimental-auto-review/further-exploration:
-  en: 8b81d32ea370ecd3
-  zh: dc53ff4da78232ac
+  en: 020646ced228e5d5
+  zh: b7a4862d81ba4630
 /huoli-huoli-experimental-auto-review/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -45,8 +45,8 @@
   en: 9c3e575c061d53fe
   zh: 74db1c5a77b2d2a7
 /huoli-huoli-experimental-auto-review/model-experience/per-call-reviewer/kv-cache-effect:
-  en: ec9e16640f1ea1bc
-  zh: 8052d486d61807c6
+  en: 895730924dde7319
+  zh: 645eced208129068
 /huoli-huoli-experimental-auto-review/model-experience/tool-denial:
   en: f9b4d7b686f14fc5
   zh: a2fac9a8eaf5e2a3
@@ -60,8 +60,8 @@
   en: 8da1089dee147f94
   zh: 87361347bfd10c6c
 /huoli-huoli-experimental-auto-review/known-limitations-and-deferred-work:
-  en: a48835d5113cbcfd
-  zh: 243ff731c27270b7
+  en: 26f0d034cc3ac2e8
+  zh: cdda7ae637a96f90
 /huoli-huoli-experimental-auto-review/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

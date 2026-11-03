@@ -3,35 +3,35 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/sdk/server/README.md
 /:
-  en: 9fd8e0cf5872dc5b
-  zh: c5209369edd2e941
+  en: 56bc2002855d67b4
+  zh: 416ab959f6361cc9
 /huoli-huoli-sdk-jsonrpc-server:
-  en: 96813b70808d7c86
-  zh: ab20ab1cb59432c1
+  en: b3ee55de36077fc8
+  zh: 3801f025359a4da9
 /huoli-huoli-sdk-jsonrpc-server/summary:
-  en: 1412ec56449364a9
-  zh: 604f7127ce6e96b5
+  en: 9b340e2ebf433ec3
+  zh: 5a1b9e123a30a97d
 /huoli-huoli-sdk-jsonrpc-server/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-sdk-jsonrpc-server/use-this-package:
-  en: d229158284c7e2af
-  zh: cd9b226792f30eaa
+  en: d352985571826ed4
+  zh: ee1e4c5138eab6a6
 /huoli-huoli-sdk-jsonrpc-server/use-this-package/wiring:
   en: 47a33e9397e36e15
   zh: e6d173820f9ea6e5
 /huoli-huoli-sdk-jsonrpc-server/use-this-package/configuration:
-  en: a908534bf8193305
-  zh: 6e3875e9ea0ccc79
+  en: 86a81ebfe31ebf60
+  zh: 88d411b165a819d2
 /huoli-huoli-sdk-jsonrpc-server/use-this-package/stdout-is-the-protocol:
   en: 784b68b5a498f2d5
   zh: 2c3c5a1490845179
 /huoli-huoli-sdk-jsonrpc-server/use-this-package/what-sdk-clients-can-do:
-  en: 3e657fa4c9586454
-  zh: 26d572f91e124cc5
+  en: 2e505a5ce5464289
+  zh: 735b552527df1e6a
 /huoli-huoli-sdk-jsonrpc-server/use-this-package/native-user-questions:
-  en: 5100c311c8476f93
-  zh: 60d4bc3165731246
+  en: feae06144515a984
+  zh: 72464194dd30a533
 /huoli-huoli-sdk-jsonrpc-server/use-this-package/shutdown-and-exit:
   en: 08c3858f53090f39
   zh: dfae960e11515b06
@@ -39,8 +39,8 @@
   en: eca39e7027d67d8f
   zh: dd3f494276322857
 /huoli-huoli-sdk-jsonrpc-server/understand-the-implementation/design-concept:
-  en: d1d0cd8ac2ff2f45
-  zh: 229c811e2bcf1acc
+  en: cc9fa7abc9f651dc
+  zh: 72a02d86d2f582a2
 /huoli-huoli-sdk-jsonrpc-server/understand-the-implementation/source-map:
   en: 783bd2b6628c0680
   zh: ca5b6b730893ddec
@@ -51,8 +51,8 @@
   en: 7e4403a7b1da7ff4
   zh: ef75ee9411486b90
 /huoli-huoli-sdk-jsonrpc-server/further-exploration:
-  en: cea854984c56c75a
-  zh: 1ee5eaab8305e10d
+  en: 1b804439d6122904
+  zh: 7ce4b39b1b5512e6
 /huoli-huoli-sdk-jsonrpc-server/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -72,8 +72,8 @@
   en: fa59bcc530a2f385
   zh: 4b17b38c0b30e85f
 /huoli-huoli-sdk-jsonrpc-server/model-experience/manual-compaction/what-the-model-sees:
-  en: 2be503bfb0db7b70
-  zh: 1e0e2da4a8bc243b
+  en: a00574eef5d40c0b
+  zh: fb9b168454187fcd
 /huoli-huoli-sdk-jsonrpc-server/model-experience/manual-compaction/token-effect:
   en: 8f0d7b5a80cc1240
   zh: 2c28370ab2ff5556
@@ -84,8 +84,8 @@
   en: 9a6bbed77944026e
   zh: 0cf9e179dddeeeb5
 /huoli-huoli-sdk-jsonrpc-server/model-experience/session-permission-changes/what-the-model-sees:
-  en: 2ee1c7fe78fd7637
-  zh: d8f4efac56c1606f
+  en: 5f02e136c1ccc3fa
+  zh: f603e9d4090ae324
 /huoli-huoli-sdk-jsonrpc-server/model-experience/session-permission-changes/token-effect:
   en: 6fd7b795a324c0e9
   zh: e13a949d27e91e4d
@@ -96,8 +96,8 @@
   en: 6714c05c148b2a6e
   zh: e85929c987561499
 /huoli-huoli-sdk-jsonrpc-server/model-experience/plan-commands/what-the-model-sees:
-  en: 4edf946453a31daf
-  zh: 47f3d6c9095a80d8
+  en: efa531e4eea78ca2
+  zh: f83e5761c57764c6
 /huoli-huoli-sdk-jsonrpc-server/model-experience/plan-commands/token-effect:
   en: 915597a108a3e579
   zh: 22f818fa1e6a5e1c
@@ -108,8 +108,8 @@
   en: 00f1a91f6d15e4a0
   zh: cad13107ea16b3de
 /huoli-huoli-sdk-jsonrpc-server/model-experience/goal-commands/what-the-model-sees:
-  en: 3b29854591a9432f
-  zh: 08dc50393d547828
+  en: 5eaef7a64c537fcc
+  zh: 4598f1b3cbfe5ad9
 /huoli-huoli-sdk-jsonrpc-server/model-experience/goal-commands/token-effect:
   en: 7a4c40ba3c812bca
   zh: 8ba8e1c5e1a1c58d

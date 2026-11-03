@@ -6,11 +6,11 @@
   en: 168a71c4ccff0f74
   zh: ea4a9a476e3a5aec
 /huoli-huoli-tool-web:
-  en: cdabe4ab4c0906c3
-  zh: 8a63cab0d0e813bb
+  en: d88e7ef0065528cb
+  zh: 34bd61d57e00cc1f
 /huoli-huoli-tool-web/summary:
-  en: 348972eec4647ede
-  zh: 482c342858fc949e
+  en: b6e7fb2887971541
+  zh: 3e3ff78db371674d
 /huoli-huoli-tool-web/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -21,8 +21,8 @@
   en: b476ed2e08c158e1
   zh: 17ddc6ee8123cbb4
 /huoli-huoli-tool-web/use-this-package/minimal-configuration:
-  en: b31bbaf4c01868c3
-  zh: 618bb08ec9d24afe
+  en: ffc03a72901cb89f
+  zh: 02216c8b201741eb
 /huoli-huoli-tool-web/use-this-package/using-web-search:
   en: 6bc6e7c3bdb13862
   zh: e4fc9b4921467368
@@ -33,8 +33,8 @@
   en: d542f546c78c40f5
   zh: 3589d1b27a326a8a
 /huoli-huoli-tool-web/use-this-package/search-and-fetch-readiness:
-  en: d6affa753dce742a
-  zh: 74ac25a77f8eb034
+  en: 6dce63614f984489
+  zh: fc41164ca4075338
 /huoli-huoli-tool-web/use-this-package/failures-and-recovery:
   en: 19581f8f8947611b
   zh: 8eca83f619382659
@@ -60,8 +60,8 @@
   en: 3ecc07b408e6045e
   zh: 19eed773277be7be
 /huoli-huoli-tool-web/further-exploration:
-  en: a541bfa8dfb411e4
-  zh: 61da35c319e1408e
+  en: b0452f9f74263042
+  zh: 3a247d2d28ee4c25
 /huoli-huoli-tool-web/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -90,8 +90,8 @@
   en: 3039bc5e7a796b21
   zh: 6b7a9eaf69c9ea53
 /huoli-huoli-tool-web/model-experience/tool-schemas/what-the-model-sees:
-  en: 1d30b997ee27dbcc
-  zh: 6553a79a7c80f69f
+  en: 8e7de7273acd9f72
+  zh: 69028c1c59bd80ca
 /huoli-huoli-tool-web/model-experience/tool-schemas/token-effect:
   en: bb21ae48e420c8d8
   zh: 7acd2a1798de0e80
@@ -159,8 +159,8 @@
   en: f5d5f97a153f7c70
   zh: f681f89596f500f5
 /huoli-huoli-tool-web/known-limitations-and-deferred-work:
-  en: 7cd86ef1db2f6743
-  zh: b4cf681add3837d6
+  en: 86e01a069ba9c7b2
+  zh: da15f8f4c365f7ce
 /huoli-huoli-tool-web/known-limitations-and-deferred-work/dev-note:
   en: 7f775cc79dbce94b
   zh: 12b8f68f9e7c48ca

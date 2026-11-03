@@ -6,11 +6,11 @@
   en: 35f64a68381efbd0
   zh: dd2c508ba263d788
 /huoli-huoli-session-snapshot:
-  en: b184b97e2d1e1fa7
-  zh: 7d4b4cc8d73446af
+  en: ddf5cb1041275745
+  zh: 604b5be19b33623b
 /huoli-huoli-session-snapshot/summary:
-  en: 5d11e1dbbf5dd1cf
-  zh: 7a54089ed26ddd8f
+  en: b1f16d1e065c81ef
+  zh: 02ccc9ab569bccdc
 /huoli-huoli-session-snapshot/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,11 +18,11 @@
   en: 594ad1f3e6f02054
   zh: 7ca4f565976704be
 /huoli-huoli-session-snapshot/use-this-package/writing-a-snapshot-suite:
-  en: 57ff7c89e7696ee8
-  zh: b885ac1b4edc8c56
+  en: b242f651d4fa7693
+  zh: 34104ee003c7d862
 /huoli-huoli-session-snapshot/use-this-package/record-replay-and-refresh:
-  en: 9b8515e4f65844d1
-  zh: 39c611219af1797e
+  en: 66244bef5a74ee7a
+  zh: 213950928ac9ba69
 /huoli-huoli-session-snapshot/use-this-package/pinning-request-headers-and-system-prompts:
   en: 6b11d5111e1a3222
   zh: de4d3889b1a5ebb4
@@ -30,8 +30,8 @@
   en: 64666ea2894acc4a
   zh: 0e78df32bcfd3633
 /huoli-huoli-session-snapshot/use-this-package/what-can-go-wrong:
-  en: 0b03592947ca43d6
-  zh: b14a64238c4b5f80
+  en: 02e5d7c8ce1124ae
+  zh: 683bffa624fdba26
 /huoli-huoli-session-snapshot/understand-the-implementation:
   en: 18ff76b440fe40da
   zh: 4dbf2eb5f9ee98a2
@@ -45,8 +45,8 @@
   en: a71c8ab2e78798c5
   zh: 419cebed1c023fbf
 /huoli-huoli-session-snapshot/further-exploration:
-  en: 84279d50373a156a
-  zh: fcd600bf386f6efe
+  en: 83ebc2bf02d87f09
+  zh: ffc7c2b1d54aa1b2
 /huoli-huoli-session-snapshot/model-experience:
   en: 9f12d94ab5e31ade
   zh: 7c75a17565caca1c
@@ -54,8 +54,8 @@
   en: ca75c51c89c2c9b0
   zh: f57cc48a1b5cbfa9
 /huoli-huoli-session-snapshot/known-limitations-and-deferred-work:
-  en: 42e871839dddaf6d
-  zh: b7ab1d313527612b
+  en: 7262f88daf8619f4
+  zh: cd2ecf21e68a35f1
 /huoli-huoli-session-snapshot/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

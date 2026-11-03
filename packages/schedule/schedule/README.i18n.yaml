@@ -6,8 +6,8 @@
   en: e969ee395f6b7c28
   zh: f860753b409ba6b3
 /huoli-huoli-schedule:
-  en: 83c1ed891080cce4
-  zh: ac08407f9bb63531
+  en: 43b24e537fd555ae
+  zh: 2740226fa9c04d4b
 /huoli-huoli-schedule/summary:
   en: 0e2b1edae18118aa
   zh: 97d443780e929856
@@ -15,17 +15,17 @@
   en: d152484eb41ac6b4
   zh: 1db86285abf6c499
 /huoli-huoli-schedule/use-this-package:
-  en: bb1b2e7cdb4acda7
-  zh: 16a87c9090b4a414
+  en: f69a07bbccdab197
+  zh: b9093e8e0fc3a2da
 /huoli-huoli-schedule/understand-the-implementation:
   en: 2eff756820c6825c
   zh: df7fab103eeb9545
 /huoli-huoli-schedule/understand-the-implementation/configuration-and-management-api:
-  en: 1b728ed2f3128f6f
-  zh: b7aa31c91a65ef34
+  en: 6a88f2388a495777
+  zh: 011eb4b3029a75dd
 /huoli-huoli-schedule/understand-the-implementation/storage-format-and-upgrades:
-  en: b82a5f8e27a0adaa
-  zh: 3b7f212b7852ccea
+  en: 77aea2078dff3fd5
+  zh: f639694e42b1d5eb
 /huoli-huoli-schedule/understand-the-implementation/storage-format-and-upgrades/timing-record-fields:
   en: 93d9eb94a142fc0c
   zh: c997efbe182ab062
@@ -33,14 +33,14 @@
   en: 11bb6b4934f12479
   zh: f84ba5dcd2eee489
 /huoli-huoli-schedule/understand-the-implementation/storage-format-and-upgrades/future-versions:
-  en: 3f70e357501fad06
-  zh: 430d24e125268650
+  en: 9936348d9bc69ccf
+  zh: d8e6ce8c7e5259e0
 /huoli-huoli-schedule/understand-the-implementation/dispatch-and-lifecycle:
-  en: fdf1d2e347420fab
-  zh: fd7257b8e843fc83
+  en: 6927461daca2ba05
+  zh: a4c99f4569597cde
 /huoli-huoli-schedule/further-exploration:
-  en: 5c98e7a8bd720560
-  zh: dc1d41e7762b067a
+  en: 8f2467535539593e
+  zh: e8b6fe31ad5c630b
 /huoli-huoli-schedule/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -48,8 +48,8 @@
   en: 097a655a88e2a9f2
   zh: 6612c58808186b1e
 /huoli-huoli-schedule/model-experience/tool-schemas-in-mounted-presets/what-the-model-sees:
-  en: 1c3efc4aac14c8a6
-  zh: 93f34dbb10a6a7d5
+  en: 5263abeffc5887c0
+  zh: 74f0b0e354060d81
 /huoli-huoli-schedule/model-experience/tool-schemas-in-mounted-presets/token-effect:
   en: ae0eb4d2609d4329
   zh: 4fe0a26e37c272dc
@@ -60,8 +60,8 @@
   en: 2a940dee68296bc7
   zh: 5ad3f71bd69b3c4c
 /huoli-huoli-schedule/model-experience/tool-results-after-management-calls/what-the-model-sees:
-  en: 888f50167c074ba1
-  zh: ddd2643d505c26e0
+  en: 6f2ee4b88cc9d39a
+  zh: 83fd968701856ab5
 /huoli-huoli-schedule/model-experience/tool-results-after-management-calls/token-effect:
   en: b538367888e60b2a
   zh: 04aa3dd1ba691aec

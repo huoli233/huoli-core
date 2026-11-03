@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-18-headless-auto-review.md
 /agent-note-headless-caller-authority-for-auto-review:
-  en: 9be347ac387545f7
-  zh: b360764b7d22d1d6
+  en: d8829906428abba7
+  zh: fdae4cccf92ad2cd
 /agent-note-headless-caller-authority-for-auto-review/problem:
   en: 01dcd32fe547f90c
   zh: f9f577c4d72ebdbe
 /agent-note-headless-caller-authority-for-auto-review/decision:
-  en: 372c020d57c6186a
-  zh: 31c00bb5175930b1
+  en: 62a6ce3b608cef4a
+  zh: 03499700773dd932
 /agent-note-headless-caller-authority-for-auto-review/alternatives-considered:
   en: 7e7aefd55c59837c
   zh: e119a25a2171d376

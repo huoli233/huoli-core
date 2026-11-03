@@ -6,11 +6,11 @@
   en: 5c47c9629036f119
   zh: 7730d7468a38b38d
 /huoli-huoli-compaction:
-  en: bc4cc254f61e84cb
-  zh: d08be13940dd3779
+  en: a3c71a82a1e37e95
+  zh: 4d1f8978bf6048af
 /huoli-huoli-compaction/summary:
-  en: 8cde722f68374b24
-  zh: 11f5aff0d0ecd573
+  en: f14e07e9e9f47e90
+  zh: 32f8ae9e5f1d1c3e
 /huoli-huoli-compaction/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,17 +18,17 @@
   en: 7d1dad97626dbd2e
   zh: 075fef4e1844ad12
 /huoli-huoli-compaction/use-this-package/when-to-choose-it:
-  en: 19c39a458294769b
-  zh: fd7534068f49e2af
+  en: 655f02ab89f4a263
+  zh: be5ec2ccbbba6b55
 /huoli-huoli-compaction/use-this-package/what-condensation-looks-like:
   en: 0abbee3a3b929a90
   zh: 334736dffe93488d
 /huoli-huoli-compaction/use-this-package/turning-condensation-on:
-  en: 8213b79c776f1a75
-  zh: 481c0dffd342426a
+  en: 0277220faf565706
+  zh: 85dd1eb0290f36f1
 /huoli-huoli-compaction/use-this-package/implementing-a-backend:
-  en: 280b5fda4c9b9c8b
-  zh: 764ca79fccf98279
+  en: 571695b58655a23c
+  zh: a0998dd4bc3f2ddb
 /huoli-huoli-compaction/use-this-package/recognizing-condensed-history:
   en: 35502487f2850f05
   zh: 333d2b86cc1d6eb0
@@ -36,20 +36,20 @@
   en: 321c3dc665ea03ff
   zh: f0fa408cde7b0454
 /huoli-huoli-compaction/understand-the-implementation/design-philosophy:
-  en: 226e05fde1f7ad54
-  zh: 4b0f671d68aee872
+  en: 4920c58ff9d978a7
+  zh: 645bc064ab448a57
 /huoli-huoli-compaction/understand-the-implementation/service-api:
-  en: d742d41c7eb5d406
-  zh: 6ff26c23eba5dd59
+  en: 712a48ebe2fc5bb1
+  zh: c671eda8994577f0
 /huoli-huoli-compaction/understand-the-implementation/manual-failure-taxonomy:
-  en: 81449c88ba52f445
-  zh: 2cdcce236bfbf284
+  en: d1b9226ba99776b8
+  zh: aa00397e7dcdb9bc
 /huoli-huoli-compaction/understand-the-implementation/tool-pairing-boundaries:
   en: 15dad68a04d6c86b
   zh: 3b95acf1b7e503bf
 /huoli-huoli-compaction/understand-the-implementation/the-surface-contract:
-  en: 28980d8259e59700
-  zh: c452e0bb4b778824
+  en: db48720a4f38b6bd
+  zh: cdee00dd2ba42244
 /huoli-huoli-compaction/understand-the-implementation/source-map:
   en: 076448ecc9911baf
   zh: 1b671f96fb217d5e
@@ -57,11 +57,11 @@
   en: 68caa51bed28bada
   zh: 3f8261f9dcba95ed
 /huoli-huoli-compaction/understand-the-implementation/events:
-  en: dc5faf71b27cc340
-  zh: 065f8339009c1a3a
+  en: 7819050988719bb6
+  zh: 3c394baa8a3b249f
 /huoli-huoli-compaction/further-exploration:
-  en: b12341c6424d7960
-  zh: 09fe5b30a599146f
+  en: 435f2a5669cbaa90
+  zh: 7a7ad9bc4805a2f1
 /huoli-huoli-compaction/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90

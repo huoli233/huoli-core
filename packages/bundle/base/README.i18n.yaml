@@ -3,26 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/bundle/base/README.md
 /:
-  en: 21c1b63e74134d34
-  zh: 78c69828d5930a86
+  en: c1c72f0aa1091457
+  zh: 7ded226995551bbf
 /huoli-huoli-base:
-  en: 501b1b61d4739d2a
-  zh: 5faba14f2480be3b
+  en: 371412d519878eeb
+  zh: ecb2e99bf0c9a5d0
 /huoli-huoli-base/summary:
-  en: 5c15f68a65aadc7d
-  zh: 7ac9ace622e161ae
+  en: d0ad9234675acde0
+  zh: 21a7e2928a924067
 /huoli-huoli-base/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-base/use-this-package:
-  en: 4c0d7045f95ff79c
-  zh: 456bb24bd1d35db1
+  en: 9dbbdabad2486422
+  zh: 7a2ca60b5c3cdb59
 /huoli-huoli-base/use-this-package/a-minimal-custom-profile:
-  en: 0f971f7ac7c09139
-  zh: ceb866da681c709c
+  en: 67d91638f43fac70
+  zh: d79d35233a92afaa
 /huoli-huoli-base/use-this-package/what-you-get:
-  en: 2ef2653d55107eec
-  zh: 4936c0fff94b1984
+  en: bf15e38896c7e18b
+  zh: a5a63d52d8dc3ca0
 /huoli-huoli-base/use-this-package/shell-tools-per-platform:
   en: 2dce12f82d6ee955
   zh: d4599eb899a3cd88
@@ -36,14 +36,14 @@
   en: fd37bc66e39ac5e7
   zh: 1a039afb8bf2d517
 /huoli-huoli-base/understand-the-implementation/platform-gating:
-  en: 8c2444fa7b237783
-  zh: 82002a8b9ddf5942
+  en: d69c1fc3224b5955
+  zh: 516319cea7241d2f
 /huoli-huoli-base/understand-the-implementation/source-map:
   en: a8efda71d444155e
   zh: c8221593709fbb99
 /huoli-huoli-base/further-exploration:
-  en: 39701b25b209fb67
-  zh: 2b7ce98365f1ecfc
+  en: 0ffc243b7fd2942f
+  zh: 75542740714544d6
 /huoli-huoli-base/model-experience:
   en: f6c4d2609b5f4bb6
   zh: 869a9565a133fb01
@@ -51,8 +51,8 @@
   en: e6e907c99df7cd0a
   zh: f19f2f84a5f95177
 /huoli-huoli-base/known-limitations-and-deferred-work:
-  en: ce8558ab18184bf2
-  zh: 3b3fb98cf1bd4652
+  en: b3fcfc5cc021f6d7
+  zh: 08d36e50e78ffd7b
 /huoli-huoli-base/known-limitations-and-deferred-work/dev-note:
   en: ca037cb236aa841a
   zh: e06f3899be43b572

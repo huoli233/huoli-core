@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-13-web-install-icons-and-launch-display.md
 /agent-note-web-install-icons-and-launch-display:
-  en: 99458c7724588fd3
-  zh: 1af39a382e1a8b6a
+  en: 5320bb6a4b88863d
+  zh: 3ac7858bef225650
 /agent-note-web-install-icons-and-launch-display/problem:
   en: 726b732fcaf49153
   zh: b04aad2d0a65a42d
 /agent-note-web-install-icons-and-launch-display/decision:
-  en: 65c6eb6a3ad5ab30
-  zh: 46ca48685f38269c
+  en: 4170a28350904e8a
+  zh: 6280beb2f3e64cd4
 /agent-note-web-install-icons-and-launch-display/alternatives-considered:
   en: 588d709bd7c8c95b
   zh: 871b618b86247926

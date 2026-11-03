@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-19-pi-ai-system-reminder-fallback.md
 /agent-note-pi-ai-system-reminder-fallback:
-  en: f43b5c6974289180
-  zh: abc0a86b1d137189
+  en: 847785e21ce1697e
+  zh: bf393e7851f06e83
 /agent-note-pi-ai-system-reminder-fallback/problem:
   en: 5247278483ca4e7a
   zh: ca711671a43fae76

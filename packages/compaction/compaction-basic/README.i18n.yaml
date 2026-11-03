@@ -6,8 +6,8 @@
   en: 4c3172f95eb524e1
   zh: dd92ec1300ad9cbe
 /huoli-huoli-compaction-basic:
-  en: 3ba5f9e37ab36328
-  zh: 2390a55415d4c27b
+  en: b2e7c34d851feb79
+  zh: 5c27bdf20ba9fcd9
 /huoli-huoli-compaction-basic/summary:
   en: 31202d573182cc31
   zh: e0a0c96f67a9c1ba
@@ -15,8 +15,8 @@
   en: d152484eb41ac6b4
   zh: bda879a892f240f0
 /huoli-huoli-compaction-basic/use-this-package:
-  en: b40fa08b8ad55cca
-  zh: f8765a6f199c8c7b
+  en: 2c9cef8991de2bbd
+  zh: d4cd122b89b58901
 /huoli-huoli-compaction-basic/use-this-package/what-you-get:
   en: eb8e340061f72b98
   zh: 327a51037b2d1adf
@@ -24,20 +24,20 @@
   en: 4cb73d7a57908948
   zh: 7ba2ddc4c76e4957
 /huoli-huoli-compaction-basic/use-this-package/tuning-when-condensation-starts:
-  en: 3446c54c062d7e34
-  zh: fb502c941e508ae0
+  en: b73c79b8f2223e3d
+  zh: 3589993f38ffe659
 /huoli-huoli-compaction-basic/use-this-package/what-happens-when-condensation-runs:
   en: c872a8ef069596f0
   zh: b3a48e309ae830d4
 /huoli-huoli-compaction-basic/use-this-package/switching-models:
-  en: 48978abc46da1afa
-  zh: 11931af05db7b41f
+  en: ad948d65c99fce60
+  zh: 612685a417ad15ae
 /huoli-huoli-compaction-basic/use-this-package/on-demand-condensation-with-compact:
-  en: 4c5067e4c57ca708
-  zh: 1c0e70319b9b2112
+  en: 7e58942e84b57b98
+  zh: c360b6ec1a63cff4
 /huoli-huoli-compaction-basic/use-this-package/trimming-oversized-tool-outputs:
-  en: 1d6a74c0dc874dc8
-  zh: bcfa95549308c030
+  en: 4e1047567cb82b0f
+  zh: 81042973978c0d15
 /huoli-huoli-compaction-basic/understand-the-implementation:
   en: deb655b3b1860576
   zh: 79f56e41a9dfe01f
@@ -45,8 +45,8 @@
   en: ed2d43610d4eaa83
   zh: b46a1eaad396cdd7
 /huoli-huoli-compaction-basic/understand-the-implementation/automatic-triggers-and-overflow-recovery:
-  en: 9e6e472b0f3977d3
-  zh: fdc0e827c19ba401
+  en: 0b8b80b61134ec8f
+  zh: c5caac142c802d2c
 /huoli-huoli-compaction-basic/understand-the-implementation/summarization-mechanics:
   en: 967531b71453eb88
   zh: c7919b46e36763e6
@@ -57,11 +57,11 @@
   en: 313e019b1a9f8aa8
   zh: 3c75d11b02adb693
 /huoli-huoli-compaction-basic/understand-the-implementation/source-map:
-  en: 747bad235fbb04ad
-  zh: 02e6562f3d745d4f
+  en: 2032ac4abb487ba9
+  zh: 22341e265f1410d7
 /huoli-huoli-compaction-basic/further-exploration:
-  en: 84b5b81eb9b5965d
-  zh: 7000af0fa502fcc1
+  en: a8729ffb45eecbfd
+  zh: 2ba999e7c5ae8ccc
 /huoli-huoli-compaction-basic/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90

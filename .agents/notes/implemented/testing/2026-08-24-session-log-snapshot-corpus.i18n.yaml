@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-08-24-session-log-snapshot-corpus.md
 /agent-note-session-log-snapshot-corpus:
-  en: 9cb40b5081c110bc
-  zh: 17c221d99b579119
+  en: f4291bb557624232
+  zh: b0365380a2f81f8d
 /agent-note-session-log-snapshot-corpus/problem:
-  en: ec6f331737be909e
-  zh: 5faee4c81cf2314f
+  en: 2a4cf9cf954c63df
+  zh: 5281c50081a58758
 /agent-note-session-log-snapshot-corpus/decision:
-  en: 2cee77ed3a9bb339
-  zh: be2cc1724e1fc13a
+  en: 8a5c541cff185d95
+  zh: 5f69115dd1f225ca
 /agent-note-session-log-snapshot-corpus/alternatives-considered:
   en: 76db318c1c2dad2d
   zh: b868b7c9b29c1e00
 /agent-note-session-log-snapshot-corpus/invariants:
-  en: 04098d11861c90ae
-  zh: 6af6c376fe1ba8bb
+  en: 442dbc5e8233b999
+  zh: 0069fdea3018a4bd
 /agent-note-session-log-snapshot-corpus/consequences:
   en: 3d5810a9518fcb8d
   zh: 075ad9a226b8b312

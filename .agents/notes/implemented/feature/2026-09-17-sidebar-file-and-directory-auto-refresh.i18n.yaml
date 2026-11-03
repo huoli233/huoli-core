@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-17-sidebar-file-and-directory-auto-refresh.md
 /agent-note-on-demand-watching-and-automatic-refresh-for-sidebar-previews-and-file-trees:
-  en: 8dfe4436b064776d
-  zh: acb3f1e2fae231f4
+  en: 6e617aff3d659752
+  zh: be9ca4e73e1b9d2b
 /agent-note-on-demand-watching-and-automatic-refresh-for-sidebar-previews-and-file-trees/problem:
   en: f7e7751fe98be91e
   zh: e1d6c4f042c7d75d
@@ -18,8 +18,8 @@
   en: ca63fb903b447c2d
   zh: 3014adbdb0a890ee
 /agent-note-on-demand-watching-and-automatic-refresh-for-sidebar-previews-and-file-trees/implementation-and-responsibilities/client-and-sidebar:
-  en: 5be003d933357fee
-  zh: 0aec7cea1b06a7ce
+  en: 2de07c45119c0ba5
+  zh: 6348833320df32dc
 /agent-note-on-demand-watching-and-automatic-refresh-for-sidebar-previews-and-file-trees/watch-requests-and-notifications:
   en: 025ba83ae78824df
   zh: 264d74d2bdfe3d27
@@ -69,5 +69,5 @@
   en: 8faa05de777dea21
   zh: 2f0b1ff65bdba75b
 /agent-note-on-demand-watching-and-automatic-refresh-for-sidebar-previews-and-file-trees/relationship-to-existing-agent-notes:
-  en: b397ea36155793e9
-  zh: bfe74e82b0256cfa
+  en: d2fb2abcb7433c33
+  zh: 99475b4e8be3c629

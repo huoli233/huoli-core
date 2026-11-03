@@ -6,8 +6,8 @@
   en: d0920097a4f82e1c
   zh: 49c1486c7342011b
 /huoli-huoli-session-format-v2-to-v3:
-  en: a60f28fc631f2997
-  zh: 105e1f6f31b0477c
+  en: 1e5842769ada8021
+  zh: 9b8be0ad6cab5c38
 /huoli-huoli-session-format-v2-to-v3/summary:
   en: f07931a0033c4f9b
   zh: aa126cc8c9a2c0df
@@ -18,11 +18,11 @@
   en: bbff250eba0f1b89
   zh: 0a618f05cc88ee2b
 /huoli-huoli-session-format-v2-to-v3/use-this-package/when-to-use-it:
-  en: 9fdd49c5c8047659
-  zh: 25b04da32127eb6c
+  en: fd854311a1fb7854
+  zh: d23f2b640595f3d5
 /huoli-huoli-session-format-v2-to-v3/use-this-package/entry-point:
-  en: f79ffa1ea825f0aa
-  zh: 54f2723f279f84d2
+  en: 3beefbbe27625c95
+  zh: 63220ecad048f41f
 /huoli-huoli-session-format-v2-to-v3/v2-to-v3-specification:
   en: 0132dbed9ea34acb
   zh: 40eb4b1bb39504b8
@@ -30,8 +30,8 @@
   en: 04c39412c6bd4f0f
   zh: e8143eaeb44ede63
 /huoli-huoli-session-format-v2-to-v3/v2-to-v3-specification/system-head-and-message-identities:
-  en: a8baba72b6c187e4
-  zh: 51b56d009756e307
+  en: d079d8670ebfd248
+  zh: 4cdccc647b287e09
 /huoli-huoli-session-format-v2-to-v3/v2-to-v3-specification/sequence-references-and-inheritance:
   en: 5a93128360de269c
   zh: ca8364e14c8817f3
@@ -51,11 +51,11 @@
   en: 2f9127759a38289f
   zh: d3c7b539f5e3c670
 /huoli-huoli-session-format-v2-to-v3/understand-the-implementation:
-  en: 65a3f3ea2eeecc3e
-  zh: 5f3b0d5cd55c6baa
+  en: 932466c80fa50e0a
+  zh: 56ae4334991cda05
 /huoli-huoli-session-format-v2-to-v3/further-exploration:
-  en: 2c07a2d0f6157c4a
-  zh: db4910ffa738dd72
+  en: 5d5916e8a7f7ae6f
+  zh: d0e5431b7d80af22
 /huoli-huoli-session-format-v2-to-v3/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -72,8 +72,8 @@
   en: 2b3f89391a5d5369
   zh: 8ee03de5e07cd67d
 /huoli-huoli-session-format-v2-to-v3/known-limitations-and-deferred-work:
-  en: eb15595f7db1cdef
-  zh: ef6d792b616e681a
+  en: 146b5656eb208f3d
+  zh: 6072ab966e7ca7d9
 /huoli-huoli-session-format-v2-to-v3/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 8ec3e73528ddb1a6

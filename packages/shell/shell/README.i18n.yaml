@@ -6,8 +6,8 @@
   en: 4a173bf52227a3b6
   zh: 76bb85595252765c
 /huoli-huoli-shell:
-  en: 607578ed1d9dbabe
-  zh: e6c674aad094f056
+  en: 31174f3b8235207d
+  zh: fc685358af2f8d9b
 /huoli-huoli-shell/summary:
   en: bb40932744bc4b80
   zh: 22e2af1327b2f835
@@ -27,11 +27,11 @@
   en: 719b0708bf3cf1cf
   zh: 044f53d543960f42
 /huoli-huoli-shell/use-this-package/requests-and-resolved-specs:
-  en: e104e13a7dae9491
-  zh: 1b219491fabf780b
+  en: 60f89d55c46cd52c
+  zh: 476060a4352bd2a9
 /huoli-huoli-shell/use-this-package/choosing-and-composing-an-executor:
-  en: ddcf8a0c7a45e8d3
-  zh: e4ee99e2e27234fe
+  en: d1862114074d4cd5
+  zh: 5b9c1be29cf1094c
 /huoli-huoli-shell/use-this-package/the-shared-exit-status-contract:
   en: f4125282c1deab36
   zh: 46b8ee789ae68a9a
@@ -39,8 +39,8 @@
   en: d2192b68c2faf92b
   zh: 7678a2fd356d8587
 /huoli-huoli-shell/understand-the-implementation/design-philosophy:
-  en: a6467114855249e8
-  zh: 65b53a2839cb411e
+  en: f999e92236d048ca
+  zh: e1c93f904dd10436
 /huoli-huoli-shell/understand-the-implementation/source-map:
   en: 1e9231bae2662059
   zh: 2bac2b8e8fc08eb9
@@ -51,17 +51,17 @@
   en: 63853c610719e1bb
   zh: 09668e6fd34c9161
 /huoli-huoli-shell/further-exploration:
-  en: e1653edf9807c768
-  zh: bac6f0001ca214d6
+  en: 977fd3de24d4f6fe
+  zh: 1719ea9d32c80b48
 /huoli-huoli-shell/model-experience:
-  en: 7dec7effc0b15288
-  zh: 6ac73faa9ae252ed
+  en: 1a35af8104fbd0c1
+  zh: 71ac8427207c548d
 /huoli-huoli-shell/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
   zh: 788a4799b1d65a8b
 /huoli-huoli-shell/known-limitations-and-deferred-work:
-  en: d45d58f3ac323b73
-  zh: a4a4fe86a4f9f15c
+  en: 4732b597afafa5d2
+  zh: 4076b51895881202
 /huoli-huoli-shell/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3c8bbe93d71a3377

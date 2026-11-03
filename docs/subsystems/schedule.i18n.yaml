@@ -3,17 +3,17 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/schedule.md
 /host-wide-schedule:
-  en: d977861519ae2e36
-  zh: 910ba93329cfe56b
+  en: c9d18e6a84ad1de4
+  zh: a7d0ada0b1d0c099
 /host-wide-schedule/durable-tasks:
-  en: 5ddc67179a897c74
-  zh: 47024e886fa70abf
+  en: de857608f2225b54
+  zh: efed6884f12e038c
 /host-wide-schedule/storage-versioning:
-  en: ad9b7b25eebb91b3
-  zh: 6158c5cc9ef12a7f
+  en: dd5563205f964566
+  zh: 3f7bb5720e634039
 /host-wide-schedule/recurrence-rules:
-  en: f68c0b3ff09ce20e
-  zh: 9fc4470739ff640c
+  en: 09404aa972813d78
+  zh: cc416008afd9e2ac
 /host-wide-schedule/absolute-time-input:
   en: a7c1c1b63ffb19cf
   zh: 9b00f818c4774ad8
@@ -33,8 +33,8 @@
   en: d10b60799a055427
   zh: 68d33f2f59f826b8
 /host-wide-schedule/task-management:
-  en: 7a979f8fef09af59
-  zh: 475d982686030c50
+  en: dcd95b91fbd52912
+  zh: e12d5bcdaf207a6b
 /host-wide-schedule/timing-edits:
   en: 93c882d1c1924527
   zh: 750b73ab93c9517a

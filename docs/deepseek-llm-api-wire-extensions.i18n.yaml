@@ -3,26 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/deepseek-llm-api-wire-extensions.md
 /official-deepseek-llm-api-wire-extensions:
-  en: 39729b071744e94b
-  zh: f3a1913295e78b5f
+  en: a30e0178ae06161b
+  zh: 3f2eb29b046dba2f
 /official-deepseek-llm-api-wire-extensions/wire-namespaces-and-versioning:
-  en: 1da81051addc4b47
-  zh: 3e8d7cd3f8c1cdba
+  en: 7b5c0a4424037536
+  zh: abc59d0553674d91
 /official-deepseek-llm-api-wire-extensions/request-headers:
-  en: d3d6a2c8240b80e9
-  zh: debf42ed01233728
+  en: 0810f151cc0e2387
+  zh: 02eddb33fc3e6df2
 /official-deepseek-llm-api-wire-extensions/body-extension-transaction:
   en: 48001cfd1281a23b
   zh: d410530ae8aa2823
 /official-deepseek-llm-api-wire-extensions/huoli-plugin-packages:
-  en: f89059050613f3e8
-  zh: da5cf2a4eeb81b75
+  en: 9d7f86cd78b35f2a
+  zh: 4ae766d56abfa18d
 /official-deepseek-llm-api-wire-extensions/huoli-session-log:
-  en: 0d033f72951e2920
-  zh: 767efca0dc39ac03
+  en: 95b7673874bbfd34
+  zh: 619b22eca7e33be7
 /official-deepseek-llm-api-wire-extensions/huoli-session-log/wire-session-header:
-  en: ccd8fcd773df21c4
-  zh: 7ea020068ad093ae
+  en: acd5eb8b454b5f15
+  zh: db080bac218e6473
 /official-deepseek-llm-api-wire-extensions/huoli-session-log/canonical-event-envelopes:
   en: 008a21df5e314154
   zh: 8855710a37542ec5
@@ -30,5 +30,5 @@
   en: 4d84cb1e61f9cf58
   zh: 8a63ce3069e2f0b3
 /official-deepseek-llm-api-wire-extensions/exposure-and-receiver-requirements:
-  en: ae93d9a44245b12f
-  zh: 8b95fc66c6e653c2
+  en: ee2241328b7dd339
+  zh: 057a60c921a2b48e

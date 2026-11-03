@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-sidebar/README.md
 /:
-  en: 7884381c2c554eca
-  zh: e6d7199a9bb2f0f8
+  en: b85c99db8d5c6e1a
+  zh: c226d913bb9b907d
 /huoli-huoli-client-ui-sidebar:
-  en: e357f49fb1d1710e
-  zh: 2e61922b104f77eb
+  en: 1777c2d76506319b
+  zh: 85952940dab00fb9
 /huoli-huoli-client-ui-sidebar/summary:
-  en: af17f03561e5372b
-  zh: 91a1b9f6c7a51025
+  en: 35ebfade49d8f3e2
+  zh: f0f9839cbda89b0d
 /huoli-huoli-client-ui-sidebar/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,17 +18,17 @@
   en: bbd3b8e6b9d87124
   zh: 9d387d1925599c13
 /huoli-huoli-client-ui-sidebar/use-this-package/brand-and-new-session:
-  en: 6bc49e22f0f73f07
-  zh: 10883997ccb7d145
+  en: 2726a3017c435315
+  zh: c2ab20f902b4f500
 /huoli-huoli-client-ui-sidebar/use-this-package/global-panel-entries:
   en: e7f316023445511b
   zh: 6271c8c011533877
 /huoli-huoli-client-ui-sidebar/use-this-package/collapse-behavior:
-  en: 10381cbac96069a3
-  zh: c5849741a0be2f00
+  en: 71bcc05069529160
+  zh: 34cc505e05ed3a68
 /huoli-huoli-client-ui-sidebar/use-this-package/macos-desktop:
-  en: 28e3639ed58492e0
-  zh: 4896acd767287c8a
+  en: 8fe99a6f3721b11f
+  zh: 7ee7d31746411b06
 /huoli-huoli-client-ui-sidebar/use-this-package/scrollbars:
   en: 9e7b31acee759f2b
   zh: 3a6beb63b23d26ae
@@ -36,14 +36,14 @@
   en: 8855ad013285a27e
   zh: f19b3e75c38c5b0a
 /huoli-huoli-client-ui-sidebar/understand-the-implementation:
-  en: 8cc657bd9b66c93f
-  zh: 47ad4bd9e906ef8e
+  en: 32a30af80ddf73e4
+  zh: 7695c774d83ec3e5
 /huoli-huoli-client-ui-sidebar/understand-the-implementation/slot-discipline:
   en: 6eefc5c45abe8a8f
   zh: 20b651e48a0ea903
 /huoli-huoli-client-ui-sidebar/further-exploration:
-  en: 5083bbf74e47bb67
-  zh: 0236e569178756a2
+  en: a0363507e9ecc61d
+  zh: 93ba6a9d76f92578
 /huoli-huoli-client-ui-sidebar/model-experience:
   en: 3120df665299c634
   zh: 1d9f365d091d0d2a

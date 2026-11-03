@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-21-replaceable-icon-sprite.md
 /agent-note-replaceable-product-icons-through-an-svg-sprite:
-  en: 2b527e550e071451
-  zh: 7de256912270cae0
+  en: 1a30077faebe21b9
+  zh: b255b222a4a5ba4e
 /agent-note-replaceable-product-icons-through-an-svg-sprite/problem:
   en: d55557fe41ab87c8
   zh: eea3f7d0c82561bf

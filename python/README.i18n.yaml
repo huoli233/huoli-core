@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write python/README.md
 /huoli-core-python-sdk:
-  en: aa08432a8887185d
-  zh: 85b40b48790c04db
+  en: adfc5e1ac56faffd
+  zh: c16c0a600f2c2af5
 /huoli-core-python-sdk/packages:
-  en: 485e9978ed4f6dee
-  zh: fccda14b1b84cecf
+  en: 92ea7bbce0f813c8
+  zh: a782ac8fc432175a
 /huoli-core-python-sdk/behavior:
-  en: ccb264c8850ae568
-  zh: 2580e6d587193bb0
+  en: 0271b3e63ee29b24
+  zh: 757db85055d6352a
 /huoli-core-python-sdk/contributor-workflows:
-  en: 292b8aab762f515a
-  zh: 93da3d5c6af97d70
+  en: 1473ae2797d9720d
+  zh: 8b26876fd409b76a

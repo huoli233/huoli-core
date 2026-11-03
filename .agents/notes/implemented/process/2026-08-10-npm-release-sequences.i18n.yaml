@@ -3,47 +3,47 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-10-npm-release-sequences.md
 /agent-note-private-npm-publication-as-three-independent-sequences:
-  en: 176f873a6b094838
-  zh: 9baeba69cbaea9cf
+  en: 01f23bb0425be7d6
+  zh: 225948a4bc1bc6c1
 /agent-note-private-npm-publication-as-three-independent-sequences/problem:
-  en: b94462e04e350571
-  zh: 07cef78e4cf7a9ac
+  en: 25dd452691ecb084
+  zh: 4a114bf1f48b81d6
 /agent-note-private-npm-publication-as-three-independent-sequences/decision:
   en: a15c7c13f167e5ac
   zh: 63bcc2ef60c2f344
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/three-independent-sequences:
-  en: c1d7c618fa93ab10
-  zh: 887ad2a37ed18035
+  en: e192c6b442afa25a
+  zh: ab0f15bceefc9aa5
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/versions-land-in-the-repository-from-a-local-command-ci-only-checks-and-uploads:
-  en: 71d4cda384013bfb
-  zh: 909d853c18496925
+  en: 913ce5f2e155d34b
+  zh: 9f19dee02439ecb5
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/vendor-advance-the-complete-family-with-per-package-tags:
-  en: 321f48c7e4afac24
-  zh: 974a7fa1a75c810d
+  en: f4304efa4920b3e6
+  zh: 2aa74a4739e63ebd
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/publication-runs-only-on-github-and-the-registry-decides-what-goes-out:
-  en: 8c8cd90e6eabe07d
-  zh: 7035b71a6eeeb379
+  en: e66c51df5dcdc262
+  zh: 649f9dc7c587377a
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/workspace-internal-references-use-the-workspace-protocol:
-  en: 82a7925d449fc283
-  zh: 653358a1ffbad80a
+  en: 062243670c734a4b
+  zh: 0fb4729f0db6396f
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/published-dependency-faces-use-an-explicit-policy:
-  en: 30a64e0e919a27c0
-  zh: 19729d7ebee35439
+  en: b9f5472a8cc68f4b
+  zh: 223caa4a054023b3
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/an-optional-dependency-is-never-loaded-at-module-scope:
   en: d83f6cf38529c5b5
   zh: 4df5659b2154d3b7
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/release-family-objects:
-  en: 5bc6a83d124b682d
-  zh: 17383ec5c3c7e0e5
+  en: ac73b2e4cf393fa4
+  zh: 9ec74a76ed800301
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/workflow-shape-pack-on-pr-push-publish-from-a-manual-dispatch-workflow:
-  en: ea0acc6409da4d5c
-  zh: ac0bd2fe41f4fe67
+  en: 1a15e5dff60f3ebc
+  zh: 961051073b326ec5
 /agent-note-private-npm-publication-as-three-independent-sequences/decision/repository-changes-this-carried:
-  en: c505237cad2c4128
-  zh: 55364ba462536680
+  en: 1a54366a4415cbd9
+  zh: 2ba1d3e3fa989674
 /agent-note-private-npm-publication-as-three-independent-sequences/alternatives-considered:
-  en: ed22fa8a47b5c4b6
-  zh: 7b367971a51a67ff
+  en: 992dd7cfaac74f49
+  zh: 438df885fe1fb6c5
 /agent-note-private-npm-publication-as-three-independent-sequences/consequences:
-  en: 46f82110175ea3f7
-  zh: 1cdd1c99bfb88440
+  en: 37f7e4a3353503ac
+  zh: 82f7e1620755c703

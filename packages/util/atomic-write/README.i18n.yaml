@@ -6,11 +6,11 @@
   en: 1065a4fcafd0430d
   zh: 40bc911b6d01288b
 /huoli-huoli-atomic-write:
-  en: ed491d62812ad8cc
-  zh: 653e184dd035ec71
+  en: d56b537e2956655b
+  zh: e270c4d2d23cf617
 /huoli-huoli-atomic-write/summary:
-  en: d2d40e759179f047
-  zh: c53f56de74b26e5a
+  en: 1821b413b6b82ecb
+  zh: 99cc837761ab4d2f
 /huoli-huoli-atomic-write/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -33,14 +33,14 @@
   en: aee5320dc8746377
   zh: f35dbbf350f7b5cf
 /huoli-huoli-atomic-write/understand-the-implementation/write-path:
-  en: 9b84481fd4a97a49
-  zh: 09e25c77eb5e53fb
+  en: fcb305d160a376ee
+  zh: 82b8b6fd3628f071
 /huoli-huoli-atomic-write/understand-the-implementation/why-the-swap-stays-safe:
   en: 784e985c1fb3a25e
   zh: 4afda1b9bf5f29cc
 /huoli-huoli-atomic-write/further-exploration:
-  en: 16ece9b754f7fff6
-  zh: 2456fe14cc5a658b
+  en: ada3a96be307e08f
+  zh: 5c892987e81fac54
 /huoli-huoli-atomic-write/model-experience:
   en: 225fc1d94a284905
   zh: 7319a43c3b8a884d

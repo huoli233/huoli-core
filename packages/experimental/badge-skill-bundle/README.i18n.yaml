@@ -3,29 +3,29 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/experimental/badge-skill-bundle/README.md
 /:
-  en: fc73b6a11f583014
-  zh: 9b2a3ee017befdd8
+  en: ea1bc4c6fa3f7c36
+  zh: 4a064f19e7def468
 /huoli-huoli-experimental-badge-skill-bundle:
-  en: e9f3f3f4aea1c588
-  zh: 706c6a9f82b3358a
+  en: de1287fed6ab9e7f
+  zh: 31626936bd1e7ae8
 /huoli-huoli-experimental-badge-skill-bundle/summary:
-  en: 98328e636b0f758a
-  zh: 0d8cf62176fb5e10
+  en: 023a7a2bc2d58ae1
+  zh: ef48bc5c9f415f0e
 /huoli-huoli-experimental-badge-skill-bundle/table-of-contents:
   en: d152484eb41ac6b4
   zh: 988e839059414d27
 /huoli-huoli-experimental-badge-skill-bundle/use-this-package:
-  en: 21fc43b87f896a26
-  zh: 84c71fa133f0d9a0
+  en: af88bd577b2ad81d
+  zh: e4c24859894ad2c1
 /huoli-huoli-experimental-badge-skill-bundle/understand-the-implementation:
-  en: e1ce6533996f4fe6
-  zh: 5bf2931419881347
+  en: a05508f38dbfe687
+  zh: 02d5a729727cff3f
 /huoli-huoli-experimental-badge-skill-bundle/further-exploration:
-  en: 20bf055137af811e
-  zh: c1d8ca9c25928650
+  en: c1eec67f96c34566
+  zh: 1d270b8ccebc6d60
 /huoli-huoli-experimental-badge-skill-bundle/model-experience:
-  en: 456435472409223d
-  zh: c76499dcbad46745
+  en: 678aabb25691ee60
+  zh: 482536dc9d2ff06a
 /huoli-huoli-experimental-badge-skill-bundle/model-experience/kv-cache-effect:
   en: 1b2209bbbf869b1a
   zh: 5b9de62271343e4e

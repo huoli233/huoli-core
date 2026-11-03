@@ -6,26 +6,26 @@
   en: 2d1caa2e6179218a
   zh: 0b51a5dbda727ffa
 /huoli-huoli-bash-sandbox:
-  en: 63b29753d16046c9
-  zh: c7be0b83f0d2911c
+  en: 92011c3537725131
+  zh: 1e7cba1a91ae3ae4
 /huoli-huoli-bash-sandbox/summary:
-  en: 37a0fcab18f972c0
-  zh: f7b4222e646e7050
+  en: 4d5b6f716208108f
+  zh: c0d67b0430872c9a
 /huoli-huoli-bash-sandbox/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-bash-sandbox/use-this-package:
-  en: bd59d09bee36362c
-  zh: 7086c8268e7517d5
+  en: 638108e09d005e7f
+  zh: 0760f3a31f89c024
 /huoli-huoli-bash-sandbox/use-this-package/when-to-choose-it:
-  en: af387f23325c1435
-  zh: 7a160aca5edd657e
+  en: f19fe80424d308b1
+  zh: 7ac7822be3b16707
 /huoli-huoli-bash-sandbox/use-this-package/modes-and-file-effects:
   en: bc096fe6f8eb54cd
   zh: 1a3e3122ca40b0e5
 /huoli-huoli-bash-sandbox/use-this-package/minimal-configuration:
-  en: 7edc013af7a491f4
-  zh: 7b64bed7e3e0d65d
+  en: 5903961571ca7463
+  zh: 3315d9135ef8e5cb
 /huoli-huoli-bash-sandbox/use-this-package/denials-are-result-facts:
   en: a10127c3fb2869ef
   zh: 17908b572ddb5507
@@ -36,8 +36,8 @@
   en: 05e2abe4a25886fd
   zh: 9240b331c45ac81e
 /huoli-huoli-bash-sandbox/understand-the-implementation/design-concept:
-  en: e1b1ac62e94ce535
-  zh: 5fa7a0353fbf777d
+  en: 2990d12342b392c8
+  zh: 1f4cbf482514d93c
 /huoli-huoli-bash-sandbox/understand-the-implementation/source-map:
   en: 8963005b41bfc3c6
   zh: 7df1436563c10a19
@@ -48,8 +48,8 @@
   en: 0b6c6d7e216e1d23
   zh: 15f94cfccf4fa242
 /huoli-huoli-bash-sandbox/further-exploration:
-  en: 0e4585dbb92a0290
-  zh: 4f08980a15991c4c
+  en: b7a330b23af3a487
+  zh: 9c6e49515bbdb4b4
 /huoli-huoli-bash-sandbox/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -57,11 +57,11 @@
   en: 8e3df84fdcaeee60
   zh: 25ad519340c6c232
 /huoli-huoli-bash-sandbox/model-experience/bash-tool-schema-indirectly/what-the-model-sees:
-  en: a6d30d6d5f7d2a5e
-  zh: dfc77de2d2d66f9e
+  en: 48ca74df6b268801
+  zh: 9a6f7710b7e43517
 /huoli-huoli-bash-sandbox/model-experience/bash-tool-schema-indirectly/token-effect:
-  en: 2278530f1f9e93b2
-  zh: 86e2a20746ce3f3c
+  en: a0e0c3cc7f1e3292
+  zh: 040401f56805178f
 /huoli-huoli-bash-sandbox/model-experience/bash-tool-schema-indirectly/kv-cache-effect:
   en: d25d46a61dc2b0c1
   zh: e1deea6d70be4691

@@ -3,53 +3,53 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/experimental/skill-badge/README.md
 /:
-  en: c32f79a869ebd48a
-  zh: 44e64fb59fa75e57
+  en: 9f7bcc13254347ad
+  zh: 737a7bda171e675f
 /huoli-huoli-skill-badge:
-  en: 2e49dd1b621b834d
-  zh: 1eb37e3b23098c77
+  en: 488ce2b17e466692
+  zh: d3a201fa6ccedd86
 /huoli-huoli-skill-badge/summary:
-  en: 49bdd760ee9e4370
-  zh: 2a4e68a7ef28d3e6
+  en: 98f3f1242d4d90e3
+  zh: 7104ccdd7cc835a9
 /huoli-huoli-skill-badge/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-skill-badge/use-this-package:
-  en: 0da087eb29c565b0
-  zh: ec86044ef1255440
+  en: 0693010af9a953c6
+  zh: e343c320fbedbafd
 /huoli-huoli-skill-badge/use-this-package/when-to-choose-it:
-  en: 4e424f3ab2a8b5b1
-  zh: e38162f15f0a8354
+  en: 480c789166ef7594
+  zh: bde7d7d8214845ae
 /huoli-huoli-skill-badge/use-this-package/enable-the-plugin:
-  en: a52d308db24e47bc
-  zh: 4e79dae8fa75e484
+  en: 90502d16c1e50231
+  zh: 60a9d2b2bcc0db3a
 /huoli-huoli-skill-badge/use-this-package/what-the-badge-skill-provides:
-  en: 7144db5613266a9b
-  zh: d1b7edf6c1253e9a
+  en: 2a275760867b01f8
+  zh: 31c3a5b16d85fbbc
 /huoli-huoli-skill-badge/use-this-package/observable-success-and-failures:
-  en: dd749b384f657fa8
-  zh: d2ab3f5adf29bd33
+  en: 1359fd01a60201ce
+  zh: 985656e99facd0b3
 /huoli-huoli-skill-badge/understand-the-implementation:
   en: 63465b0133f30e85
   zh: 84bebb7c1fe0ceba
 /huoli-huoli-skill-badge/understand-the-implementation/design-concept:
-  en: 52ff92fad6d26ee9
-  zh: 071c7859c158513d
+  en: 71b9cc1d6cc35753
+  zh: f9115ceb7328294e
 /huoli-huoli-skill-badge/understand-the-implementation/source-map:
-  en: 259b9b2073da8ddd
-  zh: e0d621f0a3b0470c
+  en: 73593e577cea63a4
+  zh: 94d64ca6ab82ee81
 /huoli-huoli-skill-badge/further-exploration:
-  en: 1b5434b8bcbd5b0b
-  zh: d170cddf3837e655
+  en: 3136c2220c9c3179
+  zh: 2fc5c4a30ce49f01
 /huoli-huoli-skill-badge/model-experience:
-  en: b9912bc3f1ba0680
-  zh: e288cc67b6d079f6
+  en: ebacb87e28493ce7
+  zh: 9004eae196c6ee3f
 /huoli-huoli-skill-badge/model-experience/kv-cache-effect:
   en: 5b5bcb4fc0513bef
   zh: 67a1d939c6a18c2e
 /huoli-huoli-skill-badge/known-limitations-and-deferred-work:
-  en: c7e405ebbc1d4602
-  zh: 05a57fb4359da265
+  en: 86b36bd38c853f47
+  zh: f95f3662a11771d3
 /huoli-huoli-skill-badge/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

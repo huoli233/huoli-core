@@ -6,11 +6,11 @@
   en: de1de2c83432e095
   zh: facea56204dc9c76
 /huoli-huoli-tool-workflow:
-  en: b8980ef14abe1385
-  zh: 4052bf0c13f7917a
+  en: adf80b662fb7e3f6
+  zh: c783201560e70081
 /huoli-huoli-tool-workflow/summary:
-  en: c18878dbaecc42bb
-  zh: 360e2a13717bdb04
+  en: fd2233acfc2a67d1
+  zh: 12ee066bf68a29af
 /huoli-huoli-tool-workflow/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -27,8 +27,8 @@
   en: 3083f3f2657a46e3
   zh: bca5cb741ea76798
 /huoli-huoli-tool-workflow/use-this-package/config:
-  en: 18d1067a480e072e
-  zh: cf27e51f0dec2f4d
+  en: 38f4364784acd003
+  zh: aad0be4ecc563cc1
 /huoli-huoli-tool-workflow/understand-the-implementation:
   en: 18684e6da513cdb5
   zh: bd4cdcabfe4722ec
@@ -45,14 +45,14 @@
   en: e5bbbb7788d6dcdf
   zh: aa035f074f7ac021
 /huoli-huoli-tool-workflow/understand-the-implementation/render-intent:
-  en: 389b3740ec1f5ac2
-  zh: 78430014f5e270e2
+  en: b42b1c5b6ae42cc3
+  zh: 978f9472b65b31f9
 /huoli-huoli-tool-workflow/understand-the-implementation/source-map:
   en: c22defb9681d39c7
   zh: 0856b88d731fb127
 /huoli-huoli-tool-workflow/further-exploration:
-  en: 7522ab6b5866e47b
-  zh: 0fdfb25026defbff
+  en: 0ceaa6e6a998f92f
+  zh: 7e3853d1cb879f85
 /huoli-huoli-tool-workflow/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -75,8 +75,8 @@
   en: e4c7376d4f29dbd5
   zh: 6b7a9eaf69c9ea53
 /huoli-huoli-tool-workflow/model-experience/tool-schema/what-the-model-sees:
-  en: 5af871e5bc1126c7
-  zh: 07b5e2b37c766a7e
+  en: aa8fd8b3d7b39686
+  zh: 7966f032b1560b37
 /huoli-huoli-tool-workflow/model-experience/tool-schema/token-effect:
   en: 2038bdeb03f99195
   zh: 90959fa2708b910f

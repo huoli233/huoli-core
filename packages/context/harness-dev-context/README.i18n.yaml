@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/context/harness-dev-context/README.md
 /:
-  en: 8fed567b18e9dfa2
-  zh: 2ab54db218cc0197
+  en: 858410691fa84eec
+  zh: 78af7794155f1ac9
 /huoli-huoli-harness-dev-context:
-  en: b47701c093269adb
-  zh: e147a06ec0d6047f
+  en: f2a449ab023c9686
+  zh: db8ca261a0296412
 /huoli-huoli-harness-dev-context/summary:
-  en: daf618174270461e
-  zh: 4c5b56fe4380c91f
+  en: 7270a54ee1810bdd
+  zh: c6e661d0e75364cc
 /huoli-huoli-harness-dev-context/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,8 +18,8 @@
   en: d3192709a416f7fb
   zh: 479253a5ae1adcb2
 /huoli-huoli-harness-dev-context/use-this-package/what-the-model-gets:
-  en: d9f5b11af33b3eb8
-  zh: fc96b972503a0b99
+  en: c21f9a0dd3d15922
+  zh: 8f1e0e2b4461acc3
 /huoli-huoli-harness-dev-context/use-this-package/sessions-from-earlier-releases:
   en: d810950db5118265
   zh: d20e3965fa78e0f8
@@ -36,8 +36,8 @@
   en: 55c4cdd475f9f851
   zh: ac4fb96e7be88810
 /huoli-huoli-harness-dev-context/further-exploration:
-  en: f291741c499581ac
-  zh: 8ee0baef51e69ef0
+  en: 3f86a38b769640d6
+  zh: 6ce81e2a60450582
 /huoli-huoli-harness-dev-context/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -60,8 +60,8 @@
   en: e8f89a14bd36dae0
   zh: bd4ec43e07e234c9
 /huoli-huoli-harness-dev-context/known-limitations-and-deferred-work:
-  en: 558945e2f537db5b
-  zh: f584fcde6275c2da
+  en: 4f45cb88a6316a71
+  zh: 62bc7dcafa7d690b
 /huoli-huoli-harness-dev-context/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: e88aeb617ffb74ea

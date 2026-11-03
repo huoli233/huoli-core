@@ -6,8 +6,8 @@
   en: a24b02a97921b07a
   zh: 92428dfee88d27fd
 /huoli-huoli-session-format-v3-to-v4:
-  en: f27dbda33d994f9b
-  zh: 209b0ad95219767a
+  en: b62e22662ba5c97e
+  zh: f8c1a0d6b34feb20
 /huoli-huoli-session-format-v3-to-v4/summary:
   en: 0162a0e7e6493e0a
   zh: 4107af760c449097
@@ -15,8 +15,8 @@
   en: b501b06f4b21cc31
   zh: bd67928bedf6c786
 /huoli-huoli-session-format-v3-to-v4/use-this-package:
-  en: e3e7a08fb807c750
-  zh: 9550a2094e203551
+  en: c67514d6c04fa380
+  zh: 979ded8fe1de0b94
 /huoli-huoli-session-format-v3-to-v4/v3-to-v4-specification:
   en: d3463f5e222c44a2
   zh: ec932eb4acac30f4
@@ -30,11 +30,11 @@
   en: 3e7af0248b029e9a
   zh: b73ddd133db65d05
 /huoli-huoli-session-format-v3-to-v4/v3-to-v4-specification/message-source-conversion:
-  en: 83df80655a2ea5ab
-  zh: be1dd03bc0464fce
+  en: 7952f804c3c08069
+  zh: 4e15c031fe83a5fa
 /huoli-huoli-session-format-v3-to-v4/v3-to-v4-specification/parent-catalog-prerequisites:
-  en: bf7125343985f83c
-  zh: 47595e1fafc2c7b4
+  en: 879dc95a636cf480
+  zh: ab147974610192f7
 /huoli-huoli-session-format-v3-to-v4/v3-to-v4-specification/sequence-references-and-inheritance:
   en: 8543a15b3c24cd43
   zh: 5eacb6ffd009d1bc
@@ -51,11 +51,11 @@
   en: 610f35b8c44538a2
   zh: 17e5c07f09783106
 /huoli-huoli-session-format-v3-to-v4/native-v4-admission/lifecycle-and-reference-relationships:
-  en: 7dd4a236075233c7
-  zh: 988e67acdd32d2ba
+  en: db729f4ef528b936
+  zh: d3a507a9aca3e60c
 /huoli-huoli-session-format-v3-to-v4/native-v4-admission/developer-changes-and-deferred-schemas:
-  en: 471f0e087806057a
-  zh: 76b2ee1f58118d71
+  en: 70c40b854a4de9c9
+  zh: 0bae22b03ebd7dd5
 /huoli-huoli-session-format-v3-to-v4/native-v4-admission/fork-generated-results:
   en: db82b002989ac151
   zh: da80b797bf321c3f
@@ -66,8 +66,8 @@
   en: bd4d2271b5844ca1
   zh: b5d00e78d6085a25
 /huoli-huoli-session-format-v3-to-v4/further-exploration:
-  en: d54326f96c09a0a0
-  zh: 862147d701ce9049
+  en: 2dd30be551960263
+  zh: 295f8cb556e8c2ec
 /huoli-huoli-session-format-v3-to-v4/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -84,8 +84,8 @@
   en: 143ddba012e03d0c
   zh: 93dfdb806bf9a697
 /huoli-huoli-session-format-v3-to-v4/known-limitations-and-deferred-work:
-  en: c5a232c1f0b8a5a5
-  zh: 5634f98f97060c7c
+  en: 293291d0577f73d8
+  zh: f1f783ed3796c249
 /huoli-huoli-session-format-v3-to-v4/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 8ec3e73528ddb1a6

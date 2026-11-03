@@ -6,8 +6,8 @@
   en: e2a966cf2f6d7f5f
   zh: e19b979aeef0d29a
 /huoli-huoli-experimental-subagent-oar:
-  en: fef097906f8c0a35
-  zh: 3fb2737b8974edc0
+  en: 7101be6808ac937a
+  zh: 16e7e120ab67c41e
 /huoli-huoli-experimental-subagent-oar/summary:
   en: 75bc60daa998f16a
   zh: 31f09b5ed600232d
@@ -18,20 +18,20 @@
   en: bbff250eba0f1b89
   zh: 0a618f05cc88ee2b
 /huoli-huoli-experimental-subagent-oar/use-this-package/compose-a-profile:
-  en: 60804c44d0c2bb40
-  zh: 74471620c96b8c78
+  en: 174380df9e9bbe5c
+  zh: 00f06b01e7c40d35
 /huoli-huoli-experimental-subagent-oar/use-this-package/what-you-get:
-  en: e4b715738e3f238d
-  zh: 0c6d561b99d4b07e
+  en: 346a4db77fd7a0dc
+  zh: 6c65def3afe34b4e
 /huoli-huoli-experimental-subagent-oar/use-this-package/configure-a-runtime-instance:
-  en: cfc28b43567604a6
-  zh: 04ef0d698c3b47f7
+  en: c9e2c2a1cbf5fea3
+  zh: 841fb62412dc8479
 /huoli-huoli-experimental-subagent-oar/understand-the-implementation:
-  en: 19b537fd24aa1dfd
-  zh: fee12542bb2fc1a6
+  en: 64df2f4576ead10b
+  zh: ce486eff15f7c71c
 /huoli-huoli-experimental-subagent-oar/further-exploration:
-  en: 089fe63b9b457247
-  zh: 482382e68e5c4e2e
+  en: edfb2872e6194aa0
+  zh: dc1726121778ac7d
 /huoli-huoli-experimental-subagent-oar/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -51,17 +51,17 @@
   en: cc55ad2a7e04a064
   zh: e7d3d72a5b1e80e3
 /huoli-huoli-experimental-subagent-oar/model-experience/parent-results-indirectly/what-the-model-sees:
-  en: 2d1cdcc92211fdec
-  zh: 016169e5fb65eb86
+  en: 78886ffef88c390c
+  zh: a1cb060e56b72d15
 /huoli-huoli-experimental-subagent-oar/model-experience/parent-results-indirectly/token-effect:
   en: 99d04595c61a32fc
   zh: 47f6253729070269
 /huoli-huoli-experimental-subagent-oar/model-experience/parent-results-indirectly/kv-cache-effect:
-  en: ba649995f08b9e09
-  zh: a153047f0c25645a
+  en: 38311f5360546135
+  zh: a942e7c0a0920950
 /huoli-huoli-experimental-subagent-oar/known-limitations-and-deferred-work:
-  en: 8eec39a3eb58a185
-  zh: 68feb7901d4b50b9
+  en: 04e56ea8c631561a
+  zh: 1bd854bf7629f031
 /huoli-huoli-experimental-subagent-oar/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 8ec3e73528ddb1a6

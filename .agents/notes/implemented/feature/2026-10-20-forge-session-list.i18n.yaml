@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-20-forge-session-list.md
 /agent-note-forge-state-in-the-session-list:
-  en: b5876f7873857921
-  zh: 56fac53370de206d
+  en: 8c259ec26fa75814
+  zh: c3e12089749b0018
 /agent-note-forge-state-in-the-session-list/problem:
-  en: 07ba0c3bf73a2446
-  zh: 2413783a6697133e
+  en: 52c5cc739f73456f
+  zh: a02038f97f4709cc
 /agent-note-forge-state-in-the-session-list/decision:
-  en: e1d03cf4e1afd5aa
-  zh: b2386cb7c17c58dd
+  en: 10333fdc6310fde6
+  zh: 72f9695e76a2fadc
 /agent-note-forge-state-in-the-session-list/alternatives-considered:
   en: 3b08440ee2bf7809
   zh: a90e3fcb89cf3f74

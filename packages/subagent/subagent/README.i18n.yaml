@@ -6,11 +6,11 @@
   en: 384d01a27a111f49
   zh: fbadc6917c3099c9
 /huoli-huoli-subagent:
-  en: 425344cec61f5c70
-  zh: 48e8f2a2e3c1f418
+  en: e24a3e1f6cc166fb
+  zh: 14f6d13444132e59
 /huoli-huoli-subagent/summary:
-  en: 6c90e012a583b27f
-  zh: 2ec29c0e91fdef60
+  en: 3f4e531679486e2a
+  zh: 8b5803511e532afa
 /huoli-huoli-subagent/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,8 +18,8 @@
   en: 924b8c15f9529028
   zh: 9fb0c399b5a79e3e
 /huoli-huoli-subagent/use-this-package/enabling-delegation:
-  en: 025605eddae02478
-  zh: 5659cba4340735d8
+  en: 126b67becabf6512
+  zh: 8544d95cf9832067
 /huoli-huoli-subagent/use-this-package/delegation-settings:
   en: 86c982223fab1a3a
   zh: 3d220d8ed84eab9a
@@ -30,8 +30,8 @@
   en: 013644290e74493e
   zh: 05014c3c3773edeb
 /huoli-huoli-subagent/use-this-package/child-presets:
-  en: a740e5e9bdd661d9
-  zh: 712a5458fc8b3615
+  en: 8bb06ef06157d91f
+  zh: bfdaa6ef011b29fd
 /huoli-huoli-subagent/use-this-package/messaging-interrupting-and-discovering:
   en: 050177fbbaade432
   zh: 99f2b9f98088314d
@@ -57,11 +57,11 @@
   en: d338e68edd438f57
   zh: 0496090cc567b19d
 /huoli-huoli-subagent/understand-the-implementation/ownership-and-invariants:
-  en: b74886a091a327d4
-  zh: 2124546878ba1aa2
+  en: 8140461198b41764
+  zh: f18a8771c0124425
 /huoli-huoli-subagent/further-exploration:
-  en: 5b0f408dd901d90a
-  zh: e11866d5fd878327
+  en: 7c5c253fc1077504
+  zh: 8333b8e5b40a16f2
 /huoli-huoli-subagent/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -93,8 +93,8 @@
   en: 59e848fca82a46fb
   zh: fcd6a8a2bb58609f
 /huoli-huoli-subagent/known-limitations-and-deferred-work:
-  en: b663a2e94185901c
-  zh: 8d2937aa203bda59
+  en: bdf19600d3f47eec
+  zh: 7928d9442cf690c0
 /huoli-huoli-subagent/known-limitations-and-deferred-work/dev-note:
   en: 25cc0909348666bb
   zh: 95517f12de100049

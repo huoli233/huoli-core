@@ -6,8 +6,8 @@
   en: 65283627208ef4c9
   zh: aa3f833ec24bb65a
 /huoli-huoli-plugin-manager:
-  en: e6cbfe169f5fb57b
-  zh: be378036d645a242
+  en: 65644234d1fa566c
+  zh: 8ff8653c18f772ce
 /huoli-huoli-plugin-manager/summary:
   en: d6afcaa1594efcdb
   zh: 459cb6ac0dcb2d46
@@ -15,23 +15,23 @@
   en: 87679c51aa3693f5
   zh: 11684a48a5806afb
 /huoli-huoli-plugin-manager/use-this-package:
-  en: ae0905aa47cc971d
-  zh: b22fc6e831fac136
+  en: b7ffb62f49a72ab3
+  zh: b70304b541fd7e63
 /huoli-huoli-plugin-manager/use-this-package/version-compatibility-and-exemptions:
-  en: 483285658e267dd5
-  zh: 846bec2daac59a96
+  en: 8264a5698663c695
+  zh: f6cfeb27b7e91a85
 /huoli-huoli-plugin-manager/use-this-package/configuration:
-  en: ccec56c785b3ca28
-  zh: b945f933888fc7cb
+  en: d1e9b8ccd2d5f080
+  zh: 8fe12279883d21ce
 /huoli-huoli-plugin-manager/use-this-package/bundle-detail-documents:
-  en: 99b084ff497011d2
-  zh: 6c047796c1991784
+  en: 6de4d2229c5b8b28
+  zh: 6d710fdde30e5716
 /huoli-huoli-plugin-manager/understand-the-implementation:
-  en: c224bfcb3eb3dbd2
-  zh: 8b9c96970a90dccc
+  en: 7d477e84507b5ba6
+  zh: c2a8ccecd61f1b91
 /huoli-huoli-plugin-manager/further-exploration:
-  en: c6538243d8702a0d
-  zh: 04a82d923353c75f
+  en: f722da2dc57602b1
+  zh: 71c09af7652b1d57
 /huoli-huoli-plugin-manager/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -39,8 +39,8 @@
   en: 1815ec6ce56c80d4
   zh: 2d7ac75d3b25eb6b
 /huoli-huoli-plugin-manager/model-experience/management-tool/what-the-model-sees:
-  en: b1dae91f98350290
-  zh: 802ae86d923ac6ce
+  en: 488dbeb0b72e47be
+  zh: c1e4d527ea8b0f9a
 /huoli-huoli-plugin-manager/model-experience/management-tool/token-effect:
   en: bc70208bd361dbcd
   zh: bb651d6066066c6c
@@ -48,11 +48,11 @@
   en: c29f60be7f3edc1a
   zh: d9b9388b96ef95cc
 /huoli-huoli-plugin-manager/known-limitations-and-deferred-work:
-  en: d26075545fe1e990
-  zh: 068c07d642843c94
+  en: 440532f462c86d27
+  zh: 05e1c93ccb795d51
 /huoli-huoli-plugin-manager/known-limitations-and-deferred-work/failure-behavior:
-  en: 3fde425e82bbd0f4
-  zh: 531e2365e7d67480
+  en: a3147e5433567e95
+  zh: 2c59a177aa5a76c2
 /huoli-huoli-plugin-manager/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

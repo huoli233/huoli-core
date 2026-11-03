@@ -3,26 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-08-tool-output-spill-files.md
 /agent-note-tool-output-spill-policy:
-  en: 06b99197145a4080
-  zh: 698a61dcd2385985
+  en: 27ceb59d1c070d68
+  zh: 448a637b52526b9b
 /agent-note-tool-output-spill-policy/problem:
-  en: fe94bf904e838bad
-  zh: d936ebf9f2ec0ce1
+  en: 3983f51b31be6244
+  zh: 7d88df62d4e9704c
 /agent-note-tool-output-spill-policy/decision:
-  en: 5f467657361e732d
-  zh: 24c4c47034c8a6eb
+  en: 813d2caec26d3478
+  zh: 32614863d92bd6a5
 /agent-note-tool-output-spill-policy/decision/spill-seam:
-  en: 1e92bc9a0548def9
-  zh: c99cf6878981ba71
+  en: 12f447f47b0ab74e
+  zh: 2885be2ce21fa0cb
 /agent-note-tool-output-spill-policy/decision/spill-policy:
-  en: 702ec228efeca0b8
-  zh: 0b817f9db08a7aeb
+  en: c255ba21d416781d
+  zh: 648041c469dfa126
 /agent-note-tool-output-spill-policy/showcase-web-fetch:
-  en: d5c334b50f458925
-  zh: 7631307b5d9fbc55
+  en: 1cc42041e0a8ac70
+  zh: 72adb45b1d88aff3
 /agent-note-tool-output-spill-policy/relationship-to-retention-and-early-spill:
-  en: 7314ba8b0a03c0d9
-  zh: 8429f79ff3a7bd1f
+  en: f9c8d881453f4b2d
+  zh: 225f28cbc41c87e8
 /agent-note-tool-output-spill-policy/non-goals:
   en: f82b5399ecddd8a1
   zh: 9675b58631bb5c90
@@ -30,11 +30,11 @@
   en: 094f8c71672ea726
   zh: 252dbe825d6e34ca
 /agent-note-tool-output-spill-policy/testing:
-  en: c98759345e1aebfa
-  zh: d1faeadb99bd748a
+  en: 35a1a7a8909323a9
+  zh: a06bee4fb8f1ec68
 /agent-note-tool-output-spill-policy/consequences:
-  en: e023260e52a246d6
-  zh: 2e49237e564a83da
+  en: 272249b6dd9db9b0
+  zh: 56e9d250b8d81d36
 /agent-note-tool-output-spill-policy/alternatives-considered:
   en: d53fb144141de557
   zh: 1b851eb64c421803

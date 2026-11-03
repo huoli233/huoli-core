@@ -3,29 +3,29 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-05-agent-teams.md
 /agent-note-durable-agent-teams-over-continuable-children:
-  en: c914d8148bfc4bf9
-  zh: a8115f87c0ac6cae
+  en: e624ffe4a0b75e16
+  zh: 05d929228c3b449d
 /agent-note-durable-agent-teams-over-continuable-children/problem:
   en: bab62798c2dc07b4
   zh: fe42c5abf9127d37
 /agent-note-durable-agent-teams-over-continuable-children/decision:
-  en: 35650a30529c01f8
-  zh: 4f9ee01b568d2fed
+  en: 4eaaa620b3994180
+  zh: 0339d5d85f25f6e1
 /agent-note-durable-agent-teams-over-continuable-children/profile-delegation:
-  en: 4835fb8c0c0d8a0d
-  zh: 5f9438a0d58104c4
+  en: 237f36af8f6a343b
+  zh: c7fe28279566374f
 /agent-note-durable-agent-teams-over-continuable-children/team-identity:
-  en: f82812d6ac0ac78d
-  zh: 7dd80a6ad13674ca
+  en: c45a217f16fcf32a
+  zh: 31be5d689588b4ad
 /agent-note-durable-agent-teams-over-continuable-children/provisioning-and-recovery:
   en: 4345ac9a6ac7ad04
   zh: 1d19ecbb128a75a3
 /agent-note-durable-agent-teams-over-continuable-children/mailbox-and-task-transactions:
-  en: bfc3063536837c0e
-  zh: 6b8e69ba85cc2bb1
+  en: 55a705e0ffbcba39
+  zh: a3919f3a8a97a87a
 /agent-note-durable-agent-teams-over-continuable-children/shared-checkout-boundary:
-  en: 34920da68b5763e0
-  zh: 7604392594e4b8a8
+  en: 61643c59e6892cea
+  zh: a37b535fe6b68246
 /agent-note-durable-agent-teams-over-continuable-children/web-projection:
   en: e6348054f024725b
   zh: 8740636e99940308
@@ -33,8 +33,8 @@
   en: 8cb2fd8839f5f8b7
   zh: e302ca03e569de65
 /agent-note-durable-agent-teams-over-continuable-children/testing:
-  en: 092ac3c2b6f552aa
-  zh: c688c1bec5ad8a07
+  en: 594aec4d53d740c8
+  zh: 2510ef34411b8b6b
 /agent-note-durable-agent-teams-over-continuable-children/consequences:
   en: da9cd22b1185a793
   zh: e20d7ef9226f237f

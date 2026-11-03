@@ -6,11 +6,11 @@
   en: 07482fe1f03de5e9
   zh: 8ec16b9f9ac73b38
 /huoli-huoli-pwsh-local:
-  en: 15364cd289d23957
-  zh: d3e82667e954c58d
+  en: 1b5c6a2e81045271
+  zh: 7c78f53686761d80
 /huoli-huoli-pwsh-local/summary:
-  en: b3d58f4bee09b7ed
-  zh: 31f5ef9ba27a4df0
+  en: a36dae4c6ffd47d2
+  zh: 95f06778e496e361
 /huoli-huoli-pwsh-local/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,11 +18,11 @@
   en: f53013bc78e9367f
   zh: cc15b499f6a95080
 /huoli-huoli-pwsh-local/use-this-package/when-to-choose-it:
-  en: 84f220a1eec48f24
-  zh: 72cf0681212efe82
+  en: c9d44199da18693e
+  zh: ec3fcf3ac938fa7b
 /huoli-huoli-pwsh-local/use-this-package/minimal-configuration:
-  en: 47119e8b4e884a5d
-  zh: f9dfb155f06c4b73
+  en: 3fea8ff6b8ddbd59
+  zh: d146391b60d2b388
 /huoli-huoli-pwsh-local/use-this-package/running-commands:
   en: d0efd217ca8ce07d
   zh: 76eda93aa7300f87
@@ -45,14 +45,14 @@
   en: 1cb78cfddb484576
   zh: 94e16b60c9cd458b
 /huoli-huoli-pwsh-local/understand-the-implementation/invariants-and-ownership:
-  en: db6d1d14205d38ed
-  zh: 148b3764daee54e8
+  en: 8e2a0f4588a73c39
+  zh: 87ef6468c775cab9
 /huoli-huoli-pwsh-local/further-exploration:
-  en: f88bd1a14fe62416
-  zh: a7c4a8c9ce49d374
+  en: 7e228a5e04efa7cc
+  zh: 89cab2417eb7769e
 /huoli-huoli-pwsh-local/model-experience:
-  en: cb8a0d1c1929e4ea
-  zh: 6b1d5aa2d10c0a01
+  en: 1c7b4e679d861857
+  zh: c4f8a1446f5ca459
 /huoli-huoli-pwsh-local/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
   zh: 788a4799b1d65a8b

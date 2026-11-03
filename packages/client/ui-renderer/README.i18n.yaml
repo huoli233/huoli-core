@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-renderer/README.md
 /:
-  en: 06bd9d926c743736
-  zh: 39acdcb577fd8c6d
+  en: f496e65db91466e3
+  zh: 8d5c9c36a4b7655a
 /huoli-huoli-client-ui-renderer:
-  en: 9ec624489bbbdf7e
-  zh: 076b6a71841ea0cf
+  en: 107de78d36cc50db
+  zh: bac9aaf0bb20f6b7
 /huoli-huoli-client-ui-renderer/summary:
-  en: 1ba1a4112d222f62
-  zh: c1b7601dfe949711
+  en: 74ba6ae22922a4bf
+  zh: fe6274f1ac74633f
 /huoli-huoli-client-ui-renderer/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-client-ui-renderer/use-this-package:
-  en: 39d5f36f7cb7d680
-  zh: a61f0aa8b339e06f
+  en: ad7ca589d04d8b79
+  zh: 152e662d3d4a7002
 /huoli-huoli-client-ui-renderer/use-this-package/what-mounting-does:
   en: 1d5350799ce072d0
   zh: 942e543fdab51818
@@ -27,8 +27,8 @@
   en: 0de0a8ad857b93f6
   zh: 98a0fae2d6606a7d
 /huoli-huoli-client-ui-renderer/understand-the-implementation/activation-and-mount:
-  en: 002496a4609490f6
-  zh: bab3626fbe30ff55
+  en: 9ad662a64fedc4c3
+  zh: 99b902f7246e9e01
 /huoli-huoli-client-ui-renderer/understand-the-implementation/slot-bindings:
   en: 6ab26cf5744a23d4
   zh: 84a531322a724a84
@@ -36,8 +36,8 @@
   en: 2a349d500ead79cb
   zh: ac49c8b1d73dcd6c
 /huoli-huoli-client-ui-renderer/further-exploration:
-  en: 9c13fe9139ad4add
-  zh: 137924a6c57edfd4
+  en: 9d3afe40308b5ba6
+  zh: 1dce5985eef463c1
 /huoli-huoli-client-ui-renderer/model-experience:
   en: ca4e29db08d34e6d
   zh: de6ec680414b1d54

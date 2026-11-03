@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/boot/app-boot/README.md
 /:
-  en: 822ef8977098c703
-  zh: c0673e854310840f
+  en: 76f7421fc7744e84
+  zh: 47eb588007569454
 /huoli-huoli-app-boot:
-  en: fdb73259898590a5
-  zh: aee057cd436da2e2
+  en: 89faefcf11567201
+  zh: f1e2be89461046d1
 /huoli-huoli-app-boot/summary:
-  en: e5db70f7cdcdbe9c
-  zh: 6852efb61109a349
+  en: b994987df993b64b
+  zh: 96a37b67a80ac382
 /huoli-huoli-app-boot/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,32 +18,32 @@
   en: f6fa378225009c8f
   zh: 324c0e4640bb1358
 /huoli-huoli-app-boot/use-this-package/when-to-use-it:
-  en: 2fdfe02f2ed4a258
-  zh: d748228ece579c4a
+  en: 6340d34559b898a1
+  zh: 96a71bb691a3a103
 /huoli-huoli-app-boot/use-this-package/starting-the-app:
   en: 65bf2834b81f87da
   zh: c864ac60a3005b99
 /huoli-huoli-app-boot/use-this-package/profiles:
-  en: a9c82cd220ae8d59
-  zh: 8c7c1c97efcdfc25
+  en: 6b69257de7d1d36f
+  zh: c83176411a5705e0
 /huoli-huoli-app-boot/use-this-package/previewing-the-effective-configuration:
   en: 646a0ccdd7881ad1
   zh: e3696acb1573dd7b
 /huoli-huoli-app-boot/use-this-package/inspecting-plugin-configuration-schemas:
-  en: c4a301652b851ce9
-  zh: 784871e19cd9db0a
+  en: f5d6050802874ab0
+  zh: f125b0f4ded18b62
 /huoli-huoli-app-boot/use-this-package/reading-plugin-display-metadata:
-  en: 91d80c444ac0cfe5
-  zh: e7db496043528ffb
+  en: 75d24b0a3b587320
+  zh: 339e668478cabff4
 /huoli-huoli-app-boot/use-this-package/startup-and-reload-failures:
-  en: dc13dfa1f79292e4
-  zh: d51682ced7a18ac2
+  en: 9d0faa6058d59256
+  zh: 0912c36acc3f5604
 /huoli-huoli-app-boot/understand-the-implementation:
   en: f4a2695cb4c8a570
   zh: 89837235d2f376cf
 /huoli-huoli-app-boot/understand-the-implementation/design-notes:
-  en: 6eba01e24a2a68ab
-  zh: 64af424489087ec7
+  en: e0940a2c03cf272c
+  zh: 5c154f1b95041388
 /huoli-huoli-app-boot/understand-the-implementation/helper-behavior:
   en: 6fa850d1bb000d0e
   zh: aa83a40a9d3db295
@@ -51,8 +51,8 @@
   en: 541700d5c39e0ab4
   zh: 7522dbd9cd68c930
 /huoli-huoli-app-boot/further-exploration:
-  en: 401269cc5ea8593e
-  zh: cd337c356b320565
+  en: 6a7c377dc3d19bd0
+  zh: 08fc9eedffa64bad
 /huoli-huoli-app-boot/model-experience:
   en: d2d0a21502d88c50
   zh: 82a60c7a490a6834
@@ -66,5 +66,5 @@
   en: d2f0d68fe29fb750
   zh: 323d21ee73a9e3f6
 /huoli-huoli-app-boot/known-limitations-and-deferred-work/dev-note/open-yaml-config-dump-stability:
-  en: 032f14ed5cd78efa
-  zh: ecc81f819f0bc39b
+  en: cd5ef115d47b953c
+  zh: 4a596eff2c123145

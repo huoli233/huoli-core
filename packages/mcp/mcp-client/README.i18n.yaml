@@ -6,20 +6,20 @@
   en: 6440e0efb151c0fa
   zh: d767308eb95b9d3f
 /huoli-huoli-mcp-client:
-  en: c3e635d210dd707e
-  zh: bd749579307d6a2d
+  en: ecf6dff630a103f2
+  zh: 8c328a8354c84a54
 /huoli-huoli-mcp-client/summary:
-  en: 428cc4078a9d5b53
-  zh: 49b867131f518c0f
+  en: f129c01c9fb099ff
+  zh: 89b35d0bc652bc6b
 /huoli-huoli-mcp-client/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-mcp-client/use-this-package:
-  en: e77871d58566601a
-  zh: c5ef229d22eb3ebf
+  en: 7174fab7b947cb35
+  zh: f439f34751c39c46
 /huoli-huoli-mcp-client/use-this-package/minimal-configuration:
-  en: 4d8b58f6a5e0c3f1
-  zh: 28e1c06aeef33131
+  en: bed5ff593b32ed01
+  zh: 88457b475f009cb2
 /huoli-huoli-mcp-client/use-this-package/tool-naming-and-coexistence:
   en: 75ae9745d5b04796
   zh: 8ae5b8ca6e73296e
@@ -45,11 +45,11 @@
   en: bb161208cc002746
   zh: 3ab0588ca71effe5
 /huoli-huoli-mcp-client/understand-the-implementation/environment-scrubbing-stdio:
-  en: fef482a6f8cc789f
-  zh: 08f4c594ec83b4a1
+  en: b469bef2030690f5
+  zh: 14e3e9c1cd9ad313
 /huoli-huoli-mcp-client/further-exploration:
-  en: 1374f838098f1fc4
-  zh: a8393b3130fd7a72
+  en: 883cac470bd69e0f
+  zh: 68321cb1d18010d0
 /huoli-huoli-mcp-client/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -60,8 +60,8 @@
   en: 866a129e71634e0e
   zh: b27e4b22a07c2f26
 /huoli-huoli-mcp-client/model-experience/discovered-mcp-tools/token-effect:
-  en: ac85a6a5130c6440
-  zh: 9a31229f5355432b
+  en: 7af3866ad0205f05
+  zh: 4af07b6a0d523d24
 /huoli-huoli-mcp-client/model-experience/discovered-mcp-tools/kv-cache-effect:
   en: dae97512f6d61027
   zh: 5e6103fab15ab42d
@@ -90,8 +90,8 @@
   en: 189198f7ace2a991
   zh: 00948145a803d614
 /huoli-huoli-mcp-client/known-limitations-and-deferred-work:
-  en: 56be94497d0658a1
-  zh: df9bfeee7300a101
+  en: 73ce97a5977d984d
+  zh: 2140dc0434377a71
 /huoli-huoli-mcp-client/known-limitations-and-deferred-work/dev-note:
-  en: 0ef388d17ea82af1
-  zh: e7104aeb4b23c660
+  en: 45af2a01512c9865
+  zh: f8d4d42ecbb01ac7

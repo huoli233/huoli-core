@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-10-28-plugin-install-failure-diagnostics.md
 /agent-note-install-failures-keep-their-diagnostics-in-the-dialog:
-  en: dc13db49685fee98
-  zh: 65896465ceaba16a
+  en: ffefeb1f86442d06
+  zh: 90aca226eacbcff2
 /agent-note-install-failures-keep-their-diagnostics-in-the-dialog/problem:
   en: 34c85dbc0fdaeeaf
   zh: b11042edb1eb8e3b
@@ -18,8 +18,8 @@
   en: 246d2a60f856c631
   zh: d7a552af3ad32b6f
 /agent-note-install-failures-keep-their-diagnostics-in-the-dialog/related:
-  en: e0709383c16148e9
-  zh: 00765408d0ad25f1
+  en: 4eb193da2bd65c62
+  zh: 108485fd484d67ff
 /agent-note-install-failures-keep-their-diagnostics-in-the-dialog/testing:
   en: 336df2ffde183519
   zh: 86e62a8a052c1f91

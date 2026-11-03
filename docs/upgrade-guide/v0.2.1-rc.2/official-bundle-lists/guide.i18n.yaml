@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-rc.2/official-bundle-lists/guide.md
 /:
-  en: d6f85fefe3671f5d
-  zh: 2719b3d5ba1b2120
+  en: d3710521f7f170f5
+  zh: 420a7447ab1656de
 /import-bundle-lists-from-huoli-huoli-official-bundles:
-  en: 89f87bcf95ee4262
-  zh: 00bbb48605743bcc
+  en: c3fb9250f236be57
+  zh: 3df13ebcd8dfdf38
 /import-bundle-lists-from-huoli-huoli-official-bundles/change:
-  en: 0d8984d9bead43c6
-  zh: 60939a14fcf1ba9a
+  en: 532ce35a3d12f0ce
+  zh: 37dcc618532bf8de
 /import-bundle-lists-from-huoli-huoli-official-bundles/migration:
-  en: ef2f3d6258a3b2bb
-  zh: 65a79e9551f8b237
+  en: 2bf9718746535d20
+  zh: 73a4371b18548752

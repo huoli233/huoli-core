@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-subagent/README.md
 /:
-  en: ff1b1fbd0d7f629b
-  zh: c68a59640e73c0ce
+  en: 3b7ec364cfd8554d
+  zh: 6a62ea3a478348d5
 /huoli-huoli-client-ui-subagent:
-  en: 930db612ece65ad4
-  zh: ad7e9d9afb4545ac
+  en: d50f904b09093596
+  zh: 50591156160ea6ed
 /huoli-huoli-client-ui-subagent/summary:
   en: 6e0bbf514ad3bef7
   zh: 5a29d88c124d35cc
@@ -15,8 +15,8 @@
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-client-ui-subagent/use-this-package:
-  en: 9aafcfbd6a33173c
-  zh: 6dbd48672f58cd2d
+  en: cdec609870321ecf
+  zh: c36fffd6c5e01529
 /huoli-huoli-client-ui-subagent/use-this-package/browsing-the-tree:
   en: 3508631091820123
   zh: ec7da9e5bedb22ba
@@ -27,8 +27,8 @@
   en: 6a5f91b7dfcefafe
   zh: 2d11441952cfea53
 /huoli-huoli-client-ui-subagent/understand-the-implementation:
-  en: c158f12dcaed87b7
-  zh: e5d315e7b1fb4fa9
+  en: 671ee833240a24e5
+  zh: c865dfbfda08380a
 /huoli-huoli-client-ui-subagent/understand-the-implementation/catalog-derivation:
   en: 5531dcc1fb976cff
   zh: 6fe779f4f1c34266
@@ -36,11 +36,11 @@
   en: b817e9907392f59c
   zh: e42feb97d572a989
 /huoli-huoli-client-ui-subagent/understand-the-implementation/composer-election:
-  en: 13c33af89ba0942e
-  zh: 00374c7944728ae2
+  en: 30cb0a2b165ff488
+  zh: b3031345c9309e60
 /huoli-huoli-client-ui-subagent/further-exploration:
-  en: 1766e9012e307178
-  zh: f3ee637f5941aae5
+  en: 518107f30b339e52
+  zh: b45a2aba0aaa7bfc
 /huoli-huoli-client-ui-subagent/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90

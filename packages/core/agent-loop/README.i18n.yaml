@@ -6,20 +6,20 @@
   en: 5d57c28077cb670a
   zh: 8113ea0248d66a17
 /huoli-huoli-agent-loop:
-  en: b711ded29c7b9a17
-  zh: cbccba927743f35f
+  en: 3d7a30e8a0b07aee
+  zh: eb074d7fe607d78b
 /huoli-huoli-agent-loop/summary:
-  en: b2971780b74fd785
-  zh: 05a3043f49fb646d
+  en: d892265d5aacd083
+  zh: be3f343b752e5228
 /huoli-huoli-agent-loop/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-agent-loop/use-this-package:
-  en: 35a960c0100a6aa4
-  zh: 438e133fb4c24a9e
+  en: c61e0ce6a5e21566
+  zh: e795e2a04726d0a9
 /huoli-huoli-agent-loop/use-this-package/configure-declarative-agents:
-  en: d5ac4be018308358
-  zh: 4c429a40f666abfb
+  en: 1dfc0741c49d8fe8
+  zh: aa83f06e03b6f0fd
 /huoli-huoli-agent-loop/use-this-package/create-or-resume-agents-programmatically:
   en: 82ec792637e8e57f
   zh: e32f8ec5ee17afcf
@@ -45,14 +45,14 @@
   en: 3b48a480036bd5df
   zh: 28cea2036b0dccee
 /huoli-huoli-agent-loop/understand-the-implementation/turn-and-step-flow:
-  en: ad92c751515520ff
-  zh: ca6b24db5ab4e471
+  en: a74320caa7ac9871
+  zh: 05eb18e96b2910ba
 /huoli-huoli-agent-loop/understand-the-implementation/failure-and-cancellation:
   en: eea56903c4ff82f5
   zh: c0d5abb5767780ed
 /huoli-huoli-agent-loop/further-exploration:
-  en: 7ac519f8e635acbc
-  zh: 975e514915dc6c9f
+  en: ed786581e8975a63
+  zh: 1317b1e87619bf8f
 /huoli-huoli-agent-loop/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -105,8 +105,8 @@
   en: 83531f2a13cc1f0e
   zh: 81a780d637dd8c5d
 /huoli-huoli-agent-loop/known-limitations-and-deferred-work:
-  en: a57822fab5e6fdfd
-  zh: 39f97b0c5040f7c8
+  en: 0312ee55d50b08ff
+  zh: 44c7aaf55d8472d3
 /huoli-huoli-agent-loop/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

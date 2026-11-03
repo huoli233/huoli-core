@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-dockkit/README.md
 /:
-  en: 93fc2e9e86fc50f8
-  zh: 61c7c38a66935ad6
+  en: 2eee70336a942515
+  zh: 146d4878fc7a9782
 /huoli-huoli-client-ui-dockkit:
-  en: 9d34bd85fc9e76b4
-  zh: 615d1d2eab451c87
+  en: 63b4c54c77a1af3a
+  zh: c3558a7fc0f08edc
 /huoli-huoli-client-ui-dockkit/summary:
   en: 3ee4584a73215ef4
   zh: 051170a6d0993fa5
@@ -36,5 +36,5 @@
   en: 4323810ca5a87e6c
   zh: 3a24af2ea4467ab7
 /huoli-huoli-client-ui-dockkit/known-limitations-and-deferred-work/dev-note:
-  en: 45680a19e42f401a
-  zh: 5500de88331c8a59
+  en: 05f45aaf89a5ad45
+  zh: 3dd5393206f4ff2c

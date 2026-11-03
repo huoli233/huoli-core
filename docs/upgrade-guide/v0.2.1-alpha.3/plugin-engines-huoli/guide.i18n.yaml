@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-alpha.3/plugin-engines-huoli/guide.md
 /:
-  en: 8b4090927cfab760
-  zh: 47917ce765e1930a
+  en: 7fe96abb511adcf5
+  zh: a8af09dd9ca712ce
 /plugin-compatibility-reads-engines-huoli-first:
-  en: 99c73d9da5c7552d
-  zh: 9b7165d489c1960e
+  en: a79892b42b7c88bb
+  zh: 85a9a731fea408b4
 /plugin-compatibility-reads-engines-huoli-first/change:
-  en: 3f4e014fb77f956b
-  zh: 33faefae854d381e
+  en: 025911b65be3c224
+  zh: e534d787a89a0c8a
 /plugin-compatibility-reads-engines-huoli-first/migration:
-  en: 57676d075c62d8c9
-  zh: 460daff143c5d044
+  en: 5bdeaf9bdffb4824
+  zh: bab04c56f865a701

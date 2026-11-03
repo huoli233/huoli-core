@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-theme/README.md
 /:
-  en: e9c14ae3732deb3a
-  zh: fee230def9844d2d
+  en: da9c387fabe60b71
+  zh: 22fb522c64e05c9d
 /huoli-huoli-client-ui-theme:
-  en: 06c7d7624947a72a
-  zh: ac4ca82984564825
+  en: e3d8dd6bb279dd30
+  zh: 268917c846ee85a2
 /huoli-huoli-client-ui-theme/summary:
-  en: d9832b31c4cb3ca4
-  zh: f2ec42bb5ae66188
+  en: 3c7232b3e240320a
+  zh: d43580599bf44112
 /huoli-huoli-client-ui-theme/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -27,23 +27,23 @@
   en: 5244fc168d0a03f8
   zh: c7ab12fdf8c6c55b
 /huoli-huoli-client-ui-theme/use-this-package/pre-plugin-palette:
-  en: 203523ddd7927c34
-  zh: 31dd89da78f9ab4f
+  en: 00877a3ecc000b00
+  zh: 7f76619d1a38839b
 /huoli-huoli-client-ui-theme/understand-the-implementation:
-  en: 3eb9b0e3365b2db3
-  zh: c73acc55dd897266
+  en: 308422bad00606be
+  zh: 23fcbd5a94f07ceb
 /huoli-huoli-client-ui-theme/understand-the-implementation/stylesheets:
-  en: 30227476ccabe895
-  zh: 08785d4340d8c797
+  en: 1f0077ffd31932ca
+  zh: b97676aaf81abc70
 /huoli-huoli-client-ui-theme/understand-the-implementation/scrollbar-rebinding:
-  en: bf76e7c34a331595
-  zh: 5accd0260ef7c61e
+  en: 8fc8108dba7e2b00
+  zh: cda15695c34e3f3f
 /huoli-huoli-client-ui-theme/understand-the-implementation/preference-persistence:
-  en: b1f0b0bce5e53bae
-  zh: 26ded298f85834ae
+  en: 477ffcbe8d211ffe
+  zh: 540b9d5c778465cd
 /huoli-huoli-client-ui-theme/further-exploration:
-  en: 7d5b953aaeeaf591
-  zh: ff4bccb0f196f2b9
+  en: 8ba5dcb8aacf15f7
+  zh: 086d953e9b17f6ce
 /huoli-huoli-client-ui-theme/model-experience:
   en: 3120df665299c634
   zh: 1d9f365d091d0d2a

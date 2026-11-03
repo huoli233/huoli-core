@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-10-18-borrow-auto-review-inputs.md
 /agent-note-borrow-auto-review-inputs-until-serialization:
-  en: 7935a9077525c95c
-  zh: f54640700003b6a3
+  en: 48bf4f7a93299921
+  zh: d48d2443b8bc028e
 /agent-note-borrow-auto-review-inputs-until-serialization/problem:
   en: ae55e01074cf34e0
   zh: c9778fdb8fb157e3
 /agent-note-borrow-auto-review-inputs-until-serialization/proposal:
-  en: 67b001f13952f165
-  zh: 09f849fad8817aad
+  en: 41a5d2f2426793ba
+  zh: 2a0af9c5a0b365d8
 /agent-note-borrow-auto-review-inputs-until-serialization/alternatives-considered:
   en: 86495afdbc23ebe1
   zh: d5c237aea3f14eed

@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-rc.1/agent-instructions-chain-budgets/guide.md
 /:
-  en: a4f7c0355dfc799f
-  zh: 7fba904f2c771d26
+  en: ddeab6cc8507743a
+  zh: b688e8af3d6cc050
 /size-maxbytes-of-huoli-huoli-agent-instructions-per-instruction-chain:
-  en: 32a1e5663b3ddc28
-  zh: 2f2bdb9dbc72449a
+  en: 48e0460f8ecd856b
+  zh: fae1e9ab0c658828
 /size-maxbytes-of-huoli-huoli-agent-instructions-per-instruction-chain/change:
-  en: 852972af8ae3b10b
-  zh: 984774781a0233bc
+  en: d034bedabd31ed43
+  zh: 678a77388905bc16
 /size-maxbytes-of-huoli-huoli-agent-instructions-per-instruction-chain/migration:
-  en: 45737c7f5e7534ea
-  zh: 46ac35baa76b850a
+  en: a3e8d1956400527d
+  zh: ee512184d53a8627

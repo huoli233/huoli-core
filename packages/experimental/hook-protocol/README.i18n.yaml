@@ -6,20 +6,20 @@
   en: 7cfe3761eedff848
   zh: 80b0bed5743d0924
 /huoli-huoli-hook-protocol:
-  en: 3092627c127b688d
-  zh: bbdb083e0a5dbc25
+  en: 41989273f448dd97
+  zh: 389992d9381f5fde
 /huoli-huoli-hook-protocol/summary:
-  en: e8ab847d0db16043
-  zh: 5c1e72f4b4a54fe1
+  en: 37ce5bcdcc275a1b
+  zh: 181435614279b7b9
 /huoli-huoli-hook-protocol/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-hook-protocol/use-this-package:
-  en: 4b29a18ac60be5bb
-  zh: 4a02b48f9e914101
+  en: 3d957f515d977d97
+  zh: 7676eb932d71c44c
 /huoli-huoli-hook-protocol/use-this-package/when-to-choose-it:
-  en: 435c1a335f8dfccf
-  zh: efe58c06dc40d4d9
+  en: d18471167c05b1cb
+  zh: 28d98b5322c2e9d4
 /huoli-huoli-hook-protocol/use-this-package/what-a-hook-can-do:
   en: 043f54b3a5b518a7
   zh: a4115083a9b1cef1
@@ -30,29 +30,29 @@
   en: 08b3960150e9c5e2
   zh: 6bb2f236d697de01
 /huoli-huoli-hook-protocol/understand-the-implementation/processing-pipeline:
-  en: f71878539d98392e
-  zh: 826a0dd95475fff3
+  en: d0f93d03d1766940
+  zh: cc30e32e459c1a3e
 /huoli-huoli-hook-protocol/understand-the-implementation/hook-session-events:
-  en: f01ab4ab98f052b3
-  zh: 1da25fa50378bd19
+  en: bf19333ed4155dea
+  zh: 47dcbb34c4c896d9
 /huoli-huoli-hook-protocol/understand-the-implementation/design-philosophy:
-  en: 7f9239eaea5a945c
-  zh: 9ba6a2ea955d4934
+  en: 942b835a465819f0
+  zh: 8055059a72757ec2
 /huoli-huoli-hook-protocol/understand-the-implementation/source-map:
   en: 0d8956a6d8608ee0
   zh: 9f554284c4c0a36e
 /huoli-huoli-hook-protocol/further-exploration:
-  en: 8b585ce73c2be2cc
-  zh: c0270fd001e1352b
+  en: fce98da3f3488403
+  zh: 5dd1da5ff7e4c84b
 /huoli-huoli-hook-protocol/model-experience:
-  en: 53d2f59435a4a88f
-  zh: 79c8fc2849b20718
+  en: 24432253bf48103f
+  zh: c33ec7d253401d09
 /huoli-huoli-hook-protocol/model-experience/kv-cache-effect:
   en: e290ccc9b3c92c08
   zh: cb3c8823f41e7afe
 /huoli-huoli-hook-protocol/known-limitations-and-deferred-work:
-  en: 1ca6146a077a7d2d
-  zh: 369741569178fc79
+  en: 05b4cb23d78880b7
+  zh: 73677108b3327382
 /huoli-huoli-hook-protocol/known-limitations-and-deferred-work/dev-note:
   en: ac1d08360a93382b
   zh: 6c58749bae9a6e65

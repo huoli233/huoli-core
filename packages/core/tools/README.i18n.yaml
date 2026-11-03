@@ -6,17 +6,17 @@
   en: 3b12a77945c0d1e9
   zh: e9af32047e4f658b
 /huoli-huoli-tools:
-  en: bb2af1250bfefe4b
-  zh: 893e3ab2e563a8a5
+  en: db827d3c95ca3887
+  zh: faa6c63a50975ec0
 /huoli-huoli-tools/summary:
-  en: ad53df5cc542fc32
-  zh: 1ab915da46e01d20
+  en: a1d37afff59b0dea
+  zh: 69615d4f3098216f
 /huoli-huoli-tools/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-tools/use-this-package:
-  en: d382227271bf92ae
-  zh: 1f66b181418c91b9
+  en: 65ebc6d6477b3ec5
+  zh: 0723a76897d8d305
 /huoli-huoli-tools/use-this-package/register-a-tool:
   en: 1808e2a95ee21584
   zh: 40c40da7d1418407
@@ -24,8 +24,8 @@
   en: eb80334754c2493a
   zh: b431635ec1f4664f
 /huoli-huoli-tools/use-this-package/select-an-executor:
-  en: bdf27b6f339ea866
-  zh: b89205eedea1db0a
+  en: 3e97a9caa07eff6d
+  zh: 4b7096689027dfe5
 /huoli-huoli-tools/use-this-package/restrict-tools-per-agent:
   en: c6f98b2283cc2e47
   zh: c2cdce5d13473f15
@@ -33,8 +33,8 @@
   en: cbfe8317565ac62d
   zh: 1e71c66941e50881
 /huoli-huoli-tools/use-this-package/host-presentation-descriptors:
-  en: 258e16bb367229e5
-  zh: 7c1eb91062b4e4ad
+  en: befb15b0229aed7c
+  zh: a3b729befa8ca9f7
 /huoli-huoli-tools/understand-the-implementation:
   en: ce7e776e9d516bdb
   zh: 59d2751743db7795
@@ -48,14 +48,14 @@
   en: dc44a88997777988
   zh: 56454aeace1c8b77
 /huoli-huoli-tools/understand-the-implementation/ptc-mode:
-  en: 83cf9a5077158879
-  zh: 80508a70a3674226
+  en: bb1d64e5ccc85dc9
+  zh: 05d480e552621528
 /huoli-huoli-tools/understand-the-implementation/extension-points:
   en: c2a14d6f22bc9428
   zh: 89c1414fca465931
 /huoli-huoli-tools/further-exploration:
-  en: b112e13c7db15bf3
-  zh: 39e726a15ca40f21
+  en: fcf542c0f1ee5515
+  zh: 56c042e5a5b4ff34
 /huoli-huoli-tools/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -63,8 +63,8 @@
   en: 483b01d9bb2cb49a
   zh: 1d95095e76fb0996
 /huoli-huoli-tools/model-experience/normal-tool-schemas/what-the-model-sees:
-  en: d6a5c32a421bfe97
-  zh: 542d49df376e70a4
+  en: e18399a4be1da579
+  zh: 057a6fed43918fbd
 /huoli-huoli-tools/model-experience/normal-tool-schemas/token-effect:
   en: d594b71ff5e4cc87
   zh: dcec1ea0dd2a0fa6
@@ -84,8 +84,8 @@
   en: 2fbf2175168e8244
   zh: ad59a120b54a0996
 /huoli-huoli-tools/known-limitations-and-deferred-work:
-  en: e8c410dee66e1639
-  zh: ae4965fa70234fd1
+  en: 092adbbbe1823139
+  zh: 7c013574d1c14770
 /huoli-huoli-tools/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

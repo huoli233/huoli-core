@@ -6,11 +6,11 @@
   en: 14d3fdd57b94c86f
   zh: abcd3b4f9dd908fa
 /huoli-huoli-sandbox-windows-acl:
-  en: e7cdbd2652fe80ab
-  zh: 04e1d187313a0bd5
+  en: d326d9725668d514
+  zh: 312664bdcd710996
 /huoli-huoli-sandbox-windows-acl/summary:
-  en: 777921135c23ee55
-  zh: 7c726cc63995d443
+  en: 6bd7949347248c60
+  zh: 5ce618ca3bef8db4
 /huoli-huoli-sandbox-windows-acl/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -27,38 +27,38 @@
   en: 289e65bddf20dd79
   zh: 7ff72ed64c4b4d1c
 /huoli-huoli-sandbox-windows-acl/use-this-package/failures-and-recovery:
-  en: 7fc0707debb1e67c
-  zh: e3b5529bf82f868e
+  en: c95c93b10194b674
+  zh: ff821fc625ab9b03
 /huoli-huoli-sandbox-windows-acl/understand-the-implementation:
   en: c2cde86c85c2c619
   zh: a29a114e591f9d3f
 /huoli-huoli-sandbox-windows-acl/understand-the-implementation/mechanism:
-  en: a37ea37f2d527693
-  zh: 749b5a263d0e1534
+  en: 47bd84298bff559c
+  zh: 00d212ac91898609
 /huoli-huoli-sandbox-windows-acl/understand-the-implementation/modes-and-token-lists:
   en: 9c8d9af84f9abd99
   zh: 1c82b355aa5f210f
 /huoli-huoli-sandbox-windows-acl/understand-the-implementation/the-confinement-runner:
-  en: 0847de0e53e50061
-  zh: 90fa3dcaf080c3be
+  en: 189583e0307c7cab
+  zh: 9238051343e68f27
 /huoli-huoli-sandbox-windows-acl/understand-the-implementation/verified-boundaries:
-  en: ad02570eae90037f
-  zh: fd78c2318de18dda
+  en: 00421b3b3e0412ce
+  zh: c22c6f812f3e2b96
 /huoli-huoli-sandbox-windows-acl/understand-the-implementation/header-verification-and-source-map:
-  en: c19df6b7a756b779
-  zh: b8267b26bd191d97
+  en: 332a40d3d8015ba9
+  zh: 71ec11ac91fed3e5
 /huoli-huoli-sandbox-windows-acl/further-exploration:
-  en: 7850da9522bf984b
-  zh: a9f2273a85bafcf9
+  en: c6f0a351fdaeacc1
+  zh: e0c07fe3987458a5
 /huoli-huoli-sandbox-windows-acl/model-experience:
-  en: bbb19594a2c2e4d4
-  zh: 075a65d9b9182aad
+  en: 1dda6416e600af4f
+  zh: 2d8271925747309e
 /huoli-huoli-sandbox-windows-acl/model-experience/kv-cache-effect:
   en: 817eb1b7de13872e
   zh: 06fe175e41e7459b
 /huoli-huoli-sandbox-windows-acl/known-limitations-and-deferred-work:
-  en: 046831a864786b2a
-  zh: 4a261fbab3396ea4
+  en: dc916374ff91d18f
+  zh: 62a387d894035228
 /huoli-huoli-sandbox-windows-acl/known-limitations-and-deferred-work/dev-note:
   en: cc273320f6a1beaf
   zh: 5c57a312ddc50651

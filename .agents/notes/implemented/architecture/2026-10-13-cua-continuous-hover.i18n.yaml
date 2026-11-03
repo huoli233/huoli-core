@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-13-cua-continuous-hover.md
 /agent-note-continuous-cua-hover-without-cross-call-ownership:
-  en: b86d869be9abc278
-  zh: f79f3f1b3c548791
+  en: b1b87d6384c1f942
+  zh: 91a1026e85f4400f
 /agent-note-continuous-cua-hover-without-cross-call-ownership/problem:
   en: cdc04139c8d69415
   zh: a3fe3e78ada08d95
 /agent-note-continuous-cua-hover-without-cross-call-ownership/decision:
-  en: a25e8c472c084852
-  zh: 12250574113e110a
+  en: bdb79ff31d6e0e22
+  zh: 29ae50cd0c5df238
 /agent-note-continuous-cua-hover-without-cross-call-ownership/alternatives-considered:
   en: 18d917ee2e909b93
   zh: 5b5ad0530f138cda

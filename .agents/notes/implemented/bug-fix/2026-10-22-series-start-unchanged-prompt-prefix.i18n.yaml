@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-10-22-series-start-unchanged-prompt-prefix.md
 /agent-note-a-series-start-with-an-unchanged-prompt-keeps-the-surviving-system-node:
-  en: f62e2980951e0cb3
-  zh: 3cd4fd49a89fae40
+  en: 729dc7f521d33aa4
+  zh: 5857370df7436a18
 /agent-note-a-series-start-with-an-unchanged-prompt-keeps-the-surviving-system-node/problem:
   en: b2b7d5e9a4850ece
   zh: cbd91b67969bca02

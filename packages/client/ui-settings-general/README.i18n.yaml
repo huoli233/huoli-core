@@ -3,23 +3,23 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-settings-general/README.md
 /:
-  en: b12def981d836df5
-  zh: 9d813c1937f22c61
+  en: 81429b3e572bb311
+  zh: 95fb1360061a6c13
 /huoli-huoli-client-ui-settings-general:
-  en: 1017c980d55e1945
-  zh: d3febd2062fce20f
+  en: 360eacb186c32b17
+  zh: 34e4a405b8a97614
 /huoli-huoli-client-ui-settings-general/summary:
-  en: cd94b4a8dae32670
-  zh: 333b8603e77f92d7
+  en: 2a1feccb46abdb3e
+  zh: 2f1f0db5be3c26f9
 /huoli-huoli-client-ui-settings-general/table-of-contents:
   en: 83760d53b3ee5fb8
   zh: 30dd8802d4ffdcb7
 /huoli-huoli-client-ui-settings-general/use-this-package:
-  en: d427d20b4dab6653
-  zh: 84e80592f0a30a9f
+  en: 330f95cb29576e7b
+  zh: 2de58936ae0f1d57
 /huoli-huoli-client-ui-settings-general/use-this-package/the-general-section:
-  en: de35e867b2a56d73
-  zh: 6d4e5c912636f889
+  en: e8392c5393118c7d
+  zh: 69189cae777e37d0
 /huoli-huoli-client-ui-settings-general/use-this-package/opening-the-configuration-file:
   en: 597df68b5913e8d7
   zh: bc9114f3e877679a
@@ -36,8 +36,8 @@
   en: e37fb7df883ea356
   zh: c972524e56c6d6c2
 /huoli-huoli-client-ui-settings-general/understand-the-implementation/host-release-changes:
-  en: d464f726b026c39a
-  zh: c949e5f4d65a639f
+  en: 212e59f7b7932ceb
+  zh: e5e40eb3651c395e
 /huoli-huoli-client-ui-settings-general/understand-the-implementation/document-availability:
   en: ff1aec9eb1a87a79
   zh: eb91ab8bef59742d
@@ -45,8 +45,8 @@
   en: 5d722d055516f905
   zh: e7a236f0ff84f7ff
 /huoli-huoli-client-ui-settings-general/further-exploration:
-  en: 21348b768f60f587
-  zh: 0c3c5b6a682ae267
+  en: f9c1f5ad97076164
+  zh: 50e30a6696faf14b
 /huoli-huoli-client-ui-settings-general/model-experience:
   en: 3120df665299c634
   zh: 1d9f365d091d0d2a

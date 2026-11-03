@@ -6,11 +6,11 @@
   en: f172767891b86bf4
   zh: e66e1cc8c96cc259
 /huoli-huoli-sandbox-local:
-  en: 2331db3e4dfa8f89
-  zh: 0182771f7e1b1cd4
+  en: cf5958cd629b4525
+  zh: 4eb26df75c93762e
 /huoli-huoli-sandbox-local/summary:
-  en: e8341fe6e38c08f6
-  zh: e38d6ff18fd2b701
+  en: 85690dc0a59ab7e9
+  zh: 52a392a9938556d6
 /huoli-huoli-sandbox-local/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -21,8 +21,8 @@
   en: 722ad601000b13c7
   zh: d2723f3743fe160b
 /huoli-huoli-sandbox-local/use-this-package/minimal-configuration:
-  en: 5d5ac6aaea69b3db
-  zh: 8049d91463b6347d
+  en: a2bbc53de22595b1
+  zh: bc120ca7646ce606
 /huoli-huoli-sandbox-local/use-this-package/confined-execution-and-enforcement:
   en: 7282c9ec77fd6f01
   zh: 10e385a9489105e3
@@ -36,8 +36,8 @@
   en: f0c44248c2ca6acc
   zh: 554e9f706671d222
 /huoli-huoli-sandbox-local/understand-the-implementation/platform-profiles:
-  en: 008967ee30fbbe46
-  zh: 9e5c6a3e97851a69
+  en: 112faf5802228db6
+  zh: 12bafca77e4f7824
 /huoli-huoli-sandbox-local/understand-the-implementation/denial-and-runner-failure-dialects:
   en: 62adfc9229c656cc
   zh: 11b1534b6d61e5de
@@ -45,11 +45,11 @@
   en: 215bb6bac514b8b4
   zh: 41e7777eea10a480
 /huoli-huoli-sandbox-local/further-exploration:
-  en: 4f8490b57aa528bc
-  zh: 4b3930cbb4f00303
+  en: ff78be26c3a8d0f0
+  zh: df2e81be30c8cfb3
 /huoli-huoli-sandbox-local/model-experience:
-  en: 40d918676086c7fe
-  zh: d36023a60b28fd58
+  en: f38ac0634aa180ab
+  zh: 3a29879c7e4b4cc3
 /huoli-huoli-sandbox-local/model-experience/kv-cache-effect:
   en: e290ccc9b3c92c08
   zh: 469589ac12cdadab

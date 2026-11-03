@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-10-user-text-json-nodes.md
 /agent-note-user-text-candidate-scheduling-and-facts-driven-refresh:
-  en: 6185ac67a459beba
-  zh: 994bf90f05c0fd5a
+  en: a7d2d10763000fb9
+  zh: 0cb6e07946e1a32a
 /agent-note-user-text-candidate-scheduling-and-facts-driven-refresh/problem:
   en: 42e3752efebedde5
   zh: 75e23c5762efbb1f

@@ -3,17 +3,17 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-10-public-package-manifest.md
 /agent-note-public-package-manifest-fields:
-  en: 1ea0f036c6d0ba67
-  zh: 3e885b6827315f74
+  en: 8509f259e7b3d648
+  zh: 8d2571dc67444490
 /agent-note-public-package-manifest-fields/problem:
-  en: e4bafc2b26cae6d2
-  zh: f8226b200b627c55
+  en: cdfd294d6e5a3e73
+  zh: 95f87040be848038
 /agent-note-public-package-manifest-fields/decision:
-  en: 8586a9687da8e327
-  zh: 2dcd1c1fdb856412
+  en: 6ab5c08ef0533f21
+  zh: a365fb711cb1d235
 /agent-note-public-package-manifest-fields/alternatives-considered:
-  en: 656ef2c1e7853d01
-  zh: 21c525fda71c6def
+  en: 60cf1288ba923725
+  zh: cc7e7e494928e214
 /agent-note-public-package-manifest-fields/consequences:
-  en: 7221805e563eceb2
-  zh: d171144ecef841e9
+  en: 11950776109281ad
+  zh: edfdfe9935b727c4

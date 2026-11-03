@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-25-session-observations-and-projection-owned-client-state.md
 /agent-note-session-observations-and-projection-owned-client-state:
-  en: 00b84161c373744e
-  zh: 7243e7f32ae1fa3f
+  en: c74e49c92f909c0d
+  zh: 5e7eab5acd849335
 /agent-note-session-observations-and-projection-owned-client-state/problem:
   en: af1f72affe6ae77e
   zh: 3d76b6310bc572b1
@@ -21,20 +21,20 @@
   en: bced4b90cb03525d
   zh: b0c1ca4bf1064f89
 /agent-note-session-observations-and-projection-owned-client-state/decision/projection-execution-boundary:
-  en: b3b235fa0250868a
-  zh: 0bb5eedf14cdafee
+  en: 717644a817bec21f
+  zh: b5023c1865266fba
 /agent-note-session-observations-and-projection-owned-client-state/decision/read-audiences:
-  en: e394e9480340f69c
-  zh: 7eea994ee9fa380d
+  en: 524c5d701e2548a9
+  zh: 9163b4da1238b575
 /agent-note-session-observations-and-projection-owned-client-state/decision/replayable-client-facts-are-projection-owned:
   en: efded09f0cd30a8e
   zh: 5e16580a39ff3359
 /agent-note-session-observations-and-projection-owned-client-state/decision/client-merge-rules:
-  en: fb8740be674e4708
-  zh: 7dc0c89558f51792
+  en: 9c6bcc071b2e8283
+  zh: c54c72e48a323ca1
 /agent-note-session-observations-and-projection-owned-client-state/decision/domain-applications:
-  en: 4dcae9e00148b11e
-  zh: acfd1b6831cf50fe
+  en: c188a5487c6b3acd
+  zh: 8277d35c5df80542
 /agent-note-session-observations-and-projection-owned-client-state/decision/failure-and-readiness-boundaries:
   en: 0f90a8bccedf9e71
   zh: 8452dfdf0af00fb3
@@ -45,8 +45,8 @@
   en: 110ca8005f618ad1
   zh: 8f3e83d59334b278
 /agent-note-session-observations-and-projection-owned-client-state/decision/relationship-to-existing-decisions:
-  en: 8d699dfc22ab5c5f
-  zh: 8dcd9fc6bd1594db
+  en: 5d39e7bf3e98d4e0
+  zh: 2a88b918158e2d37
 /agent-note-session-observations-and-projection-owned-client-state/verification:
   en: 29f364d1031b7d85
   zh: 2b193ceb52fb0406

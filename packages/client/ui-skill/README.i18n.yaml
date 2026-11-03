@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-skill/README.md
 /:
-  en: 490d60d7bec05d21
-  zh: 72a1300893d68f31
+  en: c71b4d1a313e1535
+  zh: d24a81f4e928d4c5
 /huoli-huoli-client-ui-skill:
-  en: 17b91cfc2300ea2b
-  zh: 1fcd42e48e14c5ec
+  en: 1f94c8f18ace557c
+  zh: 7fdc8c5cbeb421bd
 /huoli-huoli-client-ui-skill/summary:
-  en: fad7bff8d3371dfc
-  zh: c546189c87d6fbf2
+  en: 4c9fc121a5d377e3
+  zh: deb0625c12338781
 /huoli-huoli-client-ui-skill/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -30,11 +30,11 @@
   en: e8921ef18728794c
   zh: dabc89ee5186d8c6
 /huoli-huoli-client-ui-skill/understand-the-implementation/registration:
-  en: 4b06a66c56d19ff9
-  zh: d9c8d118f73d89bb
+  en: e1edd1c0d9839101
+  zh: ffa97d82ed02dbbf
 /huoli-huoli-client-ui-skill/further-exploration:
-  en: 54198f095d0cc569
-  zh: 4eba4413e159967b
+  en: 2348644de79314da
+  zh: c516d65de99696b9
 /huoli-huoli-client-ui-skill/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -42,8 +42,8 @@
   en: ae1928252b0ea55c
   zh: 6c78cb51c6805a2d
 /huoli-huoli-client-ui-skill/model-experience/user-explicit-skill-invocation/what-the-model-sees:
-  en: 02313760445799a2
-  zh: 46007ed9e9f35b44
+  en: dd33cfbee24eb263
+  zh: 4e50bbf7d87636c8
 /huoli-huoli-client-ui-skill/model-experience/user-explicit-skill-invocation/token-effect:
   en: cb759321f8c62a96
   zh: 6d479501856d9cd6

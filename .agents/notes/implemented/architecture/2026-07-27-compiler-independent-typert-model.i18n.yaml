@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-27-compiler-independent-typert-model.md
 /agent-note-compiler-independent-typert-type-model:
-  en: 6943b47c9de69922
-  zh: 2fb08c1de4e6ea63
+  en: 1316d7d572107f6e
+  zh: d7faa7525b772318
 /agent-note-compiler-independent-typert-type-model/problem:
   en: 77713a6c0d15207e
   zh: 2dc30d4c0182d8ba
 /agent-note-compiler-independent-typert-type-model/decision:
-  en: 9ecb064f733f9f1b
-  zh: 471aee71053174cd
+  en: e6616613a1736615
+  zh: bc40275757c44a1d
 /agent-note-compiler-independent-typert-type-model/verification-contract:
-  en: c02d3f09e54f9a32
-  zh: c14c15ffb7316b07
+  en: 8f6e5f977a26fe00
+  zh: 33335e979cc39db5
 /agent-note-compiler-independent-typert-type-model/alternatives-considered:
-  en: fa503dcfaa6f438f
-  zh: 26052212a124e133
+  en: b94160f303f8a19b
+  zh: 6c6f679937345446
 /agent-note-compiler-independent-typert-type-model/consequences:
-  en: e1022cf9523fb28e
-  zh: 01dfb764fb98de0d
+  en: 6382f5017c9f97e4
+  zh: 408383643e51b7e7

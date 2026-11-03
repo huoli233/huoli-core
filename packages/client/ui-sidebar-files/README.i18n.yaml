@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-sidebar-files/README.md
 /:
-  en: d7dbdeee1744fac0
-  zh: 35dc07a9e797f855
+  en: 5b57bf9eef0c5704
+  zh: d25b1824d552dc2c
 /huoli-huoli-client-ui-sidebar-files:
-  en: ae5625c23b3a864f
-  zh: 20cf48a229e806bf
+  en: 46452c3b30871e74
+  zh: 0f5b9e63654ea11f
 /huoli-huoli-client-ui-sidebar-files/summary:
   en: 27a736e484be8693
   zh: 4778c310014c2c16
@@ -15,17 +15,17 @@
   en: 94e520881bd8666e
   zh: 869ed79bd370c8b3
 /huoli-huoli-client-ui-sidebar-files/what-it-registers:
-  en: 2b620997cf39cac8
-  zh: ddfaa2da1c1bcd55
+  en: 53126038826ab34f
+  zh: 50d78d6b42a9cb4e
 /huoli-huoli-client-ui-sidebar-files/the-navigator:
-  en: 803d10142360264b
-  zh: 042568a8ba293037
+  en: 45669851e97ef7e2
+  zh: 5dbaba501ccf6c47
 /huoli-huoli-client-ui-sidebar-files/the-tree:
-  en: c6d5d2d068bdec7b
-  zh: dd41bcfa3e9080ad
+  en: 0e7237e85cef379e
+  zh: c723545ba19d454a
 /huoli-huoli-client-ui-sidebar-files/reusable-tree-factory:
-  en: 0a3e9645426b4203
-  zh: 0478669e4157f15c
+  en: b3f4bde0f62bb52d
+  zh: c9a82e55ae2b3d1f
 /huoli-huoli-client-ui-sidebar-files/model-experience:
   en: a18a43f6842f1371
   zh: 69f2a2b35f06dfc7

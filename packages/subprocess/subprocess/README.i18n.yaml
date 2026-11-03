@@ -6,11 +6,11 @@
   en: 04735af7a998f2ae
   zh: ab6bf3d0f098877a
 /huoli-huoli-subprocess:
-  en: f692e3fa2c598b70
-  zh: f7d899b31647ead9
+  en: 1a156f5d947cdcb2
+  zh: e72c35554ae7375d
 /huoli-huoli-subprocess/summary:
-  en: 4c3e83922d6ba18c
-  zh: d794f5cb99939e6d
+  en: 1d6f165bb28d1b2b
+  zh: 5e8526e6c7f06c0e
 /huoli-huoli-subprocess/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -27,8 +27,8 @@
   en: c02fe7246326c164
   zh: 1d31096e31e1feee
 /huoli-huoli-subprocess/use-this-package/using-a-control-pipe:
-  en: 0d1d6d55cd5f7ec4
-  zh: bab0c3f51ed743cb
+  en: 4e0e25dbe115b12a
+  zh: 7fbe5a77c5a49f4f
 /huoli-huoli-subprocess/use-this-package/managing-process-lifetime:
   en: 83d662d278184411
   zh: 2c4e7fbe76823fa8
@@ -36,8 +36,8 @@
   en: e3631497344c2ebd
   zh: c4ebc7b08f0a316e
 /huoli-huoli-subprocess/use-this-package/environment-every-child-starts-from:
-  en: 4d4cbb311575d071
-  zh: 7be2d265adb661bc
+  en: 4330b284730d8dc6
+  zh: 6e7da8625ab4fe3e
 /huoli-huoli-subprocess/use-this-package/what-can-go-wrong:
   en: 51f2f43087a1ed18
   zh: 6d2ebb099b707df3
@@ -45,11 +45,11 @@
   en: 25cd344c959cfd9e
   zh: 045880776ab82d1e
 /huoli-huoli-subprocess/understand-the-implementation/design-concept:
-  en: 07201ec2256c25f6
-  zh: 046109cfa92194f3
+  en: 5dbf123a8b08172c
+  zh: 2843997630d41541
 /huoli-huoli-subprocess/understand-the-implementation/source-map:
-  en: 85e3d2109f49356d
-  zh: 071ccfef37e8e33f
+  en: a505670e358feed7
+  zh: 1dc967a1cd9c1b6f
 /huoli-huoli-subprocess/understand-the-implementation/data-model-and-flow:
   en: 9998dc0a990fbcf1
   zh: ba179617f60cb9bc
@@ -57,8 +57,8 @@
   en: a132325eea7cadb4
   zh: 434cbbc61ff9cd0e
 /huoli-huoli-subprocess/further-exploration:
-  en: f560a70ff8ad00db
-  zh: 1a51eca4b30055cb
+  en: bfb77a22ac508098
+  zh: d32ed859a6c47921
 /huoli-huoli-subprocess/model-experience:
   en: 36d8f1820f81de29
   zh: da18a4123bdd28b7

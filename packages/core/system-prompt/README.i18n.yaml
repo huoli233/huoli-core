@@ -6,26 +6,26 @@
   en: 51d99b2500db958f
   zh: 91f2b113ba7989fd
 /huoli-huoli-system-prompt:
-  en: e1cfb1611662e8ab
-  zh: 5476f22f8ffe923a
+  en: faa7955d772f2864
+  zh: 745b6be73c114416
 /huoli-huoli-system-prompt/summary:
-  en: f5cce6867daddbab
-  zh: 4a1a47623c198207
+  en: 7cda29977a123819
+  zh: 7c5595234b4ff2c1
 /huoli-huoli-system-prompt/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-system-prompt/use-this-package:
-  en: 7bea567207cd7e00
-  zh: ffc050b05f07ba7f
+  en: 6fb7242308745d87
+  zh: 6fe4239899af8eee
 /huoli-huoli-system-prompt/use-this-package/configure-the-prompt:
-  en: 87e28893e6cf58d7
-  zh: 06f476b38c4d2038
+  en: b738e0b2494f1f48
+  zh: fe4fae484bd14f31
 /huoli-huoli-system-prompt/use-this-package/contribute-a-prompt-section:
   en: ef415fcd9e1cf8bb
   zh: 6ad4df288f91bdb1
 /huoli-huoli-system-prompt/use-this-package/contribute-a-prompt-variable:
-  en: b3e4c9b4ced59488
-  zh: d80c791e72bd5821
+  en: 14141ec2763fc20f
+  zh: c1d93d3f38891149
 /huoli-huoli-system-prompt/use-this-package/contribute-tool-schemas:
   en: 009ef267dac2f270
   zh: e79c24bff5cd836f
@@ -48,8 +48,8 @@
   en: 1100ab1dfe961631
   zh: c510275c893951b4
 /huoli-huoli-system-prompt/further-exploration:
-  en: 108d1b4cca466bc7
-  zh: e1275966f83c14f9
+  en: 7d2ba90d07251841
+  zh: cf5b643fbb3fdd56
 /huoli-huoli-system-prompt/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -66,14 +66,14 @@
   en: 29722e212137deaa
   zh: 92cd0f1a16b10315
 /huoli-huoli-system-prompt/model-experience/system-prompt/kv-cache-effect:
-  en: 52fa5a522891ec6b
-  zh: 5c5c18359aaaf3db
+  en: df0edbf443fba741
+  zh: 800c4fbe78b970b6
 /huoli-huoli-system-prompt/model-experience/tool-schemas:
   en: 3039bc5e7a796b21
   zh: 6b7a9eaf69c9ea53
 /huoli-huoli-system-prompt/model-experience/tool-schemas/what-the-model-sees:
-  en: b3bf090cda036432
-  zh: 9c4cf3742c8cd88f
+  en: e1104160f97b99e9
+  zh: bcc68decb82b844f
 /huoli-huoli-system-prompt/model-experience/tool-schemas/token-effect:
   en: f3a7d374c55e1720
   zh: 0ee48af678cb875f

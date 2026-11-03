@@ -6,23 +6,23 @@
   en: 07c1a52a0f913391
   zh: a0c8579b535a1782
 /huoli-huoli-tool-pwsh-persistent:
-  en: dc39535d57c8fdfc
-  zh: 953529db098cbda5
+  en: b5869d0710f123d2
+  zh: 5c34644cde25f9e1
 /huoli-huoli-tool-pwsh-persistent/summary:
-  en: a0afc99c0526930b
-  zh: abce5685799601d2
+  en: c0c317a601ddae7c
+  zh: 96dfcb4a9fafef32
 /huoli-huoli-tool-pwsh-persistent/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-tool-pwsh-persistent/use-this-package:
-  en: bf14301b0954a49f
-  zh: fc1387e6cd7f6bc9
+  en: c0451fe04dcae09a
+  zh: 6e56f7772b845b67
 /huoli-huoli-tool-pwsh-persistent/use-this-package/when-to-choose-it:
-  en: bf8a28b21acb1dbd
-  zh: 452afa796b0ae38e
+  en: d754ec945639e8de
+  zh: a52988db815f124f
 /huoli-huoli-tool-pwsh-persistent/use-this-package/minimal-configuration:
-  en: 6faae7346983f822
-  zh: c9b267634d4adffa
+  en: 47d6fef626ea4428
+  zh: dc15d581d8d8ae58
 /huoli-huoli-tool-pwsh-persistent/use-this-package/what-the-agent-can-rely-on:
   en: 9f4c22b06f940caf
   zh: 61f755cec7ff5b76
@@ -33,8 +33,8 @@
   en: 8d94a7381bca3fa9
   zh: f4bd2866fff6fa8d
 /huoli-huoli-tool-pwsh-persistent/understand-the-implementation/design-philosophy:
-  en: e03cb450010e45db
-  zh: dddef1a9aad7ffe9
+  en: 930f6d761c003ad5
+  zh: d78e1dd8f1015af1
 /huoli-huoli-tool-pwsh-persistent/understand-the-implementation/source-map:
   en: 857e036f41c913ac
   zh: e9f383f7ee384c59
@@ -42,8 +42,8 @@
   en: 7440916d998ed5bd
   zh: 66f70f803c519802
 /huoli-huoli-tool-pwsh-persistent/further-exploration:
-  en: e836ecbf7370bc76
-  zh: 84fed68318df81ff
+  en: 88584e1981bc0b00
+  zh: 10305cb575fe097e
 /huoli-huoli-tool-pwsh-persistent/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -51,8 +51,8 @@
   en: e4c7376d4f29dbd5
   zh: 6b7a9eaf69c9ea53
 /huoli-huoli-tool-pwsh-persistent/model-experience/tool-schema/what-the-model-sees:
-  en: 9948cd040d944ea8
-  zh: 07504b24c196dfd0
+  en: c3f0c539ed257338
+  zh: 33924f62d9a9d28b
 /huoli-huoli-tool-pwsh-persistent/model-experience/tool-schema/token-effect:
   en: 120147c962cbb894
   zh: 8952abc085cf3812

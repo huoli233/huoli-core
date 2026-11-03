@@ -6,17 +6,17 @@
   en: 0ddb7676fe45581a
   zh: 245f536e58988853
 /huoli-huoli-spill:
-  en: 421d61cb46bec05a
-  zh: 84e5c299511939c8
+  en: b0fec79c56580e85
+  zh: c55403a956cc0366
 /huoli-huoli-spill/summary:
-  en: 81b0a21d3f59cd8e
-  zh: 379cfc7845f399cd
+  en: 8ed643cce955163c
+  zh: 603eb3bbb1f7272e
 /huoli-huoli-spill/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-spill/use-this-package:
-  en: 84d0be9b62843a6e
-  zh: 7e430d9438ed468f
+  en: 54b178cc83cad931
+  zh: 2f9f2887dd40cd63
 /huoli-huoli-spill/use-this-package/when-to-choose-it:
   en: b16ef40f98105af7
   zh: 44a4ec686474f3a7
@@ -24,20 +24,20 @@
   en: 6f5ac80b98eaae27
   zh: 2278dfb2c7c6c9b7
 /huoli-huoli-spill/use-this-package/saving-text:
-  en: 49a8fa179709a4e2
-  zh: e22de74f2d75b329
+  en: e367afb200d0400d
+  zh: 37dc80627a52ce8a
 /huoli-huoli-spill/use-this-package/ownership-and-boundaries:
   en: 59d9880807abdbc1
   zh: a484e95b459e99ed
 /huoli-huoli-spill/use-this-package/failures-and-recovery:
-  en: 234f7da79dc937b8
-  zh: 099397bb65d9b7d6
+  en: 6b412567441049b3
+  zh: 4e982916cb5aeea2
 /huoli-huoli-spill/understand-the-implementation:
   en: a3364d8193deb7f0
   zh: 38ca428f37fc7190
 /huoli-huoli-spill/understand-the-implementation/design-philosophy:
-  en: e7ef4635f8ff511a
-  zh: 388fb525e843258e
+  en: fe7201ca47ede9d4
+  zh: 388ee38c11add9f4
 /huoli-huoli-spill/understand-the-implementation/source-map:
   en: c24cc87afcef2824
   zh: c5138e85650eb20e
@@ -48,8 +48,8 @@
   en: e66fa489470c595c
   zh: a1870ddc42a846af
 /huoli-huoli-spill/further-exploration:
-  en: d89cadb42124d093
-  zh: 8cfb289372263267
+  en: 3f10c2f8956b243b
+  zh: f13d452ce7664e73
 /huoli-huoli-spill/model-experience:
   en: 76d7dd75ff4784d9
   zh: ef5c2e7a943923b8
@@ -63,8 +63,8 @@
   en: a06f45acc8cb962a
   zh: e314617f8a2309d4
 /huoli-huoli-spill/known-limitations-and-deferred-work/dev-note/future-executor-spill-file-integration:
-  en: 83e47ebe6d649546
-  zh: 384bac7b717cf43c
+  en: 14112f6e77968700
+  zh: 24ab7f1b2dbb2f35
 /huoli-huoli-spill/known-limitations-and-deferred-work/dev-note/future-non-local-backends-and-cleanup:
-  en: ef2e905903f860ce
-  zh: 52aeb079b69de8db
+  en: 91a00bf5a58a3107
+  zh: 39702f51981b3ee1

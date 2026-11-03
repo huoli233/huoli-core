@@ -6,29 +6,29 @@
   en: f6e08c67514237ad
   zh: cfcb09b6263a9b00
 /huoli-huoli-tool-session-query:
-  en: b5808fddb3f84df3
-  zh: becb2efb056e9db9
+  en: adb77729a765f7a5
+  zh: 955132d511b0a0fb
 /huoli-huoli-tool-session-query/summary:
-  en: 8f37f26ebcb6c746
-  zh: 63f2a7f393822280
+  en: ac2f504ce28631b7
+  zh: ca6d9b1602113673
 /huoli-huoli-tool-session-query/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-tool-session-query/use-this-package:
-  en: b85f7c70f31e69db
-  zh: 5076a98116181fcc
+  en: 9ff2590870c6c2d9
+  zh: bd4a4e0e3ab94621
 /huoli-huoli-tool-session-query/use-this-package/when-to-choose-it:
   en: 2379fea607f05047
   zh: 948ccb2679cad04a
 /huoli-huoli-tool-session-query/use-this-package/configuration:
-  en: 86517fff7b539e7d
-  zh: 46a37ee4f8e81b22
+  en: 38ddec3a15a76930
+  zh: bb16712232932fa6
 /huoli-huoli-tool-session-query/use-this-package/what-the-model-can-do:
   en: 560d8d66f8301213
   zh: f4f963d61df8d3a4
 /huoli-huoli-tool-session-query/use-this-package/failures-and-recovery:
-  en: 58559adb3f089356
-  zh: eddd5dd65811901e
+  en: 545c207f4a68cc1c
+  zh: 08e2145923a8b8bd
 /huoli-huoli-tool-session-query/understand-the-implementation:
   en: 32a36a3fe388e2c1
   zh: f4bd2866fff6fa8d
@@ -42,8 +42,8 @@
   en: 906e8fff04552ad3
   zh: a5ca1ae0f197186d
 /huoli-huoli-tool-session-query/further-exploration:
-  en: 1d4a245fac001783
-  zh: 661d5d7f6e15a229
+  en: 4849ad5fe738a1f9
+  zh: b18c66ce8a7c559c
 /huoli-huoli-tool-session-query/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -66,8 +66,8 @@
   en: 3039bc5e7a796b21
   zh: 6b7a9eaf69c9ea53
 /huoli-huoli-tool-session-query/model-experience/tool-schemas/what-the-model-sees:
-  en: 9399fc8822bcee2e
-  zh: ce83ad6a03d32992
+  en: 14826632cc3e0f9b
+  zh: f48f487e20900bd0
 /huoli-huoli-tool-session-query/model-experience/tool-schemas/token-effect:
   en: 3c001ca824c5bc52
   zh: 314a8fdf37a470c1

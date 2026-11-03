@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-workflow-run/README.md
 /:
-  en: 1310faa1582887b5
-  zh: 16b77855de7f9292
+  en: 06c334affd3297d4
+  zh: ef9f5ca2e4386df0
 /huoli-huoli-client-ui-workflow-run:
-  en: d606bcab47f1b3f3
-  zh: 31fd19010234cbd4
+  en: 3453811e161db26e
+  zh: 8b909a873ca86583
 /huoli-huoli-client-ui-workflow-run/summary:
-  en: bbb41a09daa0ed51
-  zh: db65a976a21b1972
+  en: c062ff82008187da
+  zh: b640cef4750c1aae
 /huoli-huoli-client-ui-workflow-run/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /huoli-huoli-client-ui-workflow-run/use-this-package:
-  en: 9712b1ed5f00f24f
-  zh: c8f72b2ef448d9af
+  en: 4e9ad11b8e08fe1e
+  zh: 16cac72a934058d4
 /huoli-huoli-client-ui-workflow-run/use-this-package/navigating-the-node:
   en: 9f223e9f1e5f84d6
   zh: f9416f079efc7c83
@@ -33,8 +33,8 @@
   en: 364d3c38e5f02149
   zh: ca5dbee6ac27e141
 /huoli-huoli-client-ui-workflow-run/further-exploration:
-  en: e95928b8d16b4043
-  zh: 15f74b81c7c7b6df
+  en: 32d4527ece2ccce6
+  zh: c4a20fe484a5bcfd
 /huoli-huoli-client-ui-workflow-run/model-experience:
   en: 62a75f801964a0bb
   zh: a247663753a52ae9
@@ -42,8 +42,8 @@
   en: ca75c51c89c2c9b0
   zh: de54f3467ef3b9be
 /huoli-huoli-client-ui-workflow-run/known-limitations-and-deferred-work:
-  en: d89a3727cfdc9db9
-  zh: 42ad9b22bb0c356e
+  en: 306a89275a6710f0
+  zh: cb97f0a08f04250e
 /huoli-huoli-client-ui-workflow-run/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

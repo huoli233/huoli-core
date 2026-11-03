@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-19-projection-cache-listing-identity-and-cached-rows.md
 /agent-note-projection-cache-read-only-face-matches-the-lifecycle-identity-the-client-store-separates-cached-and-sequenced-rows:
-  en: 04813e762d48995c
-  zh: b0ed6656adc7c5f0
+  en: ee1dc13b77beefe0
+  zh: a67dd0071610beb8
 /agent-note-projection-cache-read-only-face-matches-the-lifecycle-identity-the-client-store-separates-cached-and-sequenced-rows/problem:
   en: 2e7f99c81fbc941f
   zh: b0fac7cd5eb86ffe
 /agent-note-projection-cache-read-only-face-matches-the-lifecycle-identity-the-client-store-separates-cached-and-sequenced-rows/problem/mechanism:
-  en: 2594af08bbc79dba
-  zh: cdebd5d14d99cf3c
+  en: 2606560232a884ed
+  zh: 7cf114bdb1d52e7b
 /agent-note-projection-cache-read-only-face-matches-the-lifecycle-identity-the-client-store-separates-cached-and-sequenced-rows/problem/the-cache-s-two-uses-and-where-validation-lives:
   en: 055ead18162ca1cd
   zh: 9046bf04229e45d1
 /agent-note-projection-cache-read-only-face-matches-the-lifecycle-identity-the-client-store-separates-cached-and-sequenced-rows/problem/the-client-store-cannot-guarantee-that-connected-data-replaces-hints:
-  en: 597b346459a9d8b0
-  zh: f7282a40061d645c
+  en: f1c86a9b8a28fb06
+  zh: e9e1b8d60a28ed18
 /agent-note-projection-cache-read-only-face-matches-the-lifecycle-identity-the-client-store-separates-cached-and-sequenced-rows/decision:
   en: a15c7c13f167e5ac
   zh: a15c7c13f167e5ac
@@ -30,8 +30,8 @@
   en: 743f2dceda3072aa
   zh: f4d53ddc13a4127e
 /agent-note-projection-cache-read-only-face-matches-the-lifecycle-identity-the-client-store-separates-cached-and-sequenced-rows/decision/the-client-store-separates-cached-and-sequenced-rows:
-  en: dd1cc7ac96a5a25d
-  zh: bdea08d20f166e65
+  en: 38a1ee6ced200dba
+  zh: 9a545476190a52a3
 /agent-note-projection-cache-read-only-face-matches-the-lifecycle-identity-the-client-store-separates-cached-and-sequenced-rows/decision/what-stays-untouched:
   en: 1cefba02bbfb2647
   zh: 5a96942565ab9d72

@@ -6,11 +6,11 @@
   en: f70a1e0bb1e0d56d
   zh: 927e75bc75573410
 /huoli-huoli-bash-local:
-  en: 49a2f5ded22f098e
-  zh: 5d75eea29ac486a0
+  en: af716d9e607ebfdd
+  zh: eacf3445c6c74c6b
 /huoli-huoli-bash-local/summary:
-  en: 518e199306e5cc7d
-  zh: ccfb150038dc4afa
+  en: fcff658247539d70
+  zh: dc8914cbe5c34390
 /huoli-huoli-bash-local/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,8 +18,8 @@
   en: 95ae7843275778ca
   zh: 43b5069075a99625
 /huoli-huoli-bash-local/use-this-package/minimal-configuration:
-  en: eaf71726aaf5333d
-  zh: b658e8d0b77db826
+  en: c7484f0c8ef45768
+  zh: 6bed8de87b5bedd2
 /huoli-huoli-bash-local/use-this-package/running-commands:
   en: a27f24e1c9908612
   zh: 4183e0c89aebb96c
@@ -42,20 +42,20 @@
   en: 723bbaedc34e58f3
   zh: d0239dcfdd8a53c6
 /huoli-huoli-bash-local/understand-the-implementation/invariants-and-ownership:
-  en: dd0e8349896efbff
-  zh: 15cd675f9806468e
+  en: c9d3672f12fa67dc
+  zh: fa305b424f6e9f35
 /huoli-huoli-bash-local/further-exploration:
-  en: 02adacff32fe6aaa
-  zh: 985d507298f0d113
+  en: 42ab2d7d1847b0ba
+  zh: 9af1f559a202bd74
 /huoli-huoli-bash-local/model-experience:
-  en: 6f1b2f8c867cac58
-  zh: 36ce16f256972e88
+  en: c44793b88de680ba
+  zh: b43f2db0faad2637
 /huoli-huoli-bash-local/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
   zh: 788a4799b1d65a8b
 /huoli-huoli-bash-local/known-limitations-and-deferred-work:
-  en: f1f98b9ebab7e6d2
-  zh: 803cc5e021de530f
+  en: 1691e71a6c50e3dc
+  zh: 54745aa0002b62ec
 /huoli-huoli-bash-local/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

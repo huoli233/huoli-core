@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-trajectory/README.md
 /:
-  en: b9065ee3da8927c2
-  zh: 36a38fa86d552b46
+  en: bcd8abc988e84d67
+  zh: 1e92dd463fbdc6b8
 /huoli-huoli-client-ui-trajectory:
-  en: 60e3cab036a4a8c6
-  zh: 2a400cd0efd99284
+  en: fa06c33de3e62506
+  zh: 49206baba91051ba
 /huoli-huoli-client-ui-trajectory/summary:
   en: dc75677138d05dc6
   zh: 6e11553a5caf4716
@@ -33,8 +33,8 @@
   en: 2fad51d9b75e49d4
   zh: 05cf292f6d5dd770
 /huoli-huoli-client-ui-trajectory/further-exploration:
-  en: a324740cfbe62c1e
-  zh: 53077c3ffc69b510
+  en: f994f17d6777bae6
+  zh: a0d8cbc691adf30d
 /huoli-huoli-client-ui-trajectory/model-experience:
   en: 5432585f567e6546
   zh: 2c68717a4bf413c7

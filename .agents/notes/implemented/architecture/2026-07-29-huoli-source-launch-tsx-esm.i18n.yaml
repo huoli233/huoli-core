@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-29-huoli-source-launch-tsx-esm.md
 /agent-note-huoli-source-launch-through-the-tsx-esm-hook:
-  en: 55846ac57e07eeda
-  zh: 3de03730d4b28863
+  en: 3a1232ffe0b46d76
+  zh: a745f3fac1f56bda
 /agent-note-huoli-source-launch-through-the-tsx-esm-hook/problem:
-  en: d13aa56d01c1181d
-  zh: 837427ed6963c39d
+  en: f265765ab9c11c9c
+  zh: 4b13f8e8281c2eb1
 /agent-note-huoli-source-launch-through-the-tsx-esm-hook/decision:
-  en: 12adf8ed56b4d5c3
-  zh: fbbb9add935730c0
+  en: 15b3b95b9a7b1a17
+  zh: 1794deb07942010f
 /agent-note-huoli-source-launch-through-the-tsx-esm-hook/alternatives-considered:
   en: c6eec3d899a61df1
   zh: 128edd753d49c0da

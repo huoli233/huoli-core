@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-14-host-release-change-refresh-prompt.md
 /agent-note-prompt-to-reload-when-the-host-release-changes-instead-of-hot-replacing-across-releases:
-  en: 559df9281e9994e0
-  zh: c51f2b1f9973127f
+  en: ebf823bdf4ce8055
+  zh: 754a8c8aee23ea03
 /agent-note-prompt-to-reload-when-the-host-release-changes-instead-of-hot-replacing-across-releases/problem:
-  en: d98f5657dd30d9da
-  zh: 19d1210e57eb663b
+  en: 5de6f22205c8630c
+  zh: bb345efb650cd042
 /agent-note-prompt-to-reload-when-the-host-release-changes-instead-of-hot-replacing-across-releases/decision:
   en: d39be9788fe2a0c9
   zh: 1a68a3ae4d73930d
@@ -15,11 +15,11 @@
   en: f85ebe23d677ae93
   zh: a829e0692e711660
 /agent-note-prompt-to-reload-when-the-host-release-changes-instead-of-hot-replacing-across-releases/decision/release-identity:
-  en: e7cae8876e688f92
-  zh: 1d326330c34d128d
+  en: 30143881e4a9df94
+  zh: 1ec8c905010a86b0
 /agent-note-prompt-to-reload-when-the-host-release-changes-instead-of-hot-replacing-across-releases/decision/wire:
-  en: f15c4106f228f5f6
-  zh: ab80cf4ce62ae84c
+  en: 4ecd33ad36855a6f
+  zh: f64ced55916c7a1a
 /agent-note-prompt-to-reload-when-the-host-release-changes-instead-of-hot-replacing-across-releases/decision/page-side:
   en: c0610c8f5a0882f3
   zh: d309cbc53183ec6e
@@ -27,8 +27,8 @@
   en: 41b5a3346a7edffa
   zh: a05ed84017556760
 /agent-note-prompt-to-reload-when-the-host-release-changes-instead-of-hot-replacing-across-releases/alternatives-considered:
-  en: abb9d7ab9ef1df15
-  zh: 1704732daf5f2886
+  en: f901ec2f141a6d24
+  zh: 4eed5598fbbaf7b3
 /agent-note-prompt-to-reload-when-the-host-release-changes-instead-of-hot-replacing-across-releases/consequences:
   en: 815b41dc4f9ffcee
   zh: b57388264cc459c7

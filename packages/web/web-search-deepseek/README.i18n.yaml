@@ -6,11 +6,11 @@
   en: d3ed4f8639422b9d
   zh: 35c2ac10b0158bd3
 /huoli-huoli-web-search-deepseek:
-  en: d2c50aae9d869902
-  zh: ee9f3f0ff575cbf9
+  en: 831e88464a281f72
+  zh: daef1e9873f193a0
 /huoli-huoli-web-search-deepseek/summary:
-  en: 6b1267e732370877
-  zh: 64460aba0564cb44
+  en: aa5f5513663acf87
+  zh: 99438be043c3b28a
 /huoli-huoli-web-search-deepseek/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -21,11 +21,11 @@
   en: 0187c8af8d2d98c5
   zh: 1c9607b3a662bcaa
 /huoli-huoli-web-search-deepseek/use-this-package/minimal-configuration:
-  en: 0553b6c926c44cf4
-  zh: 5cd3221d3e8eebd9
+  en: 68c8fe99ea3880f9
+  zh: ad03f15c6227cbe6
 /huoli-huoli-web-search-deepseek/use-this-package/authentication:
-  en: e9104c20ee90b3be
-  zh: 5fcc71d403976eaa
+  en: d2e3df967ab34d2b
+  zh: fb047c285e0dfff2
 /huoli-huoli-web-search-deepseek/use-this-package/what-a-search-returns:
   en: e30442c90365357b
   zh: 9c9e2f1182963a8a
@@ -48,8 +48,8 @@
   en: d6c3f30b70a5f4b5
   zh: ab7c5b7d6fc3cae6
 /huoli-huoli-web-search-deepseek/further-exploration:
-  en: 4c0730d979693c5a
-  zh: 74681ad82b7b45ed
+  en: 543388f17ab06e2f
+  zh: 9abb63ecd7c03068
 /huoli-huoli-web-search-deepseek/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -69,8 +69,8 @@
   en: 666f5753c99783ab
   zh: b44328e99bcc45c9
 /huoli-huoli-web-search-deepseek/model-experience/conversation-tool-result-indirectly/what-the-model-sees:
-  en: 0764d19c9b82aa98
-  zh: 88b0ba22ef64225b
+  en: bfd1715af3e05381
+  zh: 3a268ab9526c3a60
 /huoli-huoli-web-search-deepseek/model-experience/conversation-tool-result-indirectly/token-effect:
   en: 01ec43a9b616139d
   zh: 0a5b7c28fde34bcf
@@ -81,20 +81,20 @@
   en: ddcce72a4a4e0def
   zh: 338aa339f5708d7d
 /huoli-huoli-web-search-deepseek/model-experience/conversation-tool-list-indirectly/what-the-model-sees:
-  en: f4630a1af1a7ba32
-  zh: 98b9699676acc8d3
+  en: 858fc024c5dadc61
+  zh: 663125bcfb006649
 /huoli-huoli-web-search-deepseek/model-experience/conversation-tool-list-indirectly/token-effect:
   en: fc3904d8f90cc055
   zh: 60f82b8a3b894e7a
 /huoli-huoli-web-search-deepseek/model-experience/conversation-tool-list-indirectly/kv-cache-effect:
-  en: 1d836a33dfa97fcf
-  zh: 2593ccf2a5716b02
+  en: b805c145c6b0b8de
+  zh: b49a319f0d100db3
 /huoli-huoli-web-search-deepseek/known-limitations-and-deferred-work:
-  en: 1cb15cc5e9b1967d
-  zh: 64f1d93e94bbc9c3
+  en: de9cf0384b03f301
+  zh: 4a296f851541d0ff
 /huoli-huoli-web-search-deepseek/known-limitations-and-deferred-work/dev-note:
   en: 7f775cc79dbce94b
   zh: 12b8f68f9e7c48ca
 /huoli-huoli-web-search-deepseek/known-limitations-and-deferred-work/dev-note/dedicated-retrieval-endpoint:
-  en: 2a0437bd17a5a8a4
-  zh: 4032f3feb2388f6e
+  en: a98c85f919cafa47
+  zh: fd9091759b1a13ea

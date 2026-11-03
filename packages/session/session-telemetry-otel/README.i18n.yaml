@@ -6,11 +6,11 @@
   en: 356614b4af1ad375
   zh: f76a068b5f056574
 /huoli-huoli-session-telemetry-otel:
-  en: f8ea869792c8b207
-  zh: bc076172ce22ba9b
+  en: 12f2e278ff5ef39f
+  zh: 2ed1f2396ac15282
 /huoli-huoli-session-telemetry-otel/summary:
-  en: 828903209ef34983
-  zh: 8eac63f1e8df15d8
+  en: 7aefdd9d862d6d06
+  zh: 206a61821693fec5
 /huoli-huoli-session-telemetry-otel/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
@@ -18,14 +18,14 @@
   en: 9b82f2819ddaa3f4
   zh: b6ad90b11e7e0ef7
 /huoli-huoli-session-telemetry-otel/use-this-package/modes:
-  en: bc7e598148a7f8c3
-  zh: 0209c6aa258ec134
+  en: 3641576915933186
+  zh: efba09a2f264ee84
 /huoli-huoli-session-telemetry-otel/use-this-package/minimal-configuration:
   en: 11845fd50dc0a494
   zh: ee990bfca3621bd3
 /huoli-huoli-session-telemetry-otel/use-this-package/what-leaves-the-machine:
-  en: 2a5ddd227e400455
-  zh: 74b7bd9b9161b054
+  en: 9b8f9943fe159acc
+  zh: 8afbd05386549a96
 /huoli-huoli-session-telemetry-otel/use-this-package/failures-and-shutdown:
   en: a66831cb9de57e04
   zh: 3ada28bb868e0932
@@ -45,8 +45,8 @@
   en: a42e9e081fb93bee
   zh: b8e817c2455278b9
 /huoli-huoli-session-telemetry-otel/further-exploration:
-  en: 155b75490ec65d86
-  zh: 07d37d6e4ac90c89
+  en: 6107f46dda3a5721
+  zh: 4f67c4439118017b
 /huoli-huoli-session-telemetry-otel/model-experience:
   en: a5a1c890ddacd9a9
   zh: 019c0d113e141853
@@ -54,8 +54,8 @@
   en: 7593cf5d0d2cedd6
   zh: f57cc48a1b5cbfa9
 /huoli-huoli-session-telemetry-otel/known-limitations-and-deferred-work:
-  en: 5d0b88f8256bd782
-  zh: 36b8d64645ed6c2e
+  en: 9da8a45d6d0a4cf1
+  zh: 7f1f3b55b23aadf0
 /huoli-huoli-session-telemetry-otel/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

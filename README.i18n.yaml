@@ -3,29 +3,29 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write README.md
 /huoli-core:
-  en: f68c4f080ce55ff2
-  zh: 88a76d7f7f0b260e
+  en: 13cc4dd7c0562f06
+  zh: 14bb6a2e9847bbaa
 /huoli-core/developer-preview:
-  en: 4ef4d8a71ac143f0
-  zh: 1bfc3149ba8e5543
+  en: a0ce4738f2d81063
+  zh: 50c3e004ac40b760
 /huoli-core/run:
   en: 4e0248e4c6474fc6
   zh: eb2fb8d78c7d6bc0
 /huoli-core/run/run-from-npm:
-  en: e22005cd42e6cbad
-  zh: 0f536f4208df1d60
+  en: ab39625f1cad4bfa
+  zh: 9f8389724a4d9204
 /huoli-core/run/run-from-source:
-  en: 819e3f7c144d0d64
-  zh: de815f040975dba7
+  en: b3ad816a354137f4
+  zh: 959a7bc5e58df421
 /huoli-core/community-and-support:
-  en: 20acf6451fdc869b
-  zh: d06246dd019ecef7
+  en: da570f313503f9d8
+  zh: 40decfdbd55aadbe
 /huoli-core/contributing:
-  en: cabc2d3e9f8898bd
-  zh: 83b6d238bae29ce3
+  en: f19c6f9404e576fd
+  zh: 8e9673ac5c9dd0e6
 /huoli-core/development:
-  en: 803ca2b11b497bed
-  zh: 8b4071eb0e7783ef
+  en: 606f986b1ad778dd
+  zh: c9937c5d464312b0
 /huoli-core/citation:
   en: 6704e9e5a8d49a91
   zh: 85c9cdd8d56f8e9d

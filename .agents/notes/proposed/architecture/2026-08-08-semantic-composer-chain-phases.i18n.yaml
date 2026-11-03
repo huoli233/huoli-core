@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-08-08-semantic-composer-chain-phases.md
 /agent-note-semantic-phases-for-composer-chain-election:
-  en: b083187ad8ead004
-  zh: b22a0dd83c37c557
+  en: da4940662ea6f358
+  zh: 69d8f20683928814
 /agent-note-semantic-phases-for-composer-chain-election/problem:
   en: 45193c3a6f3d29bf
   zh: 7f508649dbe65db5
 /agent-note-semantic-phases-for-composer-chain-election/proposal:
-  en: 2c71821b085dd337
-  zh: 4da440bdbb0b12ab
+  en: a675c1085bd7999a
+  zh: 7ed7fb2f4e5b72a5
 /agent-note-semantic-phases-for-composer-chain-election/alternatives-considered:
   en: 966a5082d8c2fe35
   zh: 6a384edcdec8495e

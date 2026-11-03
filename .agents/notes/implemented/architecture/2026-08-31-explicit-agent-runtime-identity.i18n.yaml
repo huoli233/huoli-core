@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-31-explicit-agent-runtime-identity.md
 /agent-note-explicit-agent-identity-at-runtime-boundaries:
-  en: f5e76516df025fc5
-  zh: 462fe05b46e6c1ea
+  en: 828c94f34b128888
+  zh: 4b27a0c832a7377f
 /agent-note-explicit-agent-identity-at-runtime-boundaries/problem:
   en: 98b49b900b8d2f84
   zh: 557faac2976592be
 /agent-note-explicit-agent-identity-at-runtime-boundaries/decision:
-  en: 1c628cf9c743c639
-  zh: d969b2475fe4a155
+  en: 8634645a2c633a5b
+  zh: da6578c392bbe46d
 /agent-note-explicit-agent-identity-at-runtime-boundaries/verification:
   en: 85130faaa171036b
   zh: 06e5e9fab32dbfb4

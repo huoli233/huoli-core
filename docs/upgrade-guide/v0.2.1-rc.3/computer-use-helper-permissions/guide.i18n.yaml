@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-rc.3/computer-use-helper-permissions/guide.md
 /:
-  en: 23336f139ca68e47
-  zh: 20ef9419a53642d5
+  en: 297202a332dc6aa6
+  zh: 026a4b943f86316d
 /authorize-the-computer-use-helper:
-  en: f8335f2dca7a15cf
-  zh: 469a0a753fea2a93
+  en: 28c25d07ff4cfa68
+  zh: 5b70feee9f9826d3
 /authorize-the-computer-use-helper/change:
-  en: 1552866718133b10
-  zh: 1c760c5c2d5cfc0b
+  en: a44f6ff5f23ef6b6
+  zh: 809f663774ed7a7a
 /authorize-the-computer-use-helper/migration:
-  en: a79e5995415ff456
-  zh: 6f818a092e53af2c
+  en: c745f5b588dd215f
+  zh: 0a9b6c2325343d64

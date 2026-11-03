@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-17-multiline-display-dollar-math.md
 /agent-note-multi-line-display-dollar-math:
-  en: 8f57c77aa43fbd6c
-  zh: ef5192184e4923d5
+  en: 52d3b83463a87fe1
+  zh: f01ee6a7d1d9568e
 /agent-note-multi-line-display-dollar-math/problem:
   en: e4b73644a982844c
   zh: 48f86358242d6ccc

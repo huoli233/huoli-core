@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/util/plugin-market-index/README.md
 /:
-  en: be1a45173d5c1ce7
-  zh: a9a5a976e40e4a8a
+  en: 4ac59d36f56c05ef
+  zh: 7c9571e4ab1ba13a
 /huoli-plugin-market-index:
-  en: 78d8cc75e40d4e48
-  zh: 9db1a93fb07d4ded
+  en: 63b213083981064e
+  zh: 7546330306f56161
 /huoli-plugin-market-index/summary:
-  en: f68c94d63c1ec0e5
-  zh: 52db4114eef7454d
+  en: 38fc6024ba89b487
+  zh: e450a2d4ec9d59d9
 /huoli-plugin-market-index/table-of-contents:
   en: cd2a60a905c978d6
   zh: cc71d387d0cbd442
@@ -21,14 +21,14 @@
   en: e0e4444616427bf2
   zh: 3960a7602bb17705
 /huoli-plugin-market-index/model-experience:
-  en: c060b1659cf43243
-  zh: 4a2313822283291e
+  en: 1a306f8fa1e6b698
+  zh: e0841517fbb12f88
 /huoli-plugin-market-index/model-experience/kv-cache-effect:
   en: a7a5484352ac021c
   zh: fe00da8797e85e06
 /huoli-plugin-market-index/known-limitations-and-deferred-work:
-  en: acfbb04ae4682367
-  zh: 48af36f974976528
+  en: b3055b1a309c7d87
+  zh: 2f70c53e5c6b24de
 /huoli-plugin-market-index/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: 3bb0c20c93f16f98

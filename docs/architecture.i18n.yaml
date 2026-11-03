@@ -3,35 +3,35 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/architecture.md
 /huoli-core-architecture:
-  en: 20678ed3f962afba
-  zh: 87a2b81675d93346
+  en: d0c20c4856159d37
+  zh: 32c9a18311011776
 /huoli-core-architecture/cordis:
-  en: da5060e577578ea7
-  zh: 2e77d570e32d8938
+  en: f33ed19f27b56d09
+  zh: 00d4544ecf03e909
 /huoli-core-architecture/profiles-and-bundles:
-  en: 21423f481b18b0be
-  zh: 5343bd7ea0fae5bc
+  en: d0ceea7a7895b06e
+  zh: 602d098bc920f9db
 /huoli-core-architecture/application-launch:
-  en: 334b4f390b6e376b
-  zh: ce094f24c6162be3
+  en: c897b5e826b1850a
+  zh: 98c4b8f97971016b
 /huoli-core-architecture/desktop-application:
-  en: b9eeb18645121a8b
-  zh: 70d87a12c43e042a
+  en: 0eb122624cfc2748
+  zh: d2eeee2f25211a83
 /huoli-core-architecture/core-packages:
-  en: 20ef882e44b06a10
-  zh: c10c3934ed5570e9
+  en: 43ee9643cc57ec2f
+  zh: e29769f02b8bb046
 /huoli-core-architecture/events:
-  en: 693407efb233f961
-  zh: 37b9dd0677d4405c
+  en: 19a41835034d7ed3
+  zh: 404981323a211ef8
 /huoli-core-architecture/turn-flow:
-  en: 1a79a70b62c04cdb
-  zh: c86d765e21430405
+  en: 863cc6bf41f98e82
+  zh: 927a90a25137bc5c
 /huoli-core-architecture/session-log:
-  en: b3b63d8fe7cab9fe
-  zh: 3703fcf30b1639d0
+  en: 5a6d3b709d3fccd4
+  zh: b6c30b14d494ca0c
 /huoli-core-architecture/capability-seams:
-  en: a5bc20c3f2a1b370
-  zh: 91773a281410b2f4
+  en: df227d1e4e56f6a0
+  zh: 6556d2a440f8bf92
 /huoli-core-architecture/where-new-behavior-goes:
-  en: ee73b1861378b099
-  zh: 9a182be609485f67
+  en: 2bbb7f7a540b2611
+  zh: 758369ca34f81378

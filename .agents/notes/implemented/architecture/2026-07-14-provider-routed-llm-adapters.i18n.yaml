@@ -3,32 +3,32 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-14-provider-routed-llm-adapters.md
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend:
-  en: e57698907c40f783
-  zh: 47004d8f68af1d7d
+  en: 410ec1ba676373d7
+  zh: ae5549f127269ef8
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/problem:
-  en: 2e51f5fa703b0677
-  zh: 385937219b88c447
+  en: 1a2a66410ebaeeb6
+  zh: 83da4a18dbd3c071
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/decision:
   en: a15c7c13f167e5ac
   zh: 63bcc2ef60c2f344
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/decision/provider-is-the-adapter-registration-key:
-  en: 4921a060c657b790
-  zh: 2f9632469c6f0b60
+  en: 026e000b602473e8
+  zh: fe4812cfb97ff358
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/decision/explicit-pi-ai-provider-profiles:
-  en: 1346315312eb35e2
-  zh: 3555f91c3afb49f8
+  en: 82b0fa2832f78010
+  zh: da61db4edfdb3c46
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/decision/recorded-assistant-route-and-replay-state:
-  en: ed60d078eacc67df
-  zh: a22631faf93deee2
+  en: 1dc4927303ab09bd
+  zh: 0d7e1380ef7b6621
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/decision/propagate-the-target-through-every-request-producer:
-  en: ba1908bc1517ed23
-  zh: 1c9353a422cf74e1
+  en: e322728911827bef
+  zh: f97573ec080e8d9a
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/alternatives-considered:
-  en: ad0d610ea92aa9b8
-  zh: fe09d62762e73f01
+  en: 0977e1b0b27a8e87
+  zh: e0e4ac784530abdb
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/consequences:
-  en: a0c98bced8a5e6fb
-  zh: 23caf082a08ba507
+  en: 709fbde29eb6c19d
+  zh: 1d0db2f8976e2a2e
 /agent-note-provider-routed-llm-adapters-and-a-generic-pi-ai-backend/testing:
   en: 5a36121f12701d08
   zh: 90f0f8ed44f7234f
