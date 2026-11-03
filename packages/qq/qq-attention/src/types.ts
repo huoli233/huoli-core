@@ -1,58 +1,38 @@
-/**
- * Attention state and its persisted events. The tools never mutate state
- * directly: they append an event, and the store applies it.
- *
- * @module @huoli/huoli-qq-attention
- */
+// 注意力状态与它的事件：工具只发事件，状态由事件推导
 
-/** Wake conditions the model may set for one chat. */
+// 唤醒条件，全部可选
 export interface WakeTriggers {
-  /** Wake when the bot is mentioned. */
   atMention?: boolean
-  /** Wake when the bot's name appears in text. */
   nameMention?: boolean
-  /** Wake on a question. */
   question?: boolean
-  /** Wake on a poke. */
   poke?: boolean
-  /** Wake on any ambient message. */
   anyMessage?: boolean
-  /** Baseline probability for ambient messages, zero to one. */
   probability?: number
-  /** Senders whose messages always wake the bot. */
   speakerIds?: readonly string[]
 }
 
-/** Attention state of one chat. */
+// 一个会话的注意力状态
 export interface AttentionState {
-  /** Watermark: the sequence the bot has read up to. Never decreases. */
   readThroughSeq: number
-  /** Time the last conversation was closed, or null while open. */
   closedAt: number | null
-  /** How the last conversation ended, at most 200 characters. */
   closeSummary: string
-  /** How to resume next time, at most 200 characters. */
   nextOpening: string
-  /** Whether the bot wakes on its own or after a sleep. */
   wakeMode: 'infinite' | 'timed'
-  /** Deadline for timed wake, null under infinite mode. */
   wakeUntil: number | null
-  /** Wake conditions. */
   triggers: WakeTriggers
-  /** Last time messages were looked at. */
   lastSeenAt: number
 }
 
-/** An attention event the store knows how to apply. */
+// 状态能接受的三种事件
 export type AttentionEvent =
   | { type: 'read'; chatKey: string; throughSeq: number; at: number }
   | { type: 'close'; chatKey: string; summary: string; nextOpening: string; throughSeq?: number; at: number }
   | { type: 'wake'; chatKey: string; wakeMode: 'infinite' | 'timed'; wakeUntil: number | null; triggers: WakeTriggers; at: number }
 
-/** Longest accepted close note. */
+// 收尾摘要上限
 export const NOTE_MAX_CHARS = 200
 
-/** State of a chat that has never been touched. */
+// 没碰过的会话长这样
 export function emptyAttention(): AttentionState {
   return {
     readThroughSeq: 0,
@@ -66,7 +46,7 @@ export function emptyAttention(): AttentionState {
   }
 }
 
-/** Apply one event to a state, returning a new state. */
+// 把一条事件叠到状态上，返回新状态
 export function applyAttention(state: AttentionState, event: AttentionEvent): AttentionState {
   switch (event.type) {
     case 'read': {

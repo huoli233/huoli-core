@@ -1,85 +1,57 @@
-/**
- * In-memory inbox for one chat. The channel bridge pushes inbound messages;
- * the attention tools read above a watermark and wait for the chat to settle.
- *
- * Messages themselves live in the session log; this buffer only serves the
- * live window the tools look at.
- *
- * @module @huoli/huoli-qq-attention
- */
+// 实时收件箱：通道桥接往这里推，工具从这里读与等
 
-/** One inbound message held in the live buffer. */
+// 缓冲里的一条消息
 export interface QqMessage {
-  /** Monotonic sequence inside one chat, starting at 1. */
-  readonly seq: number
-  /** Chat this message belongs to. */
-  readonly chatKey: string
-  /** Platform sender id. */
-  readonly senderId: string
-  /** Display name, when the channel reports one. */
-  readonly senderName?: string
-  /** Message text. */
-  readonly text: string
-  /** Arrival time in milliseconds. */
-  readonly at: number
+  seq: number
+  chatKey: string
+  senderId: string
+  senderName?: string
+  text: string
+  at: number
 }
 
-/** Fields the channel bridge supplies when pushing one message. */
+// 通道推消息时给的字段
 export interface InboxPush {
-  /** Platform sender id. */
   senderId: string
-  /** Display name, when available. */
   senderName?: string
-  /** Message text. */
   text: string
-  /** Arrival time; defaults to now. */
   at?: number
 }
 
-/** Read result; the watermark is the last returned message, not the buffer size. */
+// 读的结果，水位是这次读到的最后一条
 export interface InboxRead {
-  readonly messages: readonly QqMessage[]
-  /** Sequence of the last message returned, or the input watermark when nothing matched. */
-  readonly readThroughSeq: number
-  /** Whether more messages wait above the returned window. */
-  readonly partial: boolean
-  /** Highest sequence currently stored in this chat. */
-  readonly latestSeq: number
+  messages: readonly QqMessage[]
+  readThroughSeq: number
+  partial: boolean
+  latestSeq: number
 }
 
-/** Wait result; a timeout and a cancellation are different outcomes. */
+// 等的结果，超时与取消分开
 export interface InboxWait {
-  readonly messages: readonly QqMessage[]
-  /** The chat stayed quiet long enough to count as finished. */
-  readonly quietReached: boolean
-  /** The total wait expired. */
-  readonly timedOut: boolean
-  /** The caller aborted the wait. */
-  readonly cancelled: boolean
+  messages: readonly QqMessage[]
+  quietReached: boolean
+  timedOut: boolean
+  cancelled: boolean
 }
 
-/** Live inbox seam. */
+// 收件箱接口
 export interface QqInbox {
-  /** Append one message and wake every waiter of that chat. */
   push(chatKey: string, message: InboxPush): QqMessage
-  /** Read messages strictly above the watermark, up to the limit. */
   read(chatKey: string, afterSeq: number, limit: number): InboxRead
-  /** Wait for messages that arrive after this call, settling on quiet or timeout. */
   wait(chatKey: string, options: { timeoutMs: number; quietMs: number; signal?: AbortSignal }): Promise<InboxWait>
-  /** Highest sequence stored for a chat, zero when empty. */
   latestSeq(chatKey: string): number
-  /** Newest messages of a chat, oldest first. */
   recent(chatKey: string, limit: number): readonly QqMessage[]
 }
 
+// 一个等待者
 interface Waiter {
-  readonly afterSeq: number
-  readonly quietMs: number
-  readonly collected: QqMessage[]
-  readonly settle: (result: InboxWait) => void
+  afterSeq: number
+  quietMs: number
+  collected: QqMessage[]
+  settle: (result: InboxWait) => void
 }
 
-/** Create an inbox holding messages in memory. */
+// 建一个内存收件箱
 export function createInbox(now: () => number = () => Date.now()): QqInbox {
   const chats = new Map<string, QqMessage[]>()
   const waiters = new Map<string, Set<Waiter>>()
@@ -136,8 +108,7 @@ export function createInbox(now: () => number = () => Date.now()): QqInbox {
     },
     wait(chatKey, options) {
       const list = listOf(chatKey)
-      // The starting cursor is the newest message at call time, so anything that
-      // arrives later is collected and nothing before this call can be missed.
+      // 起点取调用那一刻的最新序号，之后到达的才算这次等到的
       const startSeq = list.length
       return new Promise<InboxWait>((resolve) => {
         const set = waiters.get(chatKey) ?? new Set<Waiter>()

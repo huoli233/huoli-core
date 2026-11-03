@@ -1,98 +1,60 @@
-/**
- * Memory retention and clarity: how much a record is still worth, and which
- * discrete step it has fallen to. Importance is computed once at write time;
- * nothing here raises it again.
- *
- * @module @huoli/huoli-qq-policy
- */
+// 记忆保留度与清晰度：重要度写入时算一次，这里只算还能剩多少
 
-/** Milliseconds in one day. */
 const DAY_MS = 86_400_000
 
-/** Retention parameters; the only place these numbers exist. */
+// 保留度参数，全仓只此一处
 export const RETENTION = {
-  /** Bonus per recall, capped. */
   recallBonusPer: 2,
-  /** Cap on the recall bonus. */
   recallBonusMax: 12,
-  /** Records newer than this keep the recency bonus. */
   recentDays: 7,
-  /** Recency bonus. */
   recentBonus: 18,
-  /** Records seen within this window keep the freshness bonus. */
   seenDays: 2,
-  /** Freshness bonus. */
   seenBonus: 8,
-  /** Age before the age penalty starts. */
   ageGraceDays: 7,
-  /** Cap on the age penalty. */
   agePenaltyMax: 80,
-  /** Age penalty rate for anchored records. */
   rateAnchor: 0.12,
-  /** Age penalty rate for ordinary records. */
   rateNormal: 0.35,
-  /** Importance at or above this anchors a record. */
   anchorImportance: 60,
 } as const
 
-/** Clarity steps from clearest to gone; a record may only descend one step at a time. */
+// 清晰度五档，只许一档一档降
 export const CLARITY_ORDER = ['vivid', 'clear', 'fuzzy', 'trace', 'forgotten'] as const
 
-/** One clarity step. */
 export type Clarity = (typeof CLARITY_ORDER)[number]
 
-/** Score thresholds that select a clarity step. */
+// 分数落到哪一档
 export const CLARITY_THRESHOLDS = { vivid: 68, clear: 46, fuzzy: 24, trace: 12 } as const
 
-/** Fields retention needs from a memory record. */
+// 算保留度需要的字段
 export interface MemoryRecord {
-  /** Importance computed at write time, 1 to 100. */
-  readonly importance: number
-  /** Time the record was written, in milliseconds. */
-  readonly at: number
-  /** Time the record was last recalled, in milliseconds. */
-  readonly lastSeenAt: number
-  /** How many times the record has been recalled. */
-  readonly recallCount: number
+  importance: number
+  at: number
+  lastSeenAt: number
+  recallCount: number
 }
 
-/** What a conversation looked like when the record was written. */
+// 写入时看得见的上下文
 export interface ImportanceInput {
-  /** Private chat with the owner scores higher than a group. */
   scene: 'private' | 'group' | 'platform' | 'self'
-  /** Whether the message addressed the bot directly. */
   directed?: boolean
-  /** Emotional charge, 0 to 24. */
   emotional?: number
-  /** First meeting with this person. */
   firstMeeting?: boolean
-  /** A promise or agreement was made. */
   agreement?: boolean
-  /** A conflict happened. */
   conflict?: boolean
-  /** The record is about the bot itself. */
   self?: boolean
-  /** Platform quality score, 0 to 18. */
   platformScore?: number
-  /** The owner marked it as favoured. */
   favored?: boolean
-  /** Written from diary-style reflection. */
   diary?: boolean
-  /** The content was too short to be worth much. */
   tooShort?: boolean
 }
 
-/** Clamp an importance value into 1 to 100. */
+// 夹到 1 到 100
 function clampImportance(value: number): number {
   if (!Number.isFinite(value)) return 1
   return Math.min(100, Math.max(1, Math.round(value)))
 }
 
-/**
- * Compute importance once, when the record is written.
- * @param input - what the conversation looked like.
- * @returns importance from 1 to 100.
- */
+// 写入时算一次重要度
 export function initialImportance(input: ImportanceInput): number {
   let score = 8
   if (input.scene === 'private') score += 42
@@ -110,12 +72,7 @@ export function initialImportance(input: ImportanceInput): number {
   return clampImportance(score)
 }
 
-/**
- * Score how much a record is still worth right now.
- * @param record - stored record fields.
- * @param now - current time in milliseconds.
- * @returns retention score; higher means clearer.
- */
+// 算这条记忆此刻还剩多少分量
 export function retention(record: MemoryRecord, now: number): number {
   const at = Number(record.at) || now
   const lastSeenAt = Number(record.lastSeenAt) || at
@@ -133,11 +90,7 @@ export function retention(record: MemoryRecord, now: number): number {
   return score
 }
 
-/**
- * Map a retention score to the clarity step it earns.
- * @param score - retention score.
- * @returns the clarity step matching that score.
- */
+// 分数换成清晰度那一档
 export function clarityFor(score: number): Clarity {
   if (score >= CLARITY_THRESHOLDS.vivid) return 'vivid'
   if (score >= CLARITY_THRESHOLDS.clear) return 'clear'
@@ -146,12 +99,7 @@ export function clarityFor(score: number): Clarity {
   return 'forgotten'
 }
 
-/**
- * Descend at most one clarity step per sweep, so forgetting feels gradual.
- * @param current - step the record has now.
- * @param computed - step its score would earn.
- * @returns the step to store.
- */
+// 一次只降一档，忘得才像人
 export function stepClarity(current: Clarity, computed: Clarity): Clarity {
   const from = Math.max(0, CLARITY_ORDER.indexOf(current))
   const to = Math.max(0, CLARITY_ORDER.indexOf(computed))

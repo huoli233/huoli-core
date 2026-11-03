@@ -1,9 +1,4 @@
-/**
- * Single decay and retention table for the chat agent. Every fading value in
- * the product reads its half-life, relax target, or clarity threshold here.
- *
- * @module @huoli/huoli-qq-policy
- */
+// 衰减与保留度的统一出口
 
 export {
   HALF_LIFE_MS,

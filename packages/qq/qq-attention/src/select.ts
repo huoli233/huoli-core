@@ -1,97 +1,61 @@
-/**
- * Attention signals: plain facts about a chat. This module never answers
- * "should the bot speak" — it produces evidence and candidate actions for the
- * model to weigh.
- *
- * @module @huoli/huoli-qq-attention
- */
+// 注意力事实：只回答"现场发生了什么"，不回答"该不该说"
 
-/** One message as the signal collector sees it. */
+// 参与信号的消息
 export interface SignalMessage {
-  /** Sequence inside the chat. */
-  readonly seq: number
-  /** Platform sender id. */
-  readonly senderId: string
-  /** Display name when known. */
-  readonly senderName?: string
-  /** Message text. */
-  readonly text: string
-  /** Arrival time in milliseconds. */
-  readonly at: number
-  /** True when the bot itself sent it. */
-  readonly self?: boolean
-  /** True when the message mentions the bot. */
-  readonly atMe?: boolean
-  /** True when the message is a poke at the bot. */
-  readonly isPoke?: boolean
-  /** True when the message replies to a bot message. */
-  readonly replyToBot?: boolean
+  seq: number
+  senderId: string
+  senderName?: string
+  text: string
+  at: number
+  self?: boolean
+  atMe?: boolean
+  isPoke?: boolean
+  replyToBot?: boolean
 }
 
-/** One candidate action, offered as advice rather than a decision. */
+// 一条候选动作，只是建议
 export interface Candidate {
-  /** Kind of participation this candidate describes. */
-  readonly kind: 'reply' | 'join' | 'observe' | 'wait' | 'close'
-  /** Why this candidate exists, in one clause. */
-  readonly why: string
-  /** Relative weight derived from the facts, not from a pass/fail threshold. */
-  readonly weight: number
+  kind: 'reply' | 'join' | 'observe' | 'wait' | 'close'
+  why: string
+  weight: number
 }
 
-/** Facts about a chat, with no verdict attached. */
+// 一个会话的事实集合
 export interface AttentionSignals {
-  /** Whether the bot was addressed, and how. */
-  readonly directed: { readonly at: boolean; readonly poke: boolean; readonly isPrivate: boolean; readonly replyToBot: boolean }
-  /** Ambient activity in the recent window. */
-  readonly ambient: { readonly humanCount: number; readonly lastHumanAgeMs: number | null; readonly speakingRate: number }
-  /** Whether the bot's name appeared in a calling position. */
-  readonly addressee: { readonly named: boolean; readonly confidence: number; readonly evidence: readonly string[] }
-  /** Whether the chat is repeating itself. */
-  readonly novelty: { readonly newTopic: boolean; readonly repeated: boolean }
-  /** Playfulness evidence, without a verdict. */
-  readonly fun: { readonly score: number; readonly evidence: readonly string[] }
-  /** Fatigue evidence supplied by the state layer, without a verdict. */
-  readonly fatigue: { readonly level: number; readonly reason: string }
-  /** Candidate actions the model may take. */
-  readonly candidates: readonly Candidate[]
+  directed: { at: boolean; poke: boolean; isPrivate: boolean; replyToBot: boolean }
+  ambient: { humanCount: number; lastHumanAgeMs: number | null; speakingRate: number }
+  addressee: { named: boolean; confidence: number; evidence: readonly string[] }
+  novelty: { newTopic: boolean; repeated: boolean }
+  fun: { score: number; evidence: readonly string[] }
+  fatigue: { level: number; reason: string }
+  candidates: readonly Candidate[]
 }
 
-/** Input for one signal collection. */
+// 采集一次的入参
 export interface CollectInput {
-  /** Chat being observed. */
-  readonly chatKey: string
-  /** Recent messages, oldest first. */
-  readonly messages: readonly SignalMessage[]
-  /** Bot display names and learned aliases. */
-  readonly selfNames?: readonly string[]
-  /** Current time in milliseconds. */
-  readonly now?: number
-  /** Fatigue level from the state layer, zero to one. */
-  readonly fatigueLevel?: number
-  /** Reason attached to the fatigue level. */
-  readonly fatigueReason?: string
-  /** Window used to count human activity. */
-  readonly activeWindowMs?: number
+  chatKey: string
+  messages: readonly SignalMessage[]
+  selfNames?: readonly string[]
+  now?: number
+  fatigueLevel?: number
+  fatigueReason?: string
+  activeWindowMs?: number
 }
 
-/** Default activity window. */
+// 默认活跃窗口
 const DEFAULT_ACTIVE_WINDOW_MS = 10 * 60_000
 
-/** Strip zero-width characters and fold width so name matching is stable. */
+// 去掉零宽字符并折叠全角，名字才比得准
 function normalize(text: string): string {
   return text.replace(/[\u200B-\u200D\u2060\uFEFF\u00AD]/g, '').normalize('NFKC').toLowerCase()
 }
 
-/** Whether a visible human wrote this message. */
+// 是不是真人发的
 function isHuman(message: SignalMessage): boolean {
   return message.self !== true
 }
 
-/**
- * Collect attention facts for one chat.
- * @param input - chat, recent messages, names, and state supplied by the caller.
- * @returns facts and candidate actions; never a speak/silent verdict.
- */
+// 采集一个会话的注意力事实
 export function collectSignals(input: CollectInput): AttentionSignals {
   const now = input.now ?? Date.now()
   const windowMs = Math.max(60_000, input.activeWindowMs ?? DEFAULT_ACTIVE_WINDOW_MS)
@@ -116,7 +80,7 @@ export function collectSignals(input: CollectInput): AttentionSignals {
   for (const name of names) {
     if (!body.includes(name)) continue
     named = true
-    evidence.push(`名字出现在文本里：${name}`)
+    evidence.push(`文本里出现名字：${name}`)
     break
   }
 
@@ -144,7 +108,7 @@ export function collectSignals(input: CollectInput): AttentionSignals {
     candidates.push({ kind: 'reply', why: '对方直接叫了机器人', weight: 1 })
   }
   if (!directed.at && named) {
-    candidates.push({ kind: 'reply', why: '名字出现在文本里，可能在叫它', weight: 0.55 })
+    candidates.push({ kind: 'reply', why: '文本里出现名字，可能在叫它', weight: 0.55 })
   }
   if (recentHumans.length >= 2 && !directed.at) {
     candidates.push({ kind: 'join', why: `近 ${Math.round(windowMs / 60_000)} 分钟有 ${recentHumans.length} 条真人发言`, weight: 0.45 })

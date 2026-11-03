@@ -1,64 +1,50 @@
-/**
- * Durable attention state: an append-only event log held in memory and
- * flushed atomically to one JSON file, so a restart keeps read watermarks,
- * close notes, and wake settings.
- *
- * @module @huoli/huoli-qq-attention
- */
+// 注意力状态落盘：内存里算，原子写回一个 JSON 文件，重启不丢
 
 import fs from 'node:fs'
 import path from 'node:path'
 import { applyAttention, emptyAttention, type AttentionEvent, type AttentionState } from './types.ts'
 
-/** Store options. */
+// 建仓选项
 export interface AttentionStoreOptions {
-  /** Absolute path of the JSON file holding the state. */
   file: string
-  /** Clock, for tests. */
   now?: () => number
 }
 
-/** One chat's attention state, readable and appendable. */
+// 按会话读状态、发事件
 export interface AttentionStore {
-  /** State for one chat; a chat never touched reads as empty. */
   of(chatKey: string): AttentionState
-  /** Apply one event and persist it. */
   append(event: AttentionEvent): void
-  /** Write the current state to disk now. */
   flush(): void
 }
 
-interface PersistedShape {
+// 文件里的形状
+interface StoredState {
   version: 1
   chats: Record<string, AttentionState>
 }
 
-/** Load a persisted file, returning an empty state for any read or parse failure. */
-function load(file: string): PersistedShape {
+// 读文件，出错就当空仓
+function load(file: string): StoredState {
   try {
     if (!fs.existsSync(file)) return { version: 1, chats: {} }
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
     if (text.trim().length === 0) return { version: 1, chats: {} }
-    const parsed = JSON.parse(text) as Partial<PersistedShape>
+    const parsed = JSON.parse(text) as Partial<StoredState>
     return { version: 1, chats: parsed.chats !== undefined && parsed.chats !== null ? parsed.chats : {} }
   } catch {
     return { version: 1, chats: {} }
   }
 }
 
-/** Write through a sibling temporary file, then rename, so a crash never truncates the file. */
-function save(file: string, shape: PersistedShape): void {
+// 先写临时文件再改名，崩在中间也不会写坏
+function save(file: string, shape: StoredState): void {
   fs.mkdirSync(path.dirname(file), { recursive: true })
   const temporary = `${file}.${process.pid}.tmp`
   fs.writeFileSync(temporary, `${JSON.stringify(shape, null, 2)}\n`, { mode: 0o600 })
   fs.renameSync(temporary, file)
 }
 
-/**
- * Create the attention store.
- * @param options - file location and clock.
- * @returns the store; every append is durable before it returns.
- */
+// 建一个落盘的注意力仓
 export function createAttentionStore(options: AttentionStoreOptions): AttentionStore {
   const loaded = load(options.file)
   const chats = new Map<string, AttentionState>(Object.entries(loaded.chats))

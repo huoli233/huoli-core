@@ -1,9 +1,4 @@
-/**
- * The five attention tools. Each one reads facts or appends an event; none of
- * them decides whether the bot should speak.
- *
- * @module @huoli/huoli-qq-attention
- */
+// 五个注意力工具：只读事实或发事件，都不决定要不要说话
 
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
@@ -12,46 +7,42 @@ import { NOTE_MAX_CHARS, type AttentionEvent, type AttentionState, type WakeTrig
 import type { AttentionStore } from './store.ts'
 import type { SignalMessage } from './select.ts'
 
-/** Longest wait a single call may request. */
+// 单次等待上限
 export const WAIT_MAX_MS = 300_000
 
-/** Default number of messages returned by one look. */
+// 单次最多返回多少条
 export const DEFAULT_READ_LIMIT = 20
 
-/** Quiet window used when the caller names none. */
+// 默认安静窗口
 export const DEFAULT_QUIET_MS = 5_000
 
-/** Runtime pieces the tools need. */
+// 工具需要的运行件
 export interface ToolDeps {
-  /** Live message buffer. */
-  readonly inbox: QqInbox
-  /** Durable attention state. */
-  readonly store: AttentionStore
-  /** Recent messages of one chat, oldest first, for signal collection. */
-  readonly recentOf: (chatKey: string) => readonly SignalMessage[]
-  /** Bot names and learned aliases. */
-  readonly selfNames: () => readonly string[]
+  inbox: QqInbox
+  store: AttentionStore
+  recentOf: (chatKey: string) => readonly SignalMessage[]
+  selfNames: () => readonly string[]
 }
 
-/** Model-facing failure carrying a next step, surfaced as a tool error. */
+// 拒绝时抛错，让内核当工具失败处理
 function refuse(code: string, error: string, hint: string): never {
   throw new Error(`${code}: ${error}｜下一步: ${hint}`)
 }
 
-/** Chat key for the current call; one chat maps to one session. */
+// 取当前会话的键，一个群一个会话
 function chatKeyOf(exec: { agent?: { id: string } }): string {
   const id = exec.agent?.id
   if (id === undefined || id === '') refuse('attention.no_chat', '这次调用没有会话身份', '从带会话的入口调用工具')
   return String(id)
 }
 
-/** Register the five attention tools. */
+// 注册五个工具
 export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
   const { inbox, store } = deps
 
   ctx.tools.register(defineTool({
     name: 'read_messages',
-    description: '看这个会话的消息。返回消息与读水位；不传 afterSeq 就从上次读到的地方继续。水位是这次读到的最后一条，不是消息总数。',
+    description: '看这个会话的消息，返回消息与读水位。不传 afterSeq 就从上次读到的地方继续；水位是这次读到的最后一条，不是消息总数。',
     parameters: {
       afterSeq: { type: 'number', description: '从这条之后开始读；不传就用水位。' },
       limit: { type: 'number', description: `最多返回多少条，默认 ${DEFAULT_READ_LIMIT}。` },
@@ -77,7 +68,7 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
 
   ctx.tools.register(defineTool({
     name: 'wait_for_messages',
-    description: '等这个会话继续说话。purpose=reply 用来等对方把话说完；purpose=messages 用来睡前观察。超时不是错误，取消也不是错误。',
+    description: '等这个会话继续说话。purpose=reply 等对方把话说完；purpose=messages 睡前观察。超时和取消都不是错误。',
     parameters: {
       purpose: { type: 'string', description: 'reply 等对方说完；messages 观察一段时间。' },
       timeoutMs: { type: 'number', description: `总等待时长，上限 ${WAIT_MAX_MS}。` },
@@ -93,10 +84,9 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
       const timeoutMs = Math.min(Math.max(requested, 1), WAIT_MAX_MS)
       const quietMs = Number.isInteger(args.quietMs) && args.quietMs !== undefined ? Math.max(args.quietMs, 0) : DEFAULT_QUIET_MS
       const waited = await inbox.wait(chatKey, { timeoutMs, quietMs, signal: exec.signal })
-      const latestSeq = inbox.latestSeq(chatKey)
       return {
         newMessages: waited.messages.map(message => ({ seq: message.seq, senderId: message.senderId, text: message.text })),
-        latestSeq,
+        latestSeq: inbox.latestSeq(chatKey),
         readThroughSeq: store.of(chatKey).readThroughSeq,
         quietReached: waited.quietReached,
         timedOut: waited.timedOut,
@@ -107,9 +97,9 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
 
   ctx.tools.register(defineTool({
     name: 'mark_read',
-    description: '把消息划走，不回复。必须用 read_messages 给的水位；水位只能前进。这不是收尾，想留结束点用 close_conversation。',
+    description: '把消息划走，不回复。必须用 read_messages 给的水位，水位只能前进。这不是收尾，想留结束点用 close_conversation。',
     parameters: {
-      throughSeq: { type: 'number', description: '读到哪一条为止；必须是 read_messages 返回的水位。' },
+      throughSeq: { type: 'number', description: '读到哪一条为止，用 read_messages 返回的水位。' },
     },
     output: {
       schema: { type: 'object', additionalProperties: true },
@@ -128,7 +118,7 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
         refuse('attention.seq_backwards', `水位只能前进，当前 ${state.readThroughSeq}`, '传一个不小于当前水位的值')
       }
       if (latestSeq > 0 && throughSeq > latestSeq) {
-        refuse('attention.seq_ahead', `水位超过了最新消息 ${latestSeq}`, '用 read_messages 返回的水位，别自己编')
+        refuse('attention.seq_ahead', `水位超过最新消息 ${latestSeq}`, '用 read_messages 返回的水位，别自己编')
       }
       store.append({ type: 'read', chatKey, throughSeq, at: Date.now() })
       return { readThroughSeq: store.of(chatKey).readThroughSeq, latestSeq }
@@ -161,7 +151,7 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
         const value = args.throughSeq as number
         if (value < state.readThroughSeq) refuse('attention.seq_backwards', `水位只能前进，当前 ${state.readThroughSeq}`, '传一个不小于当前水位的值')
         const latestSeq = inbox.latestSeq(chatKey)
-        if (latestSeq > 0 && value > latestSeq) refuse('attention.seq_ahead', `水位超过了最新消息 ${latestSeq}`, '用 read_messages 返回的水位')
+        if (latestSeq > 0 && value > latestSeq) refuse('attention.seq_ahead', `水位超过最新消息 ${latestSeq}`, '用 read_messages 返回的水位')
         throughSeq = value
       }
       const event: AttentionEvent = { type: 'close', chatKey, summary, nextOpening, at: Date.now(), ...throughSeq !== undefined ? { throughSeq } : {} }
@@ -173,7 +163,7 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
 
   ctx.tools.register(defineTool({
     name: 'set_wake_config',
-    description: '决定下次什么时候叫醒你：每条都醒、睡一会儿、或者只在这几种情况醒。默认推荐被叫、被点名、有提问，普通消息低概率。',
+    description: '决定下次什么时候叫醒你：每条都醒、睡一会儿、或只在这几种情况醒。推荐被叫、被点名、有提问，普通消息低概率。',
     parameters: {
       infinite: { type: 'boolean', description: '每条消息都醒。' },
       sleepMs: { type: 'number', description: '睡这么久再醒，与 infinite 二选一。' },
@@ -212,15 +202,14 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
         wakeUntil = null
       }
 
-      // Validate the watermark before touching any state, so a rejected call
-      // cannot leave a half-applied wake setting behind.
+      // 先验水位再改状态，被拒的调用不留半截
       let throughSeq: number | undefined
       if (args.throughSeq !== undefined) {
         if (!Number.isInteger(args.throughSeq)) refuse('attention.invalid_seq', '水位必须是整数', '用 read_messages 返回的水位')
         const value = args.throughSeq as number
         if (value < state.readThroughSeq) refuse('attention.seq_backwards', `水位只能前进，当前 ${state.readThroughSeq}`, '传一个不小于当前水位的值')
         const latestSeq = inbox.latestSeq(chatKey)
-        if (latestSeq > 0 && value > latestSeq) refuse('attention.seq_ahead', `水位超过了最新消息 ${latestSeq}`, '用 read_messages 返回的水位')
+        if (latestSeq > 0 && value > latestSeq) refuse('attention.seq_ahead', `水位超过最新消息 ${latestSeq}`, '用 read_messages 返回的水位')
         throughSeq = value
       }
 
@@ -241,7 +230,7 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
   }))
 }
 
-/** Read the current attention state of one chat, for prompt rendering. */
+// 给提示词层读当前注意力状态
 export function attentionStateOf(store: AttentionStore, chatKey: string): AttentionState {
   return store.of(chatKey)
 }
