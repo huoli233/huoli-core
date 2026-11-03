@@ -5,6 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@huoli/cordis'
 import '@huoli/huoli-system-prompt'
+import '@huoli/huoli-agent'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
 import { qqMemoryOf } from '@huoli/huoli-qq-memory'
 import { qqChannelOf } from '@huoli/huoli-qq-channel'
@@ -14,6 +15,7 @@ import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 export interface Config {
   rulesFile?: string
   dailySweepHour?: number
+  maxSteps?: number
 }
 
 // 插件的行名
@@ -50,6 +52,13 @@ export function apply(ctx: Context, config: Config = {}): void {
     name: 'qq:rules',
     order: 500,
     text: rules,
+  })
+
+  // 每轮最多走几步：走太多就是在空转，停掉比继续烧钱好
+  const maxSteps = Math.max(1, config.maxSteps ?? 40)
+  ctx.on('agent/pre-step', async (payload, next) => {
+    if (payload.step > maxSteps) return { kind: 'reject' as const }
+    return next()
   })
 
   // 收消息：放进注意力收件箱，顺便把当前会话记成活跃的那个
