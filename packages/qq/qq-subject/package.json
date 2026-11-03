@@ -1,0 +1,33 @@
+{
+  "name": "@huoli/huoli-qq-subject",
+  "description": "自己的状态：心情、精力、关系，写成一段话放进每轮提示词",
+  "version": "0.2.2-alpha.2",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-system-prompt": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-system-prompt": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-qq-policy": "workspace:*"
+  }
+}

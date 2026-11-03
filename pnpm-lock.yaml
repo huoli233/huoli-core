@@ -13976,6 +13976,19 @@ importers:
 
   packages/qq/qq-policy: {}
 
+  packages/qq/qq-subject:
+    dependencies:
+      '@huoli/huoli-qq-policy':
+        specifier: workspace:*
+        version: link:../qq-policy
+    devDependencies:
+      '@huoli/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@huoli/huoli-system-prompt':
+        specifier: workspace:*
+        version: link:../../core/system-prompt
+
   packages/sandbox/sandbox:
     dependencies:
       '@huoli/huoli-util-values':

@@ -566,6 +566,7 @@
     { "path": "./packages/preset/persona" },
     { "path": "./packages/qq/qq-attention" },
     { "path": "./packages/qq/qq-policy" },
+    { "path": "./packages/qq/qq-subject" },
     { "path": "./packages/guard/repeat-tool-reminder" },
     { "path": "./packages/extensions/cordis-host-runner" },
     { "path": "./packages/extensions/tool-cordis" },
