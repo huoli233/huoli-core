@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { JSON_SCHEMA, load } from 'js-yaml'
+import { restoreSealedIdentity } from './identity-vocabulary.ts'
 import type { PersistenceHistory, PersistenceHistoryEntry } from './persistence-changes.ts'
 import type { PersistenceRoot, PersistenceSchemaInventory } from './persistence-schema-model.ts'
 
@@ -50,7 +51,9 @@ function recordDigest(entry: PersistenceHistoryEntry): string {
     roots: [...entry.snapshot.roots].sort((a, b) => compare(a.key, b.key)).map(root => ({
       key: root.key, ...identity(root), schema: root.schema,
     })) } }
-  return createHash('sha256').update('huoli-persistence-finalization-record-v1\n').update(JSON.stringify(semantic)).digest('hex')
+  // A checkpoint states the record a reviewer accepted, so identity tokens are sealed first.
+  const material = restoreSealedIdentity(`huoli-persistence-finalization-record-v1\n${JSON.stringify(semantic)}`)
+  return createHash('sha256').update(material).digest('hex')
 }
 
 function writerVersion(roots: readonly PersistenceRoot[]): number {

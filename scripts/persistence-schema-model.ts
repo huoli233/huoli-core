@@ -5,6 +5,7 @@
  */
 
 import { createHash } from 'node:crypto'
+import { restoreSealedIdentity } from './identity-vocabulary.ts'
 
 /** Recorded reader promise for explicitly attributed source additions. */
 export interface SourceCompatibility {
@@ -86,6 +87,9 @@ export type SerializedSchemaNode =
 
 /** Length of the digest prefix that names a node in a serialized node table. */
 export const SCHEMA_NODE_KEY_LENGTH = 16
+
+/** Versioned domain of a canonical-graph fingerprint; identity tokens never enter it. */
+const FINGERPRINT_DOMAIN = 'huoli-persistence-schema-v'
 
 /**
  * Name a node by the digest prefix of the canonical subgraph it roots.
@@ -222,7 +226,9 @@ function mapNode(node: SchemaNode, ref: (id: number) => number): SchemaNode {
 function partition(nodes: readonly SchemaNode[]): number[] {
   let colors = nodes.map(() => 0)
   for (;;) {
-    const signatures = nodes.map((node, index) => JSON.stringify([colors[index], mapNode(node, id => colors[id] as number)]))
+    // Node numbering follows these signatures, so an identity spelling must not decide the order.
+    const signatures = nodes.map((node, index) =>
+      restoreSealedIdentity(JSON.stringify([colors[index], mapNode(node, id => colors[id] as number)])))
     const ordered = [...new Set(signatures)].sort(compare)
     const ids = new Map(ordered.map((value, index) => [value, index]))
     const next = signatures.map(value => ids.get(value) as number)
@@ -333,12 +339,15 @@ function normalizeUnions(input: readonly SchemaNode[]): SchemaNode[] {
 
 /**
  * Compute the versioned SHA-256 fingerprint of a canonical graph.
+ * Identity tokens in the domain and the material are restored to their sealed spelling first, so
+ * renaming the project cannot invalidate a recorded digest or reclassify a persisted type.
  * @param schema - canonical resolved persisted type.
  * @returns lowercase hexadecimal digest.
  */
 export function schemaDigest(schema: CanonicalSchema): string {
   const version = schemaHasCompatibility(schema) ? 2 : 1
-  return createHash('sha256').update(`huoli-persistence-schema-v${String(version)}\n`).update(JSON.stringify(schema)).digest('hex')
+  const material = restoreSealedIdentity(`${FINGERPRINT_DOMAIN}${String(version)}\n${JSON.stringify(schema)}`)
+  return createHash('sha256').update(material).digest('hex')
 }
 
 /**

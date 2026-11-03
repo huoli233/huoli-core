@@ -3,6 +3,7 @@
 import { createHash } from 'node:crypto'
 import { basename } from 'node:path'
 import { AGENT_NOTE_CLASSES } from './agent-note-tree.ts'
+import { restoreSealedIdentity } from './identity-vocabulary.ts'
 
 /** Versioned fields in the frozen-content manifest. */
 export interface ArchiveManifest {
@@ -10,16 +11,24 @@ export interface ArchiveManifest {
   files: Readonly<Record<string, string>>
 }
 
+/** Bytes a frozen seal covers: the artifact with its sealed identity spellings restored. */
+function sealedBytes(content: Buffer): Buffer {
+  const text = content.toString('latin1')
+  const restored = restoreSealedIdentity(text)
+  return restored === text ? content : Buffer.from(restored, 'latin1')
+}
+
 /** Hash one archived artifact independently of the repository's Git object format. */
 function archiveContentHash(content: Buffer): string {
-  return `sha256:${createHash('sha256').update(content).digest('hex')}`
+  return `sha256:${createHash('sha256').update(sealedBytes(content)).digest('hex')}`
 }
 
 /** Compute the SHA-1 Git blob id used by bilingual consistency sidecars. */
 export function gitBlobHash(content: Buffer): string {
+  const sealed = sealedBytes(content)
   const hash = createHash('sha1')
-  hash.update(`blob ${content.byteLength}\0`)
-  hash.update(content)
+  hash.update(`blob ${sealed.byteLength}\0`)
+  hash.update(sealed)
   return hash.digest('hex')
 }
 
