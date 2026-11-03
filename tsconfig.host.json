@@ -571,6 +571,7 @@
     { "path": "./packages/qq/qq-pacing" },
     { "path": "./packages/qq/qq-material" },
     { "path": "./packages/qq/qq-proactive" },
+    { "path": "./packages/qq/qq-continuity" },
     { "path": "./packages/guard/repeat-tool-reminder" },
     { "path": "./packages/extensions/cordis-host-runner" },
     { "path": "./packages/extensions/tool-cordis" },
