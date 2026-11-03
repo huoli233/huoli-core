@@ -17,14 +17,14 @@ import SandboxPolicyService from '@huoli/huoli-sandbox-policy'
 import LocalFileSystem from '@huoli/huoli-fs-local'
 import { FsError } from '@huoli/huoli-fs'
 import TypertRegistry from '@huoli/huoli-typert-registry'
-import type { Converter, ConverterOptions } from '@huoli/libreoffice-kit'
+import type { Converter, ConverterOptions } from '@deepseek-ai/libreoffice-kit'
 import { expect, it, onTestFinished, vi } from 'vitest'
 
 /** The Peer an index render speaks for; this listener reads no field of it. */
 const PAGE_PEER = { principal: { kind: 'owner' } } as Parameters<WebServer['renderIndex']>[1]
 
 const kit = vi.hoisted(() => ({ create: vi.fn<(options?: ConverterOptions) => Promise<Converter>>() }))
-vi.mock('@huoli/libreoffice-kit', () => ({ createConverter: kit.create }))
+vi.mock('@deepseek-ai/libreoffice-kit', () => ({ createConverter: kit.create }))
 
 it('loads the shipped Office rows with separately patched settings and authorized PDF output', async () => {
   const directory = await realpath(await mkdtemp(join(tmpdir(), 'huoli-web-office-')))

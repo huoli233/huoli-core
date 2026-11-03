@@ -74,7 +74,7 @@ describe('default product isolation', () => {
     })
   })
 
-  it.each(['@huoli/libreoffice-kit'])(
+  it.each(['@deepseek-ai/libreoffice-kit'])(
     'accepts independently published %s but rejects unknown workspace packages', (name) => {
       const root = fixture()
       const file = 'packages/core/core/package.json'
@@ -89,7 +89,7 @@ describe('default product isolation', () => {
   it.each(['wasm', 'darwin-arm64', 'darwin-x64', 'win32-arm64', 'win32-x64'])(
     'rejects a direct dependency on the %s engine', (engine) => {
       const root = fixture()
-      const name = `@huoli/libreoffice-kit-${engine}`
+      const name = `@deepseek-ai/libreoffice-kit-${engine}`
       manifest(root, 'packages/core/core/package.json', { dependencies: { [name]: '0.0.1' } })
       expect(verifyDefaultProductIsolation(root).failures.join('\n')).toContain(`unknown workspace package ${name}`)
     },

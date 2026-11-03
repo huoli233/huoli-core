@@ -12,7 +12,7 @@
   ],
   "dependencies": {
     "koffi": "3.1.1",
-    "@huoli/libreoffice-kit": "^0.1.5",
+    "@deepseek-ai/libreoffice-kit": "^0.1.5",
     "@huoli/cordis": "workspace:~",
     "@huoli/huoli": "workspace:*",
     "@huoli/huoli-agent": "workspace:*",

@@ -52,7 +52,7 @@ function officeRuntime(config: Config): string {
   const node = config.node ?? process.execPath
   let cli = config.cli
   if (cli === undefined) {
-    const manifestPath = fileURLToPath(import.meta.resolve('@huoli/libreoffice-kit/package.json'))
+    const manifestPath = fileURLToPath(import.meta.resolve('@deepseek-ai/libreoffice-kit/package.json'))
     cli = join(dirname(manifestPath), 'lib', 'cli.js')
   }
   for (const path of [node, cli]) {

@@ -75,8 +75,8 @@ async function fixture(external: boolean) {
   await writeFile(join(source, 'node_modules', 'foo', 'companion.json'), '{}')
   await writeFile(join(source, 'node_modules', 'foo', '$xarchy.binary'), 'neighbor')
   for (const [name, manifest] of [
-    ['@huoli/libreoffice-kit', { name: '@huoli/libreoffice-kit', optionalDependencies: { '@huoli/libreoffice-kit-win32-x64': '0.0.4' }, dependencies: { 'office-codec': '1' } }],
-    ['@huoli/libreoffice-kit-win32-x64', { name: '@huoli/libreoffice-kit-win32-x64' }],
+    ['@deepseek-ai/libreoffice-kit', { name: '@deepseek-ai/libreoffice-kit', optionalDependencies: { '@deepseek-ai/libreoffice-kit-win32-x64': '0.0.4' }, dependencies: { 'office-codec': '1' } }],
+    ['@deepseek-ai/libreoffice-kit-win32-x64', { name: '@deepseek-ai/libreoffice-kit-win32-x64' }],
     ['office-codec', { name: 'office-codec' }],
   ] as const) {
     const directory = join(source, 'node_modules', name)
@@ -272,7 +272,7 @@ it.each([false, true])('keeps the complete Office engine outside ASAR with exter
     await mkdir(dirname(path), { recursive: true })
     await writeFile(path, '{}')
   }
-  const wasm = join(input.source, 'node_modules/@huoli/libreoffice-kit-wasm/package.json')
+  const wasm = join(input.source, 'node_modules/@deepseek-ai/libreoffice-kit-wasm/package.json')
   await mkdir(dirname(wasm), { recursive: true })
   await writeFile(wasm, '{}')
   const config = unsignedWindowsConfig('com.example.office', input.source)
@@ -281,7 +281,7 @@ it.each([false, true])('keeps the complete Office engine outside ASAR with exter
   await packageFixture(input)
   const archive = await readAsar(join(input.resources, 'app.asar'))
   expect(archive.getFile(join('huoli', 'node_modules', '@huoli', 'libreoffice-kit-wasm', 'package.json')).unpacked).not.toBe(true)
-  for (const name of ['@huoli/libreoffice-kit', 'office-codec']) {
+  for (const name of ['@deepseek-ai/libreoffice-kit', 'office-codec']) {
     expect(archive.getFile(join('huoli', 'node_modules', name, 'cli.js')).unpacked).toBe(true)
   }
   for (const file of files) {

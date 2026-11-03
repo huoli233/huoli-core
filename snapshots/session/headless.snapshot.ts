@@ -531,7 +531,7 @@ const workspaceSetups: Record<string, (cwd: string) => Promise<void>> = {
     // A copied macOS Node binary cannot find its adjacent libnode.dylib.
     const nodePath = process.execPath.replaceAll("'", "'\\''")
     await writeFile(join(cwd, 'office-node'), `#!/bin/sh\nexec '${nodePath}' "$@"\n`, { mode: 0o755 })
-    await copyFile(join(repoRoot, 'packages/skill/skill-office/node_modules/@huoli/libreoffice-kit/lib/cli.js'), join(cwd, 'office-cli.js'))
+    await copyFile(join(repoRoot, 'packages/skill/skill-office/node_modules/@deepseek-ai/libreoffice-kit/lib/cli.js'), join(cwd, 'office-cli.js'))
   },
   async 'office-retired-ptc'(cwd) {
     await workspaceSetups['office-skills']!(cwd)

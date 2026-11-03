@@ -79,7 +79,7 @@ def office_launch_args(root: Path, target: str) -> tuple[str, str]:
         if complete.read_text(encoding="utf-8") != metadata["identity"]:
             raise ValueError(f"Office cache identity mismatch: {office}")
     node = office / "node/bin" / ("node.exe" if target == "win-x64" else "node")
-    cli = office / "node_modules/@huoli/libreoffice-kit/lib/cli.js"
+    cli = office / "node_modules/@deepseek-ai/libreoffice-kit/lib/cli.js"
     for path in (node, cli):
         if not path.is_file():
             raise FileNotFoundError(f"Office resource is missing: {path}. Call deepseek_harness_runtime.download_office() first.")

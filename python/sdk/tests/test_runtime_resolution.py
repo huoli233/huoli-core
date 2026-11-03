@@ -28,13 +28,13 @@ def _resource_sidecars(executable: Path, native_targets: tuple[str, ...] = ("dar
     tag = executable.name.removeprefix("huoli-core-sdk-runtime-").removesuffix(".exe")
     native = tag.replace("win-", "win32-").replace("macos-", "darwin-")
     engine = native if native in native_targets else "wasm"
-    for required in ("@huoli/libreoffice-kit/package.json", f"@huoli/libreoffice-kit-{engine}/prebuilds.json"):
+    for required in ("@deepseek-ai/libreoffice-kit/package.json", f"@deepseek-ai/libreoffice-kit-{engine}/prebuilds.json"):
         path = office / "node_modules" / required
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("{}")
-    adapter = office / "node_modules/@huoli/libreoffice-kit/package.json"
+    adapter = office / "node_modules/@deepseek-ai/libreoffice-kit/package.json"
     adapter.write_text(json.dumps({"optionalDependencies": {
-        f"@huoli/libreoffice-kit-{target}": "0.0.1" for target in (*native_targets, "wasm")
+        f"@deepseek-ai/libreoffice-kit-{target}": "0.0.1" for target in (*native_targets, "wasm")
     }}), encoding="utf-8")
     resources = executable.with_name(tag)
     resources.mkdir(parents=True, exist_ok=True)
@@ -205,7 +205,7 @@ def test_runtime_requires_complete_resource_sidecars(
         runtime.bundled_runtime_path()
     office = _resource_sidecars(executable)
     assert runtime.bundled_runtime_path() == executable
-    (office / "node_modules/@huoli/libreoffice-kit-wasm/prebuilds.json").unlink()
+    (office / "node_modules/@deepseek-ai/libreoffice-kit-wasm/prebuilds.json").unlink()
     assert runtime.bundled_runtime_path() == executable
     shutil.rmtree(executable.with_name("linux-x64") / "primary-runtime")
     assert runtime.bundled_runtime_path() == executable
@@ -324,7 +324,7 @@ def test_runtime_starts_independently_of_office_engine(
     monkeypatch.setattr(runtime, "bundled_package_dir", lambda: tmp_path)
     monkeypatch.setattr(runtime, "_current_platform_tag", lambda: target)
     assert runtime.bundled_runtime_path() == executable
-    engine = next(office.glob("node_modules/@huoli/libreoffice-kit-*/prebuilds.json"))
+    engine = next(office.glob("node_modules/@deepseek-ai/libreoffice-kit-*/prebuilds.json"))
     engine.unlink()
     foreign = office / "node_modules/@huoli" / ("libreoffice-kit-darwin-arm64" if engine.parent.name == "libreoffice-kit-wasm" else "libreoffice-kit-wasm") / "prebuilds.json"
     foreign.parent.mkdir(parents=True, exist_ok=True)
@@ -395,7 +395,7 @@ def test_office_resolution_requires_explicit_download(tmp_path: Path, monkeypatc
         office_launch_args(tmp_path / "linux-x64", "linux-x64")
     office = cache / ("a" * 64) / "office"
     node = office / "node/bin/node"
-    cli = office / "node_modules/@huoli/libreoffice-kit/lib/cli.js"
+    cli = office / "node_modules/@deepseek-ai/libreoffice-kit/lib/cli.js"
     for path in (node, cli):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.touch()

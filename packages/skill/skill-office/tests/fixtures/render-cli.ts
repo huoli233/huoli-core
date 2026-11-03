@@ -15,7 +15,7 @@ export async function renderCliFixture(
   cwd: string, python: string, blank: boolean, calls = join(cwd, '.fixture', 'calls.jsonl'),
 ): Promise<{ cli: string; calls: string }> {
   const cli = join(cwd, '.fixture', 'cli.js')
-  const kit = fileURLToPath(import.meta.resolve('@huoli/libreoffice-kit/cli'))
+  const kit = fileURLToPath(import.meta.resolve('@deepseek-ai/libreoffice-kit/cli'))
   const inspectPixels = [
     'from pathlib import Path',
     'from PIL import Image',

@@ -30,33 +30,33 @@ async function fixture() {
 
 it('locates installed target optionals and leaves other platforms and absent optionals out', async () => {
   const { staging, packageAt } = await fixture()
-  await packageAt('@huoli/libreoffice-kit', {
+  await packageAt('@deepseek-ai/libreoffice-kit', {
     optionalDependencies: { native: '1', foreign: '1', absent: '1' },
   })
-  await packageAt('@huoli/libreoffice-kit-wasm')
+  await packageAt('@deepseek-ai/libreoffice-kit-wasm')
   await packageAt('native', { os: ['linux'], cpu: ['x64'] })
   await packageAt('foreign', { os: ['darwin'], cpu: ['arm64'] })
 
   const packages = await officePackageDirectories(staging, { platform: 'linux', arch: 'x64' })
 
   expect(packages.map(path => path.slice(staging.length + 1).replaceAll('\\', '/'))).toEqual([
-    'node_modules/@huoli/libreoffice-kit',
-    'node_modules/@huoli/libreoffice-kit-wasm',
+    'node_modules/@deepseek-ai/libreoffice-kit',
+    'node_modules/@deepseek-ai/libreoffice-kit-wasm',
     'node_modules/native',
   ])
 })
 
 it('rejects a missing required dependency in the deployed closure', async () => {
   const { staging, packageAt } = await fixture()
-  await packageAt('@huoli/libreoffice-kit', { dependencies: { 'huoli-missing-office-fixture': '1' } })
+  await packageAt('@deepseek-ai/libreoffice-kit', { dependencies: { 'huoli-missing-office-fixture': '1' } })
 
   await expect(officePackageDirectories(staging, { platform: 'linux', arch: 'x64' }))
-    .rejects.toThrow('huoli-missing-office-fixture required by @huoli/libreoffice-kit is missing')
+    .rejects.toThrow('huoli-missing-office-fixture required by @deepseek-ai/libreoffice-kit is missing')
 })
 
 it('rejects an incomplete installed optional instead of omitting it', async () => {
   const { staging, packageAt } = await fixture()
-  await packageAt('@huoli/libreoffice-kit', { optionalDependencies: { broken: '1' } })
+  await packageAt('@deepseek-ai/libreoffice-kit', { optionalDependencies: { broken: '1' } })
   await mkdir(join(staging, 'node_modules/broken'), { recursive: true })
 
   await expect(officePackageDirectories(staging, { platform: 'linux', arch: 'x64' }))
@@ -65,7 +65,7 @@ it('rejects an incomplete installed optional instead of omitting it', async () =
 
 it('rejects an ancestor dependency outside the deployed closure', async () => {
   const { root, staging, packageAt } = await fixture()
-  await packageAt('@huoli/libreoffice-kit', { dependencies: { 'ancestor-office-fixture': '1' } })
+  await packageAt('@deepseek-ai/libreoffice-kit', { dependencies: { 'ancestor-office-fixture': '1' } })
   await packageAt('ancestor-office-fixture', {}, root)
 
   await expect(officePackageDirectories(staging, { platform: 'linux', arch: 'x64' }))
@@ -74,10 +74,10 @@ it('rejects an ancestor dependency outside the deployed closure', async () => {
 
 it.each([true, false])('requires a staged WASM engine when declared=%s even when an ancestor has one', async (declared) => {
   const { root, staging, packageAt } = await fixture()
-  await packageAt('@huoli/libreoffice-kit', declared ? { optionalDependencies: { '@huoli/libreoffice-kit-wasm': '0.0.1' } } : {})
-  await packageAt('@huoli/libreoffice-kit-wasm', {}, root)
+  await packageAt('@deepseek-ai/libreoffice-kit', declared ? { optionalDependencies: { '@deepseek-ai/libreoffice-kit-wasm': '0.0.1' } } : {})
+  await packageAt('@deepseek-ai/libreoffice-kit-wasm', {}, root)
   await expect(officePackageDirectories(staging, { platform: 'linux', arch: 'x64' }))
-    .rejects.toThrow('Office engine @huoli/libreoffice-kit-wasm required for linux/x64 is missing.')
+    .rejects.toThrow('Office engine @deepseek-ai/libreoffice-kit-wasm required for linux/x64 is missing.')
 })
 
 it.each([
@@ -87,24 +87,24 @@ it.each([
 ])('locates only the %s/%s engine even when other engines are staged', async (platform, arch, selected) => {
   const { staging, packageAt } = await fixture()
   const targets = ['darwin-arm64', 'darwin-x64', 'win32-arm64', 'win32-x64', 'linux-x64', 'wasm']
-  const names = targets.map(target => `@huoli/libreoffice-kit-${target}`)
-  await packageAt('@huoli/libreoffice-kit', { optionalDependencies: Object.fromEntries(names.map(name => [name, '0.0.1'])) })
+  const names = targets.map(target => `@deepseek-ai/libreoffice-kit-${target}`)
+  await packageAt('@deepseek-ai/libreoffice-kit', { optionalDependencies: Object.fromEntries(names.map(name => [name, '0.0.1'])) })
   for (const name of names) await packageAt(name)
-  const expected = `@huoli/libreoffice-kit-${selected}`
+  const expected = `@deepseek-ai/libreoffice-kit-${selected}`
   const packages = await officePackageDirectories(staging, { platform, arch })
   expect(packages.map(path => path.slice(staging.length + 1).replaceAll('\\', '/'))).toEqual([
-    'node_modules/@huoli/libreoffice-kit', `node_modules/${expected}`,
+    'node_modules/@deepseek-ai/libreoffice-kit', `node_modules/${expected}`,
   ])
 })
 
 it.each(['darwin', 'win32', 'linux'])('%s requires its native package even when WASM is staged', async (platform) => {
   const { staging, packageAt } = await fixture()
-  await packageAt('@huoli/libreoffice-kit', { optionalDependencies: {
-    '@huoli/libreoffice-kit-wasm': '0.0.1', [`@huoli/libreoffice-kit-${platform}-arm64`]: '0.0.1',
+  await packageAt('@deepseek-ai/libreoffice-kit', { optionalDependencies: {
+    '@deepseek-ai/libreoffice-kit-wasm': '0.0.1', [`@deepseek-ai/libreoffice-kit-${platform}-arm64`]: '0.0.1',
   } })
-  await packageAt('@huoli/libreoffice-kit-wasm')
+  await packageAt('@deepseek-ai/libreoffice-kit-wasm')
   await expect(officePackageDirectories(staging, { platform, arch: 'arm64' }))
-    .rejects.toThrow(`Office engine @huoli/libreoffice-kit-${platform}-arm64 required for ${platform}/arm64 is missing.`)
+    .rejects.toThrow(`Office engine @deepseek-ai/libreoffice-kit-${platform}-arm64 required for ${platform}/arm64 is missing.`)
 })
 
 it('downloads pinned npm packages into the sidecar without resolving or executing package scripts', async () => {

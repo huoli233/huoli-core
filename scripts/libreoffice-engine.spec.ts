@@ -9,13 +9,13 @@ it.each([
 ])('selects the declared engine for %s/%s', (platform, arch, expected) => {
   const optionalDependencies = Object.fromEntries(
     ['darwin-arm64', 'darwin-x64', 'win32-arm64', 'win32-x64', 'wasm']
-      .map(engine => [`@huoli/libreoffice-kit-${engine}`, '0.0.1']),
+      .map(engine => [`@deepseek-ai/libreoffice-kit-${engine}`, '0.0.1']),
   )
   expect(selectOfficeEngine({ optionalDependencies }, { platform, arch })).toBe(expected)
 })
 
 it('selects a declared Linux native target without an OS-specific policy change', () => {
-  expect(selectOfficeEngine({ optionalDependencies: { '@huoli/libreoffice-kit-linux-x64': '1' } },
+  expect(selectOfficeEngine({ optionalDependencies: { '@deepseek-ai/libreoffice-kit-linux-x64': '1' } },
     { platform: 'linux', arch: 'x64' })).toBe('linux-x64')
 })
 

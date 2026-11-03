@@ -73,8 +73,8 @@ describe('desktop package-set selection', () => {
     const available = new Map<string, PackedDesktopPackage>([
       ['@huoli/huoli', packed('@huoli/huoli', {
         dependencies: {
-          '@huoli/libreoffice-kit': '0.0.1',
-          '@huoli/libreoffice-kit-wasm': '0.0.1',
+          '@deepseek-ai/libreoffice-kit': '0.0.1',
+          '@deepseek-ai/libreoffice-kit-wasm': '0.0.1',
         },
       })],
       ['@huoli/huoli-desktop-host', packed('@huoli/huoli-desktop-host')],

@@ -57,7 +57,7 @@
     "@huoli/huoli-session": "workspace:*"
   },
   "dependencies": {
-    "@huoli/libreoffice-kit": "^0.1.5",
+    "@deepseek-ai/libreoffice-kit": "^0.1.5",
     "@huoli/schemastery": "workspace:~",
     "@huoli/huoli-brand": "workspace:*",
     "@huoli/huoli-typert-protocol": "workspace:*",

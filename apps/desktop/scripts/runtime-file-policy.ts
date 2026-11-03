@@ -24,8 +24,8 @@ export function desktopRuntimeFileExclusion(
   const nameParts = packageParts[0]?.startsWith('@') ? 2 : 1
   const name = packageParts.slice(0, nameParts).join('/')
   const entry = packageParts.slice(nameParts).join('/')
-  if (name.startsWith('@huoli/libreoffice-kit-')) {
-    if (name !== `@huoli/libreoffice-kit-${officeEngine}`) return 'LibreOffice other platform'
+  if (name.startsWith('@deepseek-ai/libreoffice-kit-')) {
+    if (name !== `@deepseek-ai/libreoffice-kit-${officeEngine}`) return 'LibreOffice other platform'
   }
   if (name === 'fs-ext' && /^build\/(?:Release|Debug)\/(?:obj(?:\/|$)|fs_ext\.(?:exp|lib|pdb|iobj|ipdb)$)/u.test(entry)) {
     return 'fs-ext compiler output'

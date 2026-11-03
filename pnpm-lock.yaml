@@ -884,7 +884,7 @@ importers:
       '@huoli/huoli-workspace':
         specifier: workspace:*
         version: link:../../packages/workspace/workspace
-      '@huoli/libreoffice-kit':
+      '@deepseek-ai/libreoffice-kit':
         specifier: ^0.1.5
         version: 0.1.5
       koffi:
@@ -3378,7 +3378,7 @@ importers:
       '@huoli/huoli-typert-registry':
         specifier: workspace:*
         version: link:../../typert/registry
-      '@huoli/libreoffice-kit':
+      '@deepseek-ai/libreoffice-kit':
         specifier: ^0.1.5
         version: 0.1.5
 
@@ -8217,7 +8217,7 @@ importers:
       '@huoli/huoli-typert-protocol':
         specifier: workspace:*
         version: link:../../typert/protocol
-      '@huoli/libreoffice-kit':
+      '@deepseek-ai/libreoffice-kit':
         specifier: ^0.1.5
         version: 0.1.5
       '@huoli/schemastery':
@@ -15669,7 +15669,7 @@ importers:
 
   packages/skill/skill-office:
     dependencies:
-      '@huoli/libreoffice-kit':
+      '@deepseek-ai/libreoffice-kit':
         specifier: ^0.1.5
         version: 0.1.5
       '@huoli/schemastery':
@@ -19025,36 +19025,36 @@ packages:
     resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
     engines: {node: '>=20.19.0'}
 
-  '@huoli/libreoffice-kit-darwin-arm64@0.1.5':
+  '@deepseek-ai/libreoffice-kit-darwin-arm64@0.1.5':
     resolution: {integrity: sha512-SjeXmyaTevEq2TxK7reb1rhCrQZ4QOXmXt/qEwfQD5Fx3odU0ILx2uiXN+nphSCQ95LFCzrElHGgv2c7a824yg==}
     engines: {node: '>=22.19.0'}
     cpu: [arm64]
     os: [darwin]
 
-  '@huoli/libreoffice-kit-darwin-x64@0.1.5':
+  '@deepseek-ai/libreoffice-kit-darwin-x64@0.1.5':
     resolution: {integrity: sha512-vuz2tTpH1Edk75+DISwg/TXdQ3BNSNSHoVnWVqxqbGMgrrK9trLOw2+0X7mjT1naGO00Zc1qkyQ4if3kx5XjqQ==}
     engines: {node: '>=22.19.0'}
     cpu: [x64]
     os: [darwin]
 
-  '@huoli/libreoffice-kit-wasm@0.1.5':
+  '@deepseek-ai/libreoffice-kit-wasm@0.1.5':
     resolution: {integrity: sha512-V+pu5xJsKhVD4AU1xbFlMWY91svK9ZIC2JsNOph9kWp/arF/KQcuytt76bcbozJqPbE8o0n04lyh0m3QW5RYSA==}
     engines: {node: '>=22.19.0'}
     os: [linux]
 
-  '@huoli/libreoffice-kit-win32-arm64@0.1.5':
+  '@deepseek-ai/libreoffice-kit-win32-arm64@0.1.5':
     resolution: {integrity: sha512-Av3aFfNLaVxfffu0JXP5mqfmsCU3gQtlUH9UD+zdXl8ON06ukVAmu7LqNyuKAz/68WoOMTQ+YBlVQukgDRKd/A==}
     engines: {node: '>=22.19.0'}
     cpu: [arm64]
     os: [win32]
 
-  '@huoli/libreoffice-kit-win32-x64@0.1.5':
+  '@deepseek-ai/libreoffice-kit-win32-x64@0.1.5':
     resolution: {integrity: sha512-uKuDGZdofxuW4iRmUh8b3+XWU28JeOCYMTAONzo7tEHIq00DV2cARcgUYiTP7gUH49tH4A/RyPMOVEBzK7qjjw==}
     engines: {node: '>=22.19.0'}
     cpu: [x64]
     os: [win32]
 
-  '@huoli/libreoffice-kit@0.1.5':
+  '@deepseek-ai/libreoffice-kit@0.1.5':
     resolution: {integrity: sha512-H12xtUsAyl70zFeQ5pk5GGRc3N1+6zn+DVAcqwlguI6EvqopBGP3xkUmePU7g5f6ydYlDZLWedHT9lTSL7zLxA==}
     engines: {node: '>=22.19.0'}
     hasBin: true
@@ -26911,33 +26911,33 @@ snapshots:
 
   '@csstools/css-tokenizer@4.0.0': {}
 
-  '@huoli/libreoffice-kit-darwin-arm64@0.1.5':
+  '@deepseek-ai/libreoffice-kit-darwin-arm64@0.1.5':
     optional: true
 
-  '@huoli/libreoffice-kit-darwin-x64@0.1.5':
+  '@deepseek-ai/libreoffice-kit-darwin-x64@0.1.5':
     optional: true
 
-  '@huoli/libreoffice-kit-wasm@0.1.5':
+  '@deepseek-ai/libreoffice-kit-wasm@0.1.5':
     optional: true
 
-  '@huoli/libreoffice-kit-win32-arm64@0.1.5':
+  '@deepseek-ai/libreoffice-kit-win32-arm64@0.1.5':
     optional: true
 
-  '@huoli/libreoffice-kit-win32-x64@0.1.5':
+  '@deepseek-ai/libreoffice-kit-win32-x64@0.1.5':
     optional: true
 
-  '@huoli/libreoffice-kit@0.1.5':
+  '@deepseek-ai/libreoffice-kit@0.1.5':
     dependencies:
       fflate: 0.8.2
       fontkit: 2.0.4
       koffi: 3.1.1
       saxes: 6.0.0
     optionalDependencies:
-      '@huoli/libreoffice-kit-darwin-arm64': 0.1.5
-      '@huoli/libreoffice-kit-darwin-x64': 0.1.5
-      '@huoli/libreoffice-kit-wasm': 0.1.5
-      '@huoli/libreoffice-kit-win32-arm64': 0.1.5
-      '@huoli/libreoffice-kit-win32-x64': 0.1.5
+      '@deepseek-ai/libreoffice-kit-darwin-arm64': 0.1.5
+      '@deepseek-ai/libreoffice-kit-darwin-x64': 0.1.5
+      '@deepseek-ai/libreoffice-kit-wasm': 0.1.5
+      '@deepseek-ai/libreoffice-kit-win32-arm64': 0.1.5
+      '@deepseek-ai/libreoffice-kit-win32-x64': 0.1.5
 
   '@docsearch/css@3.8.2': {}
 

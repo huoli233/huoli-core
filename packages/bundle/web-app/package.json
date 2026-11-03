@@ -211,7 +211,7 @@
     "@huoli/huoli-session-projection": "workspace:*",
     "@huoli/huoli-shell-env": "workspace:*",
     "@huoli/huoli-typert-registry": "workspace:*",
-    "@huoli/libreoffice-kit": "^0.1.5",
+    "@deepseek-ai/libreoffice-kit": "^0.1.5",
     "@huoli/huoli-otel": "workspace:*"
   }
 }

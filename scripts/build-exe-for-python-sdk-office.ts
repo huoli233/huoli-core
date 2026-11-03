@@ -7,8 +7,8 @@ import { officePackageDirectories } from './libreoffice-packages.mjs'
 
 /** pkg applies these exclusions to dependency `files` as well as root asset globs. */
 export const OFFICE_ASSET_IGNORES = [
-  '**/node_modules/@huoli/libreoffice-kit/**',
-  '**/node_modules/@huoli/libreoffice-kit-*/**',
+  '**/node_modules/@deepseek-ai/libreoffice-kit/**',
+  '**/node_modules/@deepseek-ai/libreoffice-kit-*/**',
 ]
 
 /** One npm package at its existing sidecar dependency location. */

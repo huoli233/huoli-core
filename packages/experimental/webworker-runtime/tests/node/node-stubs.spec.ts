@@ -163,7 +163,7 @@ describe('replaced external packages', () => {
     quiet()
     await expect(libreofficeKit.createConverter()).rejects.toMatchObject({
       code: 'unavailable',
-      message: 'web-preview: @huoli/libreoffice-kit.createConverter is not available in the worker host',
+      message: 'web-preview: @deepseek-ai/libreoffice-kit.createConverter is not available in the worker host',
     })
   })
 

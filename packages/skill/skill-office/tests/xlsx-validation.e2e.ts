@@ -156,7 +156,7 @@ else:
           : event.type === 'user/message' && event.data.source.kind === 'ptc-mode'
             ? event.data.content.filter(block => block.type === 'image') : [])
         if (kind === 'layout' && imageBlocks.length === 0) {
-          const kit = fileURLToPath(import.meta.resolve('@huoli/libreoffice-kit/cli'))
+          const kit = fileURLToPath(import.meta.resolve('@deepseek-ai/libreoffice-kit/cli'))
           const previewDir = join(cwd, '.verification-preview')
           await execa(process.execPath, [kit, 'render', '--input', join(cwd, 'result.xlsx'),
             '--output-dir', previewDir, '--sheet', 'Revenue', '--range', 'A1:B3'], { cwd })

@@ -6,7 +6,7 @@ import { notAvailableError } from '../notImplementedFail.ts'
  * @returns A rejected promise consumed by the Host office-to-pdf provider.
  */
 export function createConverter(): Promise<never> {
-  return Promise.reject(Object.assign(notAvailableError('@huoli/libreoffice-kit', 'createConverter'), {
+  return Promise.reject(Object.assign(notAvailableError('@deepseek-ai/libreoffice-kit', 'createConverter'), {
     code: 'unavailable',
   }))
 }

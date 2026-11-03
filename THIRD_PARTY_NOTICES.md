@@ -37,7 +37,7 @@ External packages installed for runtime use or embedded in distributed Host or b
 | [`@babel/code-frame`](https://github.com/babel/babel) | MIT |
 | [`@botiverse/oar`](https://github.com/botiverse/oar) | Apache-2.0 |
 | [`@browserbasehq/stagehand`](https://github.com/browserbase/stagehand) | MIT |
-| [`@huoli/libreoffice-kit`](https://github.com/deepseek-ai/dsh-libreoffice-kit) | MPL-2.0 |
+| [`@deepseek-ai/libreoffice-kit`](https://github.com/deepseek-ai/dsh-libreoffice-kit) | MPL-2.0 |
 | [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) | MIT |
 | [`@earendil-works/pi-coding-agent`](https://github.com/earendil-works/pi) | MIT |
 | [`@eslint-community/regexpp`](https://github.com/eslint-community/regexpp) | MIT |
@@ -196,7 +196,7 @@ The installed SDK 0.3.263 declares the following optional platform packages. Eac
 
 ## LibreOffice conversion kit
 
-`@huoli/libreoffice-kit`, `@huoli/libreoffice-kit-wasm`, `@huoli/libreoffice-kit-darwin-arm64`, `@huoli/libreoffice-kit-darwin-x64`, `@huoli/libreoffice-kit-win32-arm64`, `@huoli/libreoffice-kit-win32-x64` declare MPL-2.0, which remains outside the permissive-license allowlist; the notices check accepts only these package identities at those terms. The [distribution decision](.agents/notes/implemented/architecture/2026-09-14-independent-libreoffice-kit.md) records the source obligations.
+`@deepseek-ai/libreoffice-kit`, `@deepseek-ai/libreoffice-kit-wasm`, `@deepseek-ai/libreoffice-kit-darwin-arm64`, `@deepseek-ai/libreoffice-kit-darwin-x64`, `@deepseek-ai/libreoffice-kit-win32-arm64`, `@deepseek-ai/libreoffice-kit-win32-x64` declare MPL-2.0, which remains outside the permissive-license allowlist; the notices check accepts only these package identities at those terms. The [distribution decision](.agents/notes/implemented/architecture/2026-09-14-independent-libreoffice-kit.md) records the source obligations.
 
 The [kit repository](https://github.com/deepseek-ai/dsh-libreoffice-kit) supplies the corresponding LibreOffice source pin, modifications, build instructions, Node API, and artifact validation. Its engine packages retain their license and third-party notices; the Node API retains its MPL-2.0 declaration and NOTICE. Recipients must have access to those corresponding sources and notices.
 

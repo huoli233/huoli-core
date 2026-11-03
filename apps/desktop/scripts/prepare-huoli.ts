@@ -142,7 +142,7 @@ async function main(): Promise<void> {
     const targetName = resolveDesktopBuildTarget()
     const target = desktopTargetPlatform(targetName)
     const modules = join(BUILD_ROOT, 'node_modules')
-    const officeManifest = JSON.parse(readFileSync(join(modules, '@huoli/libreoffice-kit/package.json'), 'utf8'))
+    const officeManifest = JSON.parse(readFileSync(join(modules, '@deepseek-ai/libreoffice-kit/package.json'), 'utf8'))
     const officeEngine = selectOfficeEngine(officeManifest, target)
     mkdirSync(HUOLI_OUTPUT_ROOT, { recursive: true })
     await packagingStep(process.env.HUOLI_DESKTOP_PACKAGING_RUN_DIR, 'runtime:materialize-modules', async () => {

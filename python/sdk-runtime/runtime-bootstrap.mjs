@@ -63,7 +63,7 @@ if (office !== undefined) {
   const parentURL = pathToFileURL(join(office, 'package.json')).href
   registerHooks({
     resolve(specifier, context, nextResolve) {
-      const kit = specifier === '@huoli/libreoffice-kit' || specifier === '@huoli/libreoffice-kit/package.json'
+      const kit = specifier === '@deepseek-ai/libreoffice-kit' || specifier === '@deepseek-ai/libreoffice-kit/package.json'
       return nextResolve(specifier, kit ? { ...context, parentURL } : context)
     },
   })

@@ -29,8 +29,8 @@ it('omits development artifacts while preserving executable modules, assets and 
     '@mixmark-io/domino/test/entities.html',
     '@mixmark-io/domino/.yarn/plugins/@yarnpkg/plugin-version.cjs',
     '@mixmark-io/domino/.yarn/versions/release.yml',
-    '@huoli/libreoffice-kit-wasm/assets/soffice.data',
-    '@huoli/libreoffice-kit-darwin-arm64/bin/libreoffice-kit',
+    '@deepseek-ai/libreoffice-kit-wasm/assets/soffice.data',
+    '@deepseek-ai/libreoffice-kit-darwin-arm64/bin/libreoffice-kit',
     '.modules.yaml', '.pnpm-workspace-state-v1.json', '.bin/tool', '.pnpm/cache',
   ]
   const retained = [
@@ -50,9 +50,9 @@ it('omits development artifacts while preserving executable modules, assets and 
     '@mixmark-io/domino/LICENSE', '@mixmark-io/domino/package.json',
     'example/.yarn/runtime.cjs', '@mixmark-io/domino/.yarn-data.json',
     '@img/sharp-win32-x64/lib/libvips-42.dll',
-    '@huoli/libreoffice-kit-win32-x64/bin/libreoffice-kit.exe',
-    '@huoli/libreoffice-kit-win32-x64/sources/core-source.json',
-    '@huoli/libreoffice-kit-win32-x64/licenses/MPL-2.0.txt',
+    '@deepseek-ai/libreoffice-kit-win32-x64/bin/libreoffice-kit.exe',
+    '@deepseek-ai/libreoffice-kit-win32-x64/sources/core-source.json',
+    '@deepseek-ai/libreoffice-kit-win32-x64/licenses/MPL-2.0.txt',
   ]
   try {
     const runtime = runtimeFixture(source)
@@ -154,7 +154,7 @@ it.each([
 ] as const)('retains only the selected Office engine for %s/%s', (platform, arch, engine) => {
   for (const candidate of ['linux-x64', 'darwin-arm64', 'wasm']) {
     const omitted = desktopRuntimeFileExclusion(
-      `@huoli/libreoffice-kit-${candidate}/prebuilds.json`, { platform, arch }, engine,
+      `@deepseek-ai/libreoffice-kit-${candidate}/prebuilds.json`, { platform, arch }, engine,
     )
     expect(omitted === undefined).toBe(candidate === engine)
   }
