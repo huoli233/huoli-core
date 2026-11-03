@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import {
   extendArchiveManifest,
@@ -8,6 +9,7 @@ import {
   validateArchiveManifestExtension,
   type ArchiveManifest,
 } from './archived-agent-notes.ts'
+import { identityAliases } from './identity-vocabulary.ts'
 import { isArchivedAgentNotePath } from './repo-files.ts'
 
 function fixture(): Map<string, Buffer> {
@@ -87,6 +89,35 @@ describe('archived Agent Notes', () => {
     expect(extendArchiveManifest(sealed, changed).errors).toContain(
       'process/2026-07-26-example.zh.md: sealed artifact is missing',
     )
+  })
+
+  it('accepts a sealed triplet whose identity spellings were renamed, and nothing more', () => {
+    const base = '2026-07-26-example'
+    const [current, sealed] = identityAliases().at(-1) as readonly [string, string]
+    const body = (identity: string, heading = 'Problem'): string =>
+      `# Agent Note: ${identity} hooks\n\nStatus: implemented\nArchived: 2026-07-26\n\nEnglish | [中文](${base}.zh.md)\n\n## ${heading}\n\nThe \`${identity}-hooks-claude\` bridge.\n`
+    const sealedSource = Buffer.from(body(sealed))
+    const sealedZh = Buffer.from(body(sealed, '问题').replace('English | [中文]', '[English]').concat(''))
+    const seal = (content: Buffer): string => `sha256:${createHash('sha256').update(content).digest('hex')}`
+    const sidecar = Buffer.from(`${base}.md: ${gitBlobHash(sealedSource)}\n${base}.zh.md: ${gitBlobHash(sealedZh)}\n`)
+    const manifest: ArchiveManifest = { version: 1, files: {
+      [`process/${base}.md`]: seal(sealedSource),
+      [`process/${base}.zh.md`]: seal(sealedZh),
+      [`process/${base}.i18n.yaml`]: seal(sidecar),
+    } }
+    const renamed = new Map([
+      [`process/${base}.md`, Buffer.from(body(current))],
+      [`process/${base}.zh.md`, Buffer.from(body(current, '问题').replace('English | [中文]', '[English]'))],
+      [`process/${base}.i18n.yaml`, sidecar],
+    ])
+
+    expect(validateArchiveArtifacts(renamed)).toEqual([])
+    expect(extendArchiveManifest(manifest, renamed)).toEqual({ files: manifest.files, added: [], errors: [] })
+
+    const edited = new Map(renamed)
+    edited.set(`process/${base}.md`, Buffer.from(`${body(current)}One more sentence.\n`))
+    expect(extendArchiveManifest(manifest, edited).errors).toEqual([`process/${base}.md: sealed content hash changed`])
+    expect(validateArchiveArtifacts(edited).join('\n')).toMatch(/consistency record must contain the current Git blob hashes/)
   })
 
   it('rejects replacing manifest seals alongside changed archive content', () => {

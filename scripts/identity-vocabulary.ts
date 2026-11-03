@@ -5,7 +5,8 @@
  * Longest match first: a scope, a repository path, and the full product name all contain shorter tokens.
  * Sealed spellings stay hex-encoded because the retired project names must not reappear in source.
  */
-const IDENTITY_ALIASES: readonly (readonly [string, string])[] = [
+/** Current spelling paired with the hex-encoded sealed spelling, longest first. */
+const SEALED_SPELLINGS: readonly (readonly [string, string])[] = [
   ['huoli/huoli-core', '646565707365656b2d61692f646565707365656b2d6861726e657373'],
   ['@huoli-plugins', '406473682d706c7567696e73'],
   ['@huoli', '40646565707365656b2d6169'],
@@ -14,7 +15,12 @@ const IDENTITY_ALIASES: readonly (readonly [string, string])[] = [
   ['HUOLI', '445348'],
   ['Huoli', '447368'],
   ['huoli', '647368'],
-].map(([current, sealed]) => [current, Buffer.from(sealed, 'hex').toString('latin1')] as const)
+]
+
+/** Current spelling and the sealed spelling both sides of a rename map to. */
+const IDENTITY_ALIASES: readonly (readonly [string, string])[] = SEALED_SPELLINGS.map(
+  ([current, sealed]) => [current, Buffer.from(sealed, 'hex').toString('latin1')] as const,
+)
 
 /**
  * Restore the sealed spelling of every identity token in one artifact.

@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-11-04-identity-independent-digests.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-11-04-identity-independent-digests.md
+/agent-note-identity-independent-content-addressing-for-sealed-records:
+  en: 120a5f0fa79df7be
+  zh: 0e38c841c34bcadd
+/agent-note-identity-independent-content-addressing-for-sealed-records/problem:
+  en: b3c7f297eb257b82
+  zh: 1ee6a70f9d2e8c74
+/agent-note-identity-independent-content-addressing-for-sealed-records/decision:
+  en: a79b7fbeac348f98
+  zh: 416e4418caec3008
+/agent-note-identity-independent-content-addressing-for-sealed-records/what-a-fingerprint-still-distinguishes:
+  en: 44fdca893a5af1e9
+  zh: 3d431c7700a90e30
+/agent-note-identity-independent-content-addressing-for-sealed-records/alternatives-considered:
+  en: 1dd869e25326707b
+  zh: d4a27b01298bd1ff
+/agent-note-identity-independent-content-addressing-for-sealed-records/consequences:
+  en: c65d907278164668
+  zh: 96bd18b28c5df4fa
