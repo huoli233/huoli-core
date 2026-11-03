@@ -13974,6 +13974,19 @@ importers:
         specifier: workspace:*
         version: link:../../core/tools
 
+  packages/qq/qq-memory:
+    dependencies:
+      '@huoli/huoli-qq-policy':
+        specifier: workspace:*
+        version: link:../qq-policy
+    devDependencies:
+      '@huoli/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@huoli/huoli-tools':
+        specifier: workspace:*
+        version: link:../../core/tools
+
   packages/qq/qq-policy: {}
 
   packages/qq/qq-subject:

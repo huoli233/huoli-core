@@ -503,6 +503,7 @@
       "@huoli/huoli-ptc-runtime-node": ["./packages/ptc-runtime/ptc-runtime-node/src"],
       "@huoli/huoli-pwsh-sandbox": ["./packages/shell/pwsh-sandbox/src"],
       "@huoli/huoli-qq-attention": ["./packages/qq/qq-attention/src"],
+      "@huoli/huoli-qq-memory": ["./packages/qq/qq-memory/src"],
       "@huoli/huoli-qq-policy": ["./packages/qq/qq-policy/src"],
       "@huoli/huoli-qq-subject": ["./packages/qq/qq-subject/src"],
       "@huoli/huoli-remote-mock": ["./packages/test-support/remote-mock/src"],

@@ -74,8 +74,11 @@ export function initialImportance(input: ImportanceInput): number {
 
 // 算这条记忆此刻还剩多少分量
 export function retention(record: MemoryRecord, now: number): number {
-  const at = Number(record.at) || now
-  const lastSeenAt = Number(record.lastSeenAt) || at
+  // 时间可能是 0（很久以前），不能拿它当没填
+  const atRaw = Number(record.at)
+  const at = Number.isFinite(atRaw) ? atRaw : now
+  const seenRaw = Number(record.lastSeenAt)
+  const lastSeenAt = Number.isFinite(seenRaw) ? seenRaw : at
   const ageDays = Math.max(0, (now - at) / DAY_MS)
   const sinceSeenDays = Math.max(0, (now - lastSeenAt) / DAY_MS)
   const recallCount = Math.max(0, Number(record.recallCount) || 0)
