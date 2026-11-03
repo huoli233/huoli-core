@@ -13987,6 +13987,15 @@ importers:
         specifier: workspace:*
         version: link:../../core/tools
 
+  packages/qq/qq-pacing:
+    devDependencies:
+      '@huoli/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@huoli/huoli-agent':
+        specifier: workspace:*
+        version: link:../../core/agent
+
   packages/qq/qq-policy: {}
 
   packages/qq/qq-subject:

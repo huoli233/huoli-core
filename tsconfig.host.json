@@ -568,6 +568,7 @@
     { "path": "./packages/qq/qq-policy" },
     { "path": "./packages/qq/qq-subject" },
     { "path": "./packages/qq/qq-memory" },
+    { "path": "./packages/qq/qq-pacing" },
     { "path": "./packages/guard/repeat-tool-reminder" },
     { "path": "./packages/extensions/cordis-host-runner" },
     { "path": "./packages/extensions/tool-cordis" },
