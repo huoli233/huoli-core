@@ -13,7 +13,12 @@ const STRONG_IMPORTANCE = 60
 // 被提起几次就可以变成长期印象
 const PROMOTE_RECALLS = 2
 
-// 把该往上挪的记忆挪上一层
+/**
+ * 把该往上挪的记忆挪上一层
+ * @param store - 存放的地方
+ * @param now - 现在的时间
+ * @returns 算出来的数
+ */
 export function promoteAll(store: MemoryStore, now: number): number {
   let moved = 0
   for (const item of store.all()) {
@@ -43,7 +48,12 @@ function clarityOf(item: MemoryItem, now: number) {
   return clarityFor(score)
 }
 
-// 每天跑一次：把该淡的往下挪一档，淡到底就只留个坑
+/**
+ * 每天跑一次：把该淡的往下挪一档，淡到底就只留个坑
+ * @param store - 存放的地方
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function sweepOnce(store: MemoryStore, now: number): { stepped: number; forgotten: number } {
   let stepped = 0
   let forgotten = 0
@@ -65,7 +75,12 @@ export function sweepOnce(store: MemoryStore, now: number): { stepped: number; f
   return { stepped, forgotten }
 }
 
-// 被再提起一次：记住次数与时间，可能重新变清楚
+/**
+ * 被再提起一次：记住次数与时间，可能重新变清楚
+ * @param store - 存放的地方
+ * @param id - 编号
+ * @param now - 现在的时间
+ */
 export function touch(store: MemoryStore, id: string, now: number): void {
   const item = store.byId(id)
   if (item === undefined || item.forgotten) return

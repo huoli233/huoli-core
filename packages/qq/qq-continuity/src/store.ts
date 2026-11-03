@@ -4,12 +4,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { NOTE_MAX_CHARS, type CloseInput, type CloseNote, type Reflection } from './close.ts'
 
-// 存文件的选项
+/** 存文件的选项 */
 export interface ContinuityStoreOptions {
   file: string
 }
 
-// 收尾仓
+/** 收尾仓 */
 export interface ContinuityStore {
   close(input: CloseInput): CloseNote
   lastClose(chatKey: string): CloseNote | undefined
@@ -51,7 +51,11 @@ function save(file: string, data: StoredContinuity): void {
   fs.renameSync(temporary, file)
 }
 
-// 建一个收尾仓
+/**
+ * 建一个收尾仓
+ * @param options - 选项
+ * @returns 处理结果
+ */
 export function createContinuityStore(options: ContinuityStoreOptions): ContinuityStore {
   let data = load(options.file)
 

@@ -10,7 +10,7 @@ export type { PacingVerdict, PlannedSpeech, QuotaUse } from './plan.ts'
 export { splitSpeech, dayKey, hourKey, PACING_DEFAULTS } from './plan.ts'
 export type { PacingStore, PacingStoreOptions } from './store.ts'
 
-// 一个应用里的记账仓
+/** 一个应用里的记账仓 */
 export interface QqPacingSeam {
   store: PacingStore
   plan(text: string): PlannedSpeech
@@ -20,7 +20,7 @@ export interface QqPacingSeam {
   resetTurn(): void
 }
 
-// 这一行接受的配置
+/** 这一行接受的配置 */
 export interface Config {
   /** 记账文件放哪 */
   file?: string
@@ -32,18 +32,26 @@ export interface Config {
 
 const seams = new WeakMap<Context, QqPacingSeam>()
 
-// 取记账仓，未装配时为 undefined
+/**
+ * 取记账仓，未装配时为 undefined
+ * @param ctx - 运行环境
+ * @returns 处理结果
+ */
 export function qqPacingOf(ctx: Context): QqPacingSeam | undefined {
   return seams.get(ctx)
 }
 
-// 插件的行名
+/** 插件的行名 */
 export const name = 'qq-pacing'
 
-// 不需要别的内核服务
+/** 不需要别的内核服务 */
 export const inject: string[] = []
 
-// 装配说话规矩
+/**
+ * 装配说话规矩
+ * @param ctx - 运行环境
+ * @param config - 配置
+ */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(process.cwd(), 'data', 'qq-pacing.json')
   const maxParts = Math.max(1, config.maxParts ?? PACING_DEFAULTS.maxParts)

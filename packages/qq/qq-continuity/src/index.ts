@@ -10,7 +10,7 @@ export type { CloseInput, CloseNote, Outcome, Reflection } from './close.ts'
 export { describeOutcome, evaluateOutcome, suggestNote, MIN_RUN_MS, NOTE_MAX_CHARS } from './close.ts'
 export type { ContinuityStore, ContinuityStoreOptions } from './store.ts'
 
-// 一个应用里的收尾
+/** 一个应用里的收尾 */
 export interface QqContinuitySeam {
   store: ContinuityStore
   close(input: CloseInput): CloseNote
@@ -19,7 +19,7 @@ export interface QqContinuitySeam {
   history(chatKey: string, limit?: number): Reflection[]
 }
 
-// 这一行接受的配置
+/** 这一行接受的配置 */
 export interface Config {
   /** 收尾记录放哪 */
   file?: string
@@ -27,18 +27,26 @@ export interface Config {
 
 const seams = new WeakMap<Context, QqContinuitySeam>()
 
-// 取收尾，未装配时为 undefined
+/**
+ * 取收尾，未装配时为 undefined
+ * @param ctx - 运行环境
+ * @returns 处理结果
+ */
 export function qqContinuityOf(ctx: Context): QqContinuitySeam | undefined {
   return seams.get(ctx)
 }
 
-// 插件的行名
+/** 插件的行名 */
 export const name = 'qq-continuity'
 
-// 要用的内核接口
+/** 要用的内核接口 */
 export const inject = ['tools']
 
-// 装配收尾与回想
+/**
+ * 装配收尾与回想
+ * @param ctx - 运行环境
+ * @param config - 配置
+ */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(process.cwd(), 'data', 'qq-continuity.json')
   const store = createContinuityStore({ file })

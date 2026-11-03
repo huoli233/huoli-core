@@ -1,6 +1,6 @@
 // 收尾与事后想想：这段聊到哪、下次怎么接、今天聊成了什么样
 
-// 一段聊完留下的东西
+/** 一段聊完留下的东西 */
 export interface CloseNote {
   chatKey: string
   closedAt: number
@@ -9,7 +9,7 @@ export interface CloseNote {
   throughSeq: number
 }
 
-// 事后想一想记下的一条
+/** 事后想一想记下的一条 */
 export interface Reflection {
   id: string
   chatKey: string
@@ -18,7 +18,7 @@ export interface Reflection {
   text: string
 }
 
-// 一段对话的粗略成色
+/** 一段对话的粗略成色 */
 export interface Outcome {
   humanMessages: number
   selfMessages: number
@@ -26,7 +26,7 @@ export interface Outcome {
   runMinutes: number
 }
 
-// 留一条收尾
+/** 留一条收尾 */
 export interface CloseInput {
   chatKey: string
   summary: string
@@ -35,13 +35,18 @@ export interface CloseInput {
   at?: number
 }
 
-// 收尾时留的话最多几个字
+/** 收尾时留的话最多几个字 */
 export const NOTE_MAX_CHARS = 200
 
-// 一段对话至少聊多久才算数
+/** 一段对话至少聊多久才算数 */
 export const MIN_RUN_MS = 60_000
 
-// 把聊天记录算成一个粗略成色
+/**
+ * 把聊天记录算成一个粗略成色
+ * @param messages - 消息
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function evaluateOutcome(messages: Array<{ self?: boolean; at: number }>, now: number): Outcome {
   const humans = messages.filter((item) => item.self !== true)
   const selves = messages.filter((item) => item.self === true)
@@ -54,7 +59,11 @@ export function evaluateOutcome(messages: Array<{ self?: boolean; at: number }>,
   return { humanMessages: humans.length, selfMessages: selves.length, gotReply, runMinutes }
 }
 
-// 成色换一句话
+/**
+ * 成色换一句话
+ * @param outcome - 聊成什么样
+ * @returns 拼好的话
+ */
 export function describeOutcome(outcome: Outcome): string {
   if (outcome.selfMessages === 0) return '这段我没说话'
   if (outcome.gotReply) return `说了 ${outcome.selfMessages} 句，有人接`
@@ -62,7 +71,11 @@ export function describeOutcome(outcome: Outcome): string {
   return `说了 ${outcome.selfMessages} 句，没人接往下说`
 }
 
-// 收尾时该留下什么，给一句建议
+/**
+ * 收尾时该留下什么，给一句建议
+ * @param outcome - 聊成什么样
+ * @returns 处理结果
+ */
 export function suggestNote(outcome: Outcome): { summary: string; nextOpening: string } {
   if (outcome.gotReply) {
     return { summary: '聊得还算顺，有人接话', nextOpening: '下次接着这个话题往下问' }

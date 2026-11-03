@@ -7,16 +7,16 @@ import { NOTE_MAX_CHARS, type AttentionEvent, type AttentionState, type WakeTrig
 import type { AttentionStore } from './store.ts'
 import type { SignalMessage } from './select.ts'
 
-// 单次等待上限
+/** 单次等待上限 */
 export const WAIT_MAX_MS = 300_000
 
-// 单次最多返回多少条
+/** 单次最多返回多少条 */
 export const DEFAULT_READ_LIMIT = 20
 
-// 默认安静窗口
+/** 默认安静窗口 */
 export const DEFAULT_QUIET_MS = 5_000
 
-// 工具需要的运行件
+/** 工具需要的运行件 */
 export interface ToolDeps {
   inbox: QqInbox
   store: AttentionStore
@@ -36,7 +36,11 @@ function chatKeyOf(exec: { agent?: { id: string } }): string {
   return String(id)
 }
 
-// 注册五个工具
+/**
+ * 注册五个工具
+ * @param ctx - 运行环境
+ * @param deps - 要用到的东西
+ */
 export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
   const { inbox, store } = deps
 
@@ -230,7 +234,12 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
   }))
 }
 
-// 给提示词层读当前注意力状态
+/**
+ * 给提示词层读当前注意力状态
+ * @param store - 存放的地方
+ * @param chatKey - 会话键
+ * @returns 处理结果
+ */
 export function attentionStateOf(store: AttentionStore, chatKey: string): AttentionState {
   return store.of(chatKey)
 }

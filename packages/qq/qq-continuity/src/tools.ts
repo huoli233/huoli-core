@@ -5,7 +5,7 @@ import { defineTool } from '@huoli/huoli-tools'
 import type { Reflection } from './close.ts'
 import type { ContinuityStore } from './store.ts'
 
-// 工具要用到的东西
+/** 工具要用到的东西 */
 export interface ContinuityToolDeps {
   store: ContinuityStore
 }
@@ -29,7 +29,11 @@ function kindOf(raw: unknown): Reflection['kind'] {
   return 'neutral'
 }
 
-// 注册事后想想的工具
+/**
+ * 注册事后想想的工具
+ * @param ctx - 运行环境
+ * @param deps - 要用到的东西
+ */
 export function registerContinuityTools(ctx: Context, deps: ContinuityToolDeps): void {
   const { store } = deps
 

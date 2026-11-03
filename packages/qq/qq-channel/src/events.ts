@@ -1,6 +1,6 @@
 // 跟 QQ 那一头说话用的东西：收到的消息、要发的消息
 
-// 收到的一条消息
+/** 收到的一条消息 */
 export interface IncomingMessage {
   chatKey: string
   senderId: string
@@ -13,20 +13,20 @@ export interface IncomingMessage {
   messageId: string
 }
 
-// 被戳了一下
+/** 被戳了一下 */
 export interface IncomingPoke {
   chatKey: string
   userId: string
   at: number
 }
 
-// 要发的东西
+/** 要发的东西 */
 export interface Outgoing {
   chatKey: string
   text: string
 }
 
-// 发出去的结果
+/** 发出去的结果 */
 export interface SentResult {
   ok: boolean
   messageId?: string
@@ -34,7 +34,7 @@ export interface SentResult {
   reason?: string
 }
 
-// 连接状态
+/** 连接状态 */
 export interface ChannelStatus {
   connected: boolean
   url: string
@@ -42,12 +42,21 @@ export interface ChannelStatus {
   lastError: string
 }
 
-// 一个群或私聊的键
+/**
+ * 一个群或私聊的键
+ * @param kind - 哪一类
+ * @param id - 编号
+ * @returns 拼好的话
+ */
 export function chatKeyOf(kind: 'group' | 'private', id: string | number): string {
   return `${kind}:${String(id)}`
 }
 
-// 从一坨 OneBot 消息段里挤出文字
+/**
+ * 从一坨 OneBot 消息段里挤出文字
+ * @param segments - 消息段
+ * @returns 拼好的话
+ */
 export function textOf(segments: unknown): string {
   if (typeof segments === 'string') return segments
   if (!Array.isArray(segments)) return ''
@@ -67,7 +76,12 @@ export function textOf(segments: unknown): string {
   return parts.join('').replace(/\s+/g, ' ').trim()
 }
 
-// 这条消息有没有点到自己
+/**
+ * 这条消息有没有点到自己
+ * @param segments - 消息段
+ * @param selfId - 自己的号
+ * @returns 是或不是
+ */
 export function mentionsSelf(segments: unknown, selfId: string): boolean {
   if (!Array.isArray(segments) || selfId === '') return false
   for (const segment of segments) {
@@ -79,7 +93,12 @@ export function mentionsSelf(segments: unknown, selfId: string): boolean {
   return false
 }
 
-// 这条消息有没有在回复自己
+/**
+ * 这条消息有没有在回复自己
+ * @param segments - 消息段
+ * @param selfId - 自己的号
+ * @returns 是或不是
+ */
 export function repliesToSelf(segments: unknown, selfId: string): boolean {
   if (!Array.isArray(segments) || selfId === '') return false
   for (const segment of segments) {
@@ -92,7 +111,13 @@ export function repliesToSelf(segments: unknown, selfId: string): boolean {
   return false
 }
 
-// 把收到的原始事件翻成一条消息
+/**
+ * 把收到的原始事件翻成一条消息
+ * @param raw - 原始事件
+ * @param selfId - 自己的号
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function toIncoming(raw: Record<string, unknown>, selfId: string, now: number): IncomingMessage | null {
   const postType = String(raw.post_type ?? '')
   if (postType !== 'message' && postType !== 'message_sent') return null
@@ -116,7 +141,12 @@ export function toIncoming(raw: Record<string, unknown>, selfId: string, now: nu
   }
 }
 
-// 把"戳一戳"翻成一条入站
+/**
+ * 把"戳一戳"翻成一条入站
+ * @param raw - 原始事件
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function toPoke(raw: Record<string, unknown>, now: number): IncomingPoke | null {
   if (String(raw.post_type ?? '') !== 'notice') return null
   if (String(raw.notice_type ?? '') !== 'notify') return null

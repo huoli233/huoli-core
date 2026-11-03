@@ -1,6 +1,6 @@
 // 注意力状态与它的事件：工具只发事件，状态由事件推导
 
-// 唤醒条件，全部可选
+/** 唤醒条件，全部可选 */
 export interface WakeTriggers {
   atMention?: boolean
   nameMention?: boolean
@@ -11,7 +11,7 @@ export interface WakeTriggers {
   speakerIds?: readonly string[]
 }
 
-// 一个会话的注意力状态
+/** 一个会话的注意力状态 */
 export interface AttentionState {
   readThroughSeq: number
   closedAt: number | null
@@ -23,16 +23,19 @@ export interface AttentionState {
   lastSeenAt: number
 }
 
-// 状态能接受的三种事件
+/** 状态能接受的三种事件 */
 export type AttentionEvent =
   | { type: 'read'; chatKey: string; throughSeq: number; at: number }
   | { type: 'close'; chatKey: string; summary: string; nextOpening: string; throughSeq?: number; at: number }
   | { type: 'wake'; chatKey: string; wakeMode: 'infinite' | 'timed'; wakeUntil: number | null; triggers: WakeTriggers; at: number }
 
-// 收尾摘要上限
+/** 收尾摘要上限 */
 export const NOTE_MAX_CHARS = 200
 
-// 没碰过的会话长这样
+/**
+ * 没碰过的会话长这样
+ * @returns 处理结果
+ */
 export function emptyAttention(): AttentionState {
   return {
     readThroughSeq: 0,
@@ -46,7 +49,12 @@ export function emptyAttention(): AttentionState {
   }
 }
 
-// 把一条事件叠到状态上，返回新状态
+/**
+ * 把一条事件叠到状态上，返回新状态
+ * @param state - 现状
+ * @param event - 一条事件
+ * @returns 处理结果
+ */
 export function applyAttention(state: AttentionState, event: AttentionEvent): AttentionState {
   switch (event.type) {
     case 'read': {

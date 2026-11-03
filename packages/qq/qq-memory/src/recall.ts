@@ -4,7 +4,7 @@ import { retention } from '@huoli/huoli-qq-policy'
 import type { MemoryStore } from './store.ts'
 import type { MemoryItem } from './types.ts'
 
-// 找记忆时给的条件
+/** 找记忆时给的条件 */
 export interface RecallInput {
   query?: string
   scope?: string
@@ -12,7 +12,7 @@ export interface RecallInput {
   now?: number
 }
 
-// 找到的一条
+/** 找到的一条 */
 export interface RecallHit {
   item: MemoryItem
   score: number
@@ -40,7 +40,12 @@ function textScore(text: string, query: string): number {
   return Math.min(18, hit)
 }
 
-// 找几条相关的记忆
+/**
+ * 找几条相关的记忆
+ * @param store - 存放的地方
+ * @param input - 传进来的东西
+ * @returns 处理结果
+ */
 export function recall(store: MemoryStore, input: RecallInput = {}): RecallHit[] {
   const now = input.now ?? Date.now()
   const limit = Math.max(1, input.limit ?? 5)
@@ -65,7 +70,11 @@ export function recall(store: MemoryStore, input: RecallInput = {}): RecallHit[]
   return hits.slice(0, limit)
 }
 
-// 把找到的记忆写成给模型看的几行字
+/**
+ * 把找到的记忆写成给模型看的几行字
+ * @param hits - 找到的记忆
+ * @returns 拼好的话
+ */
 export function renderRecall(hits: readonly RecallHit[]): string {
   if (hits.length === 0) return '没有想起相关的事。'
   return hits

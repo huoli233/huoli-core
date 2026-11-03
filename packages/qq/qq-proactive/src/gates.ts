@@ -2,7 +2,7 @@
 
 import { PROACTIVE_DEFAULTS, type GateVerdict } from './score.ts'
 
-// 闸门看的东西
+/** 闸门看的东西 */
 export interface GateInput {
   now: number
   config?: Partial<typeof PROACTIVE_DEFAULTS>
@@ -22,7 +22,13 @@ function toMinutes(hhmm: string): number {
   return hour * 60 + minute
 }
 
-// 现在是不是安静时段
+/**
+ * 现在是不是安静时段
+ * @param now - 现在的时间
+ * @param start - 开始时间
+ * @param end - 结束时间
+ * @returns 是或不是
+ */
 export function inQuietHours(now: number, start: string, end: string): boolean {
   const from = toMinutes(start)
   const to = toMinutes(end)
@@ -32,7 +38,11 @@ export function inQuietHours(now: number, start: string, end: string): boolean {
   return from < to ? (at >= from && at < to) : (at >= from || at < to)
 }
 
-// 一道道过闸门，第一道不过就返回，并告诉它下次什么时候
+/**
+ * 一道道过闸门，第一道不过就返回，并告诉它下次什么时候
+ * @param input - 传进来的东西
+ * @returns 处理结果
+ */
 export function runGates(input: GateInput): GateVerdict {
   const config = { ...PROACTIVE_DEFAULTS, ...(input.config ?? {}) }
 
@@ -60,7 +70,12 @@ export function runGates(input: GateInput): GateVerdict {
   return { ok: true }
 }
 
-// 安静时段什么时候结束
+/**
+ * 安静时段什么时候结束
+ * @param now - 现在的时间
+ * @param end - 结束时间
+ * @returns 算出来的数
+ */
 export function endOfQuiet(now: number, end: string): number {
   const to = toMinutes(end)
   if (to < 0) return now + 60 * 60_000
@@ -70,7 +85,11 @@ export function endOfQuiet(now: number, end: string): number {
   return target.getTime()
 }
 
-// 第二天开始的时间
+/**
+ * 第二天开始的时间
+ * @param now - 现在的时间
+ * @returns 算出来的数
+ */
 export function startOfNextDay(now: number): number {
   const date = new Date(now)
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0, 0).getTime()

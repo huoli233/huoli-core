@@ -2,7 +2,7 @@
 
 import { relaxToBaseline, type TauKind } from '@huoli/huoli-qq-policy'
 
-// 全局的慢变量，各群共用
+/** 全局的慢变量，各群共用 */
 export interface GlobalState {
   mood: number
   energy: number
@@ -15,7 +15,7 @@ export interface GlobalState {
   updatedAt: number
 }
 
-// 一个群里的关系
+/** 一个群里的关系 */
 export interface ChatState {
   familiarity: number
   affection: number
@@ -24,7 +24,7 @@ export interface ChatState {
   updatedAt: number
 }
 
-// 整份状态
+/** 整份状态 */
 export interface SubjectState {
   global: GlobalState
   chats: Record<string, ChatState>
@@ -47,7 +47,11 @@ const BASE: Record<string, number> = {
   annoyance: 0.05,
 }
 
-// 一开始的样子
+/**
+ * 一开始的样子
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function emptySubject(now: number): SubjectState {
   return {
     global: {
@@ -66,7 +70,11 @@ export function emptySubject(now: number): SubjectState {
   }
 }
 
-// 一个群一开始的样子
+/**
+ * 一个群一开始的样子
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function emptyChat(now: number): ChatState {
   return {
     familiarity: BASE.familiarity!,
@@ -83,7 +91,12 @@ function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value))
 }
 
-// 让全局状态按过去了多久慢慢回到平稳
+/**
+ * 让全局状态按过去了多久慢慢回到平稳
+ * @param state - 现状
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function settleGlobal(state: GlobalState, now: number): GlobalState {
   const passed = Math.max(0, now - state.updatedAt)
   if (passed <= 0) return state
@@ -104,7 +117,12 @@ export function settleGlobal(state: GlobalState, now: number): GlobalState {
   return next
 }
 
-// 让一个群的关系按过去了多久慢慢回到平稳
+/**
+ * 让一个群的关系按过去了多久慢慢回到平稳
+ * @param state - 现状
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function settleChat(state: ChatState, now: number): ChatState {
   const passed = Math.max(0, now - state.updatedAt)
   if (passed <= 0) return state
@@ -121,21 +139,39 @@ export function settleChat(state: ChatState, now: number): ChatState {
   return next
 }
 
-// 按名字改一个全局字段
+/**
+ * 按名字改一个全局字段
+ * @param state - 现状
+ * @param field - 改哪个字段
+ * @param delta - 加减多少
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function nudgeGlobal(state: GlobalState, field: keyof GlobalState, delta: number, now: number): GlobalState {
   if (field === 'updatedAt') return state
   const current = Number(state[field]) || 0
   return { ...state, [field]: clamp01(current + delta), updatedAt: now } as GlobalState
 }
 
-// 按名字改一个群里的字段
+/**
+ * 按名字改一个群里的字段
+ * @param state - 现状
+ * @param field - 改哪个字段
+ * @param delta - 加减多少
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function nudgeChat(state: ChatState, field: keyof ChatState, delta: number, now: number): ChatState {
   if (field === 'updatedAt') return state
   const current = Number(state[field]) || 0
   return { ...state, [field]: clamp01(current + delta), updatedAt: now } as ChatState
 }
 
-// 心情的称呼
+/**
+ * 心情的称呼
+ * @param mood - 心情
+ * @returns 拼好的话
+ */
 export function moodWord(mood: number): string {
   if (mood >= 0.75) return '不错'
   if (mood >= 0.55) return '还行'
@@ -144,7 +180,11 @@ export function moodWord(mood: number): string {
   return '低落'
 }
 
-// 熟悉度的称呼
+/**
+ * 熟悉度的称呼
+ * @param value - 值
+ * @returns 拼好的话
+ */
 export function familiarityWord(value: number): string {
   if (value >= 0.8) return '很熟'
   if (value >= 0.55) return '熟人'

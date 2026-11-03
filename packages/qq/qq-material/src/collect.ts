@@ -1,6 +1,6 @@
 // 素材：把现场情况摊开给模型看，让它自己决定要不要接话
 
-// 看一眼得出的现场
+/** 看一眼得出的现场 */
 export interface Situation {
   who: string
   topic: string
@@ -8,7 +8,7 @@ export interface Situation {
   lastTurnGapMs: number
 }
 
-// 在跟谁说话
+/** 在跟谁说话 */
 export interface Addressee {
   userId: string
   name: string
@@ -16,7 +16,7 @@ export interface Addressee {
   evidence: string[]
 }
 
-// 心里惦记着的事
+/** 心里惦记着的事 */
 export interface Thought {
   id: string
   text: string
@@ -24,19 +24,19 @@ export interface Thought {
   expiresAt: number
 }
 
-// 当前话题
+/** 当前话题 */
 export interface Topic {
   active: string
   pendingQuestion: string
 }
 
-// 想说话的由头
+/** 想说话的由头 */
 export interface Motive {
   need: 'bored' | 'curious' | 'lonely' | 'wanna_share'
   weight: number
 }
 
-// 一整份素材
+/** 一整份素材 */
 export interface Material {
   situation: Situation
   addressee: Addressee
@@ -45,7 +45,7 @@ export interface Material {
   motives: Motive[]
 }
 
-// 收集素材时看的东西
+/** 收集素材时看的东西 */
 export interface CollectInput {
   chatKey: string
   messages: Array<{
@@ -64,7 +64,7 @@ export interface CollectInput {
   now?: number
 }
 
-// 念头多久算过期
+/** 念头多久算过期 */
 export const THOUGHT_TTL_MS = 2 * 60 * 60_000
 
 // 一眼看多少条
@@ -124,7 +124,11 @@ function pickAddressee(messages: CollectInput['messages'], selfNames: string[]):
   }
 }
 
-// 整理一份素材
+/**
+ * 整理一份素材
+ * @param input - 传进来的东西
+ * @returns 处理结果
+ */
 export function collectMaterial(input: CollectInput): Material {
   const now = input.now ?? Date.now()
   const messages = input.messages.slice(-LOOKBACK)
@@ -161,7 +165,11 @@ export function collectMaterial(input: CollectInput): Material {
   }
 }
 
-// 把素材写成几行字，给模型看
+/**
+ * 把素材写成几行字，给模型看
+ * @param material - 素材
+ * @returns 拼好的话
+ */
 export function renderMaterial(material: Material): string {
   const lines: string[] = []
   if (material.situation.topic !== '') lines.push(`群里在聊：${material.situation.topic}`)

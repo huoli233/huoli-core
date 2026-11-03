@@ -15,14 +15,14 @@ export type { AttentionSignals, Candidate, CollectInput, SignalMessage } from '.
 export { collectSignals } from './select.ts'
 export { WAIT_MAX_MS, DEFAULT_READ_LIMIT, DEFAULT_QUIET_MS } from './tools.ts'
 
-// 一个应用上下文里的运行件
+/** 一个应用上下文里的运行件 */
 export interface QqAttentionSeam {
   inbox: QqInbox
   store: AttentionStore
   signals(chatKey: string, overrides?: { fatigueLevel?: number; fatigueReason?: string }): AttentionSignals
 }
 
-// 这一行接受的配置
+/** 这一行接受的配置 */
 export interface Config {
   /** 状态文件放哪 */
   file?: string
@@ -32,21 +32,29 @@ export interface Config {
 
 const seams = new WeakMap<Context, QqAttentionSeam>()
 
-// 取运行件，未装配时为 undefined
+/**
+ * 取运行件，未装配时为 undefined
+ * @param ctx - 运行环境
+ * @returns 处理结果
+ */
 export function qqAttentionOf(ctx: Context): QqAttentionSeam | undefined {
   return seams.get(ctx)
 }
 
-// 插件的行名
+/** 插件的行名 */
 export const name = 'qq-attention'
 
-// 需要的内核服务
+/** 需要的内核服务 */
 export const inject = ['tools']
 
 // 采集事实看多少条
 const SIGNAL_WINDOW = 40
 
-// 装配注意力状态机与五个工具
+/**
+ * 装配注意力状态机与五个工具
+ * @param ctx - 运行环境
+ * @param config - 配置
+ */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(process.cwd(), 'data', 'qq-attention.json')
   const inbox = createInbox()

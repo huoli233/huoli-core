@@ -12,13 +12,13 @@ export type { SnapshotInput } from './snapshot.ts'
 export { renderSelfSnapshot } from './snapshot.ts'
 export type { SubjectStore, SubjectStoreOptions } from './store.ts'
 
-// 一个应用里的状态仓
+/** 一个应用里的状态仓 */
 export interface QqSubjectSeam {
   store: SubjectStore
   render(chatKey?: string, thoughts?: readonly string[]): string
 }
 
-// 这一行接受的配置
+/** 这一行接受的配置 */
 export interface Config {
   /** 状态存哪 */
   file?: string
@@ -30,15 +30,19 @@ export interface Config {
 
 const seams = new WeakMap<Context, QqSubjectSeam>()
 
-// 取状态仓，未装配时为 undefined
+/**
+ * 取状态仓，未装配时为 undefined
+ * @param ctx - 运行环境
+ * @returns 处理结果
+ */
 export function qqSubjectOf(ctx: Context): QqSubjectSeam | undefined {
   return seams.get(ctx)
 }
 
-// 插件的行名
+/** 插件的行名 */
 export const name = 'qq-subject'
 
-// 要用的内核接口
+/** 要用的内核接口 */
 export const inject = ['systemPrompt']
 
 // 提示词里的占位名
@@ -47,7 +51,11 @@ const VARIABLE = 'qq_self'
 // 一段状态最多多少字
 const DEFAULT_MAX_CHARS = 300
 
-// 装配状态与提示词那一段
+/**
+ * 装配状态与提示词那一段
+ * @param ctx - 运行环境
+ * @param config - 配置
+ */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(process.cwd(), 'data', 'qq-subject.json')
   const maxChars = Math.max(60, config.maxChars ?? DEFAULT_MAX_CHARS)

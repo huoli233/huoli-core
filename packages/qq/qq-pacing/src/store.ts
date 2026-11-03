@@ -4,13 +4,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { dayKey, PACING_DEFAULTS, type PacingVerdict, type QuotaUse } from './plan.ts'
 
-// 记账选项
+/** 记账选项 */
 export interface PacingStoreOptions {
   file: string
   now?: () => number
 }
 
-// 记账仓
+/** 记账仓 */
 export interface PacingStore {
   used(): QuotaUse
   check(text: string): PacingVerdict
@@ -72,7 +72,11 @@ function refresh(data: StoredPacing, now: number): StoredPacing {
   return recent.length === next.recent.length ? next : { ...next, recent }
 }
 
-// 建一个记账仓
+/**
+ * 建一个记账仓
+ * @param options - 选项
+ * @returns 处理结果
+ */
 export function createPacingStore(options: PacingStoreOptions): PacingStore {
   const now = options.now ?? (() => Date.now())
   let data = refresh(load(options.file, now()), now())

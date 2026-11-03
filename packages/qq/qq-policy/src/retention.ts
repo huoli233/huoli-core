@@ -2,7 +2,7 @@
 
 const DAY_MS = 86_400_000
 
-// 保留度参数，全仓只此一处
+/** 保留度参数，全仓只此一处 */
 export const RETENTION = {
   recallBonusPer: 2,
   recallBonusMax: 12,
@@ -17,15 +17,16 @@ export const RETENTION = {
   anchorImportance: 60,
 } as const
 
-// 清晰度五档，只许一档一档降
+/** 清晰度五档，只许一档一档降 */
 export const CLARITY_ORDER = ['vivid', 'clear', 'fuzzy', 'trace', 'forgotten'] as const
 
+/** 清楚到什么程度 */
 export type Clarity = (typeof CLARITY_ORDER)[number]
 
-// 分数落到哪一档
+/** 分数落到哪一档 */
 export const CLARITY_THRESHOLDS = { vivid: 68, clear: 46, fuzzy: 24, trace: 12 } as const
 
-// 算保留度需要的字段
+/** 算保留度需要的字段 */
 export interface MemoryRecord {
   importance: number
   at: number
@@ -33,7 +34,7 @@ export interface MemoryRecord {
   recallCount: number
 }
 
-// 写入时看得见的上下文
+/** 写入时看得见的上下文 */
 export interface ImportanceInput {
   scene: 'private' | 'group' | 'platform' | 'self'
   directed?: boolean
@@ -54,7 +55,11 @@ function clampImportance(value: number): number {
   return Math.min(100, Math.max(1, Math.round(value)))
 }
 
-// 写入时算一次重要度
+/**
+ * 写入时算一次重要度
+ * @param input - 传进来的东西
+ * @returns 算出来的数
+ */
 export function initialImportance(input: ImportanceInput): number {
   let score = 8
   if (input.scene === 'private') score += 42
@@ -72,7 +77,12 @@ export function initialImportance(input: ImportanceInput): number {
   return clampImportance(score)
 }
 
-// 算这条记忆此刻还剩多少分量
+/**
+ * 算这条记忆此刻还剩多少分量
+ * @param record - 记录
+ * @param now - 现在的时间
+ * @returns 算出来的数
+ */
 export function retention(record: MemoryRecord, now: number): number {
   // 时间可能是 0（很久以前），不能拿它当没填
   const atRaw = Number(record.at)
@@ -93,7 +103,11 @@ export function retention(record: MemoryRecord, now: number): number {
   return score
 }
 
-// 分数换成清晰度那一档
+/**
+ * 分数换成清晰度那一档
+ * @param score - 分数
+ * @returns 处理结果
+ */
 export function clarityFor(score: number): Clarity {
   if (score >= CLARITY_THRESHOLDS.vivid) return 'vivid'
   if (score >= CLARITY_THRESHOLDS.clear) return 'clear'
@@ -102,7 +116,12 @@ export function clarityFor(score: number): Clarity {
   return 'forgotten'
 }
 
-// 一次只降一档，忘得才像人
+/**
+ * 一次只降一档，忘得才像人
+ * @param current - 现在的值
+ * @param computed - 算出来的档
+ * @returns 处理结果
+ */
 export function stepClarity(current: Clarity, computed: Clarity): Clarity {
   const from = Math.max(0, CLARITY_ORDER.indexOf(current))
   const to = Math.max(0, CLARITY_ORDER.indexOf(computed))

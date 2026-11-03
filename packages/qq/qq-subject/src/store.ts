@@ -4,13 +4,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { emptyChat, emptySubject, settleChat, settleGlobal, type ChatState, type GlobalState, type SubjectState } from './state.ts'
 
-// 存盘的选项
+/** 存盘的选项 */
 export interface SubjectStoreOptions {
   file: string
   now?: () => number
 }
 
-// 按会话读写状态
+/** 按会话读写状态 */
 export interface SubjectStore {
   read(): SubjectState
   forChat(chatKey: string): ChatState
@@ -54,7 +54,11 @@ function save(file: string, state: SubjectState): void {
   fs.renameSync(temporary, file)
 }
 
-// 建一个状态仓
+/**
+ * 建一个状态仓
+ * @param options - 选项
+ * @returns 处理结果
+ */
 export function createSubjectStore(options: SubjectStoreOptions): SubjectStore {
   const now = options.now ?? (() => Date.now())
   let state = load(options.file, now())

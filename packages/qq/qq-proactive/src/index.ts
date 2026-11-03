@@ -21,14 +21,14 @@ export { runGates, inQuietHours, endOfQuiet, startOfNextDay } from './gates.ts'
 export type { PendingStore, TimingStore } from './store.ts'
 export { describeWait, PENDING_TTL_MS } from './store.ts'
 
-// 一次主动开口的判断结果
+/** 一次主动开口的判断结果 */
 export interface ProactiveDecision {
   pick: PendingItem | null
   verdict: GateVerdict
   considered: ScoredCandidate[]
 }
 
-// 一个应用里的主动开口
+/** 一个应用里的主动开口 */
 export interface QqProactiveSeam {
   pending: PendingStore
   timing: TimingStore
@@ -37,7 +37,7 @@ export interface QqProactiveSeam {
   deliver(chatKey: string): PendingItem | null
 }
 
-// 攒理由时要看的东西
+/** 攒理由时要看的东西 */
 export interface ConsiderInput {
   chatKey: string
   candidates: readonly Candidate[]
@@ -49,7 +49,7 @@ export interface ConsiderInput {
   config?: Partial<typeof PROACTIVE_DEFAULTS>
 }
 
-// 这一行接受的配置
+/** 这一行接受的配置 */
 export interface Config {
   /** 攒着的和记账都放这个文件 */
   file?: string
@@ -65,18 +65,26 @@ export interface Config {
 
 const seams = new WeakMap<Context, QqProactiveSeam>()
 
-// 取主动开口，未装配时为 undefined
+/**
+ * 取主动开口，未装配时为 undefined
+ * @param ctx - 运行环境
+ * @returns 处理结果
+ */
 export function qqProactiveOf(ctx: Context): QqProactiveSeam | undefined {
   return seams.get(ctx)
 }
 
-// 插件的行名
+/** 插件的行名 */
 export const name = 'qq-proactive'
 
-// 不需要别的内核服务
+/** 不需要别的内核服务 */
 export const inject: string[] = []
 
-// 装配主动开口
+/**
+ * 装配主动开口
+ * @param ctx - 运行环境
+ * @param config - 配置
+ */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(process.cwd(), 'data', 'qq-proactive.json')
   const pending = createPendingStore({ file })

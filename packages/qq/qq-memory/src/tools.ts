@@ -8,7 +8,7 @@ import { newId, type MemoryItem, type MemoryLayer } from './types.ts'
 import { recall, renderRecall } from './recall.ts'
 import { touch } from './sweep.ts'
 
-// 工具要用到的东西
+/** 工具要用到的东西 */
 export interface MemoryToolDeps {
   store: MemoryStore
   scopeOf: (chatKey: string) => string
@@ -33,7 +33,11 @@ function layerOf(raw: unknown): MemoryLayer {
   return 'episodic'
 }
 
-// 注册两个记忆工具
+/**
+ * 注册两个记忆工具
+ * @param ctx - 运行环境
+ * @param deps - 要用到的东西
+ */
 export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
   const { store } = deps
 

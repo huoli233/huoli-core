@@ -11,7 +11,7 @@ import { qqMemoryOf } from '@huoli/huoli-qq-memory'
 import { qqChannelOf } from '@huoli/huoli-qq-channel'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 
-// 这一行接受的配置
+/** 这一行接受的配置 */
 export interface Config {
   /** 说话规矩那个文件放哪 */
   rulesFile?: string
@@ -21,10 +21,10 @@ export interface Config {
   maxSteps?: number
 }
 
-// 插件的行名
+/** 插件的行名 */
 export const name = 'qq-bundle'
 
-// 要用的内核接口
+/** 要用的内核接口 */
 export const inject = ['systemPrompt']
 
 // 规则文件的位置
@@ -46,7 +46,11 @@ function readRules(file: string): string {
   }
 }
 
-// 把零件装到一起
+/**
+ * 把零件装到一起
+ * @param ctx - 运行环境
+ * @param config - 配置
+ */
 export function apply(ctx: Context, config: Config = {}): void {
   const rules = readRules(config.rulesFile ?? defaultRulesPath())
 

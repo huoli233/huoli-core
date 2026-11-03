@@ -4,7 +4,7 @@ import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
 import type { ThoughtStore } from './thought.ts'
 
-// 工具要用到的东西
+/** 工具要用到的东西 */
 export interface MaterialToolDeps {
   thoughts: ThoughtStore
 }
@@ -21,7 +21,11 @@ function chatKeyOf(exec: { agent?: { id: string } }): string {
   return String(id)
 }
 
-// 注册两个念头工具
+/**
+ * 注册两个念头工具
+ * @param ctx - 运行环境
+ * @param deps - 要用到的东西
+ */
 export function registerMaterialTools(ctx: Context, deps: MaterialToolDeps): void {
   const { thoughts } = deps
 

@@ -1,6 +1,6 @@
 // 实时收件箱：通道桥接往这里推，工具从这里读与等
 
-// 缓冲里的一条消息
+/** 缓冲里的一条消息 */
 export interface QqMessage {
   seq: number
   chatKey: string
@@ -10,7 +10,7 @@ export interface QqMessage {
   at: number
 }
 
-// 通道推消息时给的字段
+/** 通道推消息时给的字段 */
 export interface InboxPush {
   senderId: string
   senderName?: string
@@ -18,7 +18,7 @@ export interface InboxPush {
   at?: number
 }
 
-// 读的结果，水位是这次读到的最后一条
+/** 读的结果，水位是这次读到的最后一条 */
 export interface InboxRead {
   messages: readonly QqMessage[]
   readThroughSeq: number
@@ -26,7 +26,7 @@ export interface InboxRead {
   latestSeq: number
 }
 
-// 等的结果，超时与取消分开
+/** 等的结果，超时与取消分开 */
 export interface InboxWait {
   messages: readonly QqMessage[]
   quietReached: boolean
@@ -34,7 +34,7 @@ export interface InboxWait {
   cancelled: boolean
 }
 
-// 收件箱接口
+/** 收件箱接口 */
 export interface QqInbox {
   push(chatKey: string, message: InboxPush): QqMessage
   read(chatKey: string, afterSeq: number, limit: number): InboxRead
@@ -51,7 +51,11 @@ interface Waiter {
   settle: (result: InboxWait) => void
 }
 
-// 建一个内存收件箱
+/**
+ * 建一个内存收件箱
+ * @param now - 现在的时间
+ * @returns 处理结果
+ */
 export function createInbox(now: () => number = () => Date.now()): QqInbox {
   const chats = new Map<string, QqMessage[]>()
   const waiters = new Map<string, Set<Waiter>>()

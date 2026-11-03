@@ -4,12 +4,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { MemoryItem } from './types.ts'
 
-// 存文件的选项
+/** 存文件的选项 */
 export interface MemoryStoreOptions {
   file: string
 }
 
-// 记忆仓
+/** 记忆仓 */
 export interface MemoryStore {
   all(): readonly MemoryItem[]
   byId(id: string): MemoryItem | undefined
@@ -48,7 +48,11 @@ function save(file: string, items: readonly MemoryItem[]): void {
   fs.renameSync(temporary, file)
 }
 
-// 建一个记忆仓
+/**
+ * 建一个记忆仓
+ * @param options - 选项
+ * @returns 处理结果
+ */
 export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
   let items: MemoryItem[] = load(options.file)
   const index = new Map<string, number>()

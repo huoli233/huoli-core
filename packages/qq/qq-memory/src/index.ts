@@ -15,7 +15,7 @@ export type { RecallHit, RecallInput } from './recall.ts'
 export { recall, renderRecall } from './recall.ts'
 export { promoteAll, sweepOnce, touch } from './sweep.ts'
 
-// 一个应用里的记忆仓
+/** 一个应用里的记忆仓 */
 export interface QqMemorySeam {
   store: MemoryStore
   remember(text: string, chatKey: string, layer?: MemoryItem['layer']): MemoryItem
@@ -25,7 +25,7 @@ export interface QqMemorySeam {
   outline(chatKey: string): string
 }
 
-// 这一行接受的配置
+/** 这一行接受的配置 */
 export interface Config {
   /** 记忆存哪 */
   file?: string
@@ -33,18 +33,26 @@ export interface Config {
 
 const seams = new WeakMap<Context, QqMemorySeam>()
 
-// 取记忆仓，未装配时为 undefined
+/**
+ * 取记忆仓，未装配时为 undefined
+ * @param ctx - 运行环境
+ * @returns 处理结果
+ */
 export function qqMemoryOf(ctx: Context): QqMemorySeam | undefined {
   return seams.get(ctx)
 }
 
-// 插件的行名
+/** 插件的行名 */
 export const name = 'qq-memory'
 
-// 要用的内核接口
+/** 要用的内核接口 */
 export const inject = ['tools']
 
-// 装配记忆仓与两个工具
+/**
+ * 装配记忆仓与两个工具
+ * @param ctx - 运行环境
+ * @param config - 配置
+ */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(process.cwd(), 'data', 'qq-memory.json')
   const store = createMemoryStore({ file })

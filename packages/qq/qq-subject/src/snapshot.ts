@@ -2,7 +2,7 @@
 
 import { familiarityWord, moodWord, type ChatState, type GlobalState } from './state.ts'
 
-// 写快照要的东西
+/** 写快照要的东西 */
 export interface SnapshotInput {
   global: GlobalState
   chat?: ChatState
@@ -17,7 +17,11 @@ function pct(value: number): string {
   return `${Math.round(safe * 100)}%`
 }
 
-// 把状态写成一小段话，超长就截断
+/**
+ * 把状态写成一小段话，超长就截断
+ * @param input - 传进来的东西
+ * @returns 拼好的话
+ */
 export function renderSelfSnapshot(input: SnapshotInput): string {
   const limit = Math.max(60, input.maxChars ?? 300)
   const global = input.global

@@ -11,7 +11,7 @@ export { chatKeyOf, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } fr
 export type { WsChannel, WsHandlers, WsOptions } from './ws.ts'
 export { createWsChannel } from './ws.ts'
 
-// 别处要往收件箱塞消息、要发东西，都从这儿拿
+/** 别处要往收件箱塞消息、要发东西，都从这儿拿 */
 export interface QqChannelSeam {
   channel: WsChannel
   status(): ChannelStatus
@@ -19,7 +19,7 @@ export interface QqChannelSeam {
   onPoke(handler: (poke: IncomingPoke) => void): void
 }
 
-// 这一行接受的配置
+/** 这一行接受的配置 */
 export interface Config {
   /** QQ 那头连过来的地址 */
   url: string
@@ -33,18 +33,26 @@ export interface Config {
 
 const seams = new WeakMap<Context, QqChannelSeam>()
 
-// 取通道，未装配时为 undefined
+/**
+ * 取通道，未装配时为 undefined
+ * @param ctx - 运行环境
+ * @returns 处理结果
+ */
 export function qqChannelOf(ctx: Context): QqChannelSeam | undefined {
   return seams.get(ctx)
 }
 
-// 插件的行名
+/** 插件的行名 */
 export const name = 'qq-channel'
 
-// 要用的内核接口
+/** 要用的内核接口 */
 export const inject = ['tools']
 
-// 装配通道与发送工具
+/**
+ * 装配通道与发送工具
+ * @param ctx - 运行环境
+ * @param config - 配置
+ */
 export function apply(ctx: Context, config: Config): void {
   const incoming: Array<(message: IncomingMessage) => void> = []
   const pokes: Array<(poke: IncomingPoke) => void> = []

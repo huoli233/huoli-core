@@ -2,7 +2,7 @@
 
 import type { ChannelStatus, SentResult } from './events.ts'
 
-// 连上去要的地址与身份
+/** 连上去要的地址与身份 */
 export interface WsOptions {
   url: string
   selfId: string
@@ -11,14 +11,14 @@ export interface WsOptions {
   now?: () => number
 }
 
-// 连接的回调
+/** 连接的回调 */
 export interface WsHandlers {
   onMessage: (raw: Record<string, unknown>) => void
   onStatus: (status: ChannelStatus) => void
   log: (message: string) => void
 }
 
-// 一条连接
+/** 一条连接 */
 export interface WsChannel {
   start(): void
   stop(): void
@@ -30,7 +30,12 @@ export interface WsChannel {
 // 一段等回话的超时
 const CALL_TIMEOUT_MS = 15_000
 
-// 建一条连接
+/**
+ * 建一条连接
+ * @param options - 选项
+ * @param handlers - 收到消息时做什么
+ * @returns 处理结果
+ */
 export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsChannel {
   const reconnectMs = Math.max(1000, options.reconnectMs ?? 5000)
   let socket: WebSocket | undefined

@@ -4,7 +4,7 @@ import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
 import type { ChannelStatus } from './events.ts'
 
-// 工具要用到的东西
+/** 工具要用到的东西 */
 export interface ChannelToolDeps {
   status: () => ChannelStatus
   send: (text: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
@@ -34,7 +34,11 @@ function sleep(ms: number): Promise<void> {
   })
 }
 
-// 注册发送工具
+/**
+ * 注册发送工具
+ * @param ctx - 运行环境
+ * @param deps - 要用到的东西
+ */
 export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void {
   ctx.tools.register(defineTool({
     name: 'send_message',

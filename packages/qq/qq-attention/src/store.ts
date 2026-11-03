@@ -4,13 +4,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { applyAttention, emptyAttention, type AttentionEvent, type AttentionState } from './types.ts'
 
-// 建仓选项
+/** 建仓选项 */
 export interface AttentionStoreOptions {
   file: string
   now?: () => number
 }
 
-// 按会话读状态、发事件
+/** 按会话读状态、发事件 */
 export interface AttentionStore {
   of(chatKey: string): AttentionState
   append(event: AttentionEvent): void
@@ -44,7 +44,11 @@ function save(file: string, shape: StoredState): void {
   fs.renameSync(temporary, file)
 }
 
-// 建一个落盘的注意力仓
+/**
+ * 建一个落盘的注意力仓
+ * @param options - 选项
+ * @returns 处理结果
+ */
 export function createAttentionStore(options: AttentionStoreOptions): AttentionStore {
   const loaded = load(options.file)
   const chats = new Map<string, AttentionState>(Object.entries(loaded.chats))

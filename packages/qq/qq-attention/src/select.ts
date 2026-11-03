@@ -1,6 +1,6 @@
 // 注意力事实：只回答"现场发生了什么"，不回答"该不该说"
 
-// 参与信号的消息
+/** 参与信号的消息 */
 export interface SignalMessage {
   seq: number
   senderId: string
@@ -13,14 +13,14 @@ export interface SignalMessage {
   replyToBot?: boolean
 }
 
-// 一条候选动作，只是建议
+/** 一条候选动作，只是建议 */
 export interface Candidate {
   kind: 'reply' | 'join' | 'observe' | 'wait' | 'close'
   why: string
   weight: number
 }
 
-// 一个会话的事实集合
+/** 一个会话的事实集合 */
 export interface AttentionSignals {
   directed: { at: boolean; poke: boolean; isPrivate: boolean; replyToBot: boolean }
   ambient: { humanCount: number; lastHumanAgeMs: number | null; speakingRate: number }
@@ -31,7 +31,7 @@ export interface AttentionSignals {
   candidates: readonly Candidate[]
 }
 
-// 采集一次的入参
+/** 采集一次的入参 */
 export interface CollectInput {
   chatKey: string
   messages: readonly SignalMessage[]
@@ -55,7 +55,11 @@ function isHuman(message: SignalMessage): boolean {
   return message.self !== true
 }
 
-// 采集一个会话的注意力事实
+/**
+ * 采集一个会话的注意力事实
+ * @param input - 传进来的东西
+ * @returns 处理结果
+ */
 export function collectSignals(input: CollectInput): AttentionSignals {
   const now = input.now ?? Date.now()
   const windowMs = Math.max(60_000, input.activeWindowMs ?? DEFAULT_ACTIVE_WINDOW_MS)

@@ -4,13 +4,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { PROACTIVE_DEFAULTS, type PendingItem } from './score.ts'
 
-// 存文件的选项
+/** 存文件的选项 */
 export interface PendingStoreOptions {
   file: string
   now?: () => number
 }
 
-// 攒着的仓
+/** 攒着的仓 */
 export interface PendingStore {
   all(): PendingItem[]
   live(chatKey: string): PendingItem[]
@@ -55,7 +55,11 @@ function save(file: string, data: StoredPending): void {
   fs.renameSync(temporary, file)
 }
 
-// 建一个攒着的仓
+/**
+ * 建一个攒着的仓
+ * @param options - 选项
+ * @returns 处理结果
+ */
 export function createPendingStore(options: PendingStoreOptions): PendingStore {
   const now = options.now ?? (() => Date.now())
   let data = load(options.file)
@@ -100,14 +104,18 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
   }
 }
 
-// 本次开口的时间与次数记账
+/** 本次开口的时间与次数记账 */
 export interface TimingStore {
   lastSpokenAt(chatKey: string): number
   todayCount(chatKey: string): number
   noteSpoken(chatKey: string): void
 }
 
-// 建一个时间记账
+/**
+ * 建一个时间记账
+ * @param options - 选项
+ * @returns 处理结果
+ */
 export function createTimingStore(options: PendingStoreOptions): TimingStore {
   const now = options.now ?? (() => Date.now())
   let data = load(options.file)
@@ -141,10 +149,14 @@ export function createTimingStore(options: PendingStoreOptions): TimingStore {
   }
 }
 
-// 攒着的东西多久算过期
+/** 攒着的东西多久算过期 */
 export const PENDING_TTL_MS = PROACTIVE_DEFAULTS.pendingTtlMs
 
-// 把秒数折成一句话
+/**
+ * 把秒数折成一句话
+ * @param ms - 毫秒数
+ * @returns 拼好的话
+ */
 export function describeWait(ms: number): string {
   if (!Number.isFinite(ms) || ms <= 0) return '随时可以'
   const minutes = Math.round(ms / 60_000)

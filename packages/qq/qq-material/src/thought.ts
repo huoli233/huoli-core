@@ -4,13 +4,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { THOUGHT_TTL_MS, type Thought } from './collect.ts'
 
-// 存念头
+/** 存念头 */
 export interface ThoughtStoreOptions {
   file: string
   now?: () => number
 }
 
-// 念头仓
+/** 念头仓 */
 export interface ThoughtStore {
   all(): Thought[]
   live(chatKey: string): Thought[]
@@ -47,7 +47,11 @@ function save(file: string, items: Array<Thought & { chatKey: string }>): void {
   fs.renameSync(temporary, file)
 }
 
-// 建一个念头仓
+/**
+ * 建一个念头仓
+ * @param options - 选项
+ * @returns 处理结果
+ */
 export function createThoughtStore(options: ThoughtStoreOptions): ThoughtStore {
   const now = options.now ?? (() => Date.now())
   let items = load(options.file)
