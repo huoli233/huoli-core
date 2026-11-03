@@ -42,8 +42,10 @@
     "@huoli/huoli-qq-subject": "workspace:*"
   },
   "huoli": {
-    "bundle": [
-      "./qq.patch.yml"
-    ]
+    "bundle": {
+      "patch": [
+        "./qq.patch.yml"
+      ]
+    }
   }
 }

@@ -1,8 +1,19 @@
+---
+description: "记下这段聊天的收尾与回想：收在哪、下次怎么接、事后觉得聊得怎么样。"
+kind: "package-reference"
+---
+
 # qq-continuity
 
 ## Summary
 
 收尾与回想：这段收在哪、下次怎么接、事后觉得聊得怎么样。收尾不是潜水，被叫到还会醒。
+
+## Table of Contents
+
+- [模型体验](#model-experience)
+- [已知限制与延期工作](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
 
 ## Model Experience
 
@@ -24,3 +35,8 @@
 
 - 收尾只留一句话，不留整段摘要。
 - 事后的回想还没有喂回提示词。
+
+<a id="dev-note"></a>
+### Dev Note
+
+配置项在 `src/index.ts` 的 `Config`，只有收尾文件的位置；默认落在 `data/qq-continuity.json`，按群各存一条收尾，回想整份文件最多留两百条。

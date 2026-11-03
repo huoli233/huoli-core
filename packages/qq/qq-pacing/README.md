@@ -1,8 +1,19 @@
+---
+description: "说话的规矩：一段话拆成几条、条与条之间隔多久、今天还能说几句，同一句不重复发。"
+kind: "package-reference"
+---
+
 # qq-pacing
 
 ## Summary
 
 说话的规矩：一段话拆成几条、条与条之间隔多久、今天还能说几句。同一句刚说过就不再发。
+
+## Table of Contents
+
+- [模型体验](#model-experience)
+- [已知限制与延期工作](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
 
 ## Model Experience
 
@@ -24,3 +35,8 @@
 
 - 额度按小时和按天各一个上限，没有按群分别设。
 - 间隔是按时长估的，没考虑对方正在打字。
+
+<a id="dev-note"></a>
+### Dev Note
+
+配置项在 `src/index.ts` 的 `Config`：记账文件、一段最多拆几条、每条最多几个字；计数默认落在 `data/qq-pacing.json`，每轮第一步把本轮已说的条数清零。

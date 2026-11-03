@@ -1,8 +1,19 @@
+---
+description: "管一个群的注意力：看消息、等消息、划走、收尾、设唤醒，状态落盘，重启后接着用。"
+kind: "package-reference"
+---
+
 # qq-attention
 
 ## Summary
 
 一个群里的注意力：看消息、等消息、划走、收尾、设唤醒，五个动作。状态存在自己的文件里，重启不丢。工具只读事实、只发事件，不替模型决定要不要说话。
+
+## Table of Contents
+
+- [模型体验](#model-experience)
+- [已知限制与延期工作](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
 
 ## Model Experience
 
@@ -25,3 +36,8 @@
 - 状态存在自己的文件里，还没接进会话日志。
 - 消息缓冲只在内存里，重启后要从会话记录重新灌。
 - 还没在真 QQ 号上跑过。
+
+<a id="dev-note"></a>
+### Dev Note
+
+配置项在 `src/index.ts` 的 `Config`，只有状态文件位置与机器人自己的称呼两项；状态默认落在 `data/qq-attention.json`，每次变化整体原子写回，卸载时再落一次盘。

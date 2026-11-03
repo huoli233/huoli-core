@@ -183,7 +183,7 @@ ctx.sessionProjections.register({
 |---|---|---|
 | 通用手 | 内核已有 | 文件、shell、LSP、终端、子进程、搜索、浏览器、电脑操作、子代理、任务、定时、待办、计划、目标、MCP |
 | 注意力 | `qq-attention` | 五个动作 |
-| 嘴和耳 | `qq-channel` | `send_message` / `send_reaction` / `send_image` / `recall_message` + 入站 push |
+| 嘴和耳 | `qq-channel` | `qq_send_message` / `qq_send_reaction` / `send_image` / `recall_message` + 入站 push（前缀是硬约束：内核已有同名 `send_message`，不带前缀会注册冲突） |
 | 记账 | `qq-pacing` | 额度、连发上限、拆句、间隔 |
 
 ### 4.2 工具定义规范
@@ -320,6 +320,8 @@ packages/qq/
 ```
 
 包名规则：目录名 = 包名去掉 `@huoli/huoli-` 前缀（`qq-attention` ↔ `@huoli/huoli-qq-attention`）。
+
+`qq-policy` 是库包（只导出参数与纯函数），不单独挂进组合树；组合行只挂其余九个，由 `qq-bundle/qq.patch.yml` 用 `- insert:` 一次挂上。
 
 ### 8.2 门禁
 

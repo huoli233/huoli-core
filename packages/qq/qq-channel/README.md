@@ -1,8 +1,19 @@
+---
+description: "接上 QQ：一条连接收消息、发消息，收到的翻成入站交给注意力，要发的按说话规矩拆句后送出。"
+kind: "package-reference"
+---
+
 # qq-channel
 
 ## Summary
 
 接 QQ：连上去、收消息、把要说的话发出去。收到的消息翻成入站交给注意力；要发的走说话规矩拆句再送出去。
+
+## Table of Contents
+
+- [模型体验](#model-experience)
+- [已知限制与延期工作](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
 
 ## Model Experience
 
@@ -25,3 +36,8 @@
 - 只用一种连法，没做反向连接。
 - 图片、语音这些只翻成占位文字，没有真的处理。
 - 还没在真 QQ 号上跑过。
+
+<a id="dev-note"></a>
+### Dev Note
+
+配置项在 `src/index.ts` 的 `Config`，连接地址与机器人自己的号必填，口令与重连间隔可选；这一包只维持连接、不落盘，重连状态跟着进程走。
