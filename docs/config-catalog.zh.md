@@ -2827,6 +2827,7 @@ export type Config = LocalConfig
 - `source`: [`packages/qq/qq-attention/src/index.ts:26`](../packages/qq/qq-attention/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** 状态文件放哪 */
   file?: string
@@ -2845,6 +2846,7 @@ export interface Config {
 - `source`: [`packages/qq/qq-bundle/src/index.ts:15`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** 说话规矩那个文件放哪 */
   rulesFile?: string
@@ -2865,6 +2867,7 @@ export interface Config {
 - `source`: [`packages/qq/qq-channel/src/index.ts:23`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** QQ 那头连过来的地址 */
   url: string
@@ -2887,6 +2890,7 @@ export interface Config {
 - `source`: [`packages/qq/qq-continuity/src/index.ts:23`](../packages/qq/qq-continuity/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** 收尾记录放哪 */
   file?: string
@@ -2903,6 +2907,7 @@ export interface Config {
 - `source`: [`packages/qq/qq-material/src/index.ts:21`](../packages/qq/qq-material/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** 惦记的事存哪 */
   thoughtsFile?: string
@@ -2919,6 +2924,7 @@ export interface Config {
 - `source`: [`packages/qq/qq-memory/src/index.ts:29`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** 记忆存哪 */
   file?: string
@@ -2934,6 +2940,7 @@ export interface Config {
 - `source`: [`packages/qq/qq-pacing/src/index.ts:24`](../packages/qq/qq-pacing/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** 记账文件放哪 */
   file?: string
@@ -2953,6 +2960,7 @@ export interface Config {
 - `source`: [`packages/qq/qq-proactive/src/index.ts:53`](../packages/qq/qq-proactive/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** 攒着的和记账都放这个文件 */
   file?: string
@@ -2977,6 +2985,7 @@ export interface Config {
 - `source`: [`packages/qq/qq-subject/src/index.ts:22`](../packages/qq/qq-subject/src/index.ts)
 
 ```ts config-catalog
+/** 这一行接受的配置 */
 export interface Config {
   /** 状态存哪 */
   file?: string
