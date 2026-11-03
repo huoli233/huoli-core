@@ -567,6 +567,7 @@
     { "path": "./packages/qq/qq-attention" },
     { "path": "./packages/qq/qq-policy" },
     { "path": "./packages/qq/qq-subject" },
+    { "path": "./packages/qq/qq-vitals" },
     { "path": "./packages/qq/qq-memory" },
     { "path": "./packages/qq/qq-pacing" },
     { "path": "./packages/qq/qq-material" },

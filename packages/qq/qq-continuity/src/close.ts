@@ -48,13 +48,13 @@ export const MIN_RUN_MS = 60_000
  * @returns 处理结果
  */
 export function evaluateOutcome(messages: Array<{ self?: boolean; at: number }>, now: number): Outcome {
-  const humans = messages.filter((item) => item.self !== true)
-  const selves = messages.filter((item) => item.self === true)
+  const humans = messages.filter(item => item.self !== true)
+  const selves = messages.filter(item => item.self === true)
   const first = messages[0]
   const last = messages[messages.length - 1]
   const runMinutes = first !== undefined && last !== undefined ? Math.max(0, Math.round((last.at - first.at) / 60_000)) : 0
   const lastSelfAt = selves.reduce((acc, item) => Math.max(acc, item.at), 0)
-  const gotReply = lastSelfAt > 0 && humans.some((item) => item.at > lastSelfAt)
+  const gotReply = lastSelfAt > 0 && humans.some(item => item.at > lastSelfAt)
   void now
   return { humanMessages: humans.length, selfMessages: selves.length, gotReply, runMinutes }
 }

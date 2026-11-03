@@ -21,11 +21,13 @@
   "license": "MIT",
   "peerDependencies": {
     "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-home-paths": "workspace:*",
     "@huoli/huoli-tools": "workspace:*"
   },
   "devDependencies": {
     "@huoli/cordis": "workspace:~",
     "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-home-paths": "workspace:*",
     "@huoli/huoli-llm": "workspace:*",
     "@huoli/huoli-system-prompt": "workspace:*",
     "@huoli/huoli-tool-executor-native": "workspace:*",

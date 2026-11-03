@@ -39,4 +39,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`：记账文件、一段最多拆几条、每条最多几个字；计数默认落在 `data/qq-pacing.json`，每轮第一步把本轮已说的条数清零。
+配置项在 `src/index.ts` 的 `Config`：记账文件、主目录覆盖、一段最多拆几条、每条最多几个字；计数默认落在主目录的 data 下（`data/qq-pacing.json`），每轮第一步把本轮已说的条数清零。

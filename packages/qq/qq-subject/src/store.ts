@@ -20,12 +20,18 @@ export interface SubjectStore {
   flush(): void
 }
 
-// 文件里的样子
+// 文件里的样子，读盘时按可能缺失或为空的字段声明
 interface StoredState {
   version: 1
   global: GlobalState
   chats: Record<string, ChatState>
   lastActive: string
+}
+
+interface StoredStateInput {
+  global?: GlobalState | null
+  chats?: Record<string, ChatState> | null
+  lastActive?: unknown
 }
 
 // 读文件，出错就当没用过
@@ -34,7 +40,7 @@ function load(file: string, now: number): SubjectState {
     if (!fs.existsSync(file)) return emptySubject(now)
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
     if (text.trim().length === 0) return emptySubject(now)
-    const parsed = JSON.parse(text) as Partial<StoredState>
+    const parsed = JSON.parse(text) as StoredStateInput
     return {
       global: parsed.global !== undefined && parsed.global !== null ? parsed.global : emptySubject(now).global,
       chats: parsed.chats !== undefined && parsed.chats !== null ? parsed.chats : {},
@@ -95,7 +101,7 @@ export function createSubjectStore(options: SubjectStoreOptions): SubjectStore {
     },
     changeGlobal(field, delta) {
       flatten()
-      const current = Number(state.global[field]) || 0
+      const current = state.global[field] || 0
       const value = Math.min(1, Math.max(0, current + delta))
       state = { ...state, global: { ...state.global, [field]: value, updatedAt: now() } }
       persist()
@@ -103,7 +109,7 @@ export function createSubjectStore(options: SubjectStoreOptions): SubjectStore {
     changeChat(chatKey, field, delta) {
       flatten()
       const chat = state.chats[chatKey] ?? emptyChat(now())
-      const current = Number(chat[field]) || 0
+      const current = chat[field] || 0
       const value = Math.min(1, Math.max(0, current + delta))
       state = { ...state, chats: { ...state.chats, [chatKey]: { ...chat, [field]: value, updatedAt: now() } } }
       persist()

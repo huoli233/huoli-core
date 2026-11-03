@@ -85,7 +85,7 @@ export function scoreCandidate(candidate: Candidate, drives: Drives): number {
  */
 export function rankCandidates(candidates: readonly Candidate[], drives: Drives): ScoredCandidate[] {
   return candidates
-    .map((candidate) => ({ ...candidate, score: scoreCandidate(candidate, drives) }))
+    .map(candidate => ({ ...candidate, score: scoreCandidate(candidate, drives) }))
     .sort((a, b) => b.score - a.score)
 }
 
@@ -114,8 +114,8 @@ export function sameThing(a: string, b: string): boolean {
 export function dropRepeats(candidates: readonly ScoredCandidate[], history: readonly string[]): ScoredCandidate[] {
   const kept: ScoredCandidate[] = []
   for (const candidate of candidates) {
-    if (history.some((old) => sameThing(old, candidate.text))) continue
-    if (kept.some((already) => sameThing(already.text, candidate.text))) continue
+    if (history.some(old => sameThing(old, candidate.text))) continue
+    if (kept.some(already => sameThing(already.text, candidate.text))) continue
     kept.push(candidate)
   }
   return kept

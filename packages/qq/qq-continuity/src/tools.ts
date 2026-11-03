@@ -19,12 +19,12 @@ function refuse(code: string, error: string, hint: string): never {
 function chatKeyOf(exec: { agent?: { id: string } }): string {
   const id = exec.agent?.id
   if (id === undefined || id === '') refuse('continuity.no_chat', '这次调用没有会话身份', '从带会话的入口调用工具')
-  return String(id)
+  return id
 }
 
 // 想法的几种说法
 function kindOf(raw: unknown): Reflection['kind'] {
-  const value = String(raw ?? '').trim()
+  const value = typeof raw === 'string' ? raw.trim() : ''
   if (value === 'good' || value === 'awkward' || value === 'missed' || value === 'neutral') return value
   return 'neutral'
 }
@@ -48,13 +48,13 @@ export function registerContinuityTools(ctx: Context, deps: ContinuityToolDeps):
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args, exec) {
+    execute(args, exec) {
       const chatKey = chatKeyOf(exec)
-      const text = String(args.text ?? '').trim()
+      const text = typeof args.text === 'string' ? args.text.trim() : ''
       if (text.length < 2) refuse('continuity.too_short', '太短了', '写一句具体的话')
       if (text.length > 300) refuse('continuity.too_long', '一条最多 300 字', '挑最要紧的那句')
       const item = store.addReflection(chatKey, kindOf(args.kind), text)
-      return { id: item.id, kind: item.kind, text: item.text }
+      return Promise.resolve({ id: item.id, kind: item.kind, text: item.text })
     },
   }))
 }

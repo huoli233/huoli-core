@@ -17,8 +17,8 @@ function refuse(code: string, error: string, hint: string): never {
 // 取这次调用属于哪个会话
 function chatKeyOf(exec: { agent?: { id: string } }): string {
   const id = exec.agent?.id
-  if (id === undefined || id === '') refuse('material.no_chat', '这次调用没有会话身份', '从带会话的入口调用工具')
-  return String(id)
+  if (typeof id !== 'string' || id === '') refuse('material.no_chat', '这次调用没有会话身份', '从带会话的入口调用工具')
+  return id
 }
 
 /**
@@ -39,13 +39,13 @@ export function registerMaterialTools(ctx: Context, deps: MaterialToolDeps): voi
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args, exec) {
+    execute(args, exec) {
       const chatKey = chatKeyOf(exec)
-      const text = String(args.text ?? '').trim()
+      const text = typeof args.text === 'string' ? args.text.trim() : ''
       if (text.length < 2) refuse('material.too_short', '太短了', '写清一句具体的话')
       if (text.length > 200) refuse('material.too_long', '一条最多 200 字', '挑最要紧的那句')
       const item = thoughts.add(text, chatKey)
-      return { id: item.id, text: item.text, expiresAt: item.expiresAt }
+      return Promise.resolve({ id: item.id, text: item.text, expiresAt: item.expiresAt })
     },
   }))
 
@@ -59,12 +59,12 @@ export function registerMaterialTools(ctx: Context, deps: MaterialToolDeps): voi
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args) {
-      const id = String(args.id ?? '').trim()
+    execute(args) {
+      const id = typeof args.id === 'string' ? args.id.trim() : ''
       if (id === '') refuse('material.no_id', '没给编号', '用 write_thought 返回的 id')
       const dropped = thoughts.drop(id)
       if (!dropped) refuse('material.not_found', '没找到这条', '先看看还有哪些惦记的事')
-      return { dropped: true }
+      return Promise.resolve({ dropped: true })
     },
   }))
 }

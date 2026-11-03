@@ -25,6 +25,12 @@ interface StoredContinuity {
   reflections: Reflection[]
 }
 
+// 读盘时按可能缺失或为空的字段声明
+interface StoredContinuityInput {
+  closes?: Record<string, CloseNote> | null
+  reflections?: Reflection[]
+}
+
 // 读文件
 function load(file: string): StoredContinuity {
   const empty: StoredContinuity = { version: 1, closes: {}, reflections: [] }
@@ -32,7 +38,7 @@ function load(file: string): StoredContinuity {
     if (!fs.existsSync(file)) return empty
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
     if (text.trim().length === 0) return empty
-    const parsed = JSON.parse(text) as Partial<StoredContinuity>
+    const parsed = JSON.parse(text) as StoredContinuityInput
     return {
       version: 1,
       closes: parsed.closes !== undefined && parsed.closes !== null ? parsed.closes : {},
@@ -69,8 +75,8 @@ export function createContinuityStore(options: ContinuityStoreOptions): Continui
       const note: CloseNote = {
         chatKey: input.chatKey,
         closedAt: at,
-        summary: String(input.summary ?? '').slice(0, NOTE_MAX_CHARS),
-        nextOpening: String(input.nextOpening ?? '').slice(0, NOTE_MAX_CHARS),
+        summary: input.summary.slice(0, NOTE_MAX_CHARS),
+        nextOpening: input.nextOpening.slice(0, NOTE_MAX_CHARS),
         throughSeq: Number(input.throughSeq) || 0,
       }
       data = { ...data, closes: { ...data.closes, [input.chatKey]: note } }
@@ -87,14 +93,14 @@ export function createContinuityStore(options: ContinuityStoreOptions): Continui
         chatKey,
         at,
         kind,
-        text: String(text ?? '').slice(0, 300),
+        text: text.slice(0, 300),
       }
       data = { ...data, reflections: [...data.reflections, item].slice(-200) }
       persist()
       return item
     },
     reflections(chatKey, limit) {
-      const all = data.reflections.filter((item) => item.chatKey === chatKey)
+      const all = data.reflections.filter(item => item.chatKey === chatKey)
       const size = Math.max(1, limit ?? 5)
       return all.slice(-size)
     },

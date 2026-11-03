@@ -40,4 +40,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`，只有状态文件位置与机器人自己的称呼两项；状态默认落在 `data/qq-attention.json`，每次变化整体原子写回，卸载时再落一次盘。
+配置项在 `src/index.ts` 的 `Config`，状态文件位置、主目录覆盖与机器人自己的称呼三项；状态默认落在主目录的 data 下（`data/qq-attention.json`），每次变化整体原子写回，卸载时再落一次盘。

@@ -23,12 +23,12 @@ function refuse(code: string, error: string, hint: string): never {
 function chatKeyOf(exec: { agent?: { id: string } }): string {
   const id = exec.agent?.id
   if (id === undefined || id === '') refuse('memory.no_chat', '这次调用没有会话身份', '从带会话的入口调用工具')
-  return String(id)
+  return id
 }
 
 // 把传进来的层名换成正名
 function layerOf(raw: unknown): MemoryLayer {
-  const value = String(raw ?? '').trim()
+  const value = typeof raw === 'string' ? raw.trim() : ''
   if (value === 'ephemeral' || value === 'episodic' || value === 'semantic' || value === 'private') return value
   return 'episodic'
 }
@@ -53,17 +53,18 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args, exec) {
+    execute(args, exec) {
       const chatKey = chatKeyOf(exec)
-      const text = String(args.text ?? '').trim()
+      const text = typeof args.text === 'string' ? args.text.trim() : ''
       if (text.length < 2) refuse('memory.too_short', '内容太短', '写清一件事，至少几个字')
       if (text.length > 500) refuse('memory.too_long', '一条最多 500 字', '长事拆成几条记')
 
       const scope = deps.scopeOf(chatKey)
-      const duplicated = store.all().some((item) => !item.forgotten && item.scope === scope && item.text === text)
+      const duplicated = store.all().some(item => !item.forgotten && item.scope === scope && item.text === text)
       if (duplicated) refuse('memory.duplicate', '这条已经记过了', '换一条新的事')
 
       const layer = layerOf(args.layer)
+      const personId = typeof args.personId === 'string' ? args.personId.trim() : ''
       const now = Date.now()
       const item: MemoryItem = {
         id: newId(now),
@@ -82,10 +83,10 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
         lastSeenAt: now,
         forgotten: false,
         source: 'tool',
-        ...args.personId !== undefined && String(args.personId).trim() !== '' ? { personId: String(args.personId).trim() } : {},
+        ...personId !== '' ? { personId } : {},
       }
       store.add(item)
-      return { id: item.id, layer: item.layer, importance: item.importance }
+      return Promise.resolve({ id: item.id, layer: item.layer, importance: item.importance })
     },
   }))
 
@@ -100,19 +101,20 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args, exec) {
+    execute(args, exec) {
       const chatKey = chatKeyOf(exec)
       const now = Date.now()
       const scope = deps.scopeOf(chatKey)
       const limit = Number.isInteger(args.limit) && args.limit !== undefined ? Math.max(1, args.limit) : 5
-      const hits = recall(store, { query: String(args.query ?? ''), scope, limit, now })
+      const query = typeof args.query === 'string' ? args.query : ''
+      const hits = recall(store, { query, scope, limit, now })
       // 被找出来的记忆算被提起一次，可能重新变清楚
       for (const hit of hits) touch(store, hit.item.id, now)
-      return {
+      return Promise.resolve({
         count: hits.length,
         text: renderRecall(hits),
-        items: hits.map((hit) => ({ id: hit.item.id, text: hit.item.text, clarity: hit.item.clarity, at: hit.item.at })),
-      }
+        items: hits.map(hit => ({ id: hit.item.id, text: hit.item.text, clarity: hit.item.clarity, at: hit.item.at })),
+      })
     },
   }))
 }

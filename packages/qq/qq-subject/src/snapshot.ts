@@ -40,7 +40,7 @@ export function renderSelfSnapshot(input: SnapshotInput): string {
 
   const thoughts = input.thoughts ?? []
   if (thoughts.length > 0) {
-    const first = String(thoughts[0] ?? '').trim()
+    const first = (thoughts[0] ?? '').trim()
     if (first !== '') lines.push(`心里还惦记着：${first}`)
   }
 

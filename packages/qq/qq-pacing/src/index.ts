@@ -3,6 +3,7 @@
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import '@huoli/huoli-agent'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { createPacingStore, type PacingStore } from './store.ts'
 import { splitSpeech, PACING_DEFAULTS, type PacingVerdict, type PlannedSpeech, type QuotaUse } from './plan.ts'
 
@@ -22,8 +23,10 @@ export interface QqPacingSeam {
 
 /** 这一行接受的配置 */
 export interface Config {
-  /** 记账文件放哪 */
+  /** 记账文件放哪，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
   /** 一段话最多拆几条 */
   maxParts?: number
   /** 每条最多几个字 */
@@ -53,7 +56,7 @@ export const inject: string[] = []
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  const file = config.file ?? path.join(process.cwd(), 'data', 'qq-pacing.json')
+  const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-pacing.json')
   const maxParts = Math.max(1, config.maxParts ?? PACING_DEFAULTS.maxParts)
   const maxCharsPerPart = Math.max(20, config.maxCharsPerPart ?? PACING_DEFAULTS.maxCharsPerPart)
   const store = createPacingStore({ file })
@@ -80,7 +83,7 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 每轮开始时把这一轮已经说了几条清零
   ctx.on('agent/pre-step', (payload, next) => {
-    if (payload?.step === 1) store.resetTurn()
+    if (payload.step === 1) store.resetTurn()
     return next()
   })
 

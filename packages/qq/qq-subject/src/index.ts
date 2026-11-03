@@ -3,6 +3,7 @@
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import '@huoli/huoli-system-prompt'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { createSubjectStore, type SubjectStore } from './store.ts'
 import { renderSelfSnapshot, type SnapshotInput } from './snapshot.ts'
 
@@ -20,8 +21,10 @@ export interface QqSubjectSeam {
 
 /** 这一行接受的配置 */
 export interface Config {
-  /** 状态存哪 */
+  /** 状态存哪，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
   /** 一段状态最多写多少字 */
   maxChars?: number
   /** 每个群叫什么名字，写快照时用 */
@@ -57,7 +60,7 @@ const DEFAULT_MAX_CHARS = 300
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  const file = config.file ?? path.join(process.cwd(), 'data', 'qq-subject.json')
+  const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-subject.json')
   const maxChars = Math.max(60, config.maxChars ?? DEFAULT_MAX_CHARS)
   const chatNames = config.chatNames ?? {}
   const store = createSubjectStore({ file })

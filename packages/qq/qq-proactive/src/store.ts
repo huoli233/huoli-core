@@ -28,6 +28,13 @@ interface StoredPending {
   todayCount: Record<string, number>
 }
 
+// 读盘时按可能缺失或为空的字段声明
+interface StoredPendingInput {
+  items?: PendingItem[]
+  lastSpokenAt?: Record<string, number> | null
+  todayCount?: Record<string, number> | null
+}
+
 // 读文件
 function load(file: string): StoredPending {
   const empty: StoredPending = { version: 1, items: [], lastSpokenAt: {}, todayCount: {} }
@@ -35,7 +42,7 @@ function load(file: string): StoredPending {
     if (!fs.existsSync(file)) return empty
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
     if (text.trim().length === 0) return empty
-    const parsed = JSON.parse(text) as Partial<StoredPending>
+    const parsed = JSON.parse(text) as StoredPendingInput
     return {
       version: 1,
       items: Array.isArray(parsed.items) ? parsed.items : [],
@@ -70,7 +77,7 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
 
   const clean = (): void => {
     const at = now()
-    const kept = data.items.filter((item) => item.expiresAt > at)
+    const kept = data.items.filter(item => item.expiresAt > at)
     if (kept.length !== data.items.length) {
       data = { ...data, items: kept }
       persist()
@@ -84,18 +91,18 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
     },
     live(chatKey) {
       clean()
-      return data.items.filter((item) => item.chatKey === chatKey)
+      return data.items.filter(item => item.chatKey === chatKey)
     },
     put(item) {
       data = { ...data, items: [...data.items, item] }
       persist()
     },
     markSent(id) {
-      data = { ...data, items: data.items.filter((item) => item.id !== id) }
+      data = { ...data, items: data.items.filter(item => item.id !== id) }
       persist()
     },
     drop(id) {
-      data = { ...data, items: data.items.filter((item) => item.id !== id) }
+      data = { ...data, items: data.items.filter(item => item.id !== id) }
       persist()
     },
     flush() {
@@ -131,10 +138,10 @@ export function createTimingStore(options: PendingStoreOptions): TimingStore {
 
   return {
     lastSpokenAt(chatKey) {
-      return Number(data.lastSpokenAt[chatKey] ?? 0)
+      return data.lastSpokenAt[chatKey] ?? 0
     },
     todayCount(chatKey) {
-      return Number(data.todayCount[`${chatKey}@${dayKeyOf(now())}`] ?? 0)
+      return data.todayCount[`${chatKey}@${dayKeyOf(now())}`] ?? 0
     },
     noteSpoken(chatKey) {
       const at = now()
@@ -142,7 +149,7 @@ export function createTimingStore(options: PendingStoreOptions): TimingStore {
       data = {
         ...data,
         lastSpokenAt: { ...data.lastSpokenAt, [chatKey]: at },
-        todayCount: { ...data.todayCount, [key]: Number(data.todayCount[key] ?? 0) + 1 },
+        todayCount: { ...data.todayCount, [key]: (data.todayCount[key] ?? 0) + 1 },
       }
       persist()
     },

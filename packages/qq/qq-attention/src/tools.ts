@@ -33,7 +33,20 @@ function refuse(code: string, error: string, hint: string): never {
 function chatKeyOf(exec: { agent?: { id: string } }): string {
   const id = exec.agent?.id
   if (id === undefined || id === '') refuse('attention.no_chat', '这次调用没有会话身份', '从带会话的入口调用工具')
-  return String(id)
+  return id
+}
+
+// 返回前拷一份唤醒条件，值都按能直接当 JSON 的写，改返回值不会动到存着的状态
+function copyTriggers(triggers: WakeTriggers): Record<string, boolean | number | string[]> {
+  const value: Record<string, boolean | number | string[]> = {}
+  if (triggers.atMention !== undefined) value.atMention = triggers.atMention
+  if (triggers.nameMention !== undefined) value.nameMention = triggers.nameMention
+  if (triggers.question !== undefined) value.question = triggers.question
+  if (triggers.poke !== undefined) value.poke = triggers.poke
+  if (triggers.anyMessage !== undefined) value.anyMessage = triggers.anyMessage
+  if (triggers.probability !== undefined) value.probability = triggers.probability
+  if (triggers.speakerIds !== undefined) value.speakerIds = [...triggers.speakerIds]
+  return value
 }
 
 /**
@@ -55,18 +68,18 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args, exec) {
+    execute(args, exec) {
       const chatKey = chatKeyOf(exec)
       const state = store.of(chatKey)
       const afterSeq = Number.isInteger(args.afterSeq) && args.afterSeq !== undefined ? args.afterSeq : state.readThroughSeq
       const limit = Number.isInteger(args.limit) && args.limit !== undefined ? Math.max(1, args.limit) : DEFAULT_READ_LIMIT
       const result = inbox.read(chatKey, afterSeq, limit)
-      return {
+      return Promise.resolve({
         messages: result.messages.map(message => ({ seq: message.seq, senderId: message.senderId, text: message.text, at: message.at })),
         readThroughSeq: result.readThroughSeq,
         latestSeq: result.latestSeq,
         partial: result.partial,
-      }
+      })
     },
   }))
 
@@ -109,12 +122,13 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args, exec) {
+    execute(args, exec) {
       const chatKey = chatKeyOf(exec)
-      if (!Number.isInteger(args.throughSeq) || args.throughSeq === undefined) {
+      const requested = args.throughSeq
+      if (typeof requested !== 'number' || !Number.isInteger(requested)) {
         refuse('attention.seq_required', '没有给水位', '用 read_messages 返回的 readThroughSeq')
       }
-      const throughSeq = args.throughSeq as number
+      const throughSeq = requested
       const state = store.of(chatKey)
       const latestSeq = inbox.latestSeq(chatKey)
       if (throughSeq < 0) refuse('attention.invalid_seq', '水位不能是负数', '用 read_messages 返回的水位')
@@ -125,7 +139,7 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
         refuse('attention.seq_ahead', `水位超过最新消息 ${latestSeq}`, '用 read_messages 返回的水位，别自己编')
       }
       store.append({ type: 'read', chatKey, throughSeq, at: Date.now() })
-      return { readThroughSeq: store.of(chatKey).readThroughSeq, latestSeq }
+      return Promise.resolve({ readThroughSeq: store.of(chatKey).readThroughSeq, latestSeq })
     },
   }))
 
@@ -141,27 +155,32 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args, exec) {
+    execute(args, exec) {
       const chatKey = chatKeyOf(exec)
-      const summary = String(args.summary ?? '').slice(0, NOTE_MAX_CHARS)
-      const nextOpening = String(args.nextOpening ?? '').slice(0, NOTE_MAX_CHARS)
+      const summary = typeof args.summary === 'string' ? args.summary.slice(0, NOTE_MAX_CHARS) : ''
+      const nextOpening = typeof args.nextOpening === 'string' ? args.nextOpening.slice(0, NOTE_MAX_CHARS) : ''
       if (summary.length === 0 && nextOpening.length === 0) {
         refuse('attention.empty_close', '收尾必须留下结束点', '给 summary 或 nextOpening')
       }
       const state = store.of(chatKey)
       let throughSeq: number | undefined
       if (args.throughSeq !== undefined) {
-        if (!Number.isInteger(args.throughSeq)) refuse('attention.invalid_seq', '水位必须是整数', '用 read_messages 返回的水位')
-        const value = args.throughSeq as number
-        if (value < state.readThroughSeq) refuse('attention.seq_backwards', `水位只能前进，当前 ${state.readThroughSeq}`, '传一个不小于当前水位的值')
+        const requested = args.throughSeq
+        if (typeof requested !== 'number' || !Number.isInteger(requested)) refuse('attention.invalid_seq', '水位必须是整数', '用 read_messages 返回的水位')
+        if (requested < state.readThroughSeq) refuse('attention.seq_backwards', `水位只能前进，当前 ${state.readThroughSeq}`, '传一个不小于当前水位的值')
         const latestSeq = inbox.latestSeq(chatKey)
-        if (latestSeq > 0 && value > latestSeq) refuse('attention.seq_ahead', `水位超过最新消息 ${latestSeq}`, '用 read_messages 返回的水位')
-        throughSeq = value
+        if (latestSeq > 0 && requested > latestSeq) refuse('attention.seq_ahead', `水位超过最新消息 ${latestSeq}`, '用 read_messages 返回的水位')
+        throughSeq = requested
       }
       const event: AttentionEvent = { type: 'close', chatKey, summary, nextOpening, at: Date.now(), ...throughSeq !== undefined ? { throughSeq } : {} }
       store.append(event)
       const next = store.of(chatKey)
-      return { closedAt: next.closedAt, closeSummary: next.closeSummary, nextOpening: next.nextOpening, readThroughSeq: next.readThroughSeq }
+      return Promise.resolve({
+        closedAt: next.closedAt,
+        closeSummary: next.closeSummary,
+        nextOpening: next.nextOpening,
+        readThroughSeq: next.readThroughSeq,
+      })
     },
   }))
 
@@ -182,7 +201,7 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args, exec) {
+    execute(args, exec) {
       const chatKey = chatKeyOf(exec)
       const state = store.of(chatKey)
       const now = Date.now()
@@ -209,18 +228,18 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
       // 先验水位再改状态，被拒的调用不留半截
       let throughSeq: number | undefined
       if (args.throughSeq !== undefined) {
-        if (!Number.isInteger(args.throughSeq)) refuse('attention.invalid_seq', '水位必须是整数', '用 read_messages 返回的水位')
-        const value = args.throughSeq as number
-        if (value < state.readThroughSeq) refuse('attention.seq_backwards', `水位只能前进，当前 ${state.readThroughSeq}`, '传一个不小于当前水位的值')
+        const requested = args.throughSeq
+        if (typeof requested !== 'number' || !Number.isInteger(requested)) refuse('attention.invalid_seq', '水位必须是整数', '用 read_messages 返回的水位')
+        if (requested < state.readThroughSeq) refuse('attention.seq_backwards', `水位只能前进，当前 ${state.readThroughSeq}`, '传一个不小于当前水位的值')
         const latestSeq = inbox.latestSeq(chatKey)
-        if (latestSeq > 0 && value > latestSeq) refuse('attention.seq_ahead', `水位超过最新消息 ${latestSeq}`, '用 read_messages 返回的水位')
-        throughSeq = value
+        if (latestSeq > 0 && requested > latestSeq) refuse('attention.seq_ahead', `水位超过最新消息 ${latestSeq}`, '用 read_messages 返回的水位')
+        throughSeq = requested
       }
 
       const triggers: WakeTriggers = { ...state.triggers, ...(args.triggers as WakeTriggers | undefined ?? {}) }
       if (triggers.probability !== undefined) {
-        const probability = Number(triggers.probability)
-        if (!Number.isFinite(probability) || probability < 0 || probability > 1) {
+        const probability = triggers.probability
+        if (typeof probability !== 'number' || !Number.isFinite(probability) || probability < 0 || probability > 1) {
           refuse('attention.bad_probability', 'probability 必须在 0 到 1 之间', '给一个 0 到 1 的小数')
         }
         triggers.probability = probability
@@ -229,7 +248,12 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
       store.append({ type: 'wake', chatKey, wakeMode, wakeUntil, triggers, at: now })
       if (throughSeq !== undefined) store.append({ type: 'read', chatKey, throughSeq, at: now })
       const next = store.of(chatKey)
-      return { wakeMode: next.wakeMode, wakeUntil: next.wakeUntil, triggers: JSON.parse(JSON.stringify(next.triggers)), readThroughSeq: next.readThroughSeq }
+      return Promise.resolve({
+        wakeMode: next.wakeMode,
+        wakeUntil: next.wakeUntil,
+        triggers: copyTriggers(next.triggers),
+        readThroughSeq: next.readThroughSeq,
+      })
     },
   }))
 }

@@ -82,7 +82,9 @@ export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
     update(id, patch) {
       const at = index.get(id)
       if (at === undefined) return
-      const next = { ...items[at]!, ...patch }
+      const current = items[at]
+      if (current === undefined) return
+      const next = { ...current, ...patch }
       items = [...items.slice(0, at), next, ...items.slice(at + 1)]
       persist()
     },

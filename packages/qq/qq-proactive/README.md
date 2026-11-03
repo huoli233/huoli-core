@@ -40,4 +40,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`：开关、每天开口上限、安静时段的起止，攒住的与记账共用一个文件，默认 `data/qq-proactive.json`；打分常数在 `src/score.ts` 的 `PROACTIVE_DEFAULTS`，闸门判定在 `src/gates.ts`。
+配置项在 `src/index.ts` 的 `Config`：开关、每天开口上限、安静时段的起止、主目录覆盖，攒住的与记账共用一个文件，默认落在主目录的 data 下（`data/qq-proactive.json`）；打分常数在 `src/score.ts` 的 `PROACTIVE_DEFAULTS`，闸门判定在 `src/gates.ts`。

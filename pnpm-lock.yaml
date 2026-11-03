@@ -13958,6 +13958,9 @@ importers:
       '@huoli/huoli-agent':
         specifier: workspace:*
         version: link:../../core/agent
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
       '@huoli/huoli-llm':
         specifier: workspace:*
         version: link:../../llm/llm
@@ -14032,6 +14035,9 @@ importers:
       '@huoli/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
       '@huoli/huoli-tools':
         specifier: workspace:*
         version: link:../../core/tools
@@ -14041,6 +14047,9 @@ importers:
       '@huoli/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
       '@huoli/huoli-tools':
         specifier: workspace:*
         version: link:../../core/tools
@@ -14054,6 +14063,9 @@ importers:
       '@huoli/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
       '@huoli/huoli-tools':
         specifier: workspace:*
         version: link:../../core/tools
@@ -14066,6 +14078,9 @@ importers:
       '@huoli/huoli-agent':
         specifier: workspace:*
         version: link:../../core/agent
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
 
   packages/qq/qq-policy: {}
 
@@ -14074,12 +14089,31 @@ importers:
       '@huoli/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
 
   packages/qq/qq-subject:
     dependencies:
       '@huoli/huoli-qq-policy':
         specifier: workspace:*
         version: link:../qq-policy
+    devDependencies:
+      '@huoli/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
+      '@huoli/huoli-system-prompt':
+        specifier: workspace:*
+        version: link:../../core/system-prompt
+
+  packages/qq/qq-vitals:
+    dependencies:
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
     devDependencies:
       '@huoli/cordis':
         specifier: workspace:~

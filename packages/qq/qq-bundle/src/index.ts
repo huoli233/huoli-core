@@ -101,7 +101,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     memory?.promote()
     memory?.sweep()
   }, 60 * 60_000)
-  idle.unref?.()
+  idle.unref()
   ctx.effect(() => () => {
     clearInterval(idle)
   })

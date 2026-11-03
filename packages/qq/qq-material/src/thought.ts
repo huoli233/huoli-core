@@ -62,7 +62,7 @@ export function createThoughtStore(options: ThoughtStoreOptions): ThoughtStore {
 
   const clean = (): void => {
     const at = now()
-    const kept = items.filter((item) => item.expiresAt > at)
+    const kept = items.filter(item => item.expiresAt > at)
     if (kept.length !== items.length) {
       items = kept
       persist()
@@ -76,7 +76,7 @@ export function createThoughtStore(options: ThoughtStoreOptions): ThoughtStore {
     },
     live(chatKey) {
       clean()
-      return items.filter((item) => item.chatKey === chatKey)
+      return items.filter(item => item.chatKey === chatKey)
     },
     add(text, chatKey) {
       const at = now()
@@ -93,7 +93,7 @@ export function createThoughtStore(options: ThoughtStoreOptions): ThoughtStore {
     },
     drop(id) {
       const before = items.length
-      items = items.filter((item) => item.id !== id)
+      items = items.filter(item => item.id !== id)
       if (items.length === before) return false
       persist()
       return true

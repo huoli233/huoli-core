@@ -40,4 +40,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`，只有记忆文件位置，默认 `data/qq-memory.json`；往上挪一层与每天变淡分别由 `promoteAll` 和 `sweepOnce` 做，半衰期与清晰度档位取自 `@huoli/huoli-qq-policy`。
+配置项在 `src/index.ts` 的 `Config`，只有记忆文件位置与主目录覆盖，默认落在主目录的 data 下（`data/qq-memory.json`）；往上挪一层与每天变淡分别由 `promoteAll` 和 `sweepOnce` 做，半衰期与清晰度档位取自 `@huoli/huoli-qq-policy`。

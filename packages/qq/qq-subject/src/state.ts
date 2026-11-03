@@ -32,7 +32,7 @@ export interface SubjectState {
 }
 
 // 各字段回到平稳时的样子
-const BASE: Record<string, number> = {
+const BASE = {
   mood: 0.5,
   energy: 0.7,
   boredom: 0.2,
@@ -55,14 +55,14 @@ const BASE: Record<string, number> = {
 export function emptySubject(now: number): SubjectState {
   return {
     global: {
-      mood: BASE.mood!,
-      energy: BASE.energy!,
-      boredom: BASE.boredom!,
-      socialHunger: BASE.socialHunger!,
-      curiosity: BASE.curiosity!,
-      tension: BASE.tension!,
-      irritation: BASE.irritation!,
-      sleepPressure: BASE.sleepPressure!,
+      mood: BASE.mood,
+      energy: BASE.energy,
+      boredom: BASE.boredom,
+      socialHunger: BASE.socialHunger,
+      curiosity: BASE.curiosity,
+      tension: BASE.tension,
+      irritation: BASE.irritation,
+      sleepPressure: BASE.sleepPressure,
       updatedAt: now,
     },
     chats: {},
@@ -77,10 +77,10 @@ export function emptySubject(now: number): SubjectState {
  */
 export function emptyChat(now: number): ChatState {
   return {
-    familiarity: BASE.familiarity!,
-    affection: BASE.affection!,
-    trust: BASE.trust!,
-    annoyance: BASE.annoyance!,
+    familiarity: BASE.familiarity,
+    affection: BASE.affection,
+    trust: BASE.trust,
+    annoyance: BASE.annoyance,
     updatedAt: now,
   }
 }
@@ -102,14 +102,14 @@ export function settleGlobal(state: GlobalState, now: number): GlobalState {
   if (passed <= 0) return state
   const next: GlobalState = { ...state, updatedAt: now }
   const keys: Array<[keyof GlobalState & TauKind, number]> = [
-    ['mood', BASE.mood!],
-    ['energy', BASE.energy!],
-    ['boredom', BASE.boredom!],
-    ['socialHunger', BASE.socialHunger!],
-    ['curiosity', BASE.curiosity!],
-    ['tension', BASE.tension!],
-    ['irritation', BASE.irritation!],
-    ['sleepPressure', BASE.sleepPressure!],
+    ['mood', BASE.mood],
+    ['energy', BASE.energy],
+    ['boredom', BASE.boredom],
+    ['socialHunger', BASE.socialHunger],
+    ['curiosity', BASE.curiosity],
+    ['tension', BASE.tension],
+    ['irritation', BASE.irritation],
+    ['sleepPressure', BASE.sleepPressure],
   ]
   for (const [key, base] of keys) {
     next[key] = clamp01(relaxToBaseline(state[key], key, passed, base))
@@ -128,10 +128,10 @@ export function settleChat(state: ChatState, now: number): ChatState {
   if (passed <= 0) return state
   const next: ChatState = { ...state, updatedAt: now }
   const keys: Array<[keyof ChatState & TauKind, number]> = [
-    ['familiarity', BASE.familiarity!],
-    ['affection', BASE.affection!],
-    ['trust', BASE.trust!],
-    ['annoyance', BASE.annoyance!],
+    ['familiarity', BASE.familiarity],
+    ['affection', BASE.affection],
+    ['trust', BASE.trust],
+    ['annoyance', BASE.annoyance],
   ]
   for (const [key, base] of keys) {
     next[key] = clamp01(relaxToBaseline(state[key], key, passed, base))
@@ -139,33 +139,24 @@ export function settleChat(state: ChatState, now: number): ChatState {
   return next
 }
 
+// 全局与群内都是纯数值字段，加减后收回 0 到 1 只有一处实现
 /**
- * 按名字改一个全局字段
+ * 按名字改一个数值字段，字段是 updatedAt 就原样返回
  * @param state - 现状
  * @param field - 改哪个字段
  * @param delta - 加减多少
  * @param now - 现在的时间
  * @returns 处理结果
  */
-export function nudgeGlobal(state: GlobalState, field: keyof GlobalState, delta: number, now: number): GlobalState {
+function nudgeField<T extends { updatedAt: number }>(state: T, field: keyof T, delta: number, now: number): T {
   if (field === 'updatedAt') return state
-  const current = Number(state[field]) || 0
-  return { ...state, [field]: clamp01(current + delta), updatedAt: now } as GlobalState
+  const raw = state[field]
+  if (typeof raw !== 'number') return state
+  const current = raw || 0
+  return { ...state, [field]: clamp01(current + delta), updatedAt: now }
 }
 
-/**
- * 按名字改一个群里的字段
- * @param state - 现状
- * @param field - 改哪个字段
- * @param delta - 加减多少
- * @param now - 现在的时间
- * @returns 处理结果
- */
-export function nudgeChat(state: ChatState, field: keyof ChatState, delta: number, now: number): ChatState {
-  if (field === 'updatedAt') return state
-  const current = Number(state[field]) || 0
-  return { ...state, [field]: clamp01(current + delta), updatedAt: now } as ChatState
-}
+export { nudgeField as nudgeGlobal, nudgeField as nudgeChat }
 
 /**
  * 心情的称呼

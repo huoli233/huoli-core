@@ -15,7 +15,7 @@ export interface GateInput {
 
 // 时分转成当天的分钟数
 function toMinutes(hhmm: string): number {
-  const parts = String(hhmm ?? '').split(':')
+  const parts = hhmm.split(':')
   const hour = Number(parts[0])
   const minute = Number(parts[1])
   if (!Number.isFinite(hour) || !Number.isFinite(minute)) return -1

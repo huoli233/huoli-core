@@ -39,4 +39,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`，只有惦记的事落在哪个文件；默认 `data/qq-thoughts.json`，存活时长由 `THOUGHT_TTL_MS` 定，取用与落盘时都滤掉过期的条目。
+配置项在 `src/index.ts` 的 `Config`，只有惦记的事落在哪个文件与主目录覆盖；默认落在主目录的 data 下（`data/qq-thoughts.json`），存活时长由 `THOUGHT_TTL_MS` 定，取用与落盘时都滤掉过期的条目。

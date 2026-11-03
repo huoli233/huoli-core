@@ -85,14 +85,14 @@ export function initialImportance(input: ImportanceInput): number {
  */
 export function retention(record: MemoryRecord, now: number): number {
   // 时间可能是 0（很久以前），不能拿它当没填
-  const atRaw = Number(record.at)
+  const atRaw = record.at
   const at = Number.isFinite(atRaw) ? atRaw : now
-  const seenRaw = Number(record.lastSeenAt)
+  const seenRaw = record.lastSeenAt
   const lastSeenAt = Number.isFinite(seenRaw) ? seenRaw : at
   const ageDays = Math.max(0, (now - at) / DAY_MS)
   const sinceSeenDays = Math.max(0, (now - lastSeenAt) / DAY_MS)
-  const recallCount = Math.max(0, Number(record.recallCount) || 0)
-  const importance = Math.max(1, Number(record.importance) || 1)
+  const recallCount = Math.max(0, record.recallCount || 0)
+  const importance = Math.max(1, record.importance || 1)
   const rate = importance >= RETENTION.anchorImportance ? RETENTION.rateAnchor : RETENTION.rateNormal
 
   let score = importance

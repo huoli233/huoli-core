@@ -80,7 +80,7 @@ function pickTopic(messages: CollectInput['messages']): string {
   for (let at = messages.length - 1; at >= 0; at -= 1) {
     const item = messages[at]
     if (item === undefined || item.self === true) continue
-    const text = String(item.text ?? '').trim()
+    const text = item.text.trim()
     if (text.length >= 4) return text.slice(0, 60)
   }
   return ''
@@ -91,7 +91,7 @@ function pickQuestion(messages: CollectInput['messages']): string {
   for (let at = messages.length - 1; at >= 0; at -= 1) {
     const item = messages[at]
     if (item === undefined || item.self === true) continue
-    const text = String(item.text ?? '').trim()
+    const text = item.text.trim()
     if (/[?？]/.test(text) || /(吗|呢|吧|么|嘛)$/.test(text.replace(/[。！!…~～\s]+$/, ''))) return text.slice(0, 60)
   }
   return ''
@@ -99,26 +99,26 @@ function pickQuestion(messages: CollectInput['messages']): string {
 
 // 谁最后被叫到
 function pickAddressee(messages: CollectInput['messages'], selfNames: string[]): Addressee {
-  const names = selfNames.map(normalize).filter((name) => name.length >= 2)
+  const names = selfNames.map(normalize).filter(name => name.length >= 2)
   for (let at = messages.length - 1; at >= 0; at -= 1) {
     const item = messages[at]
     if (item === undefined || item.self === true) continue
-    const body = normalize(String(item.text ?? ''))
-    const named = names.some((name) => body.includes(name))
+    const body = normalize(item.text)
+    const named = names.some(name => body.includes(name))
     if (item.atMe === true || named) {
       return {
-        userId: String(item.senderId),
-        name: String(item.senderName ?? item.senderId),
+        userId: item.senderId,
+        name: item.senderName ?? item.senderId,
         confidence: item.atMe === true ? 1 : 0.6,
         evidence: item.atMe === true ? ['直接点了机器人'] : ['文本里出现名字'],
       }
     }
   }
-  const last = [...messages].reverse().find((item) => item.self !== true)
+  const last = [...messages].reverse().find(item => item.self !== true)
   if (last === undefined) return { userId: '', name: '', confidence: 0, evidence: [] }
   return {
-    userId: String(last.senderId),
-    name: String(last.senderName ?? last.senderId),
+    userId: last.senderId,
+    name: last.senderName ?? last.senderId,
     confidence: 0.2,
     evidence: ['最后说话的人'],
   }
@@ -132,25 +132,25 @@ function pickAddressee(messages: CollectInput['messages'], selfNames: string[]):
 export function collectMaterial(input: CollectInput): Material {
   const now = input.now ?? Date.now()
   const messages = input.messages.slice(-LOOKBACK)
-  const humans = messages.filter((item) => item.self !== true)
-  const recent = humans.filter((item) => now - item.at <= 10 * 60_000)
+  const humans = messages.filter(item => item.self !== true)
+  const recent = humans.filter(item => now - item.at <= 10 * 60_000)
   const lastHuman = humans[humans.length - 1]
-  const lastSelf = [...messages].reverse().find((item) => item.self === true)
+  const lastSelf = [...messages].reverse().find(item => item.self === true)
 
   const minutes = Math.max(1, 10)
   const heat = Math.min(1, recent.length / minutes / 2)
 
   const situation: Situation = {
-    who: lastHuman !== undefined ? String(lastHuman.senderName ?? lastHuman.senderId) : '',
+    who: lastHuman !== undefined ? lastHuman.senderName ?? lastHuman.senderId : '',
     topic: pickTopic(messages),
     heat,
     lastTurnGapMs: lastSelf !== undefined ? Math.max(0, now - lastSelf.at) : Number.POSITIVE_INFINITY,
   }
 
   const motives: Motive[] = []
-  const bored = Number(input.boredom ?? 0)
-  const curious = Number(input.curiosity ?? 0)
-  const lonely = Number(input.socialHunger ?? 0)
+  const bored = input.boredom ?? 0
+  const curious = input.curiosity ?? 0
+  const lonely = input.socialHunger ?? 0
   if (bored > 0.5) motives.push({ need: 'bored', weight: bored })
   if (curious > 0.5) motives.push({ need: 'curious', weight: curious })
   if (lonely > 0.5) motives.push({ need: 'lonely', weight: lonely })
@@ -179,7 +179,7 @@ export function renderMaterial(material: Material): string {
   }
   if (material.topic.pendingQuestion !== '') lines.push(`有人问：${material.topic.pendingQuestion}`)
   if (material.thoughts.length > 0) {
-    lines.push(`心里惦记着：${material.thoughts.map((item) => item.text).join('；')}`)
+    lines.push(`心里惦记着：${material.thoughts.map(item => item.text).join('；')}`)
   }
   return lines.length === 0 ? '群里没什么可接的话。' : lines.join('\n')
 }

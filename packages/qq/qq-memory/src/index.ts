@@ -2,6 +2,7 @@
 
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { createMemoryStore, type MemoryStore } from './store.ts'
 import { promoteAll, sweepOnce } from './sweep.ts'
 import { recall, type RecallHit } from './recall.ts'
@@ -27,8 +28,10 @@ export interface QqMemorySeam {
 
 /** 这一行接受的配置 */
 export interface Config {
-  /** 记忆存哪 */
+  /** 记忆存哪，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
 }
 
 const seams = new WeakMap<Context, QqMemorySeam>()
@@ -54,7 +57,7 @@ export const inject = ['tools']
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  const file = config.file ?? path.join(process.cwd(), 'data', 'qq-memory.json')
+  const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-memory.json')
   const store = createMemoryStore({ file })
   const scopeOf = (chatKey: string): string => chatKey
 
@@ -89,11 +92,11 @@ export function apply(ctx: Context, config: Config = {}): void {
       return sweepOnce(store, Date.now())
     },
     outline(chatKey) {
-      const items = store.all().filter((item) => !item.forgotten && item.scope === scopeOf(chatKey))
+      const items = store.all().filter(item => !item.forgotten && item.scope === scopeOf(chatKey))
       if (items.length === 0) return '还没有记下什么。'
       const lines = items
         .slice(-8)
-        .map((item) => `- ${new Date(item.at).toISOString().slice(0, 10)} [${CLARITY_LABEL[item.clarity]}] ${item.text}`)
+        .map(item => `- ${new Date(item.at).toISOString().slice(0, 10)} [${CLARITY_LABEL[item.clarity]}] ${item.text}`)
       const byLayer = new Map<string, number>()
       for (const item of items) byLayer.set(LAYER_LABEL[item.layer], (byLayer.get(LAYER_LABEL[item.layer]) ?? 0) + 1)
       const summary = [...byLayer.entries()].map(([label, count]) => `${label} ${count} 条`).join('，')

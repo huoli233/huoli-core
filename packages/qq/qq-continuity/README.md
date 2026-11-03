@@ -39,4 +39,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`，只有收尾文件的位置；默认落在 `data/qq-continuity.json`，按群各存一条收尾，回想整份文件最多留两百条。
+配置项在 `src/index.ts` 的 `Config`，只有收尾文件的位置与主目录覆盖；默认落在主目录的 data 下（`data/qq-continuity.json`），按群各存一条收尾，回想整份文件最多留两百条。

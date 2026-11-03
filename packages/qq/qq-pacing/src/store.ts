@@ -68,7 +68,7 @@ function refresh(data: StoredPacing, now: number): StoredPacing {
   if (next.day !== today) next = { ...next, day: today, dayCount: 0 }
   if (next.hourKey !== hour) next = { ...next, hourKey: hour, hourCount: 0 }
   const since = now - PACING_DEFAULTS.repeatWindowMs
-  const recent = next.recent.filter((row) => row.at >= since)
+  const recent = next.recent.filter(row => row.at >= since)
   return recent.length === next.recent.length ? next : { ...next, recent }
 }
 
@@ -99,8 +99,8 @@ export function createPacingStore(options: PacingStoreOptions): PacingStore {
       if (data.dayCount >= PACING_DEFAULTS.perDay) {
         return { ok: false, code: 'pacing.day_full', reason: '今天说得够多了', hint: '明天再说' }
       }
-      const body = String(text ?? '').trim()
-      const same = data.recent.find((row) => row.text === body)
+      const body = text.trim()
+      const same = data.recent.find(row => row.text === body)
       if (same !== undefined) {
         return { ok: false, code: 'pacing.repeated', reason: '这句刚说过', hint: '换一句，或者这次不说' }
       }
@@ -114,7 +114,7 @@ export function createPacingStore(options: PacingStoreOptions): PacingStore {
         dayCount: data.dayCount + 1,
         hourCount: data.hourCount + 1,
         turnBurst: data.turnBurst + 1,
-        recent: [...data.recent, { text: String(text ?? '').trim(), at }].slice(-40),
+        recent: [...data.recent, { text: text.trim(), at }].slice(-40),
       }
       persist()
       return { day: data.day, hourKey: data.hourKey, dayCount: data.dayCount, hourCount: data.hourCount }

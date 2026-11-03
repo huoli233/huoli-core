@@ -2,6 +2,7 @@
 
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { createInbox, type QqInbox } from './inbox.ts'
 import { createAttentionStore, type AttentionStore } from './store.ts'
 import { collectSignals, type AttentionSignals, type SignalMessage } from './select.ts'
@@ -24,8 +25,10 @@ export interface QqAttentionSeam {
 
 /** 这一行接受的配置 */
 export interface Config {
-  /** 状态文件放哪 */
+  /** 状态文件放哪，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
   /** 机器人叫什么，用来认名字 */
   selfNames?: readonly string[]
 }
@@ -56,7 +59,7 @@ const SIGNAL_WINDOW = 40
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  const file = config.file ?? path.join(process.cwd(), 'data', 'qq-attention.json')
+  const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-attention.json')
   const inbox = createInbox()
   const store = createAttentionStore({ file })
   const selfNames = config.selfNames ?? []
@@ -87,7 +90,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   registerAttentionTools(ctx, {
     inbox,
     store,
-    recentOf: (chatKey) => inbox.recent(chatKey, SIGNAL_WINDOW).map(toSignal),
+    recentOf: chatKey => inbox.recent(chatKey, SIGNAL_WINDOW).map(toSignal),
     selfNames: () => selfNames,
   })
 

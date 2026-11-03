@@ -99,13 +99,13 @@ export function apply(ctx: Context, config: Config): void {
   seams.set(ctx, seam)
 
   // 拆句直接用说话规矩里的纯函数，不依赖它有没有先装好
-  const pacing = qqPacingOf?.(ctx)
+  const pacing = qqPacingOf(ctx)
 
   registerChannelTools(ctx, {
     status: () => channel.status(),
     send: (text, chatKey) => channel.send(text, chatKey),
     react: (messageId, emoji) => channel.react(messageId, emoji),
-    split: (text) => splitSpeech(text),
+    split: text => splitSpeech(text),
     spend: (text) => {
       pacing?.spend(text)
     },

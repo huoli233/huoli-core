@@ -2,6 +2,7 @@
 
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { collectMaterial, renderMaterial, type CollectInput, type Material } from './collect.ts'
 import { createThoughtStore, type ThoughtStore } from './thought.ts'
 import { registerMaterialTools } from './tools.ts'
@@ -19,8 +20,10 @@ export interface QqMaterialSeam {
 
 /** 这一行接受的配置 */
 export interface Config {
-  /** 惦记的事存哪 */
+  /** 惦记的事存哪，不填就用主目录下的 data */
   thoughtsFile?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
 }
 
 const seams = new WeakMap<Context, QqMaterialSeam>()
@@ -46,7 +49,7 @@ export const inject = ['tools']
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  const file = config.thoughtsFile ?? path.join(process.cwd(), 'data', 'qq-thoughts.json')
+  const file = config.thoughtsFile ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-thoughts.json')
   const thoughts = createThoughtStore({ file })
 
   const seam: QqMaterialSeam = {

@@ -34,7 +34,7 @@ function textScore(text: string, query: string): number {
   const needle = query.toLowerCase()
   if (body.includes(needle)) return 20
   let hit = 0
-  for (const part of needle.split(/\s+/).filter((piece) => piece.length >= 2)) {
+  for (const part of needle.split(/\s+/).filter(piece => piece.length >= 2)) {
     if (body.includes(part)) hit += 6
   }
   return Math.min(18, hit)
@@ -49,7 +49,7 @@ function textScore(text: string, query: string): number {
 export function recall(store: MemoryStore, input: RecallInput = {}): RecallHit[] {
   const now = input.now ?? Date.now()
   const limit = Math.max(1, input.limit ?? 5)
-  const query = String(input.query ?? '').trim()
+  const query = (input.query ?? '').trim()
 
   const hits: RecallHit[] = []
   for (const item of store.all()) {
@@ -78,6 +78,6 @@ export function recall(store: MemoryStore, input: RecallInput = {}): RecallHit[]
 export function renderRecall(hits: readonly RecallHit[]): string {
   if (hits.length === 0) return '没有想起相关的事。'
   return hits
-    .map((hit) => `${new Date(hit.item.at).toISOString().slice(0, 10)} ${hit.item.text}`)
+    .map(hit => `${new Date(hit.item.at).toISOString().slice(0, 10)} ${hit.item.text}`)
     .join('\n')
 }

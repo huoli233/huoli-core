@@ -1,6 +1,6 @@
 // 跟 QQ 那头连着：收消息、发消息、断了自动重连
 
-import type { ChannelStatus, SentResult } from './events.ts'
+import { asText, type ChannelStatus, type SentResult } from './events.ts'
 
 /** 连上去要的地址与身份 */
 export interface WsOptions {
@@ -58,8 +58,12 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
     }
   }
 
+  // 每个连接自己读一次关闭标记，避免被外层的提前返回窄化掉
+  const isStopped = (): boolean => stopped
+
   const call = (action: string, params: Record<string, unknown>): Promise<SentResult> => {
-    if (socket === undefined || socket.readyState !== 1) {
+    const active = socket
+    if (active === undefined || active.readyState !== 1) {
       return Promise.resolve({ ok: false, code: 'channel.offline', reason: '还没连上' })
     }
     seq += 1
@@ -70,12 +74,12 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
         resolve({ ok: false, code: 'channel.timeout', reason: '等回话超时' })
       }, CALL_TIMEOUT_MS)
       pending.set(echo, { settle: resolve, timer })
-      socket!.send(JSON.stringify({ action, params, echo }))
+      active.send(JSON.stringify({ action, params, echo }))
     })
   }
 
   const connect = (): void => {
-    if (stopped) return
+    if (isStopped()) return
     try {
       const headers: Record<string, string> = {}
       if (options.accessToken !== undefined && options.accessToken !== '') {
@@ -108,7 +112,7 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
             waiting.settle(retcode === 0
               ? { ok: true, ...typeof data.message_id === 'number' || typeof data.message_id === 'string'
                 ? { messageId: String(data.message_id) } : {} }
-              : { ok: false, code: `channel.${retcode}`, reason: String(raw.wording ?? raw.message ?? '发送失败') })
+              : { ok: false, code: `channel.${retcode}`, reason: asText(raw.wording ?? raw.message ?? '发送失败') })
           }
           return
         }
@@ -124,7 +128,7 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
         publish({ lastError: '连接出错' })
       })
     } catch (error) {
-      publish({ connected: false, lastError: String((error as Error)?.message ?? error) })
+      publish({ connected: false, lastError: error instanceof Error ? error.message : asText(error) })
       if (!stopped) timer = setTimeout(connect, reconnectMs)
     }
   }

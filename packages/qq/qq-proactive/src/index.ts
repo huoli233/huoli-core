@@ -2,6 +2,7 @@
 
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import {
   dropRepeats,
   rankCandidates,
@@ -51,8 +52,10 @@ export interface ConsiderInput {
 
 /** 这一行接受的配置 */
 export interface Config {
-  /** 攒着的和记账都放这个文件 */
+  /** 攒着的和记账都放这个文件，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
   /** 要不要主动开口 */
   enabled?: boolean
   /** 一天最多开口几次 */
@@ -86,7 +89,7 @@ export const inject: string[] = []
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  const file = config.file ?? path.join(process.cwd(), 'data', 'qq-proactive.json')
+  const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-proactive.json')
   const pending = createPendingStore({ file })
   const timing = createTimingStore({ file })
   const gateConfig: Partial<typeof PROACTIVE_DEFAULTS> = {
@@ -114,11 +117,11 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (!verdict.ok) return { pick: null, verdict, considered: [] }
 
       const ranked = dropRepeats(rankCandidates(input.candidates, input.drives), input.history)
-      if (ranked.length === 0) {
+      const best = ranked[0]
+      if (best === undefined) {
         return { pick: null, verdict: { ok: false, code: 'proactive.nothing', reason: '没攒到值得说的事' }, considered: [] }
       }
 
-      const best = ranked[0]!
       const item: PendingItem = {
         id: `${now.toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
         chatKey: input.chatKey,

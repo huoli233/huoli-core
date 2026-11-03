@@ -61,14 +61,14 @@ export function hourKey(now: number): string {
 export function splitSpeech(text: string, options: { maxParts?: number; maxCharsPerPart?: number } = {}): PlannedSpeech {
   const maxParts = Math.max(1, options.maxParts ?? PACING_DEFAULTS.maxParts)
   const maxChars = Math.max(20, options.maxCharsPerPart ?? PACING_DEFAULTS.maxCharsPerPart)
-  const body = String(text ?? '').trim()
+  const body = text.trim()
   if (body === '') return { parts: [], gapsMs: [] }
 
   const rough = body
     .split(/\n+/)
-    .flatMap((line) => line.split(/(?<=[。！？!?…])/))
-    .map((piece) => piece.trim())
-    .filter((piece) => piece !== '')
+    .flatMap(line => line.split(/(?<=[。！？!?…])/))
+    .map(piece => piece.trim())
+    .filter(piece => piece !== '')
 
   const parts: string[] = []
   for (const piece of rough) {

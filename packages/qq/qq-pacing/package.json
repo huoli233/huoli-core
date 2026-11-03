@@ -20,10 +20,12 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@huoli/cordis": "workspace:~"
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-home-paths": "workspace:*"
   },
   "devDependencies": {
     "@huoli/cordis": "workspace:~",
-    "@huoli/huoli-agent": "workspace:*"
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-home-paths": "workspace:*"
   }
 }

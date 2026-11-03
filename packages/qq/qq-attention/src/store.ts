@@ -23,13 +23,18 @@ interface StoredState {
   chats: Record<string, AttentionState>
 }
 
+// 读盘时按可能缺失或为空的字段声明
+interface StoredStateInput {
+  chats?: Record<string, AttentionState> | null
+}
+
 // 读文件，出错就当空仓
 function load(file: string): StoredState {
   try {
     if (!fs.existsSync(file)) return { version: 1, chats: {} }
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
     if (text.trim().length === 0) return { version: 1, chats: {} }
-    const parsed = JSON.parse(text) as Partial<StoredState>
+    const parsed = JSON.parse(text) as StoredStateInput
     return { version: 1, chats: parsed.chats !== undefined && parsed.chats !== null ? parsed.chats : {} }
   } catch {
     return { version: 1, chats: {} }

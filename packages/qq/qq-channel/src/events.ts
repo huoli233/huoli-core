@@ -43,6 +43,17 @@ export interface ChannelStatus {
 }
 
 /**
+ * 原始事件里的值转成文本，只认字符串和数字
+ * @param value - 原始事件里的字段值
+ * @returns 转好的文本，其它类型给空串
+ */
+export function asText(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (typeof value === 'number') return String(value)
+  return ''
+}
+
+/**
  * 一个群或私聊的键
  * @param kind - 哪一类
  * @param id - 编号
@@ -64,11 +75,11 @@ export function textOf(segments: unknown): string {
   for (const segment of segments) {
     if (segment === null || typeof segment !== 'object') continue
     const item = segment as { type?: unknown; data?: Record<string, unknown> }
-    const kind = String(item.type ?? '')
-    if (kind === 'text') parts.push(String(item.data?.text ?? ''))
+    const kind = asText(item.type)
+    if (kind === 'text') parts.push(asText(item.data?.text))
     else if (kind === 'at') {
-      const qq = String(item.data?.qq ?? '')
-      parts.push(qq === 'all' ? '@全体成员' : `@${String(item.data?.name ?? qq)}`)
+      const qq = asText(item.data?.qq)
+      parts.push(qq === 'all' ? '@全体成员' : `@${asText(item.data?.name ?? qq)}`)
     } else if (kind === 'image') parts.push('[图片]')
     else if (kind === 'face') parts.push('[表情]')
     else if (kind === 'reply') continue
@@ -87,8 +98,8 @@ export function mentionsSelf(segments: unknown, selfId: string): boolean {
   for (const segment of segments) {
     if (segment === null || typeof segment !== 'object') continue
     const item = segment as { type?: unknown; data?: Record<string, unknown> }
-    if (String(item.type ?? '') !== 'at') continue
-    if (String(item.data?.qq ?? '') === selfId) return true
+    if (asText(item.type) !== 'at') continue
+    if (asText(item.data?.qq) === selfId) return true
   }
   return false
 }
@@ -104,8 +115,8 @@ export function repliesToSelf(segments: unknown, selfId: string): boolean {
   for (const segment of segments) {
     if (segment === null || typeof segment !== 'object') continue
     const item = segment as { type?: unknown; data?: Record<string, unknown> }
-    if (String(item.type ?? '') !== 'reply') continue
-    const target = String(item.data?.user_id ?? item.data?.qq ?? '')
+    if (asText(item.type) !== 'reply') continue
+    const target = asText(item.data?.user_id ?? item.data?.qq)
     if (target === selfId) return true
   }
   return false
@@ -119,25 +130,25 @@ export function repliesToSelf(segments: unknown, selfId: string): boolean {
  * @returns 处理结果
  */
 export function toIncoming(raw: Record<string, unknown>, selfId: string, now: number): IncomingMessage | null {
-  const postType = String(raw.post_type ?? '')
+  const postType = asText(raw.post_type)
   if (postType !== 'message' && postType !== 'message_sent') return null
-  const type = String(raw.message_type ?? '')
+  const type = asText(raw.message_type)
   const kind: 'group' | 'private' = type === 'group' ? 'group' : 'private'
   const chatId = kind === 'group' ? raw.group_id : raw.user_id
   if (chatId === undefined || chatId === null) return null
   const sender = raw.sender !== null && typeof raw.sender === 'object' ? raw.sender as Record<string, unknown> : {}
-  const userId = String(raw.user_id ?? sender.user_id ?? '')
+  const userId = asText(raw.user_id ?? sender.user_id)
   const segments = raw.message
   return {
-    chatKey: chatKeyOf(kind, String(chatId)),
+    chatKey: chatKeyOf(kind, asText(chatId)),
     senderId: userId,
-    senderName: String(sender.card ?? sender.nickname ?? userId),
+    senderName: asText(sender.card ?? sender.nickname ?? userId),
     text: textOf(segments),
     at: Number(raw.time) > 0 ? Number(raw.time) * 1000 : now,
     atMe: mentionsSelf(segments, selfId) || (kind === 'private' && userId === selfId),
     isPoke: false,
     replyToBot: repliesToSelf(segments, selfId),
-    messageId: String(raw.message_id ?? ''),
+    messageId: asText(raw.message_id),
   }
 }
 
@@ -148,11 +159,11 @@ export function toIncoming(raw: Record<string, unknown>, selfId: string, now: nu
  * @returns 处理结果
  */
 export function toPoke(raw: Record<string, unknown>, now: number): IncomingPoke | null {
-  if (String(raw.post_type ?? '') !== 'notice') return null
-  if (String(raw.notice_type ?? '') !== 'notify') return null
-  if (String(raw.sub_type ?? '') !== 'poke') return null
-  const target = String(raw.target_id ?? '')
+  if (asText(raw.post_type) !== 'notice') return null
+  if (asText(raw.notice_type) !== 'notify') return null
+  if (asText(raw.sub_type) !== 'poke') return null
+  const target = asText(raw.target_id)
   const group = raw.group_id
-  const chatKey = group !== undefined && group !== null ? chatKeyOf('group', String(group)) : chatKeyOf('private', String(raw.user_id ?? ''))
+  const chatKey = group !== undefined && group !== null ? chatKeyOf('group', asText(group)) : chatKeyOf('private', asText(raw.user_id))
   return { chatKey, userId: target, at: now }
 }
