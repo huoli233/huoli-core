@@ -13974,6 +13974,43 @@ importers:
         specifier: workspace:*
         version: link:../../core/tools
 
+  packages/qq/qq-bundle:
+    dependencies:
+      '@huoli/huoli-qq-attention':
+        specifier: workspace:*
+        version: link:../qq-attention
+      '@huoli/huoli-qq-channel':
+        specifier: workspace:*
+        version: link:../qq-channel
+      '@huoli/huoli-qq-continuity':
+        specifier: workspace:*
+        version: link:../qq-continuity
+      '@huoli/huoli-qq-material':
+        specifier: workspace:*
+        version: link:../qq-material
+      '@huoli/huoli-qq-memory':
+        specifier: workspace:*
+        version: link:../qq-memory
+      '@huoli/huoli-qq-pacing':
+        specifier: workspace:*
+        version: link:../qq-pacing
+      '@huoli/huoli-qq-policy':
+        specifier: workspace:*
+        version: link:../qq-policy
+      '@huoli/huoli-qq-proactive':
+        specifier: workspace:*
+        version: link:../qq-proactive
+      '@huoli/huoli-qq-subject':
+        specifier: workspace:*
+        version: link:../qq-subject
+    devDependencies:
+      '@huoli/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@huoli/huoli-system-prompt':
+        specifier: workspace:*
+        version: link:../../core/system-prompt
+
   packages/qq/qq-channel:
     dependencies:
       '@huoli/huoli-qq-pacing':

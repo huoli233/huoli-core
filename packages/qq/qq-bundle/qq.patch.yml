@@ -1,0 +1,36 @@
+# 把 QQ 机器人的零件挂进运行环境
+- id: qq-policy
+  name: '@huoli/huoli-qq-policy'
+
+- id: qq-attention
+  name: '@huoli/huoli-qq-attention'
+
+- id: qq-subject
+  name: '@huoli/huoli-qq-subject'
+
+- id: qq-memory
+  name: '@huoli/huoli-qq-memory'
+
+- id: qq-pacing
+  name: '@huoli/huoli-qq-pacing'
+
+- id: qq-material
+  name: '@huoli/huoli-qq-material'
+
+- id: qq-proactive
+  name: '@huoli/huoli-qq-proactive'
+  config:
+    enabled: false
+
+- id: qq-continuity
+  name: '@huoli/huoli-qq-continuity'
+
+- id: qq-channel
+  name: '@huoli/huoli-qq-channel'
+  config:
+    url: !!js process.env.QQ_ONEBOT_URL ?? 'ws://127.0.0.1:6700'
+    selfId: !!js process.env.QQ_SELF_ID ?? ''
+    accessToken: !!js process.env.QQ_ACCESS_TOKEN ?? ''
+
+- id: qq-bundle
+  name: '@huoli/huoli-qq-bundle'
