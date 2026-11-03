@@ -23,7 +23,7 @@ export interface ViewerContextFacts {
   readonly viewerDisplayName?: string
   /** Subject the Relay reported for the reader viewing this page. */
   readonly viewerSubjectId?: string
-  readonly dshVersion?: string
+  readonly huoliVersion?: string
   readonly relay?: string
 }
 
@@ -142,7 +142,7 @@ export async function readViewerContext(basePath: string, shareId: string, signa
       })
       const owner = readText(answer, 'ownerDisplayName') ?? readText(capabilities, 'ownerDisplayName')
       const ownerSubjectId = readText(answer, 'ownerSubjectId')
-      const dshVersion = readText(answer, 'dshVersion')
+      const huoliVersion = readText(answer, 'huoliVersion')
       const rawViewer = typeof answer?.['viewer'] === 'object' && answer['viewer'] !== null
         && !Array.isArray(answer['viewer']) ? answer['viewer'] as Record<string, unknown> : undefined
       const viewerSubjectId = readText(rawViewer, 'subjectId')
@@ -150,7 +150,7 @@ export async function readViewerContext(basePath: string, shareId: string, signa
       noteFacts({
         ...(owner === undefined ? {} : { owner }),
         ...(ownerSubjectId === undefined ? {} : { ownerSubjectId }),
-        ...(dshVersion === undefined ? {} : { dshVersion }),
+        ...(huoliVersion === undefined ? {} : { huoliVersion }),
         ...(viewerSubjectId === undefined ? {} : { viewerSubjectId }),
         ...(viewerDisplayName === undefined ? {} : { viewerDisplayName }),
       })

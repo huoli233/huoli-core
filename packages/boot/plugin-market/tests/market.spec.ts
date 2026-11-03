@@ -1,6 +1,6 @@
 import { Context, Service } from '@huoli/cordis'
 import { updateVolatile } from '@huoli/cosmokit'
-import { getDshRuntimeVersion } from '@huoli/huoli-app-boot'
+import { getHuoliRuntimeVersion } from '@huoli/huoli-app-boot'
 import type { BundleInfo } from '@huoli/huoli-plugin-manager/types'
 import { remoteErrorOf } from '@huoli/huoli-typert-protocol'
 import { afterEach, expect, it, onTestFinished, vi } from 'vitest'
@@ -100,7 +100,7 @@ async function failure(promise: Promise<unknown>) {
 }
 
 it('reads an index with installation status, compatibility, and install arguments', async () => {
-  const runtime = getDshRuntimeVersion()
+  const runtime = getHuoliRuntimeVersion()
   const fetch = serve(json(index([
     entry('absent', { icon: 'a.svg', author: 'Jane' }),
     entry('same', {}, [release('1.0.0', { engines: { huoli: runtime } })]),

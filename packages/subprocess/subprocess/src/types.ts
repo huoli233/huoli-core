@@ -10,7 +10,7 @@
 import type { Duplex, Readable, Writable } from 'node:stream'
 
 /** Namespace prefix reserved for Huoli Core-managed child environment facts. */
-export const HUOLI_ENV_PREFIX = 'DSH_' as const
+export const HUOLI_ENV_PREFIX = 'HUOLI_' as const
 
 /** One environment key inside the managed {@link HUOLI_ENV_PREFIX} namespace. */
 export type HuoliEnvironmentKey = `${typeof HUOLI_ENV_PREFIX}${string}`
@@ -100,7 +100,7 @@ export interface SubprocessSpawnSpec {
    * Explicit environment entries merged onto the implementation's scrubbed
    * parent base (see `scrubbedParentEnv`), with no namespace validation. A
    * string is a deliberate caller opt-in, so a forwarded credential-shaped
-   * entry or current `DSH_*` fact survives the scrub; `undefined` is a
+   * entry or current `HUOLI_*` fact survives the scrub; `undefined` is a
    * tombstone that removes an ordinary ambient entry from the child.
    */
   env?: NodeJS.ProcessEnv | undefined

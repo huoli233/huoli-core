@@ -65,7 +65,7 @@ async function fixture(test: TestContext) {
     let inventory: Inventory
     if (side === 'sdk') {
       const harness = new DeepSeekHarness({
-        cwd, processCwd: cwd, dshHome: join(cwd, 'home'), env, model: 'deepseek-v4-pro',
+        cwd, processCwd: cwd, huoliHome: join(cwd, 'home'), env, model: 'deepseek-v4-pro',
         patches: [...mode === 'ptc' ? [join(repo, 'apps/cli/config/examples/ptc.yml')] : [], patch],
       })
       const abort = (): void => { void harness.close() }

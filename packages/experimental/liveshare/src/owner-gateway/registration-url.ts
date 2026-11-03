@@ -32,8 +32,8 @@ export function registrationUrl(spec: TunnelShareSpec): URL {
   url.searchParams.set('sessionTitle', spec.sessionTitle)
   url.searchParams.set('accessMode', spec.accessMode)
   url.searchParams.set('ownerDisplayName', spec.ownerDisplayName)
-  if (spec.dshVersion !== undefined && spec.dshVersion !== '') {
-    url.searchParams.set('dshVersion', spec.dshVersion)
+  if (spec.huoliVersion !== undefined && spec.huoliVersion !== '') {
+    url.searchParams.set('huoliVersion', spec.huoliVersion)
   }
   if (spec.ownerInstanceId !== undefined && spec.ownerInstanceId !== '') {
     url.searchParams.set('ownerInstanceId', spec.ownerInstanceId)

@@ -170,7 +170,7 @@ export function optionalStringArray(subject: string, field: string, value: unkno
  * @returns the validated declaration, or undefined when the field is absent.
  * @throws {Error} when the field is present but any member is malformed.
  */
-export function parseDshClient(pkgName: string, value: unknown): HuoliClientManifest | undefined {
+export function parseHuoliClient(pkgName: string, value: unknown): HuoliClientManifest | undefined {
   if (value === undefined) return undefined
   if (typeof value !== 'object' || value === null) {
     throw new Error(`client-modules: ${pkgName} has a non-object huoli.client declaration`)

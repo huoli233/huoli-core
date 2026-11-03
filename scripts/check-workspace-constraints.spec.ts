@@ -10,14 +10,14 @@ import {
   EXPERIMENTAL_PACKAGE_NAME_EXCEPTIONS,
 } from './experimental-package-policy.ts'
 import {
-  checkDshFamilyVersion,
+  checkHuoliFamilyVersion,
   checkWorkspaceManifest,
   checkWorkspaceProtocol,
   checkExperimentalDependencyIsolation,
   checkExperimentalManifest,
   checkExperimentalNameExceptions,
   detailDocumentFiles,
-  expectedDshPackageFiles,
+  expectedHuoliPackageFiles,
   readWorkspaceManifests,
   type WorkspaceManifest,
 } from './check-workspace-constraints.ts'
@@ -258,33 +258,33 @@ describe('experimental workspace constraints', () => {
 
 describe('huoli family version coherence', () => {
   it('rejects a package carrying a stale shared version', () => {
-    expect(checkDshFamilyVersion(
+    expect(checkHuoliFamilyVersion(
       { name: '@huoli/huoli-http-proxy', version: '0.1.2-alpha.5' },
       '0.1.2-rc.1',
     )).toBe('@huoli/huoli-http-proxy: package.json version must match root version 0.1.2-rc.1')
   })
 
   it('rejects the root-named CLI app on a stale shared version', () => {
-    expect(checkDshFamilyVersion(
+    expect(checkHuoliFamilyVersion(
       { name: '@huoli/huoli', version: '0.1.2-alpha.5' },
       '0.1.2-rc.1',
     )).toBe('@huoli/huoli: package.json version must match root version 0.1.2-rc.1')
   })
 
   it('accepts a manifest carrying the shared version', () => {
-    expect(checkDshFamilyVersion(
+    expect(checkHuoliFamilyVersion(
       { name: '@huoli/huoli-http-proxy', version: '0.1.2-rc.1' },
       '0.1.2-rc.1',
     )).toBeUndefined()
   })
 
   it('leaves other sequences to their own version lines', () => {
-    expect(checkDshFamilyVersion({ name: '@huoli/cordis', version: '4.0.1' }, '0.1.2-rc.1')).toBeUndefined()
-    expect(checkDshFamilyVersion(
+    expect(checkHuoliFamilyVersion({ name: '@huoli/cordis', version: '4.0.1' }, '0.1.2-rc.1')).toBeUndefined()
+    expect(checkHuoliFamilyVersion(
       { name: '@huoli/node-addon-system', version: '0.1.1' },
       '0.1.2-rc.1',
     )).toBeUndefined()
-    expect(checkDshFamilyVersion({ version: '0.1.2-alpha.5' }, '0.1.2-rc.1')).toBeUndefined()
+    expect(checkHuoliFamilyVersion({ version: '0.1.2-alpha.5' }, '0.1.2-rc.1')).toBeUndefined()
   })
 })
 
@@ -294,15 +294,15 @@ describe('package payload constraints', () => {
     [{ import: './art/icon.svg', default: './art/fallback.svg' }, ['art/icon.svg', 'art/fallback.svg']],
     [['./art/icon.svg', './art/icon.svg'], ['art/icon.svg']],
   ] as const)('includes exported icon targets in the canonical payload: %j', (icon, expected) => {
-    expect(expectedDshPackageFiles({ exports: { './icon': icon } })).toEqual([...expected, 'lib/index.js', 'lib/types/**/*.d.ts'])
+    expect(expectedHuoliPackageFiles({ exports: { './icon': icon } })).toEqual([...expected, 'lib/index.js', 'lib/types/**/*.d.ts'])
   })
 
   it.each(['icon.svg', './icon.svg'])('includes and deduplicates manifest icon %s', (icon) => {
-    expect(expectedDshPackageFiles({ icon, exports: { './icon': './icon.svg' } })).toEqual(['icon.svg', 'lib/index.js', 'lib/types/**/*.d.ts'])
+    expect(expectedHuoliPackageFiles({ icon, exports: { './icon': './icon.svg' } })).toEqual(['icon.svg', 'lib/index.js', 'lib/types/**/*.d.ts'])
   })
 
   it('includes manifest, root, and subpath icon targets', () => {
-    expect(expectedDshPackageFiles({ icon: './legacy.svg', exports: { './icon': './fallback.svg', './search/icon': './search.svg' } })).toEqual([
+    expect(expectedHuoliPackageFiles({ icon: './legacy.svg', exports: { './icon': './fallback.svg', './search/icon': './search.svg' } })).toEqual([
       'legacy.svg', 'fallback.svg', 'search.svg', 'lib/index.js', 'lib/types/**/*.d.ts',
     ])
   })
@@ -323,7 +323,7 @@ describe('package payload constraints', () => {
     { exports: { './locale/*.json': './locale/*.json', './search/locale/*.json': './locale/*.json' }, resources: ['locale/*.json'] },
     { exports: { './search/locale/*.json': './z/*.json', './locale/*.json': './a/*.json' }, resources: ['a/*.json', 'z/*.json'] },
   ])('includes declared locale resources in the canonical payload: $exports', ({ exports, resources }) => {
-    expect(expectedDshPackageFiles({ name: '@huoli/huoli-localized', exports })).toEqual([
+    expect(expectedHuoliPackageFiles({ name: '@huoli/huoli-localized', exports })).toEqual([
       ...resources, 'lib/index.js', 'lib/types/**/*.d.ts',
     ])
   })
@@ -361,7 +361,7 @@ describe('package payload constraints', () => {
     writeFileSync(join(dir, 'locale/ja.json'), '{')
     const detailFiles = detailDocumentFiles(dir)
     expect(detailFiles).toEqual(['docs'])
-    expect(expectedDshPackageFiles({ exports: { './locale/*.json': './locale/*.json' } }, detailFiles)).toEqual([
+    expect(expectedHuoliPackageFiles({ exports: { './locale/*.json': './locale/*.json' } }, detailFiles)).toEqual([
       'locale/*.json', 'docs', 'lib/index.js', 'lib/types/**/*.d.ts',
     ])
   })
@@ -395,7 +395,7 @@ describe('package payload constraints', () => {
   })
 
   it('does not infer locale payloads from unrelated or non-JSON exports', () => {
-    expect(expectedDshPackageFiles({
+    expect(expectedHuoliPackageFiles({
       exports: {
         './config.json': './config.json',
         './locale/README.md': './locale/README.md',
@@ -434,7 +434,7 @@ describe('package payload constraints', () => {
   })
 
   it('includes a declared profile patch without a package-name allowlist', () => {
-    expect(expectedDshPackageFiles({
+    expect(expectedHuoliPackageFiles({
       name: '@huoli/huoli-private-profile',
       huoli: { bundle: { patch: './cordis.patch.yml' } },
     })).toEqual([
@@ -442,7 +442,7 @@ describe('package payload constraints', () => {
       'cordis.patch.yml',
       'lib/types/**/*.d.ts',
     ])
-    expect(expectedDshPackageFiles({
+    expect(expectedHuoliPackageFiles({
       name: '@huoli/huoli-private-profile',
       huoli: { bundle: { patch: ['./cordis.patch.yml', './layers/web.patch.yml'] } },
     })).toEqual([
@@ -465,7 +465,7 @@ describe('package payload constraints', () => {
     { './assets/*': './lib/assets/*' },
     { './assets/*': { default: './lib/assets/*' } },
   ])('publishes built package assets after the browser Client entries: %j', (assets) => {
-    expect(expectedDshPackageFiles({
+    expect(expectedHuoliPackageFiles({
       exports: {
         './client': { types: './lib/types/client/index.d.ts', node: './lib/client.node.js', default: './lib/client.js' },
         './loader': './lib/loader.js',
@@ -482,7 +482,7 @@ describe('package payload constraints', () => {
     { './assets/*': { types: './lib/assets/*' } },
     { './assets/extra': './lib/assets/*' },
   ])('does not publish package assets without the exact asset export target: %j', (assets) => {
-    expect(expectedDshPackageFiles({ exports: { './client': './lib/client.js', ...assets } }))
+    expect(expectedHuoliPackageFiles({ exports: { './client': './lib/client.js', ...assets } }))
       .toEqual(['lib/index.js', 'lib/client.js', 'lib/types/**/*.d.ts'])
   })
 
@@ -561,7 +561,7 @@ it('requires Node profile configuration and both execution bootstraps in the pub
   const manifest = JSON.parse(readFileSync(new URL(`../${dir}/package.json`, import.meta.url), 'utf8')) as WorkspaceManifest['manifest']
   expect(checkWorkspaceManifest({ dir, manifest })).toEqual([])
   for (const omitted of ['lib/configuration.js', 'lib/process.js', 'lib/persistent-process.js']) {
-    const files = expectedDshPackageFiles(manifest).filter(file => file !== omitted)
+    const files = expectedHuoliPackageFiles(manifest).filter(file => file !== omitted)
     expect(checkWorkspaceManifest({ dir, manifest: { ...manifest, files } }))
       .toEqual([expect.stringContaining('package.json files must be')])
   }
@@ -609,7 +609,7 @@ it('requires the OAR license while rejecting unrelated payload files', () => {
     'icon.svg', 'locale/*.json', 'lib/index.js',
     'LICENSE-OAR', 'lib/types/**/*.d.ts',
   ]
-  expect(expectedDshPackageFiles(manifest)).toEqual(files)
+  expect(expectedHuoliPackageFiles(manifest)).toEqual(files)
   expect(checkWorkspaceManifest({ dir, manifest })).toEqual([])
   for (const invalidFiles of [
     files.filter(file => file !== 'LICENSE-OAR'),

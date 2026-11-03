@@ -149,8 +149,8 @@ describe('PiAiAdapter provider routing', () => {
       thinking: { type: 'enabled' },
       reasoning_effort: 'max',
     })
-    expect(server.requests[0]).not.toHaveProperty('dsh_session_log')
-    expect(server.requests[0]).not.toHaveProperty('dsh_plugin_packages')
+    expect(server.requests[0]).not.toHaveProperty('huoli_session_log')
+    expect(server.requests[0]).not.toHaveProperty('huoli_plugin_packages')
   })
 
   it('routes OpenCode Go requests by Session id through its required session header', async () => {

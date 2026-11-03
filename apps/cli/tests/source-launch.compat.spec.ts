@@ -12,7 +12,7 @@ import { testProfileResolution } from './profiles/headless/tests/profile-resolut
  */
 
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
-const dshSourceBin = 'apps/cli/src/bin.ts'
+const huoliSourceBin = 'apps/cli/src/bin.ts'
 
 describe('huoli SOURCE launcher (node --import tsx/esm)', () => {
   testProfileResolution('src')
@@ -25,7 +25,7 @@ describe('huoli SOURCE launcher (node --import tsx/esm)', () => {
   })
 
   it('boots the source entry and requires a profile', async () => {
-    const result = await execa(process.execPath, ['--import', 'tsx/esm', dshSourceBin], {
+    const result = await execa(process.execPath, ['--import', 'tsx/esm', huoliSourceBin], {
       cwd: repoRoot,
       input: '',
       timeout: 25_000,

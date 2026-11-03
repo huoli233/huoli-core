@@ -3,7 +3,7 @@ import { clearAmbientProxyEnv } from '../../../../../../scripts/test-proxy-envir
 
 /** Isolate SDK profile processes from ambient profile, runtime and Node loader settings. */
 export function profileEnvironment(root: string, baseUrl: string): NodeJS.ProcessEnv {
-  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('DSH_')))
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('HUOLI_')))
   Object.assign(env, {
     HUOLI_PERMISSION_MODE: 'danger-full-access', HUOLI_TELEMETRY_DISABLED: '1',
     HUOLI_AGENTS_HOME: join(root, 'agents'), HUOLI_PRIMARY_RUNTIME: '',

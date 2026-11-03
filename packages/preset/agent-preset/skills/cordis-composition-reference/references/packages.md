@@ -417,7 +417,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@huoli/huoli-bash-sandbox` | yes | Sandbox-consuming implementation of the Huoli Core bash executor seam (confines every command via ctx.sandbox, reports denial/enforcement result facts) |
 | `@huoli/huoli-pwsh-local` | yes | Local PowerShell implementation of the Huoli Core bash executor seam |
 | `@huoli/huoli-pwsh-sandbox` | yes | Sandbox-consuming implementation of the Huoli Core PowerShell executor seam (confines every command via ctx.sandbox, reports denial/enforcement result facts) |
-| `@huoli/huoli-shell-env` | yes | Tool-independent managed DSH_* shell environment registry |
+| `@huoli/huoli-shell-env` | yes | Tool-independent managed HUOLI_* shell environment registry |
 | `@huoli/huoli-tool-bash` | yes | Model-facing bash tool with optional generic background-job and sandbox-escalation support |
 | `@huoli/huoli-tool-bash-persistent` | yes | Model-facing owner-scoped persistent Bash tool backed by the Harness PTY service |
 | `@huoli/huoli-tool-pwsh` | yes | Model-facing pwsh tool over the bash executor seam |

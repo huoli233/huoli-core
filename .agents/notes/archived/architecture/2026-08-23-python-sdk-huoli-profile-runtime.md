@@ -17,9 +17,9 @@ A normal profile cannot be adopted only at the Python wrapper. The runtime execu
 
 The runtime executable packages `@huoli/huoli` and runs its ordinary command grammar. The Python client selects `--profile sdk` by default, forwards ordered absolute `--patch` paths, and may select another `huoli` executable or profile. The runnable minimal example selects the shipped `sdk-minimal` profile. The private `@huoli/huoli-sdk-python-runtime` application package and checked-in runtime `cordis.yml` do not exist. JSON-RPC serving remains the `@huoli/huoli-sdk-app` bundle and `@huoli/huoli-sdk-jsonrpc-server` plugin, not a Python-owned boot path.
 
-The public Python configuration is `dsh_bin`, `profile`, ordered `patches`, `dsh_home`, process cwd/environment, provider/model/token selection, a bounded initialization timeout, and optional turn/shutdown timeouts. It does not expose a complete Cordis tree or arbitrary launch argv. `RunResult` reports the protocol-owned run values and does not duplicate the profile's persistence path.
+The public Python configuration is `huoli_bin`, `profile`, ordered `patches`, `huoli_home`, process cwd/environment, provider/model/token selection, a bounded initialization timeout, and optional turn/shutdown timeouts. It does not expose a complete Cordis tree or arbitrary launch argv. `RunResult` reports the protocol-owned run values and does not duplicate the profile's persistence path.
 
-Every Python launch requires either explicit `dsh_home` or a non-empty `HUOLI_HOME` in the child environment. The SDK never discovers `~/.huoli`. The selected home consistently owns profiles, external plugins, credentials, settings, and sessions.
+Every Python launch requires either explicit `huoli_home` or a non-empty `HUOLI_HOME` in the child environment. The SDK never discovers `~/.huoli`. The selected home consistently owns profiles, external plugins, credentials, settings, and sessions.
 
 ### Plugin customization
 

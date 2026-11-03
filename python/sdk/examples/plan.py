@@ -159,7 +159,7 @@ def main() -> None:
     if not args.task.strip():
         parser.error("task must be non-blank")
     with _PlanReviews() as reviews, DeepSeekHarness(
-        dsh_home=str(args.dsh_home.resolve()), cwd=str(args.workspace.resolve()),
+        huoli_home=str(args.huoli_home.resolve()), cwd=str(args.workspace.resolve()),
         profile="sdk", model=args.model, on_user_question=reviews.answer,
         env={"HUOLI_PERMISSION_MODE": "workspace-write"},
     ) as harness:

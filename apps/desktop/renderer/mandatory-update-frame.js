@@ -1,5 +1,5 @@
 /** The embedded shell page delegates actions only to its owning application preload. */
-if (window.parent !== window && window.dshMandatoryUpdate === undefined) {
+if (window.parent !== window && window.huoliMandatoryUpdate === undefined) {
   let state
   let port
   let sequence = 0
@@ -28,7 +28,7 @@ if (window.parent !== window && window.dshMandatoryUpdate === undefined) {
     port.onmessage = receive
   })
   window.addEventListener('pagehide', () => { port?.close() }, { once: true })
-  window.dshMandatoryUpdate = {
+  window.huoliMandatoryUpdate = {
     status: () => state ? Promise.resolve(state) : initial.promise,
     subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener) },
     action: (action, version, revision) => {

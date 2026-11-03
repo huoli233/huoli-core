@@ -11,7 +11,7 @@ import pytest
 
 from deepseek_harness import DeepSeekHarness, Notification
 import test_commands_runtime as runtime_helpers
-from test_commands_runtime import _Completion, _ModelServer, _dsh_bin, _of_type, _read_events
+from test_commands_runtime import _Completion, _ModelServer, _huoli_bin, _of_type, _read_events
 
 
 _EXAMPLE = Path(__file__).resolve().parents[1] / "examples/plan.py"
@@ -50,7 +50,7 @@ def test_plan_example_reports_truncation_and_accepts_explicit_dismissal(
         monkeypatch.setattr(sys, "stdin", terminal)
         def configured_harness(**options: object) -> DeepSeekHarness:
             return DeepSeekHarness(
-                **options, dsh_bin=_dsh_bin(), patches=(str(patch),),
+                **options, huoli_bin=_huoli_bin(), patches=(str(patch),),
                 base_url=model.url, api_key="keyless-plan-example",
                 initialize_timeout_seconds=30, request_timeout_seconds=20, shutdown_timeout_seconds=20,
             )

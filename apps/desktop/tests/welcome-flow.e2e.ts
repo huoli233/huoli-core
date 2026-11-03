@@ -39,7 +39,7 @@ async function mockPlatform() {
     }
     if (req.headers.cookie !== 'test_gate=synthetic') { res.writeHead(403).end(); return }
     if (req.url === '/auth-api/v0/users/logout' && req.method === 'POST') {
-      if (req.headers['x-huoli-auth-token'] !== 'dsh_mock_composition_test') { res.writeHead(401).end(); return }
+      if (req.headers['x-huoli-auth-token'] !== 'huoli_mock_composition_test') { res.writeHead(401).end(); return }
       res.writeHead(503).end()
       return
     }
@@ -64,7 +64,7 @@ async function mockPlatform() {
           res.writeHead(400).end()
           return
         }
-        value = { user: null, token: 'dsh_mock_composition_test', authorized_url: `${origin}/huoli/authorized?result=test&locale=zh_CN` }
+        value = { user: null, token: 'huoli_mock_composition_test', authorized_url: `${origin}/huoli/authorized?result=test&locale=zh_CN` }
       }
       res.setHeader('content-type', 'application/json')
       res.end(JSON.stringify({ code: 0, data: { biz_code: 0, biz_data: value } }))

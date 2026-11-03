@@ -199,7 +199,7 @@ def test_model_server_only_allows_expected_connection_aborts(
     assert not model.thread.is_alive()
 
 
-def _dsh_bin() -> str | None:
+def _huoli_bin() -> str | None:
     mode = os.environ.get("HUOLI_COMMANDS_TEST_RUNTIME", "built")
     if mode == "installed":
         return None
@@ -256,11 +256,11 @@ def _runtime(
         with patch.open("a", encoding="utf-8") as extra:
             extra.write(f"- id: goal\n  config:\n    defaultMaxGoalRounds: {max_goal_rounds}\n")
     patches = (patch,) if capture_patch is None else (patch, capture_patch.resolve())
-    dsh_bin = _dsh_bin()
+    huoli_bin = _huoli_bin()
     with _ModelServer(completions) as model_server, ThreadPoolExecutor(max_workers=2) as workers:
         harness = DeepSeekHarness(
-            cwd=str(workspace), runtime_cwd=str(workspace), dsh_home=str(home),
-            dsh_bin=dsh_bin, profile="sdk", patches=tuple(str(item) for item in patches), model=model,
+            cwd=str(workspace), runtime_cwd=str(workspace), huoli_home=str(home),
+            huoli_bin=huoli_bin, profile="sdk", patches=tuple(str(item) for item in patches), model=model,
             base_url=model_server.url, api_key="keyless-commands-runtime",
             initialize_timeout_seconds=60, request_timeout_seconds=20, shutdown_timeout_seconds=20,
             on_user_question=on_user_question,

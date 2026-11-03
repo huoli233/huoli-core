@@ -7,7 +7,7 @@ import type {} from '@huoli/huoli-user-approval'
 import { approveEscalation } from '@huoli/huoli-sandbox'
 import type { ChangeResult, ManagementError, PluginEntryId, PluginInstallFailureKind, RestartReason } from './types.ts'
 import { defineTool } from '@huoli/huoli-tools'
-import { getDshRuntimeVersion } from '@huoli/huoli-app-boot'
+import { getHuoliRuntimeVersion } from '@huoli/huoli-app-boot'
 
 /** What the model does next for each refusal the manager reports. */
 const ERROR_STEPS: Record<ManagementError['code'], string> = {
@@ -112,7 +112,7 @@ export function apply(ctx: Context): void {
       const manager = ctx.pluginManager
       switch (args.action) {
         case 'list_version_exemptions':
-          return JSON.stringify({ runtimeVersion: getDshRuntimeVersion(), ...manager.listVersionExemptions() })
+          return JSON.stringify({ runtimeVersion: getHuoliRuntimeVersion(), ...manager.listVersionExemptions() })
         case 'set_version_exemption':
           if (args.target === undefined || args.runtimeVersion === undefined || args.enabled === undefined) {
             throw new Error('target package-name@version, runtimeVersion, and enabled are required')

@@ -31,7 +31,7 @@ kind: "package-reference"
 
 请求的 `purpose` 是适配器转发的生产方自定义字符串，普通对话请求则省略它。注册器转发不熟悉的用途，不替各个字段决定策略。
 
-注册表拥有字段添加与生命周期，不拥有字段语义。`@huoli/huoli-session-log-deepseek` 拥有 `dsh_session_log`；`@huoli/huoli-plugin-package-inventory-deepseek` 拥有 `dsh_plugin_packages`。提供方无关的 LLM seam 与 `llm-pi-ai` 都不消费该注册表。
+注册表拥有字段添加与生命周期，不拥有字段语义。`@huoli/huoli-session-log-deepseek` 拥有 `huoli_session_log`；`@huoli/huoli-plugin-package-inventory-deepseek` 拥有 `huoli_plugin_packages`。提供方无关的 LLM seam 与 `llm-pi-ai` 都不消费该注册表。
 
 <a id="model-experience"></a>
 ## 模型体验

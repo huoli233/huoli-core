@@ -6,7 +6,7 @@ import { platformClientHeaders, type AccountClientMetadata } from '@huoli/huoli-
 /** Installed release identity; no field is supplied by a renderer. */
 export interface DesktopPolicyIdentity {
   readonly platform: 'win32' | 'darwin'
-  readonly bundledDshVersion: string
+  readonly bundledHuoliVersion: string
   readonly arch: 'x64' | 'arm64'
   readonly channel: 'nightly' | 'latest'
 }
@@ -151,7 +151,7 @@ export class DesktopMandatoryUpdatePolicy {
     private readonly client: () => AccountClientMetadata,
     private readonly random: () => number = Math.random,
   ) {
-    if (valid(this.client().version) === null || valid(identity.bundledDshVersion) === null
+    if (valid(this.client().version) === null || valid(identity.bundledHuoliVersion) === null
       || (identity.platform === 'win32' && identity.arch !== 'x64')) throw new Error('desktop policy: invalid installed client identity')
   }
 
@@ -160,7 +160,7 @@ export class DesktopMandatoryUpdatePolicy {
     return {
       ...platformClientHeaders(this.identity.platform, this.client()),
       'x-client-arch': this.identity.arch, 'x-client-update-channel': this.identity.channel,
-      'x-client-bundled-huoli-version': this.identity.bundledDshVersion,
+      'x-client-bundled-huoli-version': this.identity.bundledHuoliVersion,
     }
   }
 

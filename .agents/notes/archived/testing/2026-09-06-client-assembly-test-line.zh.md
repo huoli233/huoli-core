@@ -39,7 +39,7 @@ modules 插件激活时从自己的 `ctx.loader.internal` 读取模块系统。�
 
 - `client/connection`：`ClientTransportHooks.rpc?` 接受由进程内组合持有的已解码载体；`fetch` 可选。`installConnection(ctx, options)` 从实例局部的 transport、recovery 与 location 输入安装同一个生产服务。
 - `client/hmr`：`tearDownEntryFiber(entry)` 就是 `reload` 本来执行的 registry 先行的 fiber 拆除。
-- `client/modules`：`parseDshClient` 与 `exactPackageSpecifier` 从 client 面导出，由 Host 和 roster 读取器共用。测试工厂使用已有注册队列。roster 行到 boot graph 的合成只有测试消费者，放在本档里。
+- `client/modules`：`parseHuoliClient` 与 `exactPackageSpecifier` 从 client 面导出，由 Host 和 roster 读取器共用。测试工厂使用已有注册队列。roster 行到 boot graph 的合成只有测试消费者，放在本档里。
 - `client/web`：`bootClient` 与 `mountClient` 从 `AppWebEntry.run()` 抽出，后者现在调用它们。
 - `api/gateway`：导出 `carrierFailure` 与 `cancelledFailure`，让生成客户端的替身折叠得一模一样。
 

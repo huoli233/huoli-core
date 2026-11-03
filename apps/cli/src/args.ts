@@ -57,7 +57,7 @@ interface PluginInvocation {
   args: string[]
 }
 
-/** The resolved `huoli` invocation. Help, version, and errors exit inside {@link parseDshArgs}. */
+/** The resolved `huoli` invocation. Help, version, and errors exit inside {@link parseHuoliArgs}. */
 export type HuoliInvocation = ProfileInvocation | DumpConfigInvocation | DumpConfigSchemaInvocation | PluginInvocation
 
 /** Launcher flags for profile boot and configuration dumps. */
@@ -143,7 +143,7 @@ function resolveBoot(program: Command, profile: string, options: BootOptions, ar
  * @param manageDesktopProfile - permit Desktop's installed carrier to manage its reserved profile's plugins.
  * @returns the resolved invocation.
  */
-export function parseDshArgs(argv: readonly string[], version: string, manageDesktopProfile = false): HuoliInvocation {
+export function parseHuoliArgs(argv: readonly string[], version: string, manageDesktopProfile = false): HuoliInvocation {
   const first = argv[0]
   let resolved: HuoliInvocation | undefined
   // Annotated, not inferred: the actions below call back into `program`, and an

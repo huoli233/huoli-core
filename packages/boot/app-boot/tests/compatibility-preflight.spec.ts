@@ -9,11 +9,11 @@ import type { EntryOptions } from '@huoli/cordis-plugin-loader'
 import { load } from 'js-yaml'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import {
-  PROFILE_COMPATIBILITY_FILENAME, PluginPackages, boot, getDshRuntimeVersion,
+  PROFILE_COMPATIBILITY_FILENAME, PluginPackages, boot, getHuoliRuntimeVersion,
   prepareProfileEntries, prepareProfilePatches, type ProfileContext,
 } from '../src/index.ts'
 
-const runtime = getDshRuntimeVersion()
+const runtime = getHuoliRuntimeVersion()
 
 function fixture() {
   const temporary = mkdtempSync(join(tmpdir(), 'huoli-preflight-'))

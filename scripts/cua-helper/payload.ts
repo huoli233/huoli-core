@@ -57,7 +57,7 @@ export function readCuaApplication(directory: string): { application: string; bu
   const { bundle } = z.object({ bundle: Digest }).strict().parse(JSON.parse(readFileSync(join(directory, 'current.json'), 'utf8')))
   if (!lstatSync(join(directory, bundle)).isDirectory()) throw new Error('CUA generation must be a real directory')
   const application = join(directory, bundle, CUA_APPLICATION)
-  for (const path of ['Contents/Info.plist', 'Contents/MacOS/huoli-cua-native', 'Contents/Resources/DSHComputerUse.icns', 'Contents/_CodeSignature/CodeResources']) {
+  for (const path of ['Contents/Info.plist', 'Contents/MacOS/huoli-cua-native', 'Contents/Resources/HUOLIComputerUse.icns', 'Contents/_CodeSignature/CodeResources']) {
     if (!lstatSync(join(application, path)).isFile()) throw new Error(`CUA application omits ${path}`)
   }
   if ((lstatSync(join(application, 'Contents/MacOS/huoli-cua-native')).mode & 0o111) === 0) throw new Error('CUA helper is not executable')

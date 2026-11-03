@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`huoli-sdk-client` lets TypeScript programs drive a complete Huoli Core runtime over stdio JSON-RPC. Use `run()` for ordinary text, supported slash commands, and image content blocks, and `onNotification` to observe its notifications. `HarnessClient` provides direct protocol access. Callers may provide `dshBin`; otherwise the client resolves the same-version `@huoli/huoli` executable. The client owns the subprocess, reports typed failures, and reaps it on `close()` or `await using`.
+`huoli-sdk-client` lets TypeScript programs drive a complete Huoli Core runtime over stdio JSON-RPC. Use `run()` for ordinary text, supported slash commands, and image content blocks, and `onNotification` to observe its notifications. `HarnessClient` provides direct protocol access. Callers may provide `huoliBin`; otherwise the client resolves the same-version `@huoli/huoli` executable. The client owns the subprocess, reports typed failures, and reaps it on `close()` or `await using`.
 
 ## Table of Contents
 
@@ -39,7 +39,7 @@ import { DeepSeekHarness } from '@huoli/huoli-sdk-client'
 const terminal = createInterface({ input: stdin, output: stdout })
 try {
   await using harness = new DeepSeekHarness({
-    dshHome: '/absolute/path/to/isolated-huoli-home', approvalRequests: true,
+    huoliHome: '/absolute/path/to/isolated-huoli-home', approvalRequests: true,
   })
   harness.client.start()
   harness.client.onRequest(async (method, params) => {
@@ -53,7 +53,7 @@ try {
 }
 ```
 
-`await harness.resumeSession(savedId)` restores a persisted session from the configured `dshHome` and returns a `HarnessSession` ready for `run()`. Save the original session id and reuse its home and workspace. Restoration preserves conversation history and its directory, repairs an interrupted final turn, and sends no new input. Missing, unreadable, incompatible, or occupied sessions reject without creating a replacement. `session(id)` remains a lazy handle for an in-process session; it does not request persisted restoration. Shell, browser, and other external processes are not restored by this API.
+`await harness.resumeSession(savedId)` restores a persisted session from the configured `huoliHome` and returns a `HarnessSession` ready for `run()`. Save the original session id and reuse its home and workspace. Restoration preserves conversation history and its directory, repairs an interrupted final turn, and sends no new input. Missing, unreadable, incompatible, or occupied sessions reject without creating a replacement. `session(id)` remains a lazy handle for an in-process session; it does not request persisted restoration. Shell, browser, and other external processes are not restored by this API.
 
 `HarnessSession.getWorkingDirectory()` reads the effective directory; `setWorkingDirectory(path)` changes it and returns the validated absolute path. Either method creates an unknown Session without starting a model turn. Relative paths use the Session's current directory. Origin metadata, permissions, and existing processes remain unchanged. `HarnessClient` exposes the same methods with a leading `sessionId` argument.
 
@@ -65,7 +65,7 @@ import { ReasoningEffortId } from '@huoli/huoli-llm'
 
 await using harness = new DeepSeekHarness({
   profile: 'sdk',
-  dshHome: '/absolute/path/to/huoli-home',
+  huoliHome: '/absolute/path/to/huoli-home',
   patches: ['./automation.cordis.yml'],
   provider: 'deepseek-official',
   model: 'deepseek-v4-flash',
@@ -87,7 +87,7 @@ Select a model that supports image input. Submit a command and image in the exis
 ```ts
 import { DeepSeekHarness } from '@huoli/huoli-sdk-client'
 
-await using harness = new DeepSeekHarness({ profile: 'sdk', dshHome: '/absolute/path/to/huoli-home' })
+await using harness = new DeepSeekHarness({ profile: 'sdk', huoliHome: '/absolute/path/to/huoli-home' })
 const session = harness.session()
 const result = await session.run('/compact')
 console.log(result.finalResponse)
@@ -181,7 +181,7 @@ None in the client process. Profile, patch, provider, model, and history choices
 
 These limits define when the client is a poor fit or needs special care. They are current package constraints, not a comparison with other SDK clients or a task backlog.
 
-- **No bundled-runtime resolution** — the client resolves the same-version `@huoli/huoli` package (or a caller-provided `dshBin`); packaged-executable discovery stays Python-side until a TypeScript distribution consumer exists.
+- **No bundled-runtime resolution** — the client resolves the same-version `@huoli/huoli` package (or a caller-provided `huoliBin`); packaged-executable discovery stays Python-side until a TypeScript distribution consumer exists.
 - **No runtime cancellation request** — an RPC timeout or observer failure ends local waiting without stopping runtime work. Stopping runtime work requires closing the harness (see the [protocol limitations](../protocol/README.md#known-limitations-and-deferred-work)).
 - **No exclusive model response** — prompt results cover receipt-to-idle activity and can include steering or other queued work. Concurrent calls observe the Session's actual event stream; a command result does not own a later turn.
 - **Callbacks must release their own resources** — the SDK delivers cancellation through `AbortSignal`; application work that ignores it may continue after the SDK stops awaiting its answer.

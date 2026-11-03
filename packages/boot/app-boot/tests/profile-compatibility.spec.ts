@@ -3,13 +3,13 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync }
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, it, onTestFinished } from 'vitest'
-import { getDshRuntimeVersion } from '../src/index.ts'
+import { getHuoliRuntimeVersion } from '../src/index.ts'
 import {
   PROFILE_COMPATIBILITY_FILENAME, isExactPluginVersion,
   readProfileCompatibility, readProfileVersionExemptions, setProfileVersionExemption, validatePluginVersionExemption,
 } from '../src/profile-compatibility.ts'
 
-const runtime = getDshRuntimeVersion()
+const runtime = getHuoliRuntimeVersion()
 
 function profileFixture(): string {
   const dir = mkdtempSync(join(tmpdir(), 'huoli-compatibility-'))

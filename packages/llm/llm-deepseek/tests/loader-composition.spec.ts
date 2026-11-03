@@ -227,14 +227,14 @@ describe('llm-deepseek real dynamic composition', () => {
     session.append('turn/start', { turn: 1 })
 
     await assemble(ctx, { model: 'deepseek-v4-flash', messages: [], sessionId: session.id })
-    const request = server.requests[0] as { dsh_plugin_packages: { version: number; packages: unknown[] } }
-    expect(request).not.toHaveProperty('dsh_session_log')
-    expect(request.dsh_plugin_packages.packages).toEqual(expect.arrayContaining([
+    const request = server.requests[0] as { huoli_plugin_packages: { version: number; packages: unknown[] } }
+    expect(request).not.toHaveProperty('huoli_session_log')
+    expect(request.huoli_plugin_packages.packages).toEqual(expect.arrayContaining([
       { name: '@huoli/huoli-deepseek-llm-api-extensions', version: '0.1.0-rc.8' },
       { name: '@huoli/huoli-llm-deepseek-api-key', version: '0.1.0-rc.8' },
       { name: '@huoli/huoli-session-log-deepseek', version: '0.1.0-rc.8' },
     ]))
-    expect(request.dsh_plugin_packages.version).toBe(1)
+    expect(request.huoli_plugin_packages.version).toBe(1)
     expect(SessionLogDeepSeek.acceptedThrough(session)).toBe(-1)
   })
 
@@ -250,7 +250,7 @@ describe('llm-deepseek real dynamic composition', () => {
 
     await assemble(ctx, { model: 'deepseek-v4-flash', messages: [], sessionId: session.id })
     const request = server.requests[0] as {
-      dsh_session_log?: {
+      huoli_session_log?: {
         version: number
         session: { id: string }
         afterSeq: number
@@ -258,7 +258,7 @@ describe('llm-deepseek real dynamic composition', () => {
         events: Array<{ type: string; seq: number }>
       }
     }
-    expect(request.dsh_session_log).toMatchObject({
+    expect(request.huoli_session_log).toMatchObject({
       version: 1,
       session: { id: 'extension-composition-enabled' },
       afterSeq: -1,
@@ -277,13 +277,13 @@ describe('llm-deepseek real dynamic composition', () => {
 
     await assemble(ctx, { model: 'deepseek-v4-flash', messages: [], sessionId: session.id, purpose: 'test-upload-exclusion' })
     expect(server.headers[0]?.['x-huoli-core-session-id']).toBe(session.id)
-    expect(server.requests[0]).not.toHaveProperty('dsh_session_log')
-    expect(server.requests[0]).toHaveProperty('dsh_plugin_packages')
+    expect(server.requests[0]).not.toHaveProperty('huoli_session_log')
+    expect(server.requests[0]).toHaveProperty('huoli_plugin_packages')
     expect(SessionLogDeepSeek.acceptedThrough(session)).toBe(-1)
     expect(session.snapshotEvents()).toHaveLength(1)
 
     await assemble(ctx, { model: 'deepseek-v4-flash', messages: [], sessionId: session.id })
-    expect(server.requests[1]).toHaveProperty('dsh_session_log')
+    expect(server.requests[1]).toHaveProperty('huoli_session_log')
     expect(SessionLogDeepSeek.acceptedThrough(session)).toBe(0)
   })
 

@@ -156,7 +156,7 @@ describe('viewer page state lifetime', () => {
       return Promise.resolve(url.includes('/__liveshare/context')
         ? Response.json({
           ownerDisplayName: 'Owner',
-          dshVersion: '0.1.5-rc.2',
+          huoliVersion: '0.1.5-rc.2',
           viewer: { providerId: 'oidc', subjectId: 'subject-42', displayName: '许翰翔' },
           capabilities: { sessionMode: 'write', online: true },
         })
@@ -168,7 +168,7 @@ describe('viewer page state lifetime', () => {
         expect(viewerCapabilities.getSnapshot().mode).toBe('write')
         expect(viewerContextFacts.getSnapshot()).toMatchObject({
           owner: 'Owner',
-          dshVersion: '0.1.5-rc.2',
+          huoliVersion: '0.1.5-rc.2',
           viewerSubjectId: 'subject-42',
           viewerDisplayName: '许翰翔',
         })

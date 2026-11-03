@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import semver from 'semver'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { evaluatePluginCompatibility, getDshRuntimeVersion, pluginCompatibilityWarning } from '../src/plugin-compatibility.ts'
+import { evaluatePluginCompatibility, getHuoliRuntimeVersion, pluginCompatibilityWarning } from '../src/plugin-compatibility.ts'
 
 const runtime = '0.1.7-alpha.1'
 const identity = { name: '@example/plugin', version: '2.0.0' }
@@ -20,7 +20,7 @@ describe('huoli runtime version', () => {
   it('reads the exact version with a string path accepted by executable virtual filesystems', () => {
     const { version: expected } = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }
     const read = vi.spyOn(fs, 'readFileSync')
-    expect(getDshRuntimeVersion()).toBe(expected)
+    expect(getHuoliRuntimeVersion()).toBe(expected)
     expect(semver.valid(expected)).not.toBeNull()
     expect(read).toHaveBeenCalledWith(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8')
   })
@@ -28,27 +28,27 @@ describe('huoli runtime version', () => {
   it.each([{}, { version: null }, { version: 1 }, { version: '' }, { version: 'not-semver' }])(
     'rejects an invalid or absent package version: %j', (manifest) => {
       vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(JSON.stringify(manifest))
-      expect(() => getDshRuntimeVersion()).toThrow('Invalid huoli runtime version')
+      expect(() => getHuoliRuntimeVersion()).toThrow('Invalid huoli runtime version')
     },
   )
 
   it.each(['null', '[]', '1', '"text"'])('rejects non-object package JSON: %s', (contents) => {
     vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(contents)
-    expect(() => getDshRuntimeVersion()).toThrow('app-boot package.json must be an object')
+    expect(() => getHuoliRuntimeVersion()).toThrow('app-boot package.json must be an object')
   })
 
   it('propagates malformed JSON and read failures', () => {
     const read = vi.spyOn(fs, 'readFileSync').mockReturnValueOnce('{')
-    expect(() => getDshRuntimeVersion()).toThrow(SyntaxError)
+    expect(() => getHuoliRuntimeVersion()).toThrow(SyntaxError)
     read.mockImplementationOnce(() => { throw new Error('manifest unavailable') })
-    expect(() => getDshRuntimeVersion()).toThrow('manifest unavailable')
+    expect(() => getHuoliRuntimeVersion()).toThrow('manifest unavailable')
   })
 })
 
 describe('plugin compatibility', () => {
   it('defaults to the installed runtime and needs no identity without mismatches', () => {
     expect(evaluatePluginCompatibility({})).toBeUndefined()
-    expect(evaluatePluginCompatibility({ peerDependencies: { '@huoli/huoli': getDshRuntimeVersion() } })).toBeUndefined()
+    expect(evaluatePluginCompatibility({ peerDependencies: { '@huoli/huoli': getHuoliRuntimeVersion() } })).toBeUndefined()
     expect(check({})).toBeUndefined()
   })
 

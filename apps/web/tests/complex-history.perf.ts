@@ -615,18 +615,18 @@ async function startMutationProbe(page: Page): Promise<void> {
       childList: true,
       subtree: true,
     })
-    Reflect.set(globalThis, '__dshPerfMutationProbe', probe)
+    Reflect.set(globalThis, '__huoliPerfMutationProbe', probe)
   })
 }
 
 async function stopMutationProbe(page: Page): Promise<MutationProbeResult> {
   return page.evaluate(() => {
-    const probe = Reflect.get(globalThis, '__dshPerfMutationProbe') as
+    const probe = Reflect.get(globalThis, '__huoliPerfMutationProbe') as
       | { batches: number; records: number; observer: MutationObserver }
       | undefined
     if (probe === undefined) throw new Error('stream mutation probe was not started')
     probe.observer.disconnect()
-    Reflect.deleteProperty(globalThis, '__dshPerfMutationProbe')
+    Reflect.deleteProperty(globalThis, '__huoliPerfMutationProbe')
     return { batches: probe.batches, records: probe.records }
   })
 }
@@ -697,11 +697,11 @@ async function startUserRenderProbe(
       childList: true,
       subtree: true,
     })
-    Reflect.set(globalThis, '__dshPerfUserRenderProbe', probe)
+    Reflect.set(globalThis, '__huoliPerfUserRenderProbe', probe)
   }, marker)
   await send.evaluate((button) => {
     button.addEventListener('click', (event) => {
-      const probe = Reflect.get(globalThis, '__dshPerfUserRenderProbe') as
+      const probe = Reflect.get(globalThis, '__huoliPerfUserRenderProbe') as
         | { sendAt?: number; trustedClick?: boolean; pollForMarker?: () => void }
         | undefined
       if (probe?.pollForMarker === undefined) throw new Error('user render probe was not started')
@@ -723,14 +723,14 @@ async function stopUserRenderProbe(
 ): Promise<UserRenderProbeResult> {
   try {
     await page.waitForFunction(() => {
-      const probe = Reflect.get(globalThis, '__dshPerfUserRenderProbe') as
+      const probe = Reflect.get(globalThis, '__huoliPerfUserRenderProbe') as
         | { paintAt?: number }
         | undefined
       return probe?.paintAt !== undefined
     }, undefined, { timeout: 15_000 })
   } catch (error) {
     const diagnostic = await page.evaluate((expectedMarker) => {
-      const probe = Reflect.get(globalThis, '__dshPerfUserRenderProbe') as
+      const probe = Reflect.get(globalThis, '__huoliPerfUserRenderProbe') as
         | {
           sendAt?: number
           domAt?: number
@@ -763,7 +763,7 @@ async function stopUserRenderProbe(
     throw new Error(`user render probe timed out: ${JSON.stringify(diagnostic)}`, { cause: error })
   }
   return page.evaluate(() => {
-    const probe = Reflect.get(globalThis, '__dshPerfUserRenderProbe') as
+    const probe = Reflect.get(globalThis, '__huoliPerfUserRenderProbe') as
       | {
         sendAt?: number
         domAt?: number
@@ -773,7 +773,7 @@ async function stopUserRenderProbe(
         records: number
       }
       | undefined
-    Reflect.deleteProperty(globalThis, '__dshPerfUserRenderProbe')
+    Reflect.deleteProperty(globalThis, '__huoliPerfUserRenderProbe')
     if (
       probe?.trustedClick !== true
       || probe.sendAt === undefined

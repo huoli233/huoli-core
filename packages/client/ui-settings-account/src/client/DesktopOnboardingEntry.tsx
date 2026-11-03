@@ -30,8 +30,8 @@ export function DesktopOnboardingEntry({ useOnboarding, useAccount, setVisible, 
   useLayoutEffect(() => {
     if (!state.visible) return
     const bridge = (globalThis as typeof globalThis & {
-      dshOnboarding?: { setActive(active: boolean): void }
-    }).dshOnboarding
+      huoliOnboarding?: { setActive(active: boolean): void }
+    }).huoliOnboarding
     bridge?.setActive(true)
     return () => { bridge?.setActive(false) }
   }, [state.visible])

@@ -241,7 +241,7 @@ async function main() {
       const config = resolveDesktopPolicyConfig({ origin: server.url, allowedPageOrigins: ['https://downloads.example.com'],
         intervalMs: 600_000, timeoutMs: 1000 }, true)
       let modal
-      const policy = new DesktopMandatoryUpdatePolicy(config, { platform: 'win32', arch: 'x64', bundledDshVersion: '1.0.0' },
+      const policy = new DesktopMandatoryUpdatePolicy(config, { platform: 'win32', arch: 'x64', bundledHuoliVersion: '1.0.0' },
         () => { modal?.sync() }, undefined,
         () => ({ version: '1.0.0', locale: 'zh-CN', timezoneOffsetSeconds: -new Date().getTimezoneOffset() * 60 }))
       modal = new DesktopMandatoryUpdateWindow({
@@ -283,7 +283,7 @@ async function main() {
             function check() { if (${expression}) { observer.disconnect(); clearTimeout(deadline); resolve(true); } }
             observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true }); check();
           })`) } catch (error) {
-            console.error('Modal condition:', expression, await contents.executeJavaScript('({ url: location.href, text: document.body?.innerText, bridge: typeof window.dshMandatoryUpdate })'))
+            console.error('Modal condition:', expression, await contents.executeJavaScript('({ url: location.href, text: document.body?.innerText, bridge: typeof window.huoliMandatoryUpdate })'))
             throw error
           }
         }

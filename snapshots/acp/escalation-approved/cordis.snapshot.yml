@@ -15,7 +15,7 @@
 - id: session-persistence-jsonl
   name: '@huoli/huoli-session-persistence-jsonl'
   config:
-    root: !!js process.env.HUOLI_SNAPSHOT_SESSIONS_ROOT ?? dshHomePath('sessions')
+    root: !!js process.env.HUOLI_SNAPSHOT_SESSIONS_ROOT ?? huoliHomePath('sessions')
     compression: none
 
 - id: sandbox

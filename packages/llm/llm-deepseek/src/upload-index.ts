@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { readFile, mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { withFileLock, writeFileAtomic } from '@huoli/huoli-atomic-write'
-import { resolveDshHome } from '@huoli/huoli-home-paths'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { ImageVariantId } from '@huoli/huoli-attachment'
 import type { AttachmentId, ImageVariantId as ImageVariantIdType } from '@huoli/huoli-attachment'
 import { DeepSeekFileId, DeepSeekFileScope } from './file-id.ts'
@@ -116,7 +116,7 @@ export class DeepSeekUploadIndex {
   /**
    * @param path - explicit test path; omission uses `HUOLI_HOME/llm-deepseek/files-v3.json`.
    */
-  constructor(path = join(resolveDshHome(), 'llm-deepseek', 'files-v3.json')) {
+  constructor(path = join(resolveHuoliHome(), 'llm-deepseek', 'files-v3.json')) {
     this.path = path
   }
 

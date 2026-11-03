@@ -211,7 +211,7 @@ def test_runtime_requires_complete_resource_sidecars(
     assert runtime.bundled_runtime_path() == executable
 
 
-def test_node_mode_runs_the_deployed_dsh_cli(
+def test_node_mode_runs_the_deployed_huoli_cli(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     bin_js = tmp_path / "runtime" / "node" / "runtime-bootstrap.mjs"
@@ -223,7 +223,7 @@ def test_node_mode_runs_the_deployed_dsh_cli(
     assert resolve_bundled_launch_args("node") == ("/node", str(bin_js))
 
 
-def test_python_dsh_command_requires_explicit_home(
+def test_python_huoli_command_requires_explicit_home(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.delenv("HUOLI_HOME", raising=False)
@@ -235,7 +235,7 @@ def test_python_dsh_command_requires_explicit_home(
     assert "explicit HUOLI_HOME" in capsys.readouterr().err
 
 
-def test_python_dsh_command_executes_the_bundled_cli(
+def test_python_huoli_command_executes_the_bundled_cli(
     monkeypatch: pytest.MonkeyPatch
 ) -> None:
     called: dict[str, object] = {}

@@ -23,7 +23,7 @@ Status: proposed
 < 0.1.3-rc.3
 ```
 
-这类发布将 Desktop `0.1.3-rc.2.dsk.1` 与内置 huoli `0.1.3-rc.2` 分别记录。只有同时补齐构建、运行时描述、profile 校准、发布工具与后端策略校验，才引入独立的 `desktopVersion`、`bundledDshVersion` 和 `releaseChannel` 记录。一期构建继续要求版本相等。
+这类发布将 Desktop `0.1.3-rc.2.dsk.1` 与内置 huoli `0.1.3-rc.2` 分别记录。只有同时补齐构建、运行时描述、profile 校准、发布工具与后端策略校验，才引入独立的 `desktopVersion`、`bundledHuoliVersion` 和 `releaseChannel` 记录。一期构建继续要求版本相等。
 
 不能用 `0.1.3-dsk.1` 修复稳定版 `0.1.3`，因为 SemVer 将其排在稳定版之前。稳定版修复需要更高的共用 huoli/Desktop 补丁版本，例如 `0.1.4`。独立预发布修订是特殊发布路径，不是每次构建的常规计数器。
 

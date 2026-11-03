@@ -1,7 +1,7 @@
 /** Filesystem ownership for the Electron-managed desktop installation. */
 
 import { join } from 'node:path'
-import { resolveDshHome } from '@huoli/huoli-home-paths'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 
 /** Stable desktop installation paths under the shared Harness home. */
 export interface DesktopPaths {
@@ -11,12 +11,12 @@ export interface DesktopPaths {
 
 /**
  * Resolve every Electron-owned path without changing the shared data roots.
- * @param dshHome - Harness home shared with npm-installed huoli.
+ * @param huoliHome - Harness home shared with npm-installed huoli.
  * @returns immutable desktop path set.
  */
-export function resolveDesktopPaths(dshHome: string = resolveDshHome()): DesktopPaths {
+export function resolveDesktopPaths(huoliHome: string = resolveHuoliHome()): DesktopPaths {
   return {
-    profile: join(dshHome, 'profiles', 'desktop'),
-    lock: join(dshHome, 'profiles', 'desktop', 'lock'),
+    profile: join(huoliHome, 'profiles', 'desktop'),
+    lock: join(huoliHome, 'profiles', 'desktop', 'lock'),
   }
 }

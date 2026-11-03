@@ -42,7 +42,7 @@ function target(basePath = '/team/liveshare'): void {
 describe('viewer brand row', () => {
   it('links home and states the owner and the owner HUOLI version', async () => {
     target()
-    publish({ owner: '许翰翔', dshVersion: '0.1.5-rc.2', relay: '20260911-143800-6a72b8' })
+    publish({ owner: '许翰翔', huoliVersion: '0.1.5-rc.2', relay: '20260911-143800-6a72b8' })
     render(<ViewerBrandName t={t} />)
     const link = screen.getByRole('link', { name: '回到 LiveShare 首页' })
     expect(link.getAttribute('href')).toBe('/team/liveshare/')
@@ -67,7 +67,7 @@ describe('viewer brand row', () => {
 
   it('labels a share whose verified owner has no display name from the identity itself', () => {
     target()
-    publish({ ownerSubjectId: 'feishu:tenant:ou_9f2c4d', dshVersion: '0.1.5-rc.2' })
+    publish({ ownerSubjectId: 'feishu:tenant:ou_9f2c4d', huoliVersion: '0.1.5-rc.2' })
     render(<ViewerBrandName t={t} />)
     const link = screen.getByRole('link', { name: '回到 LiveShare 首页' })
     expect(link.textContent).toContain('由 主体 …ou_9f2c4d 分享')
@@ -80,7 +80,7 @@ describe('viewer brand row', () => {
     render(<ViewerBrandName t={t} />)
     expect(screen.getByRole('link', { name: '回到 LiveShare 首页' }).textContent)
       .toContain('由 未知分享者 分享')
-    publish({ owner: '许翰翔', dshVersion: '0.1.5-rc.2' })
+    publish({ owner: '许翰翔', huoliVersion: '0.1.5-rc.2' })
     const link = screen.getByRole('link', { name: '回到 LiveShare 首页' })
     expect(link.textContent).toContain('由 许翰翔 分享')
     expect(link.textContent).toContain('HUOLI 0.1.5-rc.2')
@@ -88,7 +88,7 @@ describe('viewer brand row', () => {
 
   it('keeps the owner release inline and its build metadata on the tooltip', () => {
     target()
-    publish({ owner: '许翰翔', dshVersion: '0.1.5-rc.2+9f2c4d1' })
+    publish({ owner: '许翰翔', huoliVersion: '0.1.5-rc.2+9f2c4d1' })
     render(<ViewerBrandName t={t} />)
     const link = screen.getByRole('link', { name: '回到 LiveShare 首页' })
 

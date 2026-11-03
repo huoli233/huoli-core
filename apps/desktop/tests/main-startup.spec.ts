@@ -334,7 +334,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   const original = await importOriginal<typeof import('node:fs/promises')>()
   return { ...original, readFile: vi.fn((path: Parameters<typeof original.readFile>[0], encoding?: 'utf8') => {
     if (path === join('desktop-test-app', 'package.json')) {
-      return Promise.resolve(JSON.stringify({ dshDesktopAppId: 'com.deepseek.huoli', dshMandatoryUpdatePolicy: harness.embeddedPolicy }))
+      return Promise.resolve(JSON.stringify({ huoliDesktopAppId: 'com.deepseek.huoli', huoliMandatoryUpdatePolicy: harness.embeddedPolicy }))
     }
     return encoding === undefined ? original.readFile(path) : original.readFile(path, encoding)
   }) }
@@ -445,7 +445,7 @@ beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
   vi.stubEnv('HUOLI_DESKTOP_PNPM_ENTRY', 'test-pnpm')
-  vi.stubEnv('HUOLI_DESKTOP_DSH_DIR', 'test-runtime')
+  vi.stubEnv('HUOLI_DESKTOP_HUOLI_DIR', 'test-runtime')
   vi.stubEnv('HUOLI_DESKTOP_PRIMARY_RUNTIME_DIR', 'test-primary-runtime')
   vi.stubGlobal('process', { ...process, platform: 'win32', arch: 'x64', resourcesPath: 'desktop-test-resources' })
   vi.stubEnv('HUOLI_DESKTOP_HOST_INSPECT_PORT', undefined)
@@ -2573,7 +2573,7 @@ describe('desktop main startup', () => {
 
   it('prepares an independent plugin profile for the unpackaged Host', async () => {
     harness.app.isPackaged = false
-    vi.stubEnv('HUOLI_DESKTOP_DSH_DIR', undefined)
+    vi.stubEnv('HUOLI_DESKTOP_HUOLI_DIR', undefined)
     await import('../src/main.ts')
     await harness.preparing.promise
     harness.prepared.resolve()

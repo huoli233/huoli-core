@@ -177,19 +177,19 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('DeepSeek Messages real API', () 
       if (url !== `${Protocol.PUBLIC_BASE_URL}/v1/messages`) return fetchImpl(input, init)
       if (typeof init?.body !== 'string') throw new Error('expected a JSON Messages request')
       const body = JSON.parse(init.body) as Record<string, unknown>
-      expect(body.dsh_plugin_packages).toStrictEqual({
+      expect(body.huoli_plugin_packages).toStrictEqual({
         version: 1, packages: [
           { name: packageIdentity.name, version: packageIdentity.version },
           { name: unversionedName },
         ],
       })
       if (enabled) {
-        expect(body).toMatchObject({ dsh_session_log: {
+        expect(body).toMatchObject({ huoli_session_log: {
           version: 1, sessionFormatVersion: session.header.version, session: { id: session.id },
           afterSeq, throughSeq,
           events: Array.from({ length: throughSeq - afterSeq }, (_, index) => ({ seq: afterSeq + index + 1 })),
         } })
-      } else expect(body).not.toHaveProperty('dsh_session_log')
+      } else expect(body).not.toHaveProperty('huoli_session_log')
       expect(SessionLogDeepSeek.acceptedThrough(session)).toBe(afterSeq)
       const response = await fetchImpl(input, init)
       expect(response.ok).toBe(true)

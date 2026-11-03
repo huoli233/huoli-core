@@ -122,7 +122,7 @@ function VersionRow({ version, installed, t, busy, onUpdate }: {
     )
   }
   const usable = installable(version)
-  const note = version.incompatible !== undefined ? t('versionsNeedsDsh', { peers: peersText(version.incompatible) })
+  const note = version.incompatible !== undefined ? t('versionsNeedsHuoli', { peers: peersText(version.incompatible) })
     : !version.bundle ? t('versionsNotBundle') : version.deprecated
   const date = publishedDate(version)
   return (

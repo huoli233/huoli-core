@@ -48,12 +48,12 @@ function updates(ctx: Context): CredentialRef[] {
 
 describe('resolveSpec', () => {
   it('defaults to .credentials.yaml under the harness home with watching on', () => {
-    const spec = resolveSpec({ dshHome: '/custom/home' })
+    const spec = resolveSpec({ huoliHome: '/custom/home' })
     expect(spec).toEqual({ filename: resolve('/custom/home/.credentials.yaml'), watch: true, debounceMs: 100 })
   })
 
   it('lets an explicit path win over the home', () => {
-    const spec = resolveSpec({ path: '/etc/huoli/creds.yaml', dshHome: '/ignored', watch: false, debounceMs: 5 })
+    const spec = resolveSpec({ path: '/etc/huoli/creds.yaml', huoliHome: '/ignored', watch: false, debounceMs: 5 })
     expect(spec).toEqual({ filename: resolve('/etc/huoli/creds.yaml'), watch: false, debounceMs: 5 })
   })
 })

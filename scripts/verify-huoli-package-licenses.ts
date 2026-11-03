@@ -54,7 +54,7 @@ function printable(value: unknown): string {
  * @param root - absolute repository root containing the workspace package.json.
  * @returns the checked package count and every non-MIT declaration.
  */
-export function inspectDshPackageLicenses(root: string): HuoliPackageLicenseReport {
+export function inspectHuoliPackageLicenses(root: string): HuoliPackageLicenseReport {
   let packageCount = 0
   const failures: string[] = []
 
@@ -76,7 +76,7 @@ export function inspectDshPackageLicenses(root: string): HuoliPackageLicenseRepo
 }
 
 if (process.argv[1] && import.meta.filename === resolve(process.argv[1])) {
-  const report = inspectDshPackageLicenses(ROOT)
+  const report = inspectHuoliPackageLicenses(ROOT)
   if (report.failures.length > 0) {
     process.stderr.write('verify-huoli-package-licenses: non-MIT HUOLI package declarations found:\n')
     for (const failure of report.failures) process.stderr.write(`  ${failure}\n`)

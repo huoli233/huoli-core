@@ -53,7 +53,7 @@ describe.skipIf(MODE === 'record')('web e2e: App-only desktop onboarding', () =>
         bonusReads++
         response.setHeader('content-type', 'application/json')
         response.end(JSON.stringify({ code: 0, data: { biz_code: 0, biz_data: bonusOffered ? [{
-          order_id: '88888888-8888-4888-8888-888888888888', campaign: 'dsh_login_bonus',
+          order_id: '88888888-8888-4888-8888-888888888888', campaign: 'huoli_login_bonus',
           amount: '5.00', currency: 'CNY', granted_at: new Date().toISOString(),
           expires_at: new Date(Date.now() + 86_400_000).toISOString(), msg: '已赠送您 5.00 元 HUOLI 体验赠金。',
         }] : [] } }))
@@ -110,12 +110,12 @@ describe.skipIf(MODE === 'record')('web e2e: App-only desktop onboarding', () =>
     const welcome = await connectDesktopWelcome(scaffold.authenticatedUrl, (input, init) => scaffold.hostFetch(input, init))
     await opened.exposeFunction('__onboardingHasApiKey', async () => (await welcome.read()).hasApiKey)
     await opened.addInitScript(() => {
-      Object.defineProperty(globalThis, 'dshOnboarding', { value: {
+      Object.defineProperty(globalThis, 'huoliOnboarding', { value: {
         hasApiKey: () => (globalThis as typeof globalThis & { __onboardingHasApiKey(): Promise<boolean> }).__onboardingHasApiKey(),
         setActive: () => {},
       } })
-      Object.defineProperty(globalThis, 'dshDesktop', { value: { protocolVersion: 1 } })
-      Object.defineProperty(globalThis, 'dshPlatform', { value: {
+      Object.defineProperty(globalThis, 'huoliDesktop', { value: { protocolVersion: 1 } })
+      Object.defineProperty(globalThis, 'huoliPlatform', { value: {
         open: async () => {}, setBounds: async () => {}, close: async () => {},
       } })
     })

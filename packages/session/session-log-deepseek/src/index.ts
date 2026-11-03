@@ -45,10 +45,10 @@ export const inject = ['deepseekLlmApiExtensions', 'sessions']
 
 /** Session-log request contribution configuration. */
 export interface Config {
-  /** Contribute `dsh_session_log` to official DeepSeek requests. Defaults to `true`. */
+  /** Contribute `huoli_session_log` to official DeepSeek requests. Defaults to `true`. */
   enabled: Volatile<boolean>
   /**
-   * Largest serialized `dsh_session_log` field, in UTF-8 bytes, that one request carries.
+   * Largest serialized `huoli_session_log` field, in UTF-8 bytes, that one request carries.
    * A request uploads the longest pending event prefix that fits; later requests continue
    * after its acceptance. Defaults to 8 MiB.
    */
@@ -193,7 +193,7 @@ export class SessionLogDeepSeekService extends Service {
   constructor(ctx: Context, config: Config) {
     super(ctx, 'sessionLogDeepSeek')
     const { maxBytes } = config
-    ctx.deepseekLlmApiExtensions.register('dsh_session_log', {
+    ctx.deepseekLlmApiExtensions.register('huoli_session_log', {
       prepare: (request) => {
         if (!config.enabled.get()) return undefined
         // TODO: Define an explicit wire result for direct or stale-session calls if they become a supported product path.
@@ -238,9 +238,9 @@ export class SessionLogDeepSeekService extends Service {
             const seq = String(first.seq)
             ctx.logger.warn(Number.isFinite(candidateBytes)
               ? `session-log-deepseek: event ${seq} of session "${session.id}" needs a ${String(candidateBytes)}-byte`
-                + ` dsh_session_log field, above maxBytes ${String(maxBytes)}; this session's upload stays at event ${seq}`
+                + ` huoli_session_log field, above maxBytes ${String(maxBytes)}; this session's upload stays at event ${seq}`
                 + ' until maxBytes admits it'
-              : `session-log-deepseek: event ${seq} of session "${session.id}" is too large to serialize into a dsh_session_log field;`
+              : `session-log-deepseek: event ${seq} of session "${session.id}" is too large to serialize into a huoli_session_log field;`
                 + ` this session's upload stays at event ${seq}`)
           }
           return undefined

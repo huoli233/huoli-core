@@ -377,7 +377,7 @@ export interface Config {
 /** Local attachment backend configuration. */
 export interface Config {
   /** Explicit harness home; omitted follows `HUOLI_HOME`, then `~/.huoli`. */
-  dshHome?: string
+  huoliHome?: string
   /** Maximum encoded bytes accepted for one submitted image. Default: 50 MiB. */
   maxImageBytes?: number
   /** Maximum image count accepted in one submitted message. Default: 20. */
@@ -825,7 +825,7 @@ export interface Config {
   /** Credentials document path; defaults to `.credentials.yaml` under the harness home. */
   path?: string
   /** Harness home used when `path` is omitted; defaults to `$HUOLI_HOME` or `~/.huoli`. */
-  dshHome?: string
+  huoliHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
   /** Watcher write-settle window in milliseconds; defaults to 100. */
@@ -2703,7 +2703,7 @@ export interface Config {
 ```ts config-catalog
 /** Plugin-package request contribution configuration. */
 export interface Config {
-  /** Contribute `dsh_plugin_packages` to official DeepSeek requests. Defaults to `true`. */
+  /** Contribute `huoli_plugin_packages` to official DeepSeek requests. Defaults to `true`. */
   enabled?: boolean
 }
 ```
@@ -3007,10 +3007,10 @@ export interface JsonRpcConfig {
 ```ts config-catalog
 /** Session-log request contribution configuration. */
 export interface Config {
-  /** Contribute `dsh_session_log` to official DeepSeek requests. Defaults to `true`. */
+  /** Contribute `huoli_session_log` to official DeepSeek requests. Defaults to `true`. */
   enabled: Volatile<boolean>
   /**
-   * Largest serialized `dsh_session_log` field, in UTF-8 bytes, that one request carries.
+   * Largest serialized `huoli_session_log` field, in UTF-8 bytes, that one request carries.
    * A request uploads the longest pending event prefix that fits; later requests continue
    * after its acceptance. Defaults to 8 MiB.
    */
@@ -3287,7 +3287,7 @@ export interface Config extends SessionTitleLlmConfig {
 /** Plugin config (all optional — the built-in facts resolve without defaults). */
 export interface Config {
   /** Huoli Core home directory exposed as `HUOLI_HOME`; defaults to `$HUOLI_HOME` or `~/.huoli`. */
-  dshHome?: string
+  huoliHome?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-shell-env -->
@@ -3324,7 +3324,7 @@ export interface Config {
   /** Whether project and user roots are included around custom roots. */
   includeDefaultRoots?: boolean
   /** Huoli Core config root. Defaults to `$HUOLI_HOME` or `~/.huoli`. */
-  dshHome?: string
+  huoliHome?: string
   /** Shared agent config root. Defaults to `$HUOLI_AGENTS_HOME` or `~/.agents`. */
   agentsHome?: string
   /** Additional skill roots scanned after project roots and before user roots. */
@@ -3700,13 +3700,13 @@ export interface Config {
   /** Provider name on `ctx.subagents` (default `huoli-sdk`). */
   providerName: string
   /** Explicit huoli CLI module, resolved and checked at plugin load; omission uses the SDK dependency. */
-  dshBin?: string
+  huoliBin?: string
   /** Named child profile (default `sdk`). */
   profile: string
   /** Ordered per-launch profile patch files, resolved and checked at plugin load. */
   patches: string[]
   /** Absolute isolated Harness home for every nested child process. */
-  dshHome: string
+  huoliHome: string
   /** Provider route the child runtime initializes with (default `deepseek-official`). */
   provider: string
   /** Model the child runtime initializes with (default `deepseek-v4-flash`). */

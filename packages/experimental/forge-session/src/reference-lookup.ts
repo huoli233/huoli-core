@@ -65,7 +65,7 @@ export function observeReferences(ctx: Context, timeoutMs: number, record: (sess
           workdir: shell.data.cwd,
           timeoutMs,
           signal,
-          dshEnv: scope.shellEnv.collect(exec),
+          huoliEnv: scope.shellEnv.collect(exec),
           sandboxPolicy: scope.get('sandboxPolicy')?.resolve({ session: agent.session }),
         })
         const process = await scope.shell.execute(spec)

@@ -19,14 +19,14 @@ import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
 import { resolveExampleLaunch } from '@huoli/huoli-loader-smoke'
 
-const dshBinScript = fileURLToPath(new URL('../../../../apps/cli/src/bin.ts', import.meta.url))
+const huoliBinScript = fileURLToPath(new URL('../../../../apps/cli/src/bin.ts', import.meta.url))
 const tsconfigPath = fileURLToPath(new URL('../../../../tsconfig.json', import.meta.url))
 const fixturePlugin = pathToFileURL(fileURLToPath(new URL('./fixtures/base-llm.mjs', import.meta.url))).href
 
 /** One `huoli` run against the private home; the model is the only fixture. */
 async function run(cwd: string, home: string, args: readonly string[]) {
   const launch = resolveExampleLaunch({
-    srcBin: dshBinScript,
+    srcBin: huoliBinScript,
     configArgs: ['--profile', 'headless', ...args],
     tsconfigPath,
     // Source diagnostics use the hook the launch contract names; artifact acceptance uses built lib.

@@ -66,7 +66,7 @@ export interface TunnelShareSpec extends SharePermissions {
   readonly ownerTenantId?: string
   readonly ownerDisplayName: string
   /** Display-only: the owner's HUOLI version shown on the Relay share picker. */
-  readonly dshVersion?: string
+  readonly huoliVersion?: string
   /**
    * Stable id of the owner HUOLI instance that published this share. Not display-only: the Relay groups
    * shares of the same owner instance by it.
@@ -533,7 +533,7 @@ function isTunnelShareSpec(value: unknown): value is TunnelShareSpec {
     && typeof value.ownerDisplayName === 'string'
     && (value.ownerProviderId === undefined || typeof value.ownerProviderId === 'string')
     && (value.ownerTenantId === undefined || typeof value.ownerTenantId === 'string')
-    && (value.dshVersion === undefined || typeof value.dshVersion === 'string')
+    && (value.huoliVersion === undefined || typeof value.huoliVersion === 'string')
     && (value.ownerInstanceId === undefined || typeof value.ownerInstanceId === 'string')
     && (value.allowsFork === undefined || typeof value.allowsFork === 'boolean')
     && (mode === undefined || mode === 'view' || mode === 'write')

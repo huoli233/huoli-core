@@ -101,13 +101,13 @@ from pathlib import Path
 from deepseek_harness import DeepSeekHarness
 
 workspace = Path("/absolute/path/to/disposable-workspace").resolve()
-dsh_home = Path("/absolute/path/to/example-huoli-home").resolve()
+huoli_home = Path("/absolute/path/to/example-huoli-home").resolve()
 with DeepSeekHarness(
     provider="deepseek-official",
     model="deepseek-v4-flash",
     max_tokens=49_152,
     cwd=str(workspace),
-    dsh_home=str(dsh_home),
+    huoli_home=str(huoli_home),
     profile="sdk-minimal",
 ) as harness:
     result = harness.run(
@@ -172,7 +172,7 @@ huoli plugin --profile sdk-minimal add file:C:/work/my-plugin-bundle
 | Shell 超时 | 300 秒 |
 | 可选运行时上下文 | 不存在 |
 | 上下文压缩 | 自动执行；通过额外模型请求生成较早历史的摘要 |
-| 会话持久化 | `<dsh_home>/sessions` 下的未压缩 JSONL |
+| 会话持久化 | `<huoli_home>/sessions` 下的未压缩 JSONL |
 
 该 profile 的唯一组合包会在空根之上插入完整配置树，且不包含 `huoli-base`，因此基础 profile 以后新增的工具不会隐式出现。它包含 SDK 协议、一个由环境配置的 DeepSeek 适配器、本地执行与持久化；文本文件工具、settings、托管凭据、OTel 遥测、Web 工具、subagent、本地指令发现均不存在。[DeepSeek 会话日志贡献器](../../../packages/session/session-log-deepseek/README.zh.md)默认随 DeepSeek 请求上传未接受的日志事件，每次请求最多 `maxBytes`（8 MiB）；在 profile patch 中设置 `session-log-deepseek.enabled: false` 可将其关闭。它固定使用 `danger-full-access`，因此按平台选择的持久 shell 可以修改运行时可见的任何路径；应使用一次性 checkout 或容器。
 

@@ -49,7 +49,7 @@ interface PlannedVersion {
 }
 
 /** One private huoli workspace whose version follows the publishable family. */
-interface PrivateDshVersion {
+interface PrivateHuoliVersion {
   /** Repository-relative manifest path. */
   readonly manifestPath: string
   /** Package directory used in bump output. */
@@ -248,7 +248,7 @@ function rootVersion(root: string): string {
  * @param root - repository root.
  * @returns Private workspace manifests sorted by path.
  */
-function privateDshVersions(root: string): PrivateDshVersion[] {
+function privateHuoliVersions(root: string): PrivateHuoliVersion[] {
   return globSync(['apps/*/package.json', 'packages/*/*/package.json'], { cwd: root })
     .map(path => path.replaceAll('\\', '/'))
     .sort()
@@ -303,7 +303,7 @@ export function planShared(
     })
   }
   const publishableManifests = new Set(members.map(member => `${member.directory}/package.json`))
-  for (const entry of privateDshVersions(root)) {
+  for (const entry of privateHuoliVersions(root)) {
     if (publishableManifests.has(entry.manifestPath)) continue
     planned.push({
       manifestPath: entry.manifestPath,

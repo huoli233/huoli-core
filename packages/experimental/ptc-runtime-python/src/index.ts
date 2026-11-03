@@ -118,7 +118,7 @@ const RESERVED_NAMES = PORTABLE_RESERVED_WORDS
 
 /**
  * The seam's shared backend-owned globals (`console` is the Node provider's slot;
- * `__dsh_main__`/`__builtins__`/`__name__` are this bootstrap's wrapper and
+ * `__huoli_main__`/`__builtins__`/`__name__` are this bootstrap's wrapper and
  * seeded module globals). Shared so a namespace list valid on one backend is
  * valid on all — colliding with an owned slot would be silently overwritten
  * (or overwrite builtins), so the seam rejects them up front.

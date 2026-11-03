@@ -56,12 +56,12 @@ export function installViewerCarrier(options: ViewerCarrierOptions): void {
   let nextStreamId = (crypto.getRandomValues(new Uint32Array(1))[0] ?? 0) % 0x7fff_ff00 + 1
 
   type Answer = { readonly status: number; readonly body: unknown }
-  type Marked = Error & { dshRemoteStreamFailure?: object }
+  type Marked = Error & { huoliRemoteStreamFailure?: object }
   const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
   const carrier = (message: string): Error => {
     const error: Marked = new Error(message)
-    error.dshRemoteStreamFailure = { kind: 'carrier' }
+    error.huoliRemoteStreamFailure = { kind: 'carrier' }
     return error
   }
   const refusal = (answer: Answer): { readonly code?: string; readonly message?: string } => {
@@ -79,7 +79,7 @@ export function installViewerCarrier(options: ViewerCarrierOptions): void {
     const { code = 'liveshare/read-refused', message = `${subject} refused (HTTP ${String(answer.status)})` } = refusal(answer)
     const error: Marked = new Error(message)
     error.name = code
-    error.dshRemoteStreamFailure = { kind: 'remote', code, details: { status: answer.status } }
+    error.huoliRemoteStreamFailure = { kind: 'remote', code, details: { status: answer.status } }
     return error
   }
   const post = async (request: object, subject: string, signal?: AbortSignal): Promise<Answer> => {
@@ -122,7 +122,7 @@ export function installViewerCarrier(options: ViewerCarrierOptions): void {
     if (carrierCodes.has(code)) return carrier(message)
     const error: Marked = new Error(message)
     error.name = code
-    error.dshRemoteStreamFailure = { kind: 'remote', code, details: isRecord(value.details) ? value.details : {} }
+    error.huoliRemoteStreamFailure = { kind: 'remote', code, details: isRecord(value.details) ? value.details : {} }
     return error
   }
 

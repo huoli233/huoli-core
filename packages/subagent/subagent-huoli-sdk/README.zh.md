@@ -25,7 +25,7 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
-当委派应以完整 Harness 运行时在独立进程中运行时，挂载本提供方。常用路径是显式的：挂载 seam、挂载本提供方，按需配置 `dshBin`，并选择子级 `profile` 与有序 `patches`。
+当委派应以完整 Harness 运行时在独立进程中运行时，挂载本提供方。常用路径是显式的：挂载 seam、挂载本提供方，按需配置 `huoliBin`，并选择子级 `profile` 与有序 `patches`。
 
 ### 何时选择
 
@@ -38,10 +38,10 @@ kind: "package-reference"
 | 字段 | 默认值 | 含义 |
 |---|---|---|
 | `providerName` | `huoli-sdk` | `ctx.subagents` 上的注册表名称 |
-| `dshBin` | SDK 依赖 | 显式 huoli CLI（命令行界面）模块，在插件加载时解析并校验；省略则使用 SDK 依赖 |
+| `huoliBin` | SDK 依赖 | 显式 huoli CLI（命令行界面）模块，在插件加载时解析并校验；省略则使用 SDK 依赖 |
 | `profile` | `sdk` | 具名子 profile |
 | `patches` | `[]` | 每次启动的有序 profile patch 文件，在插件加载时解析并校验 |
-| `dshHome` | 必填 | 每个嵌套子进程的绝对隔离 Harness home |
+| `huoliHome` | 必填 | 每个嵌套子进程的绝对隔离 Harness home |
 | `provider` | `deepseek-official` | 写入子进程 `initialize` 的提供方路由 |
 | `model` | `deepseek-v4-flash` | 写入子进程 `initialize` 的模型 |
 | `maxTokens` | 适配器／提供方路由默认值 | 写入子进程 `initialize` 的单次请求输出 token 上限 |
@@ -61,7 +61,7 @@ kind: "package-reference"
     providerName: huoli-sdk
     profile: sdk
     patches: ['./profiles/research-child.cordis.yml']
-    dshHome: !!js dshHomePath('children')
+    huoliHome: !!js huoliHomePath('children')
     maxTokens: 49152
     env:
       DEEPSEEK_API_KEY: !!js process.env.DEEPSEEK_API_KEY
@@ -76,7 +76,7 @@ kind: "package-reference"
 
 ### 失败与恢复
 
-配置的 SDK 运行时必须实现 `session/wait`；不支持该请求的运行时会报告执行失败。请一并更新提供方与单独配置的 `dshBin` 运行时。已取消的请求会在路径解析或 spawn 之前失败。路由、spawn、握手或发布前取消失败通常只在子进程被回收后拒绝；如果初始化与清理均失败，有序安全事实会保留两项失败，而不会宣称已完全停稳。子运行时在发布后失败时会通过运行本身结算，而不是拒绝；部分输出与安全诊断保持分离。诊断只公开提供方、`initialize`、`session-run` 或 `shutdown` 阶段，以及固定类别。SDK 消息、stderr、路径、任务内容、环境值、凭据和协议载荷绝不会复制到诊断中。
+配置的 SDK 运行时必须实现 `session/wait`；不支持该请求的运行时会报告执行失败。请一并更新提供方与单独配置的 `huoliBin` 运行时。已取消的请求会在路径解析或 spawn 之前失败。路由、spawn、握手或发布前取消失败通常只在子进程被回收后拒绝；如果初始化与清理均失败，有序安全事实会保留两项失败，而不会宣称已完全停稳。子运行时在发布后失败时会通过运行本身结算，而不是拒绝；部分输出与安全诊断保持分离。诊断只公开提供方、`initialize`、`session-run` 或 `shutdown` 阶段，以及固定类别。SDK 消息、stderr、路径、任务内容、环境值、凭据和协议载荷绝不会复制到诊断中。
 
 -----
 

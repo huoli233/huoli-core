@@ -79,11 +79,11 @@ export function ViewerBrandName({ t }: PropsLocale<typeof NS>): ReactNode {
       ? t('viewer.picker.ownerUnknown')
       : t('viewer.picker.subjectLabel', { label: identitySubjectLabel(facts.ownerSubjectId) }))
   const ownerLine = t('viewer.sharedByShort', { owner })
-  const version = facts.dshVersion === undefined
+  const version = facts.huoliVersion === undefined
     ? undefined
     // Inline, the chip states the release the owner runs. Build metadata and the Relay's own
     // release stay on the link's tooltip, so a long identifier never widens the row.
-    : `${t('viewer.picker.version')} ${facts.dshVersion.replace(/\+.*$/u, '')}`
+    : `${t('viewer.picker.version')} ${facts.huoliVersion.replace(/\+.*$/u, '')}`
   const relay = facts.relay === undefined ? undefined : t('viewer.relayVersion', { release: facts.relay })
   return (
     <a
@@ -92,7 +92,7 @@ export function ViewerBrandName({ t }: PropsLocale<typeof NS>): ReactNode {
       aria-label={t('viewer.home')}
       title={[
         ownerLine,
-        facts.dshVersion === undefined ? undefined : `${t('viewer.picker.version')} ${facts.dshVersion}`,
+        facts.huoliVersion === undefined ? undefined : `${t('viewer.picker.version')} ${facts.huoliVersion}`,
         relay,
       ].filter(value => value !== undefined).join(' · ')}
     >

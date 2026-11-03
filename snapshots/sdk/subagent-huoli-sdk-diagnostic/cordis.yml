@@ -14,7 +14,7 @@
 - id: session-persistence-jsonl
   name: '@huoli/huoli-session-persistence-jsonl'
   config:
-    root: !!js dshHomePath('sessions')
+    root: !!js huoliHomePath('sessions')
     compression: !!js "process.env.HUOLI_SNAPSHOT === undefined ? 'zstd' : 'none'"
 
 - id: session-log-deepseek
@@ -30,7 +30,7 @@
         profile: sdk
         patches:
           - !!js process.env.HUOLI_TEST_CHILD_PATCH
-        dshHome: !!js dshHomePath('children/first')
+        huoliHome: !!js huoliHomePath('children/first')
         provider: mock
         model: mock-echo
         env:
@@ -40,7 +40,7 @@
       name: '@huoli/huoli-tool-subagent'
       config:
         provider: huoli-sdk-diagnostic
-        toolName: subagent_dsh_sdk
+        toolName: subagent_huoli_sdk
         maxDepth: provider-managed
     - id: subagent-huoli-sdk-diagnostic-second
       name: '@huoli/huoli-subagent-huoli-sdk'
@@ -49,7 +49,7 @@
         profile: sdk
         patches:
           - !!js process.env.HUOLI_TEST_CHILD_PATCH
-        dshHome: !!js dshHomePath('children/second')
+        huoliHome: !!js huoliHomePath('children/second')
         provider: mock
         model: mock-echo
         env:
@@ -59,7 +59,7 @@
       name: '@huoli/huoli-tool-subagent'
       config:
         provider: huoli-sdk-diagnostic-second
-        toolName: subagent_dsh_sdk_second
+        toolName: subagent_huoli_sdk_second
         maxDepth: provider-managed
     - id: await-external-subagents
       name: '../../../packages/test-support/session-snapshot/tests/fixtures/subagent-settlement-barrier.ts'

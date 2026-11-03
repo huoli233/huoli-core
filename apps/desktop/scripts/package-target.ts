@@ -140,11 +140,11 @@ function writeReleaseRecord(
   artifactsRoot: string,
 ): void {
   const desktopVersion = packageVersion(join(APP_ROOT, 'package.json'), 'desktop package')
-  const dshVersion = packageVersion(join(REPOSITORY_ROOT, 'package.json'), 'huoli package')
-  if (desktopVersion !== dshVersion) {
-    throw new Error(`desktop package: desktop version ${desktopVersion} does not match huoli version ${dshVersion}`)
+  const huoliVersion = packageVersion(join(REPOSITORY_ROOT, 'package.json'), 'huoli package')
+  if (desktopVersion !== huoliVersion) {
+    throw new Error(`desktop package: desktop version ${desktopVersion} does not match huoli version ${huoliVersion}`)
   }
-  const buildVersion = resolveDesktopBuildVersion(environment, dshVersion)
+  const buildVersion = resolveDesktopBuildVersion(environment, huoliVersion)
   const packaged = resolveDesktopBuildCommit(environment)
   const update = resolveDesktopAutoUpdateConfig(environment, target.platform, target.arch)
   const recordPath = join(artifactsRoot, desktopBuildRecordFilename(target.name))
@@ -490,14 +490,14 @@ export async function packageTarget(
       ...(invocation.unsigned
         ? ['exec', 'tsx', 'apps/desktop/scripts/pack-local-packages.ts']
         : ['run', 'release:pack', '--family', 'huoli']),
-      '--out', buildPaths.packedDsh, ...packArguments,
+      '--out', buildPaths.packedHuoli, ...packArguments,
     ], buildEnv, REPOSITORY_ROOT)
     await executePreparation([
       '--dir',
       'apps/desktop-host',
       'pack',
       '--pack-destination',
-      buildPaths.packedDsh,
+      buildPaths.packedHuoli,
     ], buildEnv, REPOSITORY_ROOT)
     await executePreparation(['run', 'release:pack', '--family', 'vendor', '--out', buildPaths.packedVendor, ...packArguments], buildEnv, REPOSITORY_ROOT)
     rmSync(buildPaths.packedLandlock, { recursive: true, force: true })

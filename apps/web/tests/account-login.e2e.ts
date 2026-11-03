@@ -14,7 +14,7 @@ import { saveFailureShot } from './support.ts'
 
 const OVERLAY_TEMPLATE = fileURLToPath(new URL('./fixtures/account-login/cordis.patch.yml', import.meta.url))
 const MODE = webSnapshotMode()
-const TOKEN = 'dsh_web_login_test'
+const TOKEN = 'huoli_web_login_test'
 const CODE = 'web-login-code'
 const AVATAR_EXPECTED = fileURLToPath(new URL('./expected/account-login/avatar-retry.expected.md', import.meta.url))
 

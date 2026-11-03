@@ -44,7 +44,7 @@ const WHALE_REV = packageAssetRevision(WHALE)
 const WHALE_URL = `plugins/@huoli/huoli-client-asset-fixture/assets/whale-${WHALE_REV}.png`
 
 /** The resolver call identifier a compiled module emits before rendering. */
-const RESOLVER_CALL = /__dshPackageAsset_[0-9a-f]{12}(?=\()/u
+const RESOLVER_CALL = /__huoliPackageAsset_[0-9a-f]{12}(?=\()/u
 
 /** Read the resolver call identifier from one compiled module. */
 function resolverCall(output: string | null): string {
@@ -235,7 +235,7 @@ describe('client bundle package asset imports', () => {
     if (renderChunk === undefined) throw new Error('asset plugin has no renderChunk hook')
     const call = resolverCall(await hooks(plugin).load.call(recordingContext(), join(root, 'src/client/assets/whale.png')))
     // Plugin data that only shares the fixed prefix stays as written.
-    const literal = 'const text = "__dshPackageAsset(";\n'
+    const literal = 'const text = "__huoliPackageAsset(";\n'
     const code = `const a = ${call}("${WHALE_URL}");\nconst css = "x" + ${call}("${WHALE_URL}") + "y";\n${literal}`
 
     expect(renderChunk(code, {}, { format: 'cjs' })?.toString())
@@ -247,7 +247,7 @@ describe('client bundle package asset imports', () => {
   it('builds an asset import into require.asset and keeps plugin strings that share the prefix', async () => {
     const root = await assetPackage({
       'src/client/assets/whale.png': WHALE,
-      'lib/types/client/index.js': 'import whale from "./assets/whale.png"\nexport const url = whale\nexport const text = "__dshPackageAsset("\n',
+      'lib/types/client/index.js': 'import whale from "./assets/whale.png"\nexport const url = whale\nexport const text = "__huoliPackageAsset("\n',
     })
     const config = clientFaceConfigs(root).find(candidate => candidate.platform === 'browser')
     if (config === undefined) throw new Error('browser config missing')
@@ -261,8 +261,8 @@ describe('client bundle package asset imports', () => {
       const output = builds.flatMap(bundle => bundle.chunks).find(chunk => chunk.type === 'chunk' && chunk.fileName === 'client.js')
       const code = output?.type === 'chunk' ? output.code : ''
       expect(code).toContain(`require.asset(${JSON.stringify(WHALE_URL)})`)
-      expect(code).not.toContain('__dshPackageAsset_')
-      expect(code).toContain('"__dshPackageAsset("')
+      expect(code).not.toContain('__huoliPackageAsset_')
+      expect(code).toContain('"__huoliPackageAsset("')
     } finally {
       for (const bundle of builds) await bundle[Symbol.asyncDispose]()
     }
@@ -343,7 +343,7 @@ describe('client bundle package asset imports', () => {
     expect(css.split(`url(resolved:${WHALE_URL})`)).toHaveLength(3)
     // lightningcss keeps only the last background, so the placeholder of old.png is missing from the text.
     expect(css).not.toContain('old-')
-    expect(css).not.toContain('__dshPackageAsset')
+    expect(css).not.toContain('__huoliPackageAsset')
   })
 
   it('rewrites the urls inside image-set()', async () => {
@@ -364,20 +364,20 @@ describe('client bundle package asset imports', () => {
   it('keeps literal placeholder-like text and resolves only the references the rewrite inserted', async () => {
     const root = await assetPackage({
       'src/client/assets/whale.png': WHALE,
-      'src/client/assets/__dshPackageAsset_logo.png': WHALE,
+      'src/client/assets/__huoliPackageAsset_logo.png': WHALE,
       'src/client/theme.css': [
-        '.a::after { content: "__dshPackageAsset0__"; } .b { background: url(./assets/whale.png); }',
-        '.c { background: url(./assets/__dshPackageAsset_logo.png); }',
+        '.a::after { content: "__huoliPackageAsset0__"; } .b { background: url(./assets/whale.png); }',
+        '.c { background: url(./assets/__huoliPackageAsset_logo.png); }',
       ].join('\n'),
     })
 
     const output = await loadImport(browserPlugins(root)('huoli-css-global-inline'), recordingContext(), './theme.css', join(root, 'src/client/index.ts'))
 
     const css = stylesheetText(output, reference => `resolved:${reference}`)
-    expect(css).toContain('content:"__dshPackageAsset0__"')
+    expect(css).toContain('content:"__huoliPackageAsset0__"')
     expect(css).toContain(`url(resolved:${WHALE_URL})`)
     // A real file whose name shares the placeholder prefix is still a package asset.
-    expect(css).toContain(`url(resolved:plugins/@huoli/huoli-client-asset-fixture/assets/__dshPackageAsset_logo-${WHALE_REV}.png)`)
+    expect(css).toContain(`url(resolved:plugins/@huoli/huoli-client-asset-fixture/assets/__huoliPackageAsset_logo-${WHALE_REV}.png)`)
   })
 
   it('rejects an uppercase extension, which the asset import types do not declare', async () => {

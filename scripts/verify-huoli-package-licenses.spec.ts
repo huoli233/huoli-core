@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { inspectDshPackageLicenses } from './verify-huoli-package-licenses.ts'
+import { inspectHuoliPackageLicenses } from './verify-huoli-package-licenses.ts'
 
 const roots: string[] = []
 
@@ -40,7 +40,7 @@ describe('HUOLI package license gate', () => {
       license: 'BSD-3-Clause',
     })
 
-    expect(inspectDshPackageLicenses(root)).toEqual({
+    expect(inspectHuoliPackageLicenses(root)).toEqual({
       packageCount: 3,
       failures: [
         'packages/core/agent/package.json: @huoli/huoli-agent must declare "license": "MIT"; found "BSD-3-Clause".',
@@ -52,7 +52,7 @@ describe('HUOLI package license gate', () => {
     const root = createWorkspace()
     writeManifest(root, 'packages/core/agent/package.json', { name: '@huoli/huoli-agent' })
 
-    expect(inspectDshPackageLicenses(root).failures).toEqual([
+    expect(inspectHuoliPackageLicenses(root).failures).toEqual([
       'packages/core/agent/package.json: @huoli/huoli-agent must declare "license": "MIT"; found undefined.',
     ])
   })

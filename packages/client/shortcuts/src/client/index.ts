@@ -42,7 +42,7 @@ export default class ShortcutsService extends Service implements Shortcuts {
   constructor(ctx: Context) {
     const environment = detectEnvironment(document, navigator)
     const keyboard = environment.runtime === 'desktop'
-      ? (window as Window & { dshDesktop?: { keyboard?: DesktopKeyboardApi } }).dshDesktop?.keyboard : undefined
+      ? (window as Window & { huoliDesktop?: { keyboard?: DesktopKeyboardApi } }).huoliDesktop?.keyboard : undefined
     if (environment.runtime === 'desktop' && keyboard === undefined) throw new Error('Desktop keyboard bridge unavailable')
     super(ctx, 'shortcuts')
     this.keyboard = keyboard

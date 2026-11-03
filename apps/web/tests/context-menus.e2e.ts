@@ -364,7 +364,7 @@ describe.each(['MacIntel', 'Win32', 'Linux x86_64'])('web context menus on %s', 
       const destinations = { download: join(scaffold.workspaceCwd, 'downloaded.gif'), saveAs: join(scaffold.workspaceCwd, 'saved.txt') }
       await native.addInitScript(({ platform, destinations }) => {
         Object.defineProperty(navigator, 'platform', { value: platform })
-        Object.defineProperty(globalThis, 'dshDesktop', { value: { protocolVersion: 1, fileActions: {
+        Object.defineProperty(globalThis, 'huoliDesktop', { value: { protocolVersion: 1, fileActions: {
           save: async ({ mode }: { mode: 'download' | 'saveAs' }) => ({ status: 'saved', path: destinations[mode] }),
         } } })
       }, { platform, destinations })

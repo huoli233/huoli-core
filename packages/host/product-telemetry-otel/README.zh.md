@@ -42,7 +42,7 @@ kind: "package-reference"
 |---|---|---|
 | `endpoint` | `https://huoli-otel-collector.deepseeksvc.com/v1/logs` | 完整 HTTP(S) 日志地址 |
 | `serviceName`, `serviceVersion` | 必填 | OTel resource 中的应用标识 |
-| `channel` | `dsh_otel_report` | 接收服务的 `x-channel` 请求头 |
+| `channel` | `huoli_otel_report` | 接收服务的 `x-channel` 请求头 |
 | `compression` | SDK 环境变量 | `gzip` 或 `none`；省略时遵循 OTel 压缩环境变量 |
 | `maxExportBatchSize`, `maxQueueSize` | `512`, `2048` | 记录条数上限；批次大小不能超过队列大小 |
 | `scheduledDelayMillis` | `30000` | 不满批次时的发送间隔 |

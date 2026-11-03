@@ -4,7 +4,7 @@ import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parse } from 'semver'
 import { withFileLock, writeFileAtomic } from '@huoli/huoli-atomic-write'
-import { getDshRuntimeVersion } from './plugin-compatibility.ts'
+import { getHuoliRuntimeVersion } from './plugin-compatibility.ts'
 
 /** Independent profile metadata; neither package manifests nor Cordis patches carry grants. */
 export const PROFILE_COMPATIBILITY_FILENAME = 'compatibility.json'
@@ -117,7 +117,7 @@ export async function setProfileVersionExemption(
   if (enabled && !acceptRisk) {
     throw new Error('Incompatible plugins may cause crashes or data loss. To grant this exact-version exemption, explicitly acknowledge the risk with --accept-risk (acceptRisk: true).')
   }
-  const current = getDshRuntimeVersion()
+  const current = getHuoliRuntimeVersion()
   if (enabled && runtimeVersion !== current) {
     throw new Error(`Cannot approve HUOLI ${runtimeVersion}: this application runs HUOLI ${current}. Use --huoli-version ${current}.`)
   }

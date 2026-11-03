@@ -22,8 +22,8 @@ def main() -> None:
     if os.environ.get("HUOLI_PRIMARY_RUNTIME") is None:
         download_primary_runtime()
     with ThreadPoolExecutor(max_workers=2) as worker:
-        harness = DeepSeekHarness(dsh_home=str(args.dsh_home.resolve()), cwd=str(args.workspace.resolve()),
-                                  dsh_bin=None if args.dsh_bin is None else str(args.dsh_bin.resolve()),
+        harness = DeepSeekHarness(huoli_home=str(args.huoli_home.resolve()), cwd=str(args.workspace.resolve()),
+                                  huoli_bin=None if args.huoli_bin is None else str(args.huoli_bin.resolve()),
                                   approval_requests=True,
                                   env={"HUOLI_PERMISSION_MODE": "workspace-write"})
         try:

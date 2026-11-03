@@ -7,10 +7,10 @@ import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   DEFAULT_INITIALIZE_TIMEOUT_MS,
-  installedDshBin,
-  resolveDshNodeLaunchFromManifests,
-  resolveDshBinFromManifests,
-  resolveDshLaunch,
+  installedHuoliBin,
+  resolveHuoliNodeLaunchFromManifests,
+  resolveHuoliBinFromManifests,
+  resolveHuoliLaunch,
 } from '../src/launch.ts'
 
 const cleanups: string[] = []
@@ -18,15 +18,15 @@ afterEach(() => {
   for (const path of cleanups.splice(0)) rmSync(path, { recursive: true, force: true })
 })
 
-function manifestPair(huoli: object, client: object): { dshUrl: string; clientUrl: string; root: string } {
+function manifestPair(huoli: object, client: object): { huoliUrl: string; clientUrl: string; root: string } {
   const root = mkdtempSync(join(tmpdir(), 'huoli-sdk-manifests-'))
   cleanups.push(root)
-  const dshPath = join(root, 'huoli-package.json')
+  const huoliPath = join(root, 'huoli-package.json')
   const clientPath = join(root, 'client-package.json')
-  writeFileSync(dshPath, JSON.stringify(huoli))
+  writeFileSync(huoliPath, JSON.stringify(huoli))
   writeFileSync(clientPath, JSON.stringify(client))
   return {
-    dshUrl: pathToFileURL(dshPath).href,
+    huoliUrl: pathToFileURL(huoliPath).href,
     clientUrl: pathToFileURL(clientPath).href,
     root,
   }
@@ -34,9 +34,9 @@ function manifestPair(huoli: object, client: object): { dshUrl: string; clientUr
 
 describe('SDK huoli launch resolution', () => {
   it('resolves the same-version installed huoli entry by default', () => {
-    const bin = installedDshBin()
+    const bin = installedHuoliBin()
     expect(bin.endsWith(join('apps', 'cli', 'lib', 'bin.js'))).toBe(true)
-    const launch = resolveDshLaunch()
+    const launch = resolveHuoliLaunch()
     expect(launch.command).toBe(process.execPath)
     expect(launch.args).toEqual(existsSync(bin)
       ? [bin, '--profile', 'sdk']
@@ -51,11 +51,11 @@ describe('SDK huoli launch resolution', () => {
 
   it('makes every filesystem input absolute before spawn and preserves patch order', () => {
     const caller = resolve('/tmp', 'sdk-launch-caller')
-    const launch = resolveDshLaunch({
-      dshBin: './bin/huoli',
+    const launch = resolveHuoliLaunch({
+      huoliBin: './bin/huoli',
       profile: 'custom-sdk',
       patches: ['./first.yml', '../second.yml'],
-      dshHome: './home',
+      huoliHome: './home',
       processCwd: './worker',
       env: { PATH: '/bin', HUOLI_HOME: '/stale' },
       initializeTimeoutMs: 123,
@@ -93,13 +93,13 @@ describe('SDK huoli launch resolution', () => {
     writeFileSync(sourcePatch, '[]\n')
     writeFileSync(sourceTsconfig, '{}\n')
 
-    expect(resolveDshNodeLaunchFromManifests(pair.dshUrl, pair.clientUrl, 'file:///tsx-loader.mjs'))
+    expect(resolveHuoliNodeLaunchFromManifests(pair.huoliUrl, pair.clientUrl, 'file:///tsx-loader.mjs'))
       .toEqual({
         nodeArgs: ['--import', 'file:///tsx-loader.mjs', sourceBin],
         patches: [sourcePatch],
         environment: { TSX_TSCONFIG_PATH: sourceTsconfig },
       })
-    expect(resolveDshNodeLaunchFromManifests(pair.dshUrl, pair.clientUrl))
+    expect(resolveHuoliNodeLaunchFromManifests(pair.huoliUrl, pair.clientUrl))
       .toEqual({
         nodeArgs: ['--import', import.meta.resolve('tsx/esm'), sourceBin],
         patches: [sourcePatch],
@@ -113,7 +113,7 @@ describe('SDK huoli launch resolution', () => {
     mkdirSync(join(pair.root, 'lib'))
     writeFileSync(bin, '')
 
-    expect(resolveDshNodeLaunchFromManifests(pair.dshUrl, pair.clientUrl)).toEqual({
+    expect(resolveHuoliNodeLaunchFromManifests(pair.huoliUrl, pair.clientUrl)).toEqual({
       nodeArgs: [bin],
       patches: [],
       environment: {},
@@ -125,17 +125,17 @@ describe('SDK huoli launch resolution', () => {
     mkdirSync(join(pair.root, 'src'))
     const sourceFiles = ['src/bin.ts', 'src/sdk-source.cordis.patch.yml', 'tsconfig.json']
     for (const source of sourceFiles.slice(0, presentCount)) writeFileSync(join(pair.root, source), '')
-    expect(() => resolveDshNodeLaunchFromManifests(pair.dshUrl, pair.clientUrl, 'file:///tsx-loader.mjs'))
+    expect(() => resolveHuoliNodeLaunchFromManifests(pair.huoliUrl, pair.clientUrl, 'file:///tsx-loader.mjs'))
       .toThrow('is missing its built executable')
   })
 
   it('reads explicit and inherited environments when the child starts', () => {
     const explicit: NodeJS.ProcessEnv = { MARKER: 'before' }
-    const explicitLaunch = resolveDshLaunch({ dshBin: '/bin/huoli', env: explicit })
+    const explicitLaunch = resolveHuoliLaunch({ huoliBin: '/bin/huoli', env: explicit })
     explicit.MARKER = 'after'
     expect(explicitLaunch.environment().MARKER).toBe('after')
 
-    const inheritedLaunch = resolveDshLaunch({ dshBin: '/bin/huoli' })
+    const inheritedLaunch = resolveHuoliLaunch({ huoliBin: '/bin/huoli' })
     process.env.HUOLI_SDK_LATE_ENV_TEST = 'late'
     try {
       expect(inheritedLaunch.environment().HUOLI_SDK_LATE_ENV_TEST).toBe('late')
@@ -148,21 +148,21 @@ describe('SDK huoli launch resolution', () => {
     'rejects a huoli version that differs from the client (%j)',
     (version) => {
       const pair = manifestPair({ version, bin: 'bin.js' }, { version: '1.0.0' })
-      expect(() => resolveDshBinFromManifests(pair.dshUrl, pair.clientUrl))
+      expect(() => resolveHuoliBinFromManifests(pair.huoliUrl, pair.clientUrl))
         .toThrow(`requires the same huoli version, got ${String(version)}`)
     },
   )
 
   it('accepts the string npm bin form', () => {
     const pair = manifestPair({ version: '1.0.0', bin: './bin.js' }, { version: '1.0.0' })
-    expect(resolveDshBinFromManifests(pair.dshUrl, pair.clientUrl)).toBe(join(pair.root, 'bin.js'))
+    expect(resolveHuoliBinFromManifests(pair.huoliUrl, pair.clientUrl)).toBe(join(pair.root, 'bin.js'))
   })
 
   it.each([null, {}, ''])(
     'rejects a manifest without a usable huoli executable (%j)',
     (bin) => {
       const pair = manifestPair({ version: '1.0.0', bin }, { version: '1.0.0' })
-      expect(() => resolveDshBinFromManifests(pair.dshUrl, pair.clientUrl))
+      expect(() => resolveHuoliBinFromManifests(pair.huoliUrl, pair.clientUrl))
         .toThrow('declares no huoli executable')
     },
   )

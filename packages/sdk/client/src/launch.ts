@@ -48,29 +48,29 @@ function manifest(url: string): PackageManifest {
 
 /**
  * Resolve and version-check a huoli executable from package manifests.
- * @param dshManifestUrl - resolved URL of the huoli package manifest.
+ * @param huoliManifestUrl - resolved URL of the huoli package manifest.
  * @param clientManifestUrl - resolved URL of the SDK client manifest.
  * @returns the absolute huoli executable path.
  */
-export function resolveDshBinFromManifests(dshManifestUrl: string, clientManifestUrl: string): string {
-  const dshManifest = manifest(dshManifestUrl)
+export function resolveHuoliBinFromManifests(huoliManifestUrl: string, clientManifestUrl: string): string {
+  const huoliManifest = manifest(huoliManifestUrl)
   const clientManifest = manifest(clientManifestUrl)
-  if (typeof dshManifest.version !== 'string' || dshManifest.version !== clientManifest.version) {
-    throw new Error(`huoli SDK client ${String(clientManifest.version)} requires the same huoli version, got ${String(dshManifest.version)}`)
+  if (typeof huoliManifest.version !== 'string' || huoliManifest.version !== clientManifest.version) {
+    throw new Error(`huoli SDK client ${String(clientManifest.version)} requires the same huoli version, got ${String(huoliManifest.version)}`)
   }
-  const bin = typeof dshManifest.bin === 'object' && dshManifest.bin !== null
-    ? (dshManifest.bin as Record<string, unknown>).huoli
-    : dshManifest.bin
+  const bin = typeof huoliManifest.bin === 'object' && huoliManifest.bin !== null
+    ? (huoliManifest.bin as Record<string, unknown>).huoli
+    : huoliManifest.bin
   if (typeof bin !== 'string' || bin === '') throw new Error('@huoli/huoli declares no huoli executable')
-  return resolve(dirname(fileURLToPath(dshManifestUrl)), bin)
+  return resolve(dirname(fileURLToPath(huoliManifestUrl)), bin)
 }
 
 /**
  * Resolve and version-check the built huoli executable installed with this SDK.
  * @returns the absolute built executable path, whether or not it exists in a source checkout.
  */
-export function installedDshBin(): string {
-  return resolveDshBinFromManifests(
+export function installedHuoliBin(): string {
+  return resolveHuoliBinFromManifests(
     import.meta.resolve('@huoli/huoli/package.json'),
     new URL('../package.json', import.meta.url).href,
   )
@@ -78,20 +78,20 @@ export function installedDshBin(): string {
 
 /**
  * Resolve the Node launch for one same-version huoli package.
- * @param dshManifestUrl - resolved URL of the huoli package manifest.
+ * @param huoliManifestUrl - resolved URL of the huoli package manifest.
  * @param clientManifestUrl - resolved URL of the SDK client manifest.
  * @param sourceLoaderUrl - optional absolute tsx loader URL for deterministic tests.
  * @returns built output, or the source entry plus its compatibility patch and tsx environment.
  */
-export function resolveDshNodeLaunchFromManifests(
-  dshManifestUrl: string,
+export function resolveHuoliNodeLaunchFromManifests(
+  huoliManifestUrl: string,
   clientManifestUrl: string,
   sourceLoaderUrl?: string,
 ): HuoliNodeLaunch {
-  const bin = resolveDshBinFromManifests(dshManifestUrl, clientManifestUrl)
+  const bin = resolveHuoliBinFromManifests(huoliManifestUrl, clientManifestUrl)
   if (existsSync(bin)) return { nodeArgs: [bin], patches: [], environment: {} }
 
-  const packageDir = dirname(fileURLToPath(dshManifestUrl))
+  const packageDir = dirname(fileURLToPath(huoliManifestUrl))
   const sourceBin = resolve(packageDir, 'src/bin.ts')
   const sourcePatch = resolve(packageDir, 'src/sdk-source.cordis.patch.yml')
   const sourceTsconfig = resolve(packageDir, 'tsconfig.json')
@@ -112,8 +112,8 @@ export function resolveDshNodeLaunchFromManifests(
  * Resolve the installed huoli package to a built or source Node launch.
  * @returns the launch descriptor for the current checkout or installed package.
  */
-function installedDshNodeLaunch(): HuoliNodeLaunch {
-  return resolveDshNodeLaunchFromManifests(
+function installedHuoliNodeLaunch(): HuoliNodeLaunch {
+  return resolveHuoliNodeLaunchFromManifests(
     import.meta.resolve('@huoli/huoli/package.json'),
     new URL('../package.json', import.meta.url).href,
   )
@@ -125,27 +125,27 @@ function installedDshNodeLaunch(): HuoliNodeLaunch {
  * @param callerCwd - parent-process directory used for lexical resolution.
  * @returns one generic subprocess spec for the JSON-RPC transport.
  */
-export function resolveDshLaunch(
+export function resolveHuoliLaunch(
   options: HarnessClientOptions = {},
   callerCwd: string = process.cwd(),
 ): RuntimeProcessOptions {
   const profile = options.profile ?? 'sdk'
-  const dshLaunch = options.dshBin === undefined
-    ? installedDshNodeLaunch()
-    : { nodeArgs: [resolve(callerCwd, options.dshBin)], patches: [], environment: {} }
+  const huoliLaunch = options.huoliBin === undefined
+    ? installedHuoliNodeLaunch()
+    : { nodeArgs: [resolve(callerCwd, options.huoliBin)], patches: [], environment: {} }
   const patches = [
-    ...dshLaunch.patches,
+    ...huoliLaunch.patches,
     ...(options.patches ?? []).map(path => resolve(callerCwd, path)),
   ]
-  const dshHome = options.dshHome === undefined ? undefined : resolve(callerCwd, options.dshHome)
+  const huoliHome = options.huoliHome === undefined ? undefined : resolve(callerCwd, options.huoliHome)
   return {
     command: process.execPath,
-    args: [...dshLaunch.nodeArgs, '--profile', profile, ...patches.flatMap(path => ['--patch', path])],
+    args: [...huoliLaunch.nodeArgs, '--profile', profile, ...patches.flatMap(path => ['--patch', path])],
     ...options.processCwd === undefined ? {} : { cwd: resolve(callerCwd, options.processCwd) },
     environment: () => ({
       ...(options.env ?? process.env),
-      ...dshLaunch.environment,
-      ...dshHome === undefined ? {} : { HUOLI_HOME: dshHome },
+      ...huoliLaunch.environment,
+      ...huoliHome === undefined ? {} : { HUOLI_HOME: huoliHome },
     }),
     description: `huoli profile ${JSON.stringify(profile)}`,
     initializeTimeoutMs: options.initializeTimeoutMs ?? DEFAULT_INITIALIZE_TIMEOUT_MS,

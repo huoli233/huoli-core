@@ -26,7 +26,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpat
 import { basename, dirname, join, relative, resolve, sep } from 'node:path'
 import type { EntryOptions } from '@huoli/cordis-plugin-loader'
 import { applyEntryPatches, type PatchOptions } from '@huoli/cordis-plugin-include'
-import { resolveDshHome } from '@huoli/huoli-home-paths'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import type { HuoliBundleManifest, HuoliPackageManifest } from '@huoli/huoli-package-manifest'
 import { INSTALLATION_OWNED_PROFILE_TUPLES, PROFILE_TEMPLATES, RETIRED_BUNDLES } from '@huoli/huoli-official-bundles'
 import { assertBundlePlatform } from './bundle-platform.ts'
@@ -159,10 +159,10 @@ export interface RuntimeResolution {
 /**
  * Resolve a profile's directory under the Harness home.
  * @param name - the profile name (`huoli --profile <name>`).
- * @param home - the Harness home; defaults to {@link resolveDshHome}.
+ * @param home - the Harness home; defaults to {@link resolveHuoliHome}.
  * @returns the absolute profile directory (which may not exist yet).
  */
-export function resolveProfileDir(name: string, home: string = resolveDshHome()): string {
+export function resolveProfileDir(name: string, home: string = resolveHuoliHome()): string {
   if (name === '' || name.includes('/') || name.includes('\\') || name === '.' || name === '..'
     // Node reserves this name for dependency lookup.
     || name === 'node_modules') {
@@ -374,7 +374,7 @@ export interface RuntimeResolutionOptions {
   installAnchor: string
   /** Loaded profile whose selected bundles may carry profile-local plugins. */
   profile?: Profile
-  /** Harness home; defaults to {@link resolveDshHome}. */
+  /** Harness home; defaults to {@link resolveHuoliHome}. */
   home?: string
 }
 
@@ -386,7 +386,7 @@ export interface RuntimeResolutionOptions {
 export async function createRuntimeResolution(
   options: RuntimeResolutionOptions,
 ): Promise<ProfileRuntimeResolution> {
-  const { installAnchor, profile, home = resolveDshHome() } = options
+  const { installAnchor, profile, home = resolveHuoliHome() } = options
   const profilesDir = join(home, PROFILES_DIR)
   const manifest = readOptionalProfileManifest(profile)
   const { packageNames, packageDirs, declarers, versions } = collectInstallationScopePackages(
@@ -719,14 +719,14 @@ export function loadProfileDirectory(
  * @param binName - the diagnostic prefix on thrown errors.
  * @param name - the profile name.
  * @param installAnchor - absolute path of the huoli app's package.json (first resolution anchor).
- * @param home - the Harness home; defaults to {@link resolveDshHome}.
+ * @param home - the Harness home; defaults to {@link resolveHuoliHome}.
  * @param options - `userLayer: false` skips reading `cordis.patch.yml`, so a
  * bundles-only consumer (`--dump-default-config`, a recovery diagnostic)
  * cannot fail on a broken user layer.
  * @returns the loaded profile (empty `patches` when the user layer is skipped).
  */
 export function loadProfile(
-  binName: string, name: string, installAnchor: string, home: string = resolveDshHome(),
+  binName: string, name: string, installAnchor: string, home: string = resolveHuoliHome(),
   options: { userLayer?: boolean } = {},
 ): Profile {
   const dir = resolveProfileDir(name, home)

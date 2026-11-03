@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { PassThrough } from 'node:stream'
 import { expect, it, onTestFinished, vi } from 'vitest'
-import { getDshRuntimeVersion, initProfile, readProfileManifest } from '@huoli/huoli-app-boot'
+import { getHuoliRuntimeVersion, initProfile, readProfileManifest } from '@huoli/huoli-app-boot'
 import { anchorPathSpec, readProfileRegistry, runPluginCommand, runProfilePnpm, viewProfilePackage } from '../src/operations.ts'
 
 /** The manifest fields an inspection prints. */
@@ -237,7 +237,7 @@ it.each([
   })
   expect(outcome.exitCode).toBe(1)
   expect(outcome.incompatible).toEqual([
-    { name: 'plugin', version: '1.0.0', runtimeVersion: getDshRuntimeVersion(), requirements: { '@huoli/huoli': '999.0.0' } },
+    { name: 'plugin', version: '1.0.0', runtimeVersion: getHuoliRuntimeVersion(), requirements: { '@huoli/huoli': '999.0.0' } },
   ])
   expect(outcome.output).toContain('installation rejected')
   expect(outcome.output).toContain('plugin@1.0.0')
@@ -315,7 +315,7 @@ it('runs an invocation that names no command without a registry lookup', async (
 it('installs an incompatible path spec the profile exempts', async () => {
   const { home, dir, context, pnpm } = fixture()
   writePathSpec(home, '999.0.0')
-  writeFileSync(join(dir, 'compatibility.json'), JSON.stringify({ 'plugin@1.0.0': [getDshRuntimeVersion()] }) + '\n')
+  writeFileSync(join(dir, 'compatibility.json'), JSON.stringify({ 'plugin@1.0.0': [getHuoliRuntimeVersion()] }) + '\n')
   pnpm.mutate = (target) => {
     install(target, 'plugin')
     writeFileSync(join(target, 'node_modules', 'plugin', 'package.json'), JSON.stringify({
@@ -491,7 +491,7 @@ it.each([
   { key: 'actual@1.0.0', runtime: '999.0.0', exitCode: 1 },
 ])('matches exemptions to the actual alias manifest and exact versions: $key / $runtime', async ({ key, runtime, exitCode }) => {
   const { dir, context, pnpm } = fixture()
-  writeFileSync(join(dir, 'compatibility.json'), JSON.stringify({ [key]: [runtime === 'current' ? getDshRuntimeVersion() : runtime] }) + '\n')
+  writeFileSync(join(dir, 'compatibility.json'), JSON.stringify({ [key]: [runtime === 'current' ? getHuoliRuntimeVersion() : runtime] }) + '\n')
   pnpm.mutate = (target) => { installGuarded(target, 'alias', 'actual') }
   expect(await runProfilePnpm(context, ['add', 'alias@npm:actual@1.0.0'], { execution: 'service', outputBytes: 8192 })).toMatchObject({ exitCode })
   expect(readProfileManifest('test', dir).huoli?.profile?.bundles).toEqual(exitCode === 0 ? ['alias'] : [])

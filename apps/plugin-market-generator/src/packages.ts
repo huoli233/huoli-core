@@ -90,7 +90,7 @@ const MAX_RANGE_ALTERNATIVES = 256
  * @returns the range, undefined for any HUOLI version, or an error when installation finds the version incompatible
  *   with every HUOLI version: an empty, `workspace:`, or invalid range, or ranges that no version satisfies together.
  */
-export function dshRange(manifest: Manifest): string | undefined | Error {
+export function huoliRange(manifest: Manifest): string | undefined | Error {
   const declared = isObject(manifest.engines) ? manifest.engines.huoli : undefined
   const ranges = typeof declared === 'string' ? [declared]
     : Object.entries(isObject(manifest.peerDependencies) ? manifest.peerDependencies : {})

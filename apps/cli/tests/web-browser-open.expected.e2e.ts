@@ -28,7 +28,7 @@ interface BrowserOpenRecord {
   status: number
   bootManifest: boolean
   apiKeyPresent: boolean
-  dshHomePresent: boolean
+  huoliHomePresent: boolean
 }
 
 function normalizeLocalUrl(url: string): string {
@@ -79,13 +79,13 @@ describe.skipIf(!builtArtifactsExist)('huoli web browser-open assembled snapshot
       status: opened.status,
       bootManifest: opened.bootManifest,
       apiKeyPresent: opened.apiKeyPresent,
-      dshHomePresent: opened.dshHomePresent,
+      huoliHomePresent: opened.huoliHomePresent,
       stderr: result.stderr,
     }).toMatchInlineSnapshot(`
       {
         "apiKeyPresent": false,
         "bootManifest": true,
-        "dshHomePresent": false,
+        "huoliHomePresent": false,
         "exitCode": 0,
         "openedUrl": "http://127.0.0.1:{{port}}/?token={{token}}",
         "opening": true,

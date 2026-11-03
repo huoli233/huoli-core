@@ -1,5 +1,5 @@
 ---
-description: "The managed DSH_* shell environment for users and maintainers choosing, configuring, or extending the environment every model shell call runs with."
+description: "The managed HUOLI_* shell environment for users and maintainers choosing, configuring, or extending the environment every model shell call runs with."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`huoli-shell-env` provides the trusted `DSH_*` environment that every model shell call — bash or pwsh — runs with: built-in facts such as `HUOLI_HOME`, `HUOLI_SHELL=1`, the agent's `HUOLI_SESSION_ID`, and the launched profile's `HUOLI_PROFILE` and `HUOLI_PROFILE_DIR`. Plugin authors can register their own facts with declared keys, collected per execution and disposed with their plugin; duplicate ownership or undeclared runtime keys fail loudly instead of silently overwriting. The registry changes nothing else the model sees — the shell tools own their own schemas and prompts. Choose it in any composition that mounts a model shell tool; configuration only picks the Harness home directory.
+`huoli-shell-env` provides the trusted `HUOLI_*` environment that every model shell call — bash or pwsh — runs with: built-in facts such as `HUOLI_HOME`, `HUOLI_SHELL=1`, the agent's `HUOLI_SESSION_ID`, and the launched profile's `HUOLI_PROFILE` and `HUOLI_PROFILE_DIR`. Plugin authors can register their own facts with declared keys, collected per execution and disposed with their plugin; duplicate ownership or undeclared runtime keys fail loudly instead of silently overwriting. The registry changes nothing else the model sees — the shell tools own their own schemas and prompts. Choose it in any composition that mounts a model shell tool; configuration only picks the Harness home directory.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ English | [中文](README.zh.md)
 <a id="use-this-package"></a>
 ## Use this package
 
-Load this plugin in any composition that mounts a model shell tool (`huoli-tool-bash` or `huoli-tool-pwsh`): each foreground or background shell call then runs with a freshly collected managed environment instead of whatever `DSH_*` values the process inherited.
+Load this plugin in any composition that mounts a model shell tool (`huoli-tool-bash` or `huoli-tool-pwsh`): each foreground or background shell call then runs with a freshly collected managed environment instead of whatever `HUOLI_*` values the process inherited.
 
 ### What every shell call receives
 
@@ -33,7 +33,7 @@ Every call receives `HUOLI_HOME` (the absolute Harness home), `HUOLI_SHELL=1`, a
 
 ### Adding your own environment facts
 
-Other plugins contribute facts by registering a contributor with a stable name, the complete set of `DSH_*` keys it may return, a description per key, and a resolver that computes values for one execution:
+Other plugins contribute facts by registering a contributor with a stable name, the complete set of `HUOLI_*` keys it may return, a description per key, and a resolver that computes values for one execution:
 
 ```ts
 import type { Context } from '@huoli/cordis'
@@ -54,17 +54,17 @@ Contributors must declare every key they return; returning an undeclared or non-
 
 ### Choosing the Harness home
 
-The single config field picks the home directory exposed as `HUOLI_HOME`; the default resolution order is the `dshHome` config, then ambient `$HUOLI_HOME`, then `~/.huoli`.
+The single config field picks the home directory exposed as `HUOLI_HOME`; the default resolution order is the `huoliHome` config, then ambient `$HUOLI_HOME`, then `~/.huoli`.
 
 | Field | Default | Meaning |
 |---|---|---|
-| `dshHome` | `$HUOLI_HOME`, then `~/.huoli` | Absolute Harness home exposed as `HUOLI_HOME` |
+| `huoliHome` | `$HUOLI_HOME`, then `~/.huoli` | Absolute Harness home exposed as `HUOLI_HOME` |
 
 The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-shell-env) is the exhaustive source for every accepted field and its JSDoc.
 
 ### What can go wrong
 
-Two contributors declaring the same key, or a contributor claiming a reserved built-in (`HUOLI_HOME`, `HUOLI_SHELL`, `HUOLI_SESSION_ID`, `HUOLI_PROFILE`, `HUOLI_PROFILE_DIR`), fails plugin load loudly. A `DSH_*` key must be all-caps with underscores (for example `HUOLI_REGION`), and a missing description fails registration.
+Two contributors declaring the same key, or a contributor claiming a reserved built-in (`HUOLI_HOME`, `HUOLI_SHELL`, `HUOLI_SESSION_ID`, `HUOLI_PROFILE`, `HUOLI_PROFILE_DIR`), fails plugin load loudly. A `HUOLI_*` key must be all-caps with underscores (for example `HUOLI_REGION`), and a missing description fails registration.
 
 -----
 
@@ -78,7 +78,7 @@ This section explains the design decisions behind the registry and points at the
 
 ### Design philosophy
 
-- **Trusted namespace, rebuilt per call.** The environment is a Harness-owned `DSH_*` namespace: the shell executor discards inherited `DSH_*` values and merges the registry's current snapshot for each execution, so nested harnesses and concurrent parent/child agents cannot leak stale identities, and `process.env` is never modified.
+- **Trusted namespace, rebuilt per call.** The environment is a Harness-owned `HUOLI_*` namespace: the shell executor discards inherited `HUOLI_*` values and merges the registry's current snapshot for each execution, so nested harnesses and concurrent parent/child agents cannot leak stale identities, and `process.env` is never modified.
 - **Declared ownership, loud conflicts.** Contributors declare their keys up front so duplicate ownership is detected before the first command; resolvers may only return declared keys.
 - **Built-ins stay here.** `HUOLI_HOME`, `HUOLI_SHELL`, `HUOLI_SESSION_ID`, `HUOLI_PROFILE`, and `HUOLI_PROFILE_DIR` are reserved for the registry; contributors cannot claim them.
 
@@ -90,7 +90,7 @@ This section explains the design decisions behind the registry and points at the
 
 ### Collection
 
-`collect(execution)` starts from the built-ins, adds the session id when the execution carries an agent, then merges each registered contributor's resolved values sorted by contributor name. The result is a frozen, key-sorted snapshot passed through `ShellExecRequest.dshEnv`. `list()` enumerates declarations without running resolvers, so it cannot reflect execution-dependent values.
+`collect(execution)` starts from the built-ins, adds the session id when the execution carries an agent, then merges each registered contributor's resolved values sorted by contributor name. The result is a frozen, key-sorted snapshot passed through `ShellExecRequest.huoliEnv`. `list()` enumerates declarations without running resolvers, so it cannot reflect execution-dependent values.
 
 </details>
 
@@ -113,7 +113,7 @@ Read these pages when the package-level contract is not enough. They move from t
 <a id="model-experience"></a>
 ## Model Experience
 
-Indirectly, through the shell tools (`huoli-tool-bash`, `huoli-tool-pwsh`), which expose this registry's managed `DSH_*` facts in every shell-tool call.
+Indirectly, through the shell tools (`huoli-tool-bash`, `huoli-tool-pwsh`), which expose this registry's managed `HUOLI_*` facts in every shell-tool call.
 
 #### KV Cache effect
 

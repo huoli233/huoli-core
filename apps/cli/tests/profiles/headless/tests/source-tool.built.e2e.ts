@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest'
 import type { SourceToolEvidence } from '../../../fixtures/source-tool-driver.ts'
 
 const repoRoot = fileURLToPath(new URL('../../../../../../', import.meta.url))
-const dshSourceBin = 'apps/cli/src/bin.ts'
+const huoliSourceBin = 'apps/cli/src/bin.ts'
 const sourceToolTimeoutMs = 90_000
 
 describe.skipIf(!existsSync(join(repoRoot, 'apps/cli/lib/bin.js')))('huoli SOURCE tools with prepared runtime artifacts', () => {
@@ -50,7 +50,7 @@ describe.skipIf(!existsSync(join(repoRoot, 'apps/cli/lib/bin.js')))('huoli SOURC
       ]))
       // Source modules and driver stay unbuilt; native and generated runtime artifacts are required.
       const result = await execa(process.execPath, [
-        '--import', 'tsx/esm', dshSourceBin, '--profile', 'headless', '--patch', patch,
+        '--import', 'tsx/esm', huoliSourceBin, '--profile', 'headless', '--patch', patch,
       ], {
         cwd: repoRoot,
         env: {

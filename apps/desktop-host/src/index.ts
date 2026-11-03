@@ -9,7 +9,7 @@ import { runProfile } from '@huoli/huoli/profile-boot'
 import type {} from '@huoli/huoli-client-connection'
 import type {} from '@huoli/huoli-host-webserver'
 import type {} from '@huoli/huoli-deepseek-account'
-import { resolveDshHome } from '@huoli/huoli-home-paths'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import * as desktopOffice from './office.ts'
 import { localDragResource } from './file-drag.ts'
 
@@ -134,7 +134,7 @@ async function main(): Promise<void> {
   await ctx.plugin(desktopOffice, {
     runtimeDir,
     source: process.argv[4] ?? join(runtimeDir, '..', 'runtime', 'primary-runtime'),
-    root: join(resolveDshHome(), 'huoli-runtimes', 'huoli-primary-runtime'),
+    root: join(resolveHuoliHome(), 'huoli-runtimes', 'huoli-primary-runtime'),
   })
   installPlatformSessionPublisher(ctx, (session) => {
     if (process.connected) process.send?.({ type: 'platform-session', session })

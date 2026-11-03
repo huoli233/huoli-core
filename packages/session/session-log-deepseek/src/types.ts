@@ -86,7 +86,7 @@ export interface DeepSeekSessionLogExtension {
 
 declare module '@huoli/huoli-deepseek-llm-api-extensions/types' {
   interface DeepSeekLlmApiExtensionMap {
-    dsh_session_log: DeepSeekSessionLogExtension
+    huoli_session_log: DeepSeekSessionLogExtension
   }
 }
 

@@ -29,13 +29,13 @@ import { scrubbedParentEnv } from '@huoli/huoli-subprocess'
 /** Resolved spawn spec for an SDK runtime child process (no defaults — see Config). */
 export interface SdkRunSpec {
   /** Explicit huoli CLI module; omission resolves the SDK client's same-version dependency. */
-  dshBin?: string
+  huoliBin?: string
   /** Named child profile. */
   profile: string
   /** Ordered per-launch profile patch files. */
   patches: string[]
   /** Absolute isolated Harness home for the nested runtime. */
-  dshHome: string
+  huoliHome: string
   /** Absolute initial working directory selected by the delegating runtime. */
   cwd: string
   /** Parent origin directory recorded independently of the child's effective directory. */
@@ -52,7 +52,7 @@ export interface SdkRunSpec {
    * Extra environment variables to ADD for the child (e.g. the child
    * runtime's own `DEEPSEEK_API_KEY`). Merged after
    * the seam's `scrubbedParentEnv()` base, so an explicit credential or
-   * current `DSH_*` fact survives while ambient namesakes never leak.
+   * current `HUOLI_*` fact survives while ambient namesakes never leak.
    */
   env: Record<string, string>
   /** Bound (ms) on the protocol `shutdown` exchange during dispose. */
@@ -235,10 +235,10 @@ export async function startSdkRun(request: SubagentStartRequest, spec: SdkRunSpe
   const id = brandString<SessionId>(randomUUID())
 
   const harness = internals.createHarness({
-    ...spec.dshBin === undefined ? {} : { dshBin: spec.dshBin },
+    ...spec.huoliBin === undefined ? {} : { huoliBin: spec.huoliBin },
     profile: spec.profile,
     patches: spec.patches,
-    dshHome: spec.dshHome,
+    huoliHome: spec.huoliHome,
     processCwd: spec.cwd,
     env: { ...scrubbedParentEnv(), ...spec.env },
     shutdownTimeoutMs: spec.shutdownTimeoutMs,

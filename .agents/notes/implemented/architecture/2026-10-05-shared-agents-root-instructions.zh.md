@@ -32,6 +32,6 @@ HUOLI 只加载一个用户全局指令文件：`$HUOLI_HOME/AGENTS.md`。同时
 
 - 共享指令无需复制或 symlink 即可加载；symlink 布局仍然只从 harness home 渲染一次。
 - 在此变更之前启动的会话，若共享文件存在且内容与 harness home 文件不同，会收到一次变更通知。
-- `huoli-agent-instructions` 不暴露 `dshHome` 或 `agentsHome` 配置字段；它的两个根目录属于进程策略。`huoli-skill-filesystem` 保留显式 home 字段，用于选择该提供方自身的 skill 根目录。
+- `huoli-agent-instructions` 不暴露 `huoliHome` 或 `agentsHome` 配置字段；它的两个根目录属于进程策略。`huoli-skill-filesystem` 保留显式 home 字段，用于选择该提供方自身的 skill 根目录。
 - 探测失败时两个用户全局文件共享同一命运：整个组一起保留最后一次成功状态，因为决定哪个成员渲染的是同一个 digest。
 - `packages/context/agent-instructions/tests/agent-instructions.spec.ts` 固定了两个根目录的顺序、内容去重、保留候选改变或消失后的重复项提升、全局增量措辞、`replace` 与 `remove` 变更、`$HUOLI_AGENTS_HOME` 解析、`~/.agents` 显示标签，以及转义后的项目目录名。

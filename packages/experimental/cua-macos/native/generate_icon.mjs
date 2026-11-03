@@ -10,7 +10,7 @@ async function main() {
   const root = dirname(fileURLToPath(import.meta.url))
   const scratch = await mkdtemp(join(tmpdir(), 'huoli-cua-icon-'))
   try {
-    const iconset = join(scratch, 'DSHComputerUse.iconset')
+    const iconset = join(scratch, 'HUOLIComputerUse.iconset')
     await mkdir(iconset)
     const source = await readFile(join(root, '../../cua-bundle/icon.svg'))
     for (const points of [16, 32, 128, 256, 512]) {
@@ -20,7 +20,7 @@ async function main() {
           .toFile(join(iconset, `icon_${points}x${points}${scale === 2 ? '@2x' : ''}.png`))
       }
     }
-    execFileSync('/usr/bin/iconutil', ['--convert', 'icns', '--output', join(root, 'DSHComputerUse.icns'), iconset], { stdio: 'inherit' })
+    execFileSync('/usr/bin/iconutil', ['--convert', 'icns', '--output', join(root, 'HUOLIComputerUse.icns'), iconset], { stdio: 'inherit' })
   } finally { await rm(scratch, { recursive: true, force: true }) }
 }
 

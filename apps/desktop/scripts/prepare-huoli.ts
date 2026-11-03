@@ -42,7 +42,7 @@ const HUOLI_OUTPUT_ROOT = BUILD_PATHS.huoli
 const BUILD_ROOT = mkdtempSync(join(tmpdir(), 'huoli-desktop-runtime-'))
 const STORE_ROOT = BUILD_PATHS.pnpmStore
 const RUNTIME_ROOT = BUILD_PATHS.runtime
-const PNPM_BUILD_STATE = BUILD_PATHS.dshPnpm
+const PNPM_BUILD_STATE = BUILD_PATHS.huoliPnpm
 const PACKAGE_SET_ROOT = BUILD_PATHS.packageSet
 const NODE = join(BUILD_PATHS.electron, process.platform === 'win32' ? 'electron.exe' : 'Electron.app/Contents/MacOS/Electron')
 const PNPM = join(RUNTIME_ROOT, 'primary-runtime', 'dependencies', 'pnpm', 'bin', 'pnpm.mjs')
@@ -55,9 +55,9 @@ function manifestVersion(path: string, subject: string): string {
 
 function desktopRelease(): DesktopRelease {
   const version = manifestVersion(join(APP_ROOT, 'package.json'), 'desktop package')
-  const dshVersion = manifestVersion(resolve(APP_ROOT, '..', '..', 'package.json'), 'root huoli package')
-  if (version !== dshVersion) {
-    throw new Error(`desktop runtime: Electron ${version} must bind the same version of @huoli/huoli, found ${dshVersion}`)
+  const huoliVersion = manifestVersion(resolve(APP_ROOT, '..', '..', 'package.json'), 'root huoli package')
+  if (version !== huoliVersion) {
+    throw new Error(`desktop runtime: Electron ${version} must bind the same version of @huoli/huoli, found ${huoliVersion}`)
   }
   const runtime = JSON.parse(readFileSync(join(RUNTIME_ROOT, 'versions.json'), 'utf8')) as Record<string, unknown>
   return parseDesktopRelease({

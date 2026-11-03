@@ -29,16 +29,16 @@ Use these helpers wherever a package must agree with the rest of the harness abo
 ### Resolving the home
 
 ```ts
-import { resolveDshHome, dshHomePath, dshCachePath } from '@huoli/huoli-home-paths'
+import { resolveHuoliHome, huoliHomePath, huoliCachePath } from '@huoli/huoli-home-paths'
 
-const home = resolveDshHome()                // configured path, else $HUOLI_HOME, else ~/.huoli
-const settings = dshHomePath('settings')     // join one child onto the resolved home
-const cache = dshCachePath('models')         // $HUOLI_HOME/cache/models, default ~/.huoli/cache/models
+const home = resolveHuoliHome()                // configured path, else $HUOLI_HOME, else ~/.huoli
+const settings = huoliHomePath('settings')     // join one child onto the resolved home
+const cache = huoliCachePath('models')         // $HUOLI_HOME/cache/models, default ~/.huoli/cache/models
 ```
 
 An explicit configured path has the highest precedence, then `$HUOLI_HOME`, then the default `~/.huoli`. An empty or whitespace-only `$HUOLI_HOME` is treated as unset, so a blank override never resolves the home to the current working directory.
 
-`dshCachePath(...segments)` derives paths from the resolved home's `cache` directory. With no segments it returns the cache directory itself. Pass an initial options object, `dshCachePath({ dshHome: home }, ...segments)`, to use an explicit configured home with the same precedence and tilde expansion. It returns an absolute path without creating directories.
+`huoliCachePath(...segments)` derives paths from the resolved home's `cache` directory. With no segments it returns the cache directory itself. Pass an initial options object, `huoliCachePath({ huoliHome: home }, ...segments)`, to use an explicit configured home with the same precedence and tilde expansion. It returns an absolute path without creating directories.
 
 ### Resolving the shared agents root
 
@@ -49,7 +49,7 @@ const agents = resolveAgentsHome()   // configured path, else $HUOLI_AGENTS_HOME
 agentsHomeDisplay(agents)            // ~/.agents, or $HUOLI_AGENTS_HOME for any configured root
 ```
 
-`resolveAgentsHome` applies the same precedence, blank-value handling, and tilde expansion as `resolveDshHome`. The root is deliberately outside `$HUOLI_HOME` because other agent tools share it; `huoli-agent-instructions` reads its user-global `AGENTS.md`, and `huoli-skill-filesystem` scans its `skills/` directory.
+`resolveAgentsHome` applies the same precedence, blank-value handling, and tilde expansion as `resolveHuoliHome`. The root is deliberately outside `$HUOLI_HOME` because other agent tools share it; `huoli-agent-instructions` reads its user-global `AGENTS.md`, and `huoli-skill-filesystem` scans its `skills/` directory.
 
 ### Displaying a home
 
@@ -81,7 +81,7 @@ The package is built on one principle: harness user data lives under one root, a
 
 ### Resolution rules
 
-`resolveDshHome` reads the explicit override, then `$HUOLI_HOME`, then falls back to the operating-system home joined with `.huoli`. `resolveAgentsHome` reads the same three levels for `$HUOLI_AGENTS_HOME` and `~/.agents`. The chosen value is tilde-expanded and normalized to an absolute path; `dshHomePath` joins child segments with Node's platform path rules. `dshHomeDisplay` and `agentsHomeDisplay` compare the resolved path against the default root and return the symbolic label, so a configured root never leaks its absolute path.
+`resolveHuoliHome` reads the explicit override, then `$HUOLI_HOME`, then falls back to the operating-system home joined with `.huoli`. `resolveAgentsHome` reads the same three levels for `$HUOLI_AGENTS_HOME` and `~/.agents`. The chosen value is tilde-expanded and normalized to an absolute path; `huoliHomePath` joins child segments with Node's platform path rules. `huoliHomeDisplay` and `agentsHomeDisplay` compare the resolved path against the default root and return the symbolic label, so a configured root never leaks its absolute path.
 
 ### Canonicalization mechanics
 

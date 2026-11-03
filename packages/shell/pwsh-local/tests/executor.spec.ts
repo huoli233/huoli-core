@@ -539,28 +539,28 @@ describe.skipIf(!hasPwsh)('PwshLocalExecutor.run', () => {
     await expect(run(bash, bash.resolve({ command: 'Write-Output ok', workdir: '/nonexistent-huoli' }))).rejects.toThrow(/ENOENT/)
   })
 
-  it('resolve() carries stdin/env/dshEnv onto the spec, and run() threads them to the command', async () => {
+  it('resolve() carries stdin/env/huoliEnv onto the spec, and run() threads them to the command', async () => {
     const { bash } = await setup()
     const spec = bash.resolve({
       command: '$s = ([Console]::In.ReadToEnd()).TrimEnd(); Write-Output $s; Write-Output "[$env:SEAM_VAR][$env:HUOLI_SEAM_VAR]"',
       stdin: 'piped\n',
       env: { SEAM_VAR: 'env-ok' },
-      dshEnv: { HUOLI_SEAM_VAR: 'huoli-ok' },
+      huoliEnv: { HUOLI_SEAM_VAR: 'huoli-ok' },
     })
     // resolve() keeps the optional input/environment fields verbatim.
     expect(spec.stdin).toBe('piped\n')
     expect(spec.env).toEqual({ SEAM_VAR: 'env-ok' })
-    expect(spec.dshEnv).toEqual({ HUOLI_SEAM_VAR: 'huoli-ok' })
+    expect(spec.huoliEnv).toEqual({ HUOLI_SEAM_VAR: 'huoli-ok' })
     const result = await run(bash, spec)
     expect(lf(result.stdout.text)).toBe('piped\n[env-ok][huoli-ok]\n')
   })
 
-  it('resolve() omits stdin/env/dshEnv when the request supplies none', async () => {
+  it('resolve() omits stdin/env/huoliEnv when the request supplies none', async () => {
     const { bash } = await setup()
     const spec = bash.resolve({ command: 'Write-Output ok' })
     expect('stdin' in spec).toBe(false)
     expect('env' in spec).toBe(false)
-    expect('dshEnv' in spec).toBe(false)
+    expect('huoliEnv' in spec).toBe(false)
   })
 })
 
@@ -589,7 +589,7 @@ describe.skipIf(!hasPwsh)('PwshLocalExecutor.start (background process handles)'
       command: '$s = ([Console]::In.ReadToEnd()).TrimEnd(); Write-Output $s; Write-Output "[$env:BG_VAR][$env:HUOLI_BG_VAR]"',
       stdin: 'bg-stdin\n',
       env: { BG_VAR: 'bg-env' },
-      dshEnv: { HUOLI_BG_VAR: 'bg-huoli-env' },
+      huoliEnv: { HUOLI_BG_VAR: 'bg-huoli-env' },
     })))
     await proc.done
     expect(proc.status).toBe('completed')

@@ -39,7 +39,7 @@ export async function reportStartupFailure(
   const now = new Date().toISOString()
   const report = 'WARNING: Raw diagnostics may contain configuration or credential values from plugin errors. Review before sharing.\n\n' + inspect({
     timestamp: now,
-    dshVersion: context.version,
+    huoliVersion: context.version,
     nodeVersion: process.version,
     platform: process.platform,
     arch: process.arch,

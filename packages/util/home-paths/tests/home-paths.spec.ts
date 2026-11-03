@@ -10,13 +10,13 @@ import {
   agentsHomeDisplay,
   canonicalizeWatchPath,
   defaultAgentsHome,
-  defaultDshHome,
-  dshCachePath,
-  dshHomeDisplay,
-  dshHomePath,
+  defaultHuoliHome,
+  huoliCachePath,
+  huoliHomeDisplay,
+  huoliHomePath,
   expandHomePath,
   resolveAgentsHome,
-  resolveDshHome,
+  resolveHuoliHome,
 } from '@huoli/huoli-home-paths'
 
 afterEach(() => {
@@ -27,7 +27,7 @@ describe('huoli path helpers', () => {
   it('owns the shared default HUOLI home directory name', () => {
     expect(HUOLI_HOME_DIR_NAME).toBe('.huoli')
     expect(DEFAULT_HUOLI_HOME_DISPLAY).toBe('~/.huoli')
-    expect(defaultDshHome()).toBe(join(homedir(), '.huoli'))
+    expect(defaultHuoliHome()).toBe(join(homedir(), '.huoli'))
   })
 
   it('expands tilde paths without changing non-tilde paths', () => {
@@ -41,25 +41,25 @@ describe('huoli path helpers', () => {
   it('resolves explicit path before HUOLI_HOME and the default', () => {
     const envHome = join(homedir(), 'env-huoli')
 
-    expect(resolveDshHome('/tmp/explicit-huoli', { HUOLI_HOME: '~/env-huoli' })).toBe(resolve('/tmp/explicit-huoli'))
-    expect(resolveDshHome(undefined, { HUOLI_HOME: '~/env-huoli' })).toBe(envHome)
-    expect(resolveDshHome(undefined, {})).toBe(defaultDshHome())
+    expect(resolveHuoliHome('/tmp/explicit-huoli', { HUOLI_HOME: '~/env-huoli' })).toBe(resolve('/tmp/explicit-huoli'))
+    expect(resolveHuoliHome(undefined, { HUOLI_HOME: '~/env-huoli' })).toBe(envHome)
+    expect(resolveHuoliHome(undefined, {})).toBe(defaultHuoliHome())
   })
 
   it('treats an empty or whitespace-only HUOLI_HOME as unset', () => {
-    expect(resolveDshHome(undefined, { HUOLI_HOME: '' })).toBe(defaultDshHome())
-    expect(resolveDshHome(undefined, { HUOLI_HOME: '   ' })).toBe(defaultDshHome())
+    expect(resolveHuoliHome(undefined, { HUOLI_HOME: '' })).toBe(defaultHuoliHome())
+    expect(resolveHuoliHome(undefined, { HUOLI_HOME: '   ' })).toBe(defaultHuoliHome())
   })
 
   it('joins child segments onto the resolved HUOLI_HOME', () => {
     vi.stubEnv('HUOLI_HOME', '~/env-huoli')
-    expect(dshHomePath()).toBe(join(homedir(), 'env-huoli'))
-    expect(dshHomePath('storages', 'cache')).toBe(join(homedir(), 'env-huoli', 'storages', 'cache'))
+    expect(huoliHomePath()).toBe(join(homedir(), 'env-huoli'))
+    expect(huoliHomePath('storages', 'cache')).toBe(join(homedir(), 'env-huoli', 'storages', 'cache'))
   })
 
   it('labels a resolved home by whether it is the default root', () => {
-    expect(dshHomeDisplay(resolve(defaultDshHome()))).toBe('~/.huoli')
-    expect(dshHomeDisplay('/some/other/root')).toBe('$HUOLI_HOME')
+    expect(huoliHomeDisplay(resolve(defaultHuoliHome()))).toBe('~/.huoli')
+    expect(huoliHomeDisplay('/some/other/root')).toBe('$HUOLI_HOME')
   })
 
   it('owns the shared default agents home directory name', () => {
@@ -95,8 +95,8 @@ describe('huoli path helpers', () => {
   ] as const)('resolves cache paths with HUOLI_HOME=%j', (home, expectedHome) => {
     vi.stubEnv('HUOLI_HOME', home)
     try {
-      expect(dshCachePath()).toBe(join(expectedHome, 'cache'))
-      expect(dshCachePath('models', 'index.json')).toBe(join(expectedHome, 'cache', 'models', 'index.json'))
+      expect(huoliCachePath()).toBe(join(expectedHome, 'cache'))
+      expect(huoliCachePath('models', 'index.json')).toBe(join(expectedHome, 'cache', 'models', 'index.json'))
     } finally {
       vi.unstubAllEnvs()
     }
@@ -105,10 +105,10 @@ describe('huoli path helpers', () => {
   it('resolves configured cache homes before the environment', () => {
     vi.stubEnv('HUOLI_HOME', '~/env-huoli')
     try {
-      expect(dshCachePath({ dshHome: '~/explicit-huoli' })).toBe(join(homedir(), 'explicit-huoli', 'cache'))
-      expect(dshCachePath({ dshHome: './explicit-huoli' }, 'attachments', 'request-images'))
+      expect(huoliCachePath({ huoliHome: '~/explicit-huoli' })).toBe(join(homedir(), 'explicit-huoli', 'cache'))
+      expect(huoliCachePath({ huoliHome: './explicit-huoli' }, 'attachments', 'request-images'))
         .toBe(resolve('./explicit-huoli/cache/attachments/request-images'))
-      expect(dshCachePath({}, 'attachments')).toBe(join(homedir(), 'env-huoli', 'cache', 'attachments'))
+      expect(huoliCachePath({}, 'attachments')).toBe(join(homedir(), 'env-huoli', 'cache', 'attachments'))
     } finally {
       vi.unstubAllEnvs()
     }

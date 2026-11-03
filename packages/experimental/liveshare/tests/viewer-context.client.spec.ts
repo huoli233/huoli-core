@@ -125,7 +125,7 @@ describe('viewer context read', () => {
     const asked = serve(
       {
         ownerSubjectId: 'feishu:tenant:ou_9f2c4d',
-        dshVersion: '0.1.5-rc.2+build',
+        huoliVersion: '0.1.5-rc.2+build',
         capabilities: { readOnly: true, fork: { allowed: true } },
       },
       { release_id: '20260911-143800-6a72b8' },
@@ -137,7 +137,7 @@ describe('viewer context read', () => {
     ])
     expect(viewerContextFacts.getSnapshot()).toEqual({
       ownerSubjectId: 'feishu:tenant:ou_9f2c4d',
-      dshVersion: '0.1.5-rc.2+build',
+      huoliVersion: '0.1.5-rc.2+build',
       relay: '20260911-143800-6a72b8',
     })
     // The older branch-only answer is the view tier: branching is a switch, not a tier.

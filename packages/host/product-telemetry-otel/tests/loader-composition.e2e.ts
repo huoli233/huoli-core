@@ -18,7 +18,7 @@ it('exports the explicitly submitted event through the headless Loader compositi
     inspect: async (cwd) => { captures = JSON.parse(await readFile(resolve(cwd, 'captures.json'), 'utf8')) },
   })
   expect(captures).toMatchObject([{
-    channel: 'dsh_otel_report', compression: 'gzip',
+    channel: 'huoli_otel_report', compression: 'gzip',
     body: { resourceLogs: [{ scopeLogs: [{ logRecords: [{ eventName: 'telemetry.synthetic', body: { stringValue: 'Synthetic test' } }] }] }] },
   }])
   expect(JSON.stringify(captures).match(/"eventName"/g)).toHaveLength(1)

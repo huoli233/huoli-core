@@ -11,7 +11,7 @@
  * the same line as the built artifact it came from.
  *
  * Named and default imports stay live: every reference reads the required
- * module object when it runs (`__dsh$m1["x"]`), never a copy taken at the
+ * module object when it runs (`__huoli$m1["x"]`), never a copy taken at the
  * import statement, so a module in an import cycle sees a binding once the
  * exporting module has initialized it, as ES modules do. Scope analysis tells
  * those references apart from same-named locals that shadow them; it runs only
@@ -29,11 +29,11 @@ import { KEYS } from 'eslint-visitor-keys'
 import type * as ESTree from 'estree'
 
 const HELPER_SOURCE: Record<string, string> = {
-  def: 'const __dsh$def=(t,k,get)=>Object.defineProperty(t,k,{enumerable:true,configurable:true,get});',
-  default: 'const __dsh$default=(m)=>(m&&m.__esModule&&Object.prototype.hasOwnProperty.call(m,"default")?m.default:m);',
-  ns: 'const __dsh$ns=(m)=>(m&&m.__esModule?m:Object.assign({},m,{default:m}));',
-  exportAll: 'const __dsh$exportAll=(t,m)=>{for(const k of Object.keys(m))if(k!=="default"&&!(k in t))__dsh$def(t,k,()=>m[k]);};',
-  dynImport: 'const __dsh$dynImport=(s)=>Promise.resolve().then(()=>__dsh$ns(require(s)));',
+  def: 'const __huoli$def=(t,k,get)=>Object.defineProperty(t,k,{enumerable:true,configurable:true,get});',
+  default: 'const __huoli$default=(m)=>(m&&m.__esModule&&Object.prototype.hasOwnProperty.call(m,"default")?m.default:m);',
+  ns: 'const __huoli$ns=(m)=>(m&&m.__esModule?m:Object.assign({},m,{default:m}));',
+  exportAll: 'const __huoli$exportAll=(t,m)=>{for(const k of Object.keys(m))if(k!=="default"&&!(k in t))__huoli$def(t,k,()=>m[k]);};',
+  dynImport: 'const __huoli$dynImport=(s)=>Promise.resolve().then(()=>__huoli$ns(require(s)));',
 }
 
 const HELPER_DEPENDENCIES: Record<string, readonly string[]> = {
@@ -91,7 +91,7 @@ interface ImportCandidate {
 }
 
 /** Prefix of the identifiers this transform emits; a module declaring one would capture them. */
-const RESERVED_PREFIX = '__dsh$'
+const RESERVED_PREFIX = '__huoli$'
 
 class Transformer {
   private readonly edits: Edit[] = []
@@ -131,12 +131,12 @@ class Transformer {
   private helper(name: string): string {
     for (const dependency of HELPER_DEPENDENCIES[name] ?? []) this.helper(dependency)
     this.helpers.add(name)
-    return `__dsh$${name}`
+    return `__huoli$${name}`
   }
 
   private moduleTemp(): string {
     this.modules += 1
-    return `__dsh$m${this.modules}`
+    return `__huoli$m${this.modules}`
   }
 
   private alsTemp(): string {
@@ -493,7 +493,7 @@ class Transformer {
         const meta = record.meta as Node
         if (meta.name === 'import') {
           this.moduleSyntax = true
-          this.replace(record.start, record.end, '__dsh$meta')
+          this.replace(record.start, record.end, '__huoli$meta')
         }
         break
       }
@@ -679,7 +679,7 @@ class Transformer {
     // Reading an exported import can register the default helper, so the
     // getters are built before the helper sources are emitted.
     const getters = this.bindings.map(({ exported, local }) =>
-      `__dsh$def(exports,${JSON.stringify(exported)},()=>${this.bindingAccess(local)});`)
+      `__huoli$def(exports,${JSON.stringify(exported)},()=>${this.bindingAccess(local)});`)
     if (this.bindings.length > 0) this.helper('def')
     for (const [name, source] of Object.entries(HELPER_SOURCE)) {
       if (this.helpers.has(name)) prologue.push(source)

@@ -392,7 +392,7 @@ export class PlatformAccount extends DeepSeekAccount {
     if (!result.success) throw new PlatformAuthError('storage')
     // Development grants cannot authenticate production model or file requests.
     const issuer = new URL(result.data.issuer)
-    if (result.data.token.startsWith('dsh_mock_')) return undefined
+    if (result.data.token.startsWith('huoli_mock_')) return undefined
     if (this.inferenceOrigin === 'https://api.deepseek.com') {
       if (['localhost', '127.0.0.1', '[::1]'].includes(issuer.hostname)) return undefined
     } else if (issuer.origin !== this.origin) return undefined

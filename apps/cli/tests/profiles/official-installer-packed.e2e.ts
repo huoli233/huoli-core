@@ -8,7 +8,7 @@ import { execa } from 'execa'
 import yaml from 'js-yaml'
 import { expect, it, onTestFinished } from 'vitest'
 import type { BundleInfo, ChangeResult } from '@huoli/huoli-plugin-manager'
-import { getDshRuntimeVersion } from '../../../../packages/boot/app-boot/src/plugin-compatibility.ts'
+import { getHuoliRuntimeVersion } from '../../../../packages/boot/app-boot/src/plugin-compatibility.ts'
 import { generateOfficialBundleCatalog } from '../../../../scripts/gen-official-bundle-catalog.ts'
 import {
   REGISTRY_MANIFEST_FILE,
@@ -96,7 +96,7 @@ it.skipIf(!built)('installs the exported registry\'s local closure and switches 
   for (const name of packages) expect(artifacts.find(artifact => artifact.name === name), name).toMatchObject({ version })
   await writeRegistryManifest(join(runDirectory, REGISTRY_MANIFEST_FILE), createRegistryManifest({
     buildId: 'packed-e2e',
-    source: sourceEvidence(root, getDshRuntimeVersion()),
+    source: sourceEvidence(root, getHuoliRuntimeVersion()),
     entries,
     workspaceNames: selection.workspaceNames,
     artifacts,

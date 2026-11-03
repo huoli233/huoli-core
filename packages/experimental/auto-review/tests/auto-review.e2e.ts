@@ -129,7 +129,7 @@ async function* observe(
   observations.push(observation)
 }
 
-async function mount(ctx: Context, workspace: string, dshHome: string): Promise<void> {
+async function mount(ctx: Context, workspace: string, huoliHome: string): Promise<void> {
   await mountAgentLoopTestDependencies(ctx, {
     systemPrompt: {}, tools: { mode: 'native' },
   })
@@ -140,7 +140,7 @@ async function mount(ctx: Context, workspace: string, dshHome: string): Promise<
   await ctx.plugin(SandboxedFileSystem, { cwd: workspace })
   await ctx.plugin(FsObservationPolicy)
   await ctx.plugin(LocalSubprocessRuntime)
-  await ctx.plugin(ShellEnv, { dshHome })
+  await ctx.plugin(ShellEnv, { huoliHome })
   await ctx.plugin(SandboxBashExecutor, { cwd: workspace, timeoutMs: 30_000 })
   await ctx.plugin(ApprovalService, { policy: 'ask' })
   await ctx.plugin(PermissionPresetService, {
@@ -258,11 +258,11 @@ it('certifies eight Auto risk/authorization cases with zero retries and zero ski
   try {
     await chmod(root, 0o700)
     const workspace = join(root, 'workspace')
-    const dshHome = join(root, 'huoli-home')
+    const huoliHome = join(root, 'huoli-home')
     await mkdir(workspace)
-    await mkdir(dshHome, { mode: 0o700 })
-    vi.stubEnv('HUOLI_HOME', dshHome)
-    await mount(ctx, workspace, dshHome)
+    await mkdir(huoliHome, { mode: 0o700 })
+    vi.stubEnv('HUOLI_HOME', huoliHome)
+    await mount(ctx, workspace, huoliHome)
     const runner = orchestrate(ctx, REAL)
     const cases: CaseResult[] = []
     const runCase = async (
@@ -365,10 +365,10 @@ it.each(['native', 'ptc-inner'] as const)('feeds denial back, re-reviews a new c
   const ctx = new Context()
   provideWorkingDirectoryFixture(ctx)
   try {
-    const dshHome = join(root, 'home')
-    await mkdir(dshHome)
-    vi.stubEnv('HUOLI_HOME', dshHome)
-    await mount(ctx, root, dshHome)
+    const huoliHome = join(root, 'home')
+    await mkdir(huoliHome)
+    vi.stubEnv('HUOLI_HOME', huoliHome)
+    await mount(ctx, root, huoliHome)
     const runner = orchestrate(ctx, false)
     const target = join(root, 'existing.txt')
     await writeFile(target, 'keep\n')

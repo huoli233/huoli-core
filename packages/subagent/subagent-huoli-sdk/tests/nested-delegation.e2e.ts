@@ -59,7 +59,7 @@ describe('external tasks with a nested fork', () => {
           description: 'nested SDK profile', initializeTimeoutMs: 30_000,
         }, options)
         run = await startSdkRun(request, {
-          profile, patches: [patch], dshHome: env.HUOLI_HOME, cwd: root, provider: 'mock', model: 'mock', env,
+          profile, patches: [patch], huoliHome: env.HUOLI_HOME, cwd: root, provider: 'mock', model: 'mock', env,
           shutdownTimeoutMs: 1_000, disposeEofGraceMs: 6_000, disposeGraceMs: 3_000,
         })
       } else {

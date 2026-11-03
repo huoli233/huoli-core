@@ -58,7 +58,7 @@ import { parseSessionLog, prepareSessionSnapshotFixtureForComparison } from '@hu
 
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url))
 const snapshotsRoot = fileURLToPath(new URL('./', import.meta.url))
-const dshBin = join(repoRoot, 'apps/cli/src/bin.ts')
+const huoliBin = join(repoRoot, 'apps/cli/src/bin.ts')
 const tsconfigPath = join(repoRoot, 'tsconfig.json')
 const editingCordisSkill = join(
   repoRoot,
@@ -893,7 +893,7 @@ async function verifyProviderCwdResume(
   }
   const launch = {
     cwd: otherHostCwd,
-    binScript: dshBin,
+    binScript: huoliBin,
     configPath: patches[0] as string,
     tsconfigPath,
     binArgs: [
@@ -1329,7 +1329,7 @@ describe('headless recorded-session snapshots', () => {
           tempDirPrefix: 'huoli-log-snap-',
           ...(scenario.name === 'compaction-recovery' ? await compactionWorkspaceOptions() : {}),
           ...(scenario.manifest.workspace?.parent === 'outside-temp' ? { tempDirParent: outsideTempWorkspaceParent() } : {}),
-          binScript: dshBin,
+          binScript: huoliBin,
           sourceImport: 'tsx/esm',
           configPath: join(baseComposition.dir, 'cordis.yml'),
           binArgs: [

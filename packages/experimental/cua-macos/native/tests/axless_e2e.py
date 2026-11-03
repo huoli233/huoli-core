@@ -43,7 +43,7 @@ def main():
                 (contents / 'Info.plist').write_bytes(plistlib.dumps({
                     'CFBundleIdentifier': 'org.huoli-core.cua.' + root.name + '.' + name,
                     'CFBundleExecutable': 'fixture', 'CFBundleName': name, 'CFBundlePackageType': 'APPL',
-                    'DSHFixtureStatePath': str(state_file),
+                    'HUOLIFixtureStatePath': str(state_file),
                 }))
                 return contents / 'MacOS/fixture'
 

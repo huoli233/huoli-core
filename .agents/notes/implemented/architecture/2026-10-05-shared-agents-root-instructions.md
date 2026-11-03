@@ -32,6 +32,6 @@ A user-global scope directory is an internal reconciliation key, so it stays out
 
 - Shared instructions load without a copy or symlink, and the symlinked layout still renders once, from the harness home.
 - A session that started before this change receives one transition when the shared file exists with content that differs from the harness-home file.
-- `huoli-agent-instructions` exposes no `dshHome` or `agentsHome` config field; its two roots are process policy. `huoli-skill-filesystem` retains its explicit home fields, which select that provider's own skill roots.
+- `huoli-agent-instructions` exposes no `huoliHome` or `agentsHome` config field; its two roots are process policy. `huoli-skill-filesystem` retains its explicit home fields, which select that provider's own skill roots.
 - The two user-global files share one fate on probe failure: the group preserves its last-good state together, because one digest decides which member renders.
 - `packages/context/agent-instructions/tests/agent-instructions.spec.ts` pins the two-root order, content deduplication, duplicate promotion after the retained candidate changes or disappears, the global delta wording, the `replace` and `remove` transitions, `$HUOLI_AGENTS_HOME` resolution, the `~/.agents` display label, and the escaped project directory name.

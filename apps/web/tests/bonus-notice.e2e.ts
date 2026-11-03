@@ -20,7 +20,7 @@ const SNAPSHOT_DIR = fileURLToPath(new URL('./expected/bonus-notice', import.met
 const OVERLAY_TEMPLATE = fileURLToPath(new URL('./fixtures/bonus-notice/cordis.patch.yml', import.meta.url))
 const MODE = webSnapshotMode()
 
-const TOKEN = 'dsh_bonus_notice_test'
+const TOKEN = 'huoli_bonus_notice_test'
 const ACCOUNT_ID = 'bonus-user'
 const ORDER_FIRST = 'bonus-notice-first'
 const ORDER_LATER = '33333333-3333-4333-8333-333333333333'
@@ -227,13 +227,13 @@ describe.skipIf(MODE === 'record')('web e2e: bonus notice', () => {
     const opened = await context.newPage()
     tripwires.push(watchConsole(opened))
     await opened.addInitScript(() => {
-      Object.defineProperty(globalThis, 'dshDesktop', { value: { protocolVersion: 1 } })
+      Object.defineProperty(globalThis, 'huoliDesktop', { value: { protocolVersion: 1 } })
       // The embedded Platform view is a native child window owned by the Desktop shell.
       // The double answers immediately and records the calls, so the scenario observes
       // which page was opened and that returning destroyed the view.
       const calls: string[] = []
       Object.defineProperty(globalThis, '__bonusPlatformCalls', { value: calls })
-      Object.defineProperty(globalThis, 'dshPlatform', {
+      Object.defineProperty(globalThis, 'huoliPlatform', {
         value: {
           open: (page: string) => { calls.push(`open:${page}`); return Promise.resolve() },
           setBounds: () => Promise.resolve(),

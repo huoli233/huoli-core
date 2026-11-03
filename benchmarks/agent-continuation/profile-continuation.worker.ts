@@ -38,8 +38,8 @@ async function run(root: string): Promise<ProfileReport> {
     HUOLI_AGENTS_HOME: join(home, 'agents'),
   }
   const harness = new DeepSeekHarness({
-    dshBin: join(import.meta.dirname, '..', '..', '..', 'apps', 'cli', 'lib', 'bin.js'),
-    profile: 'sdk-minimal', dshHome: home, processCwd: cwd, cwd,
+    huoliBin: join(import.meta.dirname, '..', '..', '..', 'apps', 'cli', 'lib', 'bin.js'),
+    profile: 'sdk-minimal', huoliHome: home, processCwd: cwd, cwd,
     provider: 'bench', model: 'bench', patches: [patch], env,
     initializeTimeoutMs: 15_000, requestTimeoutMs: 15_000,
   })

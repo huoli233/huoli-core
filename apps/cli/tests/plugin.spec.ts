@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, it, onTestFinished, vi } from 'vitest'
-import { getDshRuntimeVersion, initProfile, readProfileVersionExemptions } from '@huoli/huoli-app-boot'
+import { getHuoliRuntimeVersion, initProfile, readProfileVersionExemptions } from '@huoli/huoli-app-boot'
 import { PROFILE_TEMPLATES } from '@huoli/huoli-official-bundles'
 import { runPluginCommand, runProfilePnpm } from '@huoli/huoli-plugin-manager/operations'
 import { runPlugin } from '../src/plugin.ts'
@@ -32,7 +32,7 @@ function fixture() {
 
 it('requires explicit acknowledgement, grants only the exact pair, lists and revokes it without pnpm', async () => {
   const { dir, stdout, stderr } = fixture()
-  const runtime = getDshRuntimeVersion()
+  const runtime = getHuoliRuntimeVersion()
   expect(await runPlugin('test', ['allow-version', '@example/plugin@1.2.3', '--huoli-version', runtime, '--accept-risk'])).toBe(0)
   expect(stderr.mock.calls.map(call => call[0]).join('')).toMatchInlineSnapshot(`
     "huoli: warning: allowing incompatible plugin versions can break the application or corrupt data. Approval applies only to the exact package and HUOLI versions.
@@ -59,7 +59,7 @@ it.each([
   ['version-exemptions', 'extra'],
 ])('rejects malformed or unacknowledged exemption command %j', async (...arguments_) => {
   const { dir, stderr } = fixture()
-  const args = arguments_.map(value => value === 'CURRENT' ? getDshRuntimeVersion() : value)
+  const args = arguments_.map(value => value === 'CURRENT' ? getHuoliRuntimeVersion() : value)
   expect(await runPlugin('test', args)).toBe(1)
   expect(stderr).toHaveBeenCalled()
   expect(existsSync(join(dir, 'compatibility.json'))).toBe(false)
@@ -128,7 +128,7 @@ it.each([
   ['revoke-version', 'example-plugin@1.2.3', '--huoli-version', 'CURRENT'],
 ])('requires Desktop initialization before %j without creating a profile', async (...arguments_) => {
   const { home, stderr } = fixture()
-  const args = arguments_.map(value => value === 'CURRENT' ? getDshRuntimeVersion() : value)
+  const args = arguments_.map(value => value === 'CURRENT' ? getHuoliRuntimeVersion() : value)
   expect(await runPlugin('desktop', args)).toBe(1)
   expect(stderr.mock.calls.map(call => call[0]).join('')).toMatchInlineSnapshot(`
     "huoli: Error: Open Huoli Core Desktop once to initialize its profile, then fully quit it before running huoli plugin --profile desktop.
@@ -165,7 +165,7 @@ it('applies version approvals to the existing Desktop profile without replacing 
   const dir = join(home, 'profiles', 'desktop')
   initProfile(dir, PROFILE_TEMPLATES.web!.bundles)
   const manifest = readFileSync(join(dir, 'package.json'), 'utf8')
-  const runtime = getDshRuntimeVersion()
+  const runtime = getHuoliRuntimeVersion()
   expect(await runPlugin('desktop', ['allow-version', 'example-plugin@1.2.3', '--huoli-version', runtime, '--accept-risk'])).toBe(0)
   expect(readProfileVersionExemptions(dir)).toEqual({ 'example-plugin@1.2.3': [runtime] })
   expect(await runPlugin('desktop', ['version-exemptions'])).toBe(0)

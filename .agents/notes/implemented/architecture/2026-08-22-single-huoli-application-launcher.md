@@ -38,11 +38,11 @@ The shipped protocol profiles reserve stdout for protocol frames, expose help wi
 
 ### TypeScript SDK customization
 
-`@huoli/huoli-sdk-client` depends on the same-version `@huoli/huoli` package, resolves its installed CLI module, runs it through the current Node executable, and selects `sdk` by default. Both client layers expose `dshBin`, `profile`, ordered `patches`, `dshHome`, process cwd, environment, and timeouts; arbitrary command/argv launch remains an internal fake-runtime adapter.
+`@huoli/huoli-sdk-client` depends on the same-version `@huoli/huoli` package, resolves its installed CLI module, runs it through the current Node executable, and selects `sdk` by default. Both client layers expose `huoliBin`, `profile`, ordered `patches`, `huoliHome`, process cwd, environment, and timeouts; arbitrary command/argv launch remains an internal fake-runtime adapter.
 
 SDK users customize plugins through profiles. `huoli plugin --profile <name> ...` manages persistent dependencies and bundle order, the profile's `cordis.patch.yml` owns persistent row changes, and launch `patches` supply ordered ephemeral overrides. A custom profile must retain `@huoli/huoli-sdk-app` or another SDK server row. Relative CLI-module, patch, explicit home, and process-cwd paths become absolute before spawn, and initialization has a finite bound whose diagnostic names the selected profile.
 
-Direct SDK use follows normal Harness-home resolution: explicit `dshHome`, inherited `HUOLI_HOME`, then `~/.huoli`. `subagent-huoli-sdk` instead requires an explicit absolute home, so a nested runtime cannot discover a person's profiles, installed plugins, credentials, or sessions through the operating-system home. HUOLI-specific ACP child examples also pass an isolated home; the ACP backend itself remains generic for non-HUOLI agents.
+Direct SDK use follows normal Harness-home resolution: explicit `huoliHome`, inherited `HUOLI_HOME`, then `~/.huoli`. `subagent-huoli-sdk` instead requires an explicit absolute home, so a nested runtime cannot discover a person's profiles, installed plugins, credentials, or sessions through the operating-system home. HUOLI-specific ACP child examples also pass an isolated home; the ACP backend itself remains generic for non-HUOLI agents.
 
 ### Python runtime
 

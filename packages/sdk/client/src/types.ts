@@ -25,13 +25,13 @@ export interface HarnessClientOptions {
   /** Answer or dismiss runtime questions; observe the signal to release host work on runtime cancellation. */
   onUserQuestion?: (request: SdkUserQuestionRequest, context: { signal: AbortSignal }) => Promise<SdkUserQuestionResult>
   /** Absolute or caller-relative huoli CLI module; omitted resolves this package's same-version dependency. */
-  dshBin?: string
+  huoliBin?: string
   /** Named profile serving the SDK protocol (default `sdk`). */
   profile?: string
   /** Ordered per-launch profile patches; relative paths resolve before spawn. */
   patches?: string[]
   /** Explicit Harness home for this child; relative paths resolve before spawn. */
-  dshHome?: string
+  huoliHome?: string
   /** Working directory for the huoli process itself. */
   processCwd?: string
   /**

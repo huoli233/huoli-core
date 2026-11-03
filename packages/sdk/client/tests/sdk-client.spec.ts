@@ -541,7 +541,7 @@ describe('HarnessClient', () => {
   })
 
   it('fails when the configured huoli CLI module does not exist', async () => {
-    const client = new HarnessClient({ dshBin: join(tmpdir(), 'huoli-no-such-runtime-bin') })
+    const client = new HarnessClient({ huoliBin: join(tmpdir(), 'huoli-no-such-runtime-bin') })
     cleanups.push(() => client.close())
     await expect(client.request('initialize', {}, 1_000)).rejects.toThrow(TransportClosedError)
   })

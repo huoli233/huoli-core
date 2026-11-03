@@ -11,7 +11,7 @@ let appRoot: HTMLDivElement
 
 it.each([false, true])('resizes only after eligibility resolves (completed=%s)', (done) => {
   const setActive = vi.fn()
-  vi.stubGlobal('dshOnboarding', { setActive })
+  vi.stubGlobal('huoliOnboarding', { setActive })
   const view = mount(done, true)
   expect(setActive).not.toHaveBeenCalled()
   view.resolve()

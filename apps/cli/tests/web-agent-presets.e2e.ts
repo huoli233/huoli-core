@@ -120,7 +120,7 @@ async function bootWeb(
     { id: 'storage-json', config: { root: storageRoot } },
     // Fixed Session IDs must stay inside this boot's temporary profile root.
     { id: 'session-persistence-jsonl', config: { root: join(profileHome, 'sessions') } },
-    { id: 'attachment-local', config: { dshHome: profileHome } },
+    { id: 'attachment-local', config: { huoliHome: profileHome } },
     // Host rows with side effects outside this process: a bound port, a served
     // asset tree, a telemetry exporter. `api-gateway` and `directory-picker`
     // stay ENABLED on purpose — the api-proxy is the host row that injects

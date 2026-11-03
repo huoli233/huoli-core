@@ -177,7 +177,7 @@ async function load() {
   ])
   const configs: Record<string, readonly string[]> = {
     '@huoli/huoli-agent-loop': ['agents: []'],
-    '@huoli/huoli-shell-env': [`dshHome: ${JSON.stringify(join(root, 'huoli-home'))}`],
+    '@huoli/huoli-shell-env': [`huoliHome: ${JSON.stringify(join(root, 'huoli-home'))}`],
     '@huoli/huoli-bash-local': ['timeoutMs: 20000'],
     '@huoli/huoli-experimental-forge': ['activeIntervalMs: 600000', 'idleIntervalMs: 600000'],
     '@huoli/huoli-experimental-forge-github': [`ghCommand: ${JSON.stringify(join(bin, 'gh'))}`],

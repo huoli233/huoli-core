@@ -29,7 +29,7 @@ export const inject = ['slots', 'locale']
 
 /** @param ctx - client plugin context carrying slots and locale. */
 export function apply(ctx: Context): void {
-  const bridge = (globalThis as typeof globalThis & { dshDesktop?: { protocolVersion: number; fileDrag?: DesktopFileDrag } }).dshDesktop
+  const bridge = (globalThis as typeof globalThis & { huoliDesktop?: { protocolVersion: number; fileDrag?: DesktopFileDrag } }).huoliDesktop
   const desktop = bridge?.protocolVersion === 1 ? bridge.fileDrag : undefined
   const failure = createSnapshotStore<FileDragFailure | null>(null)
   const t = ctx.locale.bind('fileDrag')

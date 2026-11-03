@@ -32,7 +32,7 @@ import {
   type RuntimeResolution,
 } from '@huoli/huoli-app-boot'
 import { PROFILE_TEMPLATES } from '@huoli/huoli-official-bundles'
-import { resolveDshHome } from '@huoli/huoli-home-paths'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { installProxyFromEnvironment } from '@huoli/huoli-http-proxy'
 import { HUOLI_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@huoli/huoli-launch-environment'
 import { provideCmdline, type AppReady } from '@huoli/huoli-cmdline'
@@ -71,7 +71,7 @@ function createAppReady(): { service: AppReady; commit(): void } {
  * @returns the absolute patch-file path.
  */
 export function homePatchPath(): string {
-  return join(resolveDshHome(), PROFILE_PATCH_FILENAME)
+  return join(resolveHuoliHome(), PROFILE_PATCH_FILENAME)
 }
 
 /** Absolute path of this huoli installation's package.json (both anchors: src/ and lib/ sit one level under apps/cli). */
@@ -108,7 +108,7 @@ export const PROFILE_ROOT_FILENAME = 'cordis.yml'
 export function initializeProfileFromDefault(
   name: string,
   fromDefaultProfile: string,
-  home: string = resolveDshHome(),
+  home: string = resolveHuoliHome(),
 ): void {
   const dir = resolveProfileDir(name, home)
   const template = Object.hasOwn(PROFILE_TEMPLATES, fromDefaultProfile)
@@ -317,7 +317,7 @@ export async function runProfile(options: RunProfileOptions): Promise<{ ctx: Con
       dir: composed.profile.dir, patchPath: composed.profile.patchPath,
       installAnchor: options.resolvedProfile?.installAnchor ?? INSTALL_ANCHOR,
       startedBundles: composed.profile.layers.map(layer => layer.packageName),
-      cwd: process.cwd(), home: resolveDshHome(),
+      cwd: process.cwd(), home: resolveHuoliHome(),
       overlays: composed.overlays, telemetryDisabledEnv: process.env.HUOLI_TELEMETRY_DISABLED,
     }
     const ctx = await boot(NAME, rootConfig, readProfilePatches(NAME, profileContext, composed.profile), async (hostCtx) => {

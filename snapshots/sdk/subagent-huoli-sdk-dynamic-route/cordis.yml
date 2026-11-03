@@ -16,7 +16,7 @@
 - id: session-persistence-jsonl
   name: '@huoli/huoli-session-persistence-jsonl'
   config:
-    root: !!js dshHomePath('sessions')
+    root: !!js huoliHomePath('sessions')
     compression: none
 
 - insert:
@@ -29,7 +29,7 @@
       config:
         profile: sdk
         patches: !!js JSON.parse(process.env.HUOLI_TEST_CHILD_PATCHES ?? '[]')
-        dshHome: !!js process.env.HUOLI_TEST_CHILD_HOME
+        huoliHome: !!js process.env.HUOLI_TEST_CHILD_HOME
         provider: mock
         model: mock-routed
         env:

@@ -515,13 +515,13 @@ syncBuiltinESMExports()
   it('refuses dormant repository extensions before upgrading the repository format', async () => {
     const fixture = createFixture()
     const commonConfig = join(commonDirectory(fixture), 'config')
-    git(fixture, fixture.main, ['config', 'extensions.dshUnknown', 'true'])
+    git(fixture, fixture.main, ['config', 'extensions.huoliUnknown', 'true'])
     expect(gitResult(fixture, fixture.main, ['status', '--porcelain']).status).toBe(0)
 
     const result = await runInstaller(fixture, fixture.main)
 
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('dormant repository extension extensions.dshunknown')
+    expect(result.stderr).toContain('dormant repository extension extensions.huoliunknown')
     expect(git(fixture, fixture.main, [
       'config', '--file', commonConfig, '--get', 'core.repositoryFormatVersion',
     ])).toBe('0')
@@ -720,7 +720,7 @@ syncBuiltinESMExports()
   })
 
   for (const includeKey of ['include.path', 'includeIf.onbranch:conditional.path']) {
-    for (const key of ['core.worktree', 'core.bare', 'extensions.dshunknown']) {
+    for (const key of ['core.worktree', 'core.bare', 'extensions.huoliunknown']) {
       it(`ignores ${key} loaded through ${includeKey}`, async () => {
         const fixture = createFixture()
         const commonConfig = join(commonDirectory(fixture), 'config')

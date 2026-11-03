@@ -20,7 +20,7 @@ function fixture() {
     const application = join(directory, 'unsigned', CUA_APPLICATION)
     for (const [path, bytes] of Object.entries({
       'Contents/Info.plist': 'fixture identity', 'Contents/MacOS/huoli-cua-native': `executable ${architecture}`,
-      'Contents/Resources/DSHComputerUse.icns': 'icon', 'Contents/_CodeSignature/CodeResources': 'signature',
+      'Contents/Resources/HUOLIComputerUse.icns': 'icon', 'Contents/_CodeSignature/CodeResources': 'signature',
     })) {
       mkdirSync(join(application, path, '..'), { recursive: true })
       writeFileSync(join(application, path), bytes)

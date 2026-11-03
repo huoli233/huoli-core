@@ -12,7 +12,7 @@ import type { Context } from '@huoli/cordis'
 import { afterAll, beforeAll, expect, it, onTestFinished, vi } from 'vitest'
 import {
   boot, composeEntries, initProfile, loadProfileDirectory, readProfilePatches, readProfileManifest,
-  reconcileProfilePatches, PluginPackages, readPluginMeta, getDshRuntimeVersion,
+  reconcileProfilePatches, PluginPackages, readPluginMeta, getHuoliRuntimeVersion,
   type ProfileContext, type RuntimeResolution,
 } from '@huoli/huoli-app-boot'
 import { OPTIONAL_BUNDLES, OFFICIAL_ON_DEMAND_CATALOG } from '@huoli/huoli-official-bundles'
@@ -1723,7 +1723,7 @@ it.each(['live', 'startup'] as const)('requires exact risk acknowledgement and p
     const metadata = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>
     writeFileSync(file, JSON.stringify({ ...metadata, peerDependencies: { '@huoli/huoli': '999.0.0' } }))
   })
-  const runtime = getDshRuntimeVersion()
+  const runtime = getHuoliRuntimeVersion()
   const managed = () => [...ctx.loader.entries()].find(entry => entry.id === 'include:managed')
   // The bundle's own peers are incompatible, so its whole layer is skipped and contributes no row.
   expect(managed()).toBeUndefined()
@@ -1764,7 +1764,7 @@ it.each(['huoli-x', 'huoli-x@^2.0.0'])('retains the refused package identity for
   const { manager, ctx } = await fixture()
   const facts: PluginOperation[] = []
   ctx.on('plugin-manager/operation', (event) => { facts.push(event) })
-  const incompatible = [{ name: 'huoli-x', version: '2.0.0', runtimeVersion: getDshRuntimeVersion(), requirements: { '@huoli/huoli': '999.0.0' } }]
+  const incompatible = [{ name: 'huoli-x', version: '2.0.0', runtimeVersion: getHuoliRuntimeVersion(), requirements: { '@huoli/huoli': '999.0.0' } }]
   const install = vi.spyOn(operations, 'runProfilePnpm').mockResolvedValue({
     exitCode: 1, output: 'huoli: installation rejected', truncated: false, logPath: 'pnpm.log', kind: 'unknown', incompatible,
   })
@@ -1778,7 +1778,7 @@ it.each(['huoli-x', 'huoli-x@^2.0.0'])('retains the refused package identity for
 
 it.each([false, true])('rechecks installed bundle peers before accepting a disabled installation (exempted=%s)', async (exempted) => {
   const { manager, dir, bundle } = await fixture()
-  if (exempted) await manager.setVersionExemption('incompatible@1.0.0', getDshRuntimeVersion(), true, true)
+  if (exempted) await manager.setVersionExemption('incompatible@1.0.0', getHuoliRuntimeVersion(), true, true)
   const before = readFileSync(join(dir, 'package.json'), 'utf8')
   const install = vi.spyOn(operations, 'runProfilePnpm').mockImplementation(async () => {
     bundle('incompatible', [])
@@ -1814,7 +1814,7 @@ it('lists absent Official entries offline without resolving their packages or co
       ...entry.listedByDefault === undefined ? {} : { listedByDefault: entry.listedByDefault },
       ...entry.platforms !== undefined && !entry.platforms.includes(process.platform)
         ? { listedByDefault: false, error: { code: 'unsupported-platform' } } : {},
-      installTarget: { spec: `${entry.packageName}@${getDshRuntimeVersion()}`, version: getDshRuntimeVersion() },
+      installTarget: { spec: `${entry.packageName}@${getHuoliRuntimeVersion()}`, version: getHuoliRuntimeVersion() },
     }])
     expect(resolve.mock.calls.some(([name]) => name === entry.packageName)).toBe(false)
   }
@@ -1863,7 +1863,7 @@ it('distinguishes an unreadable profile dependency from an absent catalog select
 it('uses the generic exact installer and keeps an Official entry through on, off, and removal', async () => {
   const { manager, dir, bundle, profile } = await fixture()
   const name = OFFICIAL_ON_DEMAND_CATALOG[0]!.packageName
-  const version = getDshRuntimeVersion()
+  const version = getHuoliRuntimeVersion()
   const pnpm = vi.spyOn(operations, 'runProfilePnpm').mockImplementation(async (_dir, args) => {
     const manifest = readProfileManifest('test', dir)
     if (args[0] === 'add') {
@@ -1904,7 +1904,7 @@ it('restores dependency and selection after an exact version is unavailable', as
     return { exitCode: 1, output: 'No matching version', truncated: false, logPath: '/install.log', kind: 'no-matching-version' }
   })
   onTestFinished(() => { pnpm.mockRestore() })
-  expect(await manager.installBundle(`${name}@${getDshRuntimeVersion()}`, { saveExact: true })).toMatchObject({ application: 'failed', stage: 'install' })
+  expect(await manager.installBundle(`${name}@${getHuoliRuntimeVersion()}`, { saveExact: true })).toMatchObject({ application: 'failed', stage: 'install' })
   expect(readFileSync(join(dir, 'package.json'), 'utf8')).toBe(before)
 })
 
@@ -1914,14 +1914,14 @@ it('retains a successful installation and saved selection when Official activati
   const pnpm = vi.spyOn(operations, 'runProfilePnpm').mockImplementation(async () => {
     bundle(name, [{ id: 'official-probe', name: './plugin.mjs', config: { fail: true } }], profile.home)
     const manifest = readProfileManifest('test', dir)
-    manifest.dependencies = { ...manifest.dependencies, [name]: getDshRuntimeVersion() }
+    manifest.dependencies = { ...manifest.dependencies, [name]: getHuoliRuntimeVersion() }
     writeFileSync(join(dir, 'package.json'), JSON.stringify(manifest))
     return { exitCode: 0, output: '', truncated: false, logPath: '/install.log' }
   })
   onTestFinished(() => { pnpm.mockRestore() })
-  expect(await manager.installBundle(`${name}@${getDshRuntimeVersion()}`, { saveExact: true })).toMatchObject({ application: 'failed', stage: 'enable' })
+  expect(await manager.installBundle(`${name}@${getHuoliRuntimeVersion()}`, { saveExact: true })).toMatchObject({ application: 'failed', stage: 'enable' })
   expect(readProfileManifest('test', dir).huoli?.profile?.bundles).toContain(name)
-  expect(readProfileManifest('test', dir).dependencies?.[name]).toBe(getDshRuntimeVersion())
+  expect(readProfileManifest('test', dir).dependencies?.[name]).toBe(getHuoliRuntimeVersion())
 })
 
 it('reports and removes a saved Official selection whose dependency is absent', async () => {
@@ -1950,7 +1950,7 @@ it('keeps a broken installation-carried catalog entry visible with offline metad
   writeFileSync(join(broken, 'package.json'), '{')
   expect((await manager.listBundles()).find(bundle => bundle.name === entry.packageName)).toMatchObject({
     official: true, availability: 'missing', enabled: false, installed: false, optional: false, removable: false,
-    meta: entry.meta, installTarget: { version: getDshRuntimeVersion() }, error: { code: 'operation-error' },
+    meta: entry.meta, installTarget: { version: getHuoliRuntimeVersion() }, error: { code: 'operation-error' },
   })
 })
 
@@ -1958,7 +1958,7 @@ it('keeps a broken installation-carried catalog entry visible with offline metad
 it('offers checkout links beside stale registry and other-checkout dependencies at the same version', async () => {
   const { manager, dir, bundle, profile } = await fixture('live', false, undefined, {}, undefined, undefined, true)
   const name = OFFICIAL_ON_DEMAND_CATALOG[0]!.packageName
-  const version = getDshRuntimeVersion()
+  const version = getHuoliRuntimeVersion()
   const source = join(profile.home, 'packages', 'native', 'provider')
   mkdirSync(join(source, 'lib'), { recursive: true })
   writeFileSync(join(source, 'package.json'), JSON.stringify({ name, version, main: './lib/index.js', huoli: { bundle: { patch: './cordis.patch.yml' } } }))
@@ -2043,7 +2043,7 @@ it('lists newer registry versions with tags, times, deprecation, bundle declarat
     versions: [
       {
         version: '2.0.0', publishedAt: '2026-10-10T00:00:00.000Z', tags: ['latest'], prerelease: false, bundle: true,
-        incompatible: { name: 'extra', version: '2.0.0', runtimeVersion: getDshRuntimeVersion(), requirements: { '@huoli/huoli': '>=999.0.0' } },
+        incompatible: { name: 'extra', version: '2.0.0', runtimeVersion: getHuoliRuntimeVersion(), requirements: { '@huoli/huoli': '>=999.0.0' } },
       },
       { version: '1.2.0', tags: [], prerelease: false, bundle: true },
       { version: '1.2.0-beta.1', tags: ['next'], prerelease: true, bundle: false },
@@ -2275,7 +2275,7 @@ it.each(['extra@^1.0.0', ' extra@1.0.0 ', 'https://user:secret@example.com/pkg']
   const { manager, ctx } = await fixture()
   const facts: PluginOperation[] = []
   ctx.on('plugin-manager/operation', (event) => { facts.push(event) })
-  expect(await manager.setVersionExemption(input, getDshRuntimeVersion(), true, true)).toMatchObject({ application: 'failed' })
+  expect(await manager.setVersionExemption(input, getHuoliRuntimeVersion(), true, true)).toMatchObject({ application: 'failed' })
   expect(facts).toHaveLength(2)
   for (const fact of facts) {
     expect(fact.target).toBeNull()
@@ -2303,7 +2303,7 @@ it.each(['extra', '@scope/extra'])('records the exemption version independently 
   const { manager, ctx } = await fixture()
   const facts: PluginOperation[] = []
   ctx.on('plugin-manager/operation', (event) => { facts.push(event) })
-  await manager.setVersionExemption(`${name}@2.0.0`, getDshRuntimeVersion(), false)
+  await manager.setVersionExemption(`${name}@2.0.0`, getHuoliRuntimeVersion(), false)
   expect(facts).toHaveLength(2)
   for (const fact of facts) expect(fact).toMatchObject({ target: name, version: '2.0.0', enabled: false })
 })

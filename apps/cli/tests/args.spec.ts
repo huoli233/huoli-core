@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { parseDshArgs } from '../src/args.ts'
+import { parseHuoliArgs } from '../src/args.ts'
 
-const parse = (argv: string[], manageDesktopProfile = false) => parseDshArgs(argv, '1.2.3', manageDesktopProfile)
+const parse = (argv: string[], manageDesktopProfile = false) => parseHuoliArgs(argv, '1.2.3', manageDesktopProfile)
 
 /** Capture the process exit code while muting Commander's output. */
 function exitCode(argv: string[], manageDesktopProfile = false): number {
@@ -20,7 +20,7 @@ function exitCode(argv: string[], manageDesktopProfile = false): number {
 
 afterEach(() => { vi.restoreAllMocks() })
 
-describe('parseDshArgs', () => {
+describe('parseHuoliArgs', () => {
   it('routes profile boots and shorthand, handing the rest to the app', () => {
     expect(parse(['--profile', 'tui'])).toEqual({ mode: 'profile', profile: 'tui', patches: [], args: [] })
     expect(parse(['--profile', 'tui', '--patch', 'a.yml', '--patch', 'b.yml']))

@@ -79,7 +79,7 @@ describe('explicit product telemetry', () => {
     service.emit(event)
     expect(target.captures).toHaveLength(1)
     const [capture] = target.captures
-    expect(capture?.headers['x-channel']).toBe('dsh_otel_report')
+    expect(capture?.headers['x-channel']).toBe('huoli_otel_report')
     expect(capture?.headers['content-encoding']).toBe(compression === 'gzip' ? 'gzip' : undefined)
     const logs = capture?.body.resourceLogs.flatMap(r => r.scopeLogs.flatMap(s => s.logRecords))
     expect(logs).toHaveLength(2)
@@ -108,7 +108,7 @@ describe('explicit product telemetry', () => {
     ctx.productTelemetry.emit(event)
     await fiber.dispose()
     expect(target.captures).toHaveLength(1)
-    expect(target.captures[0]?.headers).toMatchObject({ 'x-channel': 'dsh_otel_report' })
+    expect(target.captures[0]?.headers).toMatchObject({ 'x-channel': 'huoli_otel_report' })
     expect(target.captures[0]?.headers).not.toHaveProperty('authorization')
     expect(target.captures[0]?.headers).not.toHaveProperty('x-user-id')
     expect(target.captures[0]?.headers).not.toHaveProperty('x-log-token')

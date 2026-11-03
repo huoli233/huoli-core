@@ -40,7 +40,7 @@ import type { Context } from '@huoli/cordis'
 import type { Entry } from '@huoli/cordis-plugin-loader'
 import type { IndexInjection } from '@huoli/huoli-host-webserver'
 import { PACKAGE_ASSET_SEGMENT, packageAssetMediaType } from './assets.ts'
-import { exactPackageSpecifier, parseDshClient, stripClientSuffix } from './client/manifest.ts'
+import { exactPackageSpecifier, parseHuoliClient, stripClientSuffix } from './client/manifest.ts'
 import type { WebBootBatch, WebBootBatchPhase, WebBootEntry, WebBootGraph, WebBootRelease } from './client/manifest.ts'
 
 export { stripClientSuffix } from './client/manifest.ts'
@@ -898,7 +898,7 @@ export class ClientModuleRegistry extends Service {
     const { packageName, path: pkgPath } = located
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, unknown>
     const huoli = pkg.huoli
-    const decl = parseDshClient(
+    const decl = parseHuoliClient(
       packageName,
       huoli !== null && typeof huoli === 'object' ? (huoli as Record<string, unknown>).client : undefined,
     )

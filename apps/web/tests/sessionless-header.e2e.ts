@@ -24,7 +24,7 @@ describe('navigation without a selected Session', () => {
     try {
       if (platform !== 'web') {
         await page.addInitScript(({ value, snapshot }) => {
-          Object.assign(window, { dshDesktop: { protocolVersion: 1,
+          Object.assign(window, { huoliDesktop: { protocolVersion: 1,
             keyboard: { subscribe: () => () => {}, closeWindow: async () => {} },
             shortcuts: { get: async () => ({ ...snapshot, status: 'ready' }),
               subscribe: () => () => {}, recording: async () => {},

@@ -15,7 +15,7 @@ import { afterAll, describe, expect, it, onTestFinished, vi } from 'vitest'
 import {
   composeEntries,
   createRuntimeResolution,
-  getDshRuntimeVersion,
+  getHuoliRuntimeVersion,
   initProfile,
   loadProfile,
   loadProfileDirectory,
@@ -470,9 +470,9 @@ describe('loadProfile', () => {
     const denied = loadProfileDirectory('huoli', dir, anchor)
     expect(denied.layers.map(layer => layer.packageName)).toEqual(['kept'])
     expect(denied.skippedBundles).toEqual([{ packageName: 'guarded', reason: expect.stringContaining(
-      `Error: Plugin guarded@0.0.0 is incompatible with huoli ${getDshRuntimeVersion()}`,
+      `Error: Plugin guarded@0.0.0 is incompatible with huoli ${getHuoliRuntimeVersion()}`,
     ) as string }])
-    writeFileSync(join(dir, PROFILE_COMPATIBILITY_FILENAME), JSON.stringify({ 'guarded@0.0.0': [getDshRuntimeVersion()] }))
+    writeFileSync(join(dir, PROFILE_COMPATIBILITY_FILENAME), JSON.stringify({ 'guarded@0.0.0': [getHuoliRuntimeVersion()] }))
     expect(loadProfileDirectory('huoli', dir, anchor).layers.map(layer => layer.packageName)).toEqual(['guarded', 'kept'])
   })
 

@@ -6,7 +6,7 @@ import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
 import { resolveExampleLaunch } from '@huoli/huoli-loader-smoke'
 
-const dshBinScript = fileURLToPath(new URL('../src/bin.ts', import.meta.url))
+const huoliBinScript = fileURLToPath(new URL('../src/bin.ts', import.meta.url))
 const tsconfigPath = fileURLToPath(new URL('../../../tsconfig.json', import.meta.url))
 const fixturePlugin = pathToFileURL(fileURLToPath(
   new URL('./profiles/headless/tests/fixtures/team-llm.mjs', import.meta.url),
@@ -53,7 +53,7 @@ describe('huoli run with Agent Teams enabled', () => {
         '',
       ].join('\n'))
       const launch = resolveExampleLaunch({
-        srcBin: dshBinScript,
+        srcBin: huoliBinScript,
         configArgs: ['--profile', 'headless', '请先运行 workflow 检查，再使用 Agent Teams 把调研和实现拆给两个 teammate，等待完成后汇总。'],
         tsconfigPath,
         env: {

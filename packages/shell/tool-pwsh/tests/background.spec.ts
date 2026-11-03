@@ -68,7 +68,7 @@ class FakePwsh extends ShellExecutor {
       onExpiry: request.onExpiry ?? 'kill',
       stdoutMaxBytes: request.stdoutMaxBytes ?? 64_000,
       ...request.signal ? { signal: request.signal } : {},
-      ...request.dshEnv !== undefined ? { dshEnv: request.dshEnv } : {},
+      ...request.huoliEnv !== undefined ? { huoliEnv: request.huoliEnv } : {},
       sandboxPolicy: request.sandboxPolicy,
     }
   }

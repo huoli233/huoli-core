@@ -84,16 +84,16 @@ export class NetworkDomain {
         return {
           body: Buffer.from(body.bytes).toString('base64'),
           base64Encoded: true,
-          dshInspectorTruncated: body.truncated,
-          ...(body.captureError === undefined ? {} : { dshInspectorCaptureError: body.captureError }),
+          huoliInspectorTruncated: body.truncated,
+          ...(body.captureError === undefined ? {} : { huoliInspectorCaptureError: body.captureError }),
         }
       }
       case 'Network.getRequestPostData': {
         const body = this.store.requestBody(params.requestId)
         return {
           postData: Buffer.from(body.bytes).toString('utf8'),
-          dshInspectorTruncated: body.truncated,
-          ...(body.captureError === undefined ? {} : { dshInspectorCaptureError: body.captureError }),
+          huoliInspectorTruncated: body.truncated,
+          ...(body.captureError === undefined ? {} : { huoliInspectorCaptureError: body.captureError }),
         }
       }
       case 'Network.streamResourceContent': {
@@ -183,7 +183,7 @@ export class NetworkDomain {
           requestId: event.requestId,
           timestamp,
           encodedDataLength: event.encodedDataLength,
-          dshInspectorTruncated: event.truncated,
+          huoliInspectorTruncated: event.truncated,
         })
         this.stopRequest(session, event.requestKey)
         return

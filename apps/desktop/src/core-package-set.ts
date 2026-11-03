@@ -116,7 +116,7 @@ export function desktopCorePackageOverrides(packageSet: DesktopCorePackageSet): 
 }
 
 /** Return the local direct dependency spec for the huoli package. */
-export function desktopDshPackageSpec(packageSet: DesktopCorePackageSet): string {
+export function desktopHuoliPackageSpec(packageSet: DesktopCorePackageSet): string {
   const record = packageSet.packages.find(entry => entry.name === HUOLI_PACKAGE)
   if (record === undefined) throw new Error(`desktop package set: missing ${HUOLI_PACKAGE}`)
   return desktopCorePackageSpec(record)

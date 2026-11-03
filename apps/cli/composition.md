@@ -8,200 +8,200 @@ The huoli-base bundle patch shared by the web, headless, sdk, and acp profiles; 
 ```mermaid
 flowchart LR
   cfg["packages/bundle/base/cordis.patch.yml<br/>cordis.yml"]
-  plugin_dsh_base_tool_plugin_manager["tool-plugin-manager<br/>@huoli/huoli-plugin-manager/tools"]
-  cfg --> plugin_dsh_base_tool_plugin_manager
-  plugin_dsh_base_plugin_manager["plugin-manager<br/>@huoli/huoli-plugin-manager"]
-  cfg --> plugin_dsh_base_plugin_manager
-  plugin_dsh_base_timer["timer<br/>@huoli/cordis-plugin-timer"]
-  cfg --> plugin_dsh_base_timer
-  plugin_dsh_base_hmr["hmr<br/>@huoli/huoli-hmr"]
-  cfg --> plugin_dsh_base_hmr
-  plugin_dsh_base_llm["llm<br/>@huoli/huoli-llm"]
-  cfg --> plugin_dsh_base_llm
-  plugin_dsh_base_deepseek_llm_api_extensions["deepseek-llm-api-extensions<br/>@huoli/huoli-deepseek-llm-api-extensions"]
-  cfg --> plugin_dsh_base_deepseek_llm_api_extensions
-  plugin_dsh_base_session["session<br/>@huoli/huoli-session"]
-  cfg --> plugin_dsh_base_session
-  plugin_dsh_base_session_log_deepseek["session-log-deepseek<br/>@huoli/huoli-session-log-deepseek"]
-  cfg --> plugin_dsh_base_session_log_deepseek
-  plugin_dsh_base_typert["typert<br/>@huoli/huoli-typert-registry"]
-  cfg --> plugin_dsh_base_typert
-  plugin_dsh_base_typert_loader["typert-loader<br/>@huoli/huoli-typert-loader"]
-  cfg --> plugin_dsh_base_typert_loader
-  plugin_dsh_base_typert_gateway["typert-gateway<br/>@huoli/huoli-api-gateway"]
-  cfg --> plugin_dsh_base_typert_gateway
-  plugin_dsh_base_remote_access["remote-access<br/>@huoli/huoli-api-remote-access"]
-  cfg --> plugin_dsh_base_remote_access
-  plugin_dsh_base_session_title["session-title<br/>@huoli/huoli-session-title"]
-  cfg --> plugin_dsh_base_session_title
-  plugin_dsh_base_session_title_llm["session-title-llm<br/>@huoli/huoli-session-title-first-prompt-llm"]
-  cfg --> plugin_dsh_base_session_title_llm
-  plugin_dsh_base_user_questions["user-questions<br/>@huoli/huoli-user-questions"]
-  cfg --> plugin_dsh_base_user_questions
-  plugin_dsh_base_agent["agent<br/>@huoli/huoli-agent"]
-  cfg --> plugin_dsh_base_agent
-  plugin_dsh_base_plugin_package_inventory_deepseek["plugin-package-inventory-deepseek<br/>@huoli/huoli-plugin-package-inventory-deepseek"]
-  cfg --> plugin_dsh_base_plugin_package_inventory_deepseek
-  plugin_dsh_base_agent_default_model["agent-default-model<br/>@huoli/huoli-agent-default-model"]
-  cfg --> plugin_dsh_base_agent_default_model
-  plugin_dsh_base_jobs["jobs<br/>@huoli/huoli-jobs-local"]
-  cfg --> plugin_dsh_base_jobs
-  plugin_dsh_base_llm_retry["llm-retry<br/>@huoli/huoli-llm-retry"]
-  cfg --> plugin_dsh_base_llm_retry
-  plugin_dsh_base_config_editor["config-editor<br/>@huoli/huoli-config-editor"]
-  cfg --> plugin_dsh_base_config_editor
-  plugin_dsh_base_settings["settings<br/>@huoli/huoli-settings"]
-  cfg --> plugin_dsh_base_settings
-  plugin_dsh_base_authorization["authorization<br/>@huoli/huoli-authorization"]
-  cfg --> plugin_dsh_base_authorization
-  plugin_dsh_base_deepseek_account["deepseek-account<br/>@huoli/huoli-deepseek-account-platform"]
-  cfg --> plugin_dsh_base_deepseek_account
-  plugin_dsh_base_credentials["credentials<br/>@huoli/huoli-credentials-local"]
-  cfg --> plugin_dsh_base_credentials
-  plugin_dsh_base_llm_pi_ai["llm-pi-ai<br/>@huoli/huoli-llm-pi-ai"]
-  cfg --> plugin_dsh_base_llm_pi_ai
-  plugin_dsh_base_session_persistence_jsonl["session-persistence-jsonl<br/>@huoli/huoli-session-persistence-jsonl"]
-  cfg --> plugin_dsh_base_session_persistence_jsonl
-  plugin_dsh_base_attachment_local["attachment-local<br/>@huoli/huoli-attachment-local"]
-  cfg --> plugin_dsh_base_attachment_local
-  plugin_dsh_base_session_query_sqlite["session-query-sqlite<br/>@huoli/huoli-session-query-sqlite"]
-  cfg --> plugin_dsh_base_session_query_sqlite
-  plugin_dsh_base_working_directory["working-directory<br/>@huoli/huoli-working-directory"]
-  cfg --> plugin_dsh_base_working_directory
-  plugin_dsh_base_tool_working_directory["tool-working-directory<br/>@huoli/huoli-tool-working-directory"]
-  cfg --> plugin_dsh_base_tool_working_directory
-  plugin_dsh_base_session_projection["session-projection<br/>@huoli/huoli-session-projection"]
-  cfg --> plugin_dsh_base_session_projection
-  plugin_dsh_base_storage["storage<br/>@huoli/huoli-storage"]
-  cfg --> plugin_dsh_base_storage
-  plugin_dsh_base_storage_json["storage-json<br/>@huoli/huoli-storage-json"]
-  cfg --> plugin_dsh_base_storage_json
-  plugin_dsh_base_storage_domain["storage-domain<br/>@huoli/huoli-storage-domain"]
-  cfg --> plugin_dsh_base_storage_domain
-  plugin_dsh_base_session_projection_cache["session-projection-cache<br/>@huoli/huoli-session-projection-cache"]
-  cfg --> plugin_dsh_base_session_projection_cache
-  plugin_dsh_base_otel["otel<br/>@huoli/huoli-otel"]
-  cfg --> plugin_dsh_base_otel
-  plugin_dsh_base_session_telemetry_otel["session-telemetry-otel<br/>@huoli/huoli-session-telemetry-otel"]
-  cfg --> plugin_dsh_base_session_telemetry_otel
-  plugin_dsh_base_subprocess["subprocess<br/>@huoli/huoli-subprocess-local"]
-  cfg --> plugin_dsh_base_subprocess
-  plugin_dsh_base_sandbox["sandbox<br/>@huoli/huoli-sandbox-local"]
-  cfg --> plugin_dsh_base_sandbox
-  plugin_dsh_base_sandbox_policy["sandbox-policy<br/>@huoli/huoli-sandbox-policy"]
-  cfg --> plugin_dsh_base_sandbox_policy
-  plugin_dsh_base_bash_sandbox["bash-sandbox<br/>@huoli/huoli-bash-sandbox"]
-  cfg --> plugin_dsh_base_bash_sandbox
-  plugin_dsh_base_pwsh_sandbox["pwsh-sandbox<br/>@huoli/huoli-pwsh-sandbox"]
-  cfg --> plugin_dsh_base_pwsh_sandbox
-  plugin_dsh_base_approval["approval<br/>@huoli/huoli-user-approval"]
-  cfg --> plugin_dsh_base_approval
-  plugin_dsh_base_permission["permission<br/>@huoli/huoli-permission-presets"]
-  cfg --> plugin_dsh_base_permission
-  plugin_dsh_base_shell_env["shell-env<br/>@huoli/huoli-shell-env"]
-  cfg --> plugin_dsh_base_shell_env
-  plugin_dsh_base_tool_bash["tool-bash<br/>@huoli/huoli-tool-bash"]
-  cfg --> plugin_dsh_base_tool_bash
-  plugin_dsh_base_tool_pwsh["tool-pwsh<br/>@huoli/huoli-tool-pwsh"]
-  cfg --> plugin_dsh_base_tool_pwsh
-  plugin_dsh_base_tool_jobs["tool-jobs<br/>@huoli/huoli-tool-jobs"]
-  cfg --> plugin_dsh_base_tool_jobs
-  plugin_dsh_base_fs_observation_policy["fs-observation-policy<br/>@huoli/huoli-fs-observation-policy"]
-  cfg --> plugin_dsh_base_fs_observation_policy
-  plugin_dsh_base_tool_fs["tool-fs<br/>@huoli/huoli-tool-fs"]
-  cfg --> plugin_dsh_base_tool_fs
-  plugin_dsh_base_tool_fs_search["tool-fs-search<br/>@huoli/huoli-tool-fs-search"]
-  cfg --> plugin_dsh_base_tool_fs_search
-  plugin_dsh_base_agent_instructions["agent-instructions<br/>@huoli/huoli-agent-instructions"]
-  cfg --> plugin_dsh_base_agent_instructions
-  plugin_dsh_base_skill["skill<br/>@huoli/huoli-skill"]
-  cfg --> plugin_dsh_base_skill
-  plugin_dsh_base_skill_filesystem["skill-filesystem<br/>@huoli/huoli-skill-filesystem"]
-  cfg --> plugin_dsh_base_skill_filesystem
-  plugin_dsh_base_tool_skill["tool-skill<br/>@huoli/huoli-tool-skill"]
-  cfg --> plugin_dsh_base_tool_skill
-  plugin_dsh_base_commands["commands<br/>@huoli/huoli-commands"]
-  cfg --> plugin_dsh_base_commands
-  plugin_dsh_base_command_feedback["command-feedback<br/>@huoli/huoli-command-feedback"]
-  cfg --> plugin_dsh_base_command_feedback
-  plugin_dsh_base_goal["goal<br/>@huoli/huoli-goal"]
-  cfg --> plugin_dsh_base_goal
-  plugin_dsh_base_goal_round_driver["goal-round-driver<br/>@huoli/huoli-goal-round-driver"]
-  cfg --> plugin_dsh_base_goal_round_driver
-  plugin_dsh_base_command_goal["command-goal<br/>@huoli/huoli-command-goal"]
-  cfg --> plugin_dsh_base_command_goal
-  plugin_dsh_base_plan_mode["plan-mode<br/>@huoli/huoli-plan-mode"]
-  cfg --> plugin_dsh_base_plan_mode
-  plugin_dsh_base_token_meter["token-meter<br/>@huoli/huoli-token-meter"]
-  cfg --> plugin_dsh_base_token_meter
-  plugin_dsh_base_compaction_basic["compaction-basic<br/>@huoli/huoli-compaction-basic"]
-  cfg --> plugin_dsh_base_compaction_basic
-  plugin_dsh_base_command_compact["command-compact<br/>@huoli/huoli-command-compact"]
-  cfg --> plugin_dsh_base_command_compact
-  plugin_dsh_base_subagent["subagent<br/>@huoli/huoli-subagent"]
-  cfg --> plugin_dsh_base_subagent
-  plugin_dsh_base_subagent_spawn_in_process["subagent-spawn-in-process<br/>@huoli/huoli-subagent-spawn-in-process"]
-  cfg --> plugin_dsh_base_subagent_spawn_in_process
-  plugin_dsh_base_subagent_fork_in_process["subagent-fork-in-process<br/>@huoli/huoli-subagent-fork-in-process"]
-  cfg --> plugin_dsh_base_subagent_fork_in_process
-  plugin_dsh_base_tool_subagent_control["tool-subagent-control<br/>@huoli/huoli-tool-subagent-control"]
-  cfg --> plugin_dsh_base_tool_subagent_control
-  plugin_dsh_base_tool_subagent["tool-subagent<br/>@huoli/huoli-tool-subagent"]
-  cfg --> plugin_dsh_base_tool_subagent
-  plugin_dsh_base_tool_subagent_fork["tool-subagent-fork<br/>@huoli/huoli-tool-subagent"]
-  cfg --> plugin_dsh_base_tool_subagent_fork
-  plugin_dsh_base_ptc_runtime["ptc-runtime<br/>@huoli/huoli-ptc-runtime-node"]
-  cfg --> plugin_dsh_base_ptc_runtime
-  plugin_dsh_base_workflow_ptc["workflow-ptc<br/>@huoli/huoli-workflow-ptc"]
-  cfg --> plugin_dsh_base_workflow_ptc
-  plugin_dsh_base_tool_workflow["tool-workflow<br/>@huoli/huoli-tool-workflow"]
-  cfg --> plugin_dsh_base_tool_workflow
-  plugin_dsh_base_timeout_policy["timeout-policy<br/>@huoli/huoli-tool-call-timeout-policy"]
-  cfg --> plugin_dsh_base_timeout_policy
-  plugin_dsh_base_spill_local["spill-local<br/>@huoli/huoli-spill-local"]
-  cfg --> plugin_dsh_base_spill_local
-  plugin_dsh_base_spill_policy["spill-policy<br/>@huoli/huoli-spill-policy"]
-  cfg --> plugin_dsh_base_spill_policy
-  plugin_dsh_base_session_checkpoint_policy["session-checkpoint-policy<br/>@huoli/huoli-session-checkpoint-policy"]
-  cfg --> plugin_dsh_base_session_checkpoint_policy
-  plugin_dsh_base_tool_result_pruner["tool-result-pruner<br/>@huoli/huoli-compaction-tool-result-pruner"]
-  cfg --> plugin_dsh_base_tool_result_pruner
-  plugin_dsh_base_image_offload["image-offload<br/>@huoli/huoli-compaction-image-offload"]
-  cfg --> plugin_dsh_base_image_offload
-  plugin_dsh_base_tool_todo["tool-todo<br/>@huoli/huoli-tool-todo"]
-  cfg --> plugin_dsh_base_tool_todo
-  plugin_dsh_base_tool_goal["tool-goal<br/>@huoli/huoli-tool-goal"]
-  cfg --> plugin_dsh_base_tool_goal
-  plugin_dsh_base_repeat_tool_reminder["repeat-tool-reminder<br/>@huoli/huoli-repeat-tool-reminder"]
-  cfg --> plugin_dsh_base_repeat_tool_reminder
-  plugin_dsh_base_web["web<br/>@huoli/huoli-web"]
-  cfg --> plugin_dsh_base_web
-  plugin_dsh_base_web_search_deepseek["web-search-deepseek<br/>@huoli/huoli-web-search-deepseek"]
-  cfg --> plugin_dsh_base_web_search_deepseek
-  plugin_dsh_base_web_deepseek_api["web-deepseek-api<br/>@huoli/huoli-web-deepseek-api"]
-  cfg --> plugin_dsh_base_web_deepseek_api
-  plugin_dsh_base_web_fetch_http["web-fetch-http<br/>@huoli/huoli-web-fetch-http"]
-  cfg --> plugin_dsh_base_web_fetch_http
-  plugin_dsh_base_tool_web["tool-web<br/>@huoli/huoli-tool-web"]
-  cfg --> plugin_dsh_base_tool_web
-  plugin_dsh_base_mcp_resources["mcp-resources<br/>@huoli/huoli-mcp-resources"]
-  cfg --> plugin_dsh_base_mcp_resources
-  plugin_dsh_base_tools["tools<br/>@huoli/huoli-tools"]
-  cfg --> plugin_dsh_base_tools
-  plugin_dsh_base_tool_executor_native["tool-executor-native<br/>@huoli/huoli-tool-executor-native"]
-  cfg --> plugin_dsh_base_tool_executor_native
-  plugin_dsh_base_tool_executor_ptc["tool-executor-ptc<br/>@huoli/huoli-tool-executor-ptc"]
-  cfg --> plugin_dsh_base_tool_executor_ptc
-  plugin_dsh_base_system_prompt["system-prompt<br/>@huoli/huoli-system-prompt"]
-  cfg --> plugin_dsh_base_system_prompt
-  plugin_dsh_base_agent_loop["agent-loop<br/>@huoli/huoli-agent-loop"]
-  cfg --> plugin_dsh_base_agent_loop
-  plugin_dsh_base_fs_sandbox["fs-sandbox<br/>@huoli/huoli-fs-sandbox"]
-  cfg --> plugin_dsh_base_fs_sandbox
-  plugin_dsh_base_llm_deepseek["llm-deepseek<br/>@huoli/huoli-llm-deepseek-api-key"]
-  cfg --> plugin_dsh_base_llm_deepseek
-  plugin_dsh_base_llm_deepseek_account["llm-deepseek-account<br/>@huoli/huoli-llm-deepseek-account"]
-  cfg --> plugin_dsh_base_llm_deepseek_account
+  plugin_huoli_base_tool_plugin_manager["tool-plugin-manager<br/>@huoli/huoli-plugin-manager/tools"]
+  cfg --> plugin_huoli_base_tool_plugin_manager
+  plugin_huoli_base_plugin_manager["plugin-manager<br/>@huoli/huoli-plugin-manager"]
+  cfg --> plugin_huoli_base_plugin_manager
+  plugin_huoli_base_timer["timer<br/>@huoli/cordis-plugin-timer"]
+  cfg --> plugin_huoli_base_timer
+  plugin_huoli_base_hmr["hmr<br/>@huoli/huoli-hmr"]
+  cfg --> plugin_huoli_base_hmr
+  plugin_huoli_base_llm["llm<br/>@huoli/huoli-llm"]
+  cfg --> plugin_huoli_base_llm
+  plugin_huoli_base_deepseek_llm_api_extensions["deepseek-llm-api-extensions<br/>@huoli/huoli-deepseek-llm-api-extensions"]
+  cfg --> plugin_huoli_base_deepseek_llm_api_extensions
+  plugin_huoli_base_session["session<br/>@huoli/huoli-session"]
+  cfg --> plugin_huoli_base_session
+  plugin_huoli_base_session_log_deepseek["session-log-deepseek<br/>@huoli/huoli-session-log-deepseek"]
+  cfg --> plugin_huoli_base_session_log_deepseek
+  plugin_huoli_base_typert["typert<br/>@huoli/huoli-typert-registry"]
+  cfg --> plugin_huoli_base_typert
+  plugin_huoli_base_typert_loader["typert-loader<br/>@huoli/huoli-typert-loader"]
+  cfg --> plugin_huoli_base_typert_loader
+  plugin_huoli_base_typert_gateway["typert-gateway<br/>@huoli/huoli-api-gateway"]
+  cfg --> plugin_huoli_base_typert_gateway
+  plugin_huoli_base_remote_access["remote-access<br/>@huoli/huoli-api-remote-access"]
+  cfg --> plugin_huoli_base_remote_access
+  plugin_huoli_base_session_title["session-title<br/>@huoli/huoli-session-title"]
+  cfg --> plugin_huoli_base_session_title
+  plugin_huoli_base_session_title_llm["session-title-llm<br/>@huoli/huoli-session-title-first-prompt-llm"]
+  cfg --> plugin_huoli_base_session_title_llm
+  plugin_huoli_base_user_questions["user-questions<br/>@huoli/huoli-user-questions"]
+  cfg --> plugin_huoli_base_user_questions
+  plugin_huoli_base_agent["agent<br/>@huoli/huoli-agent"]
+  cfg --> plugin_huoli_base_agent
+  plugin_huoli_base_plugin_package_inventory_deepseek["plugin-package-inventory-deepseek<br/>@huoli/huoli-plugin-package-inventory-deepseek"]
+  cfg --> plugin_huoli_base_plugin_package_inventory_deepseek
+  plugin_huoli_base_agent_default_model["agent-default-model<br/>@huoli/huoli-agent-default-model"]
+  cfg --> plugin_huoli_base_agent_default_model
+  plugin_huoli_base_jobs["jobs<br/>@huoli/huoli-jobs-local"]
+  cfg --> plugin_huoli_base_jobs
+  plugin_huoli_base_llm_retry["llm-retry<br/>@huoli/huoli-llm-retry"]
+  cfg --> plugin_huoli_base_llm_retry
+  plugin_huoli_base_config_editor["config-editor<br/>@huoli/huoli-config-editor"]
+  cfg --> plugin_huoli_base_config_editor
+  plugin_huoli_base_settings["settings<br/>@huoli/huoli-settings"]
+  cfg --> plugin_huoli_base_settings
+  plugin_huoli_base_authorization["authorization<br/>@huoli/huoli-authorization"]
+  cfg --> plugin_huoli_base_authorization
+  plugin_huoli_base_deepseek_account["deepseek-account<br/>@huoli/huoli-deepseek-account-platform"]
+  cfg --> plugin_huoli_base_deepseek_account
+  plugin_huoli_base_credentials["credentials<br/>@huoli/huoli-credentials-local"]
+  cfg --> plugin_huoli_base_credentials
+  plugin_huoli_base_llm_pi_ai["llm-pi-ai<br/>@huoli/huoli-llm-pi-ai"]
+  cfg --> plugin_huoli_base_llm_pi_ai
+  plugin_huoli_base_session_persistence_jsonl["session-persistence-jsonl<br/>@huoli/huoli-session-persistence-jsonl"]
+  cfg --> plugin_huoli_base_session_persistence_jsonl
+  plugin_huoli_base_attachment_local["attachment-local<br/>@huoli/huoli-attachment-local"]
+  cfg --> plugin_huoli_base_attachment_local
+  plugin_huoli_base_session_query_sqlite["session-query-sqlite<br/>@huoli/huoli-session-query-sqlite"]
+  cfg --> plugin_huoli_base_session_query_sqlite
+  plugin_huoli_base_working_directory["working-directory<br/>@huoli/huoli-working-directory"]
+  cfg --> plugin_huoli_base_working_directory
+  plugin_huoli_base_tool_working_directory["tool-working-directory<br/>@huoli/huoli-tool-working-directory"]
+  cfg --> plugin_huoli_base_tool_working_directory
+  plugin_huoli_base_session_projection["session-projection<br/>@huoli/huoli-session-projection"]
+  cfg --> plugin_huoli_base_session_projection
+  plugin_huoli_base_storage["storage<br/>@huoli/huoli-storage"]
+  cfg --> plugin_huoli_base_storage
+  plugin_huoli_base_storage_json["storage-json<br/>@huoli/huoli-storage-json"]
+  cfg --> plugin_huoli_base_storage_json
+  plugin_huoli_base_storage_domain["storage-domain<br/>@huoli/huoli-storage-domain"]
+  cfg --> plugin_huoli_base_storage_domain
+  plugin_huoli_base_session_projection_cache["session-projection-cache<br/>@huoli/huoli-session-projection-cache"]
+  cfg --> plugin_huoli_base_session_projection_cache
+  plugin_huoli_base_otel["otel<br/>@huoli/huoli-otel"]
+  cfg --> plugin_huoli_base_otel
+  plugin_huoli_base_session_telemetry_otel["session-telemetry-otel<br/>@huoli/huoli-session-telemetry-otel"]
+  cfg --> plugin_huoli_base_session_telemetry_otel
+  plugin_huoli_base_subprocess["subprocess<br/>@huoli/huoli-subprocess-local"]
+  cfg --> plugin_huoli_base_subprocess
+  plugin_huoli_base_sandbox["sandbox<br/>@huoli/huoli-sandbox-local"]
+  cfg --> plugin_huoli_base_sandbox
+  plugin_huoli_base_sandbox_policy["sandbox-policy<br/>@huoli/huoli-sandbox-policy"]
+  cfg --> plugin_huoli_base_sandbox_policy
+  plugin_huoli_base_bash_sandbox["bash-sandbox<br/>@huoli/huoli-bash-sandbox"]
+  cfg --> plugin_huoli_base_bash_sandbox
+  plugin_huoli_base_pwsh_sandbox["pwsh-sandbox<br/>@huoli/huoli-pwsh-sandbox"]
+  cfg --> plugin_huoli_base_pwsh_sandbox
+  plugin_huoli_base_approval["approval<br/>@huoli/huoli-user-approval"]
+  cfg --> plugin_huoli_base_approval
+  plugin_huoli_base_permission["permission<br/>@huoli/huoli-permission-presets"]
+  cfg --> plugin_huoli_base_permission
+  plugin_huoli_base_shell_env["shell-env<br/>@huoli/huoli-shell-env"]
+  cfg --> plugin_huoli_base_shell_env
+  plugin_huoli_base_tool_bash["tool-bash<br/>@huoli/huoli-tool-bash"]
+  cfg --> plugin_huoli_base_tool_bash
+  plugin_huoli_base_tool_pwsh["tool-pwsh<br/>@huoli/huoli-tool-pwsh"]
+  cfg --> plugin_huoli_base_tool_pwsh
+  plugin_huoli_base_tool_jobs["tool-jobs<br/>@huoli/huoli-tool-jobs"]
+  cfg --> plugin_huoli_base_tool_jobs
+  plugin_huoli_base_fs_observation_policy["fs-observation-policy<br/>@huoli/huoli-fs-observation-policy"]
+  cfg --> plugin_huoli_base_fs_observation_policy
+  plugin_huoli_base_tool_fs["tool-fs<br/>@huoli/huoli-tool-fs"]
+  cfg --> plugin_huoli_base_tool_fs
+  plugin_huoli_base_tool_fs_search["tool-fs-search<br/>@huoli/huoli-tool-fs-search"]
+  cfg --> plugin_huoli_base_tool_fs_search
+  plugin_huoli_base_agent_instructions["agent-instructions<br/>@huoli/huoli-agent-instructions"]
+  cfg --> plugin_huoli_base_agent_instructions
+  plugin_huoli_base_skill["skill<br/>@huoli/huoli-skill"]
+  cfg --> plugin_huoli_base_skill
+  plugin_huoli_base_skill_filesystem["skill-filesystem<br/>@huoli/huoli-skill-filesystem"]
+  cfg --> plugin_huoli_base_skill_filesystem
+  plugin_huoli_base_tool_skill["tool-skill<br/>@huoli/huoli-tool-skill"]
+  cfg --> plugin_huoli_base_tool_skill
+  plugin_huoli_base_commands["commands<br/>@huoli/huoli-commands"]
+  cfg --> plugin_huoli_base_commands
+  plugin_huoli_base_command_feedback["command-feedback<br/>@huoli/huoli-command-feedback"]
+  cfg --> plugin_huoli_base_command_feedback
+  plugin_huoli_base_goal["goal<br/>@huoli/huoli-goal"]
+  cfg --> plugin_huoli_base_goal
+  plugin_huoli_base_goal_round_driver["goal-round-driver<br/>@huoli/huoli-goal-round-driver"]
+  cfg --> plugin_huoli_base_goal_round_driver
+  plugin_huoli_base_command_goal["command-goal<br/>@huoli/huoli-command-goal"]
+  cfg --> plugin_huoli_base_command_goal
+  plugin_huoli_base_plan_mode["plan-mode<br/>@huoli/huoli-plan-mode"]
+  cfg --> plugin_huoli_base_plan_mode
+  plugin_huoli_base_token_meter["token-meter<br/>@huoli/huoli-token-meter"]
+  cfg --> plugin_huoli_base_token_meter
+  plugin_huoli_base_compaction_basic["compaction-basic<br/>@huoli/huoli-compaction-basic"]
+  cfg --> plugin_huoli_base_compaction_basic
+  plugin_huoli_base_command_compact["command-compact<br/>@huoli/huoli-command-compact"]
+  cfg --> plugin_huoli_base_command_compact
+  plugin_huoli_base_subagent["subagent<br/>@huoli/huoli-subagent"]
+  cfg --> plugin_huoli_base_subagent
+  plugin_huoli_base_subagent_spawn_in_process["subagent-spawn-in-process<br/>@huoli/huoli-subagent-spawn-in-process"]
+  cfg --> plugin_huoli_base_subagent_spawn_in_process
+  plugin_huoli_base_subagent_fork_in_process["subagent-fork-in-process<br/>@huoli/huoli-subagent-fork-in-process"]
+  cfg --> plugin_huoli_base_subagent_fork_in_process
+  plugin_huoli_base_tool_subagent_control["tool-subagent-control<br/>@huoli/huoli-tool-subagent-control"]
+  cfg --> plugin_huoli_base_tool_subagent_control
+  plugin_huoli_base_tool_subagent["tool-subagent<br/>@huoli/huoli-tool-subagent"]
+  cfg --> plugin_huoli_base_tool_subagent
+  plugin_huoli_base_tool_subagent_fork["tool-subagent-fork<br/>@huoli/huoli-tool-subagent"]
+  cfg --> plugin_huoli_base_tool_subagent_fork
+  plugin_huoli_base_ptc_runtime["ptc-runtime<br/>@huoli/huoli-ptc-runtime-node"]
+  cfg --> plugin_huoli_base_ptc_runtime
+  plugin_huoli_base_workflow_ptc["workflow-ptc<br/>@huoli/huoli-workflow-ptc"]
+  cfg --> plugin_huoli_base_workflow_ptc
+  plugin_huoli_base_tool_workflow["tool-workflow<br/>@huoli/huoli-tool-workflow"]
+  cfg --> plugin_huoli_base_tool_workflow
+  plugin_huoli_base_timeout_policy["timeout-policy<br/>@huoli/huoli-tool-call-timeout-policy"]
+  cfg --> plugin_huoli_base_timeout_policy
+  plugin_huoli_base_spill_local["spill-local<br/>@huoli/huoli-spill-local"]
+  cfg --> plugin_huoli_base_spill_local
+  plugin_huoli_base_spill_policy["spill-policy<br/>@huoli/huoli-spill-policy"]
+  cfg --> plugin_huoli_base_spill_policy
+  plugin_huoli_base_session_checkpoint_policy["session-checkpoint-policy<br/>@huoli/huoli-session-checkpoint-policy"]
+  cfg --> plugin_huoli_base_session_checkpoint_policy
+  plugin_huoli_base_tool_result_pruner["tool-result-pruner<br/>@huoli/huoli-compaction-tool-result-pruner"]
+  cfg --> plugin_huoli_base_tool_result_pruner
+  plugin_huoli_base_image_offload["image-offload<br/>@huoli/huoli-compaction-image-offload"]
+  cfg --> plugin_huoli_base_image_offload
+  plugin_huoli_base_tool_todo["tool-todo<br/>@huoli/huoli-tool-todo"]
+  cfg --> plugin_huoli_base_tool_todo
+  plugin_huoli_base_tool_goal["tool-goal<br/>@huoli/huoli-tool-goal"]
+  cfg --> plugin_huoli_base_tool_goal
+  plugin_huoli_base_repeat_tool_reminder["repeat-tool-reminder<br/>@huoli/huoli-repeat-tool-reminder"]
+  cfg --> plugin_huoli_base_repeat_tool_reminder
+  plugin_huoli_base_web["web<br/>@huoli/huoli-web"]
+  cfg --> plugin_huoli_base_web
+  plugin_huoli_base_web_search_deepseek["web-search-deepseek<br/>@huoli/huoli-web-search-deepseek"]
+  cfg --> plugin_huoli_base_web_search_deepseek
+  plugin_huoli_base_web_deepseek_api["web-deepseek-api<br/>@huoli/huoli-web-deepseek-api"]
+  cfg --> plugin_huoli_base_web_deepseek_api
+  plugin_huoli_base_web_fetch_http["web-fetch-http<br/>@huoli/huoli-web-fetch-http"]
+  cfg --> plugin_huoli_base_web_fetch_http
+  plugin_huoli_base_tool_web["tool-web<br/>@huoli/huoli-tool-web"]
+  cfg --> plugin_huoli_base_tool_web
+  plugin_huoli_base_mcp_resources["mcp-resources<br/>@huoli/huoli-mcp-resources"]
+  cfg --> plugin_huoli_base_mcp_resources
+  plugin_huoli_base_tools["tools<br/>@huoli/huoli-tools"]
+  cfg --> plugin_huoli_base_tools
+  plugin_huoli_base_tool_executor_native["tool-executor-native<br/>@huoli/huoli-tool-executor-native"]
+  cfg --> plugin_huoli_base_tool_executor_native
+  plugin_huoli_base_tool_executor_ptc["tool-executor-ptc<br/>@huoli/huoli-tool-executor-ptc"]
+  cfg --> plugin_huoli_base_tool_executor_ptc
+  plugin_huoli_base_system_prompt["system-prompt<br/>@huoli/huoli-system-prompt"]
+  cfg --> plugin_huoli_base_system_prompt
+  plugin_huoli_base_agent_loop["agent-loop<br/>@huoli/huoli-agent-loop"]
+  cfg --> plugin_huoli_base_agent_loop
+  plugin_huoli_base_fs_sandbox["fs-sandbox<br/>@huoli/huoli-fs-sandbox"]
+  cfg --> plugin_huoli_base_fs_sandbox
+  plugin_huoli_base_llm_deepseek["llm-deepseek<br/>@huoli/huoli-llm-deepseek-api-key"]
+  cfg --> plugin_huoli_base_llm_deepseek
+  plugin_huoli_base_llm_deepseek_account["llm-deepseek-account<br/>@huoli/huoli-llm-deepseek-account"]
+  cfg --> plugin_huoli_base_llm_deepseek_account
 ```
 
 | Plugin id | Package / module |

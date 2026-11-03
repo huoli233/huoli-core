@@ -138,7 +138,7 @@
     - id: session-persistence-jsonl
       name: '@huoli/huoli-session-persistence-jsonl'
       config:
-        root: !!js dshHomePath('sessions')
+        root: !!js huoliHomePath('sessions')
 
     # Durable image bytes live outside the append-only session log. Messages
     # keep content-addressed references that this shared backend resolves for
@@ -182,7 +182,7 @@
     - id: storage-json
       name: '@huoli/huoli-storage-json'
       config:
-        root: !!js dshHomePath('storages')
+        root: !!js huoliHomePath('storages')
 
     - id: storage-domain
       name: '@huoli/huoli-storage-domain'

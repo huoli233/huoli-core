@@ -73,7 +73,7 @@ it.each([true, false])('reports an unversioned package by name alongside a versi
   })
   expect(prepared.fields).toMatchInlineSnapshot(`
     {
-      "dsh_plugin_packages": {
+      "huoli_plugin_packages": {
         "packages": [
           {
             "name": "inspector-sibling",

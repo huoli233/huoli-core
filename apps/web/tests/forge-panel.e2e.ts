@@ -310,7 +310,7 @@ async function launchPanel(failureShot: string, scenario: 'normal' | 'follow-up'
       Object.assign(window, {
         forgeKeyboard: { revision: config.revision,
           deliver: (input: DesktopShortcutInput) => { for (const listener of listeners) listener(input) } },
-        dshDesktop: { protocolVersion: 1,
+        huoliDesktop: { protocolVersion: 1,
           shortcuts: { get: async () => config, subscribe: () => () => {}, recording: async () => {}, edit: async () => { throw new Error('Unused preference edit') } },
           keyboard: {
             subscribe: (listener: (input: DesktopShortcutInput) => void) => {

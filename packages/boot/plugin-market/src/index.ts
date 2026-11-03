@@ -4,7 +4,7 @@ import { isAbsolute, join, resolve } from 'node:path'
 import type { Context, Volatile } from '@huoli/cordis'
 import z from '@huoli/schemastery'
 import semver from 'semver'
-import { evaluatePluginCompatibility, getDshRuntimeVersion } from '@huoli/huoli-app-boot'
+import { evaluatePluginCompatibility, getHuoliRuntimeVersion } from '@huoli/huoli-app-boot'
 import { marketInstallTarget, type MarketIndex, type MarketPlugin, type MarketVersion } from '@huoli/huoli-plugin-market-index'
 import type { BundleInfo } from '@huoli/huoli-plugin-manager/types'
 import { MAX_TIMER_DELAY_MS } from '@huoli/huoli-timeout'
@@ -374,7 +374,7 @@ export default class PluginMarket extends TypertRemoteService {
   /** Annotate plugins with the profile's bundles and exemptions as they are now. */
   private async annotator(): Promise<(plugin: MarketPlugin) => MarketListingEntry> {
     const [bundles, { exemptions }] = [await this.ctx.pluginManager.listBundles(), this.ctx.pluginManager.listVersionExemptions()]
-    const runtimeVersion = getDshRuntimeVersion()
+    const runtimeVersion = getHuoliRuntimeVersion()
     return plugin => listingOf(plugin, bundles, exemptions, runtimeVersion)
   }
 

@@ -38,11 +38,11 @@ Profile manifest 负责 patch 重载：
 
 ### TypeScript SDK 自定义
 
-`@huoli/huoli-sdk-client` 依赖同版本的 `@huoli/huoli` 包，解析其已安装 CLI 模块，通过当前 Node 可执行文件运行该模块，并默认选择 `sdk`。两层客户端都暴露 `dshBin`、`profile`、有序 `patches`、`dshHome`、进程 cwd、环境和超时；任意 command/argv 启动只保留为 fake-runtime 测试的内部适配器。
+`@huoli/huoli-sdk-client` 依赖同版本的 `@huoli/huoli` 包，解析其已安装 CLI 模块，通过当前 Node 可执行文件运行该模块，并默认选择 `sdk`。两层客户端都暴露 `huoliBin`、`profile`、有序 `patches`、`huoliHome`、进程 cwd、环境和超时；任意 command/argv 启动只保留为 fake-runtime 测试的内部适配器。
 
 SDK 用户通过 profile 自定义插件。`huoli plugin --profile <name> ...` 管理持久依赖与组合包顺序，profile 的 `cordis.patch.yml` 负责持久配置项变更，启动时 `patches` 提供有序临时覆盖。自定义 profile 必须保留 `@huoli/huoli-sdk-app` 或另一个 SDK 服务器配置项。相对 CLI 模块、patch、显式 home 与进程 cwd 路径会在 spawn 前变为绝对路径；初始化具有有限时限，诊断会写明所选 profile。
 
-直接使用 SDK 时遵循普通 Harness home 解析：显式 `dshHome`、继承的 `HUOLI_HOME`，最后是 `~/.huoli`。`subagent-huoli-sdk` 则要求显式绝对 home，因此嵌套运行时不会通过操作系统 home 发现个人 profile、已安装插件、凭据或会话。HUOLI 专用 ACP 子进程示例同样传入隔离 home；ACP 后端自身继续适用于非 HUOLI agent。
+直接使用 SDK 时遵循普通 Harness home 解析：显式 `huoliHome`、继承的 `HUOLI_HOME`，最后是 `~/.huoli`。`subagent-huoli-sdk` 则要求显式绝对 home，因此嵌套运行时不会通过操作系统 home 发现个人 profile、已安装插件、凭据或会话。HUOLI 专用 ACP 子进程示例同样传入隔离 home；ACP 后端自身继续适用于非 HUOLI agent。
 
 ### Python 运行时
 

@@ -22,7 +22,7 @@ import { expect, onTestFinished } from 'vitest'
 import { resolveExampleLaunch } from '@huoli/huoli-loader-smoke'
 import { WebSocket } from 'ws'
 
-const dshBinScript = fileURLToPath(new URL('../../../../apps/cli/src/bin.ts', import.meta.url))
+const huoliBinScript = fileURLToPath(new URL('../../../../apps/cli/src/bin.ts', import.meta.url))
 const tsconfigPath = fileURLToPath(new URL('../../../../tsconfig.json', import.meta.url))
 const fixtureName = fileURLToPath(new URL('./fixtures/base-llm.mjs', import.meta.url))
 const repositoryRoot = fileURLToPath(new URL('../../../../', import.meta.url))
@@ -417,7 +417,7 @@ export async function bootWebOwner(options: WebOwnerOptions = {}): Promise<WebOw
   const configured = Object.fromEntries(Object.entries(options.env ?? {})
     .map(([key, value]) => [key, typeof value === 'function' ? value(cwd) : value]))
   const launch = resolveExampleLaunch({
-    srcBin: dshBinScript,
+    srcBin: huoliBinScript,
     // `--port 0` lets the app pick; its own startup line carries the real origin.
     configArgs: ['--profile', 'web', '--port', '0', '--no-open'],
     tsconfigPath,

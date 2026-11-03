@@ -52,8 +52,8 @@ it.skipIf(webSnapshotMode() === 'record')('persists the upload switch and omits 
 
   const sessionId = await send('upload-enabled-marker')
   expect(server.requests).toHaveLength(1)
-  expect(server.requests[0]!.body).toHaveProperty('dsh_session_log')
-  const first = server.requests[0]!.body as { dsh_session_log: { throughSeq: number } }
+  expect(server.requests[0]!.body).toHaveProperty('huoli_session_log')
+  const first = server.requests[0]!.body as { huoli_session_log: { throughSeq: number } }
   await setUpload(false)
   await page.reload()
   await openSettings(page, 'en')
@@ -61,12 +61,12 @@ it.skipIf(webSnapshotMode() === 'record')('persists the upload switch and omits 
   await page.keyboard.press('Escape')
   expect(await send('upload-disabled-marker')).toBe(sessionId)
   expect(server.requests).toHaveLength(2)
-  expect(server.requests[1]!.body).not.toHaveProperty('dsh_session_log')
+  expect(server.requests[1]!.body).not.toHaveProperty('huoli_session_log')
   await setUpload(true)
   expect(await send('upload-resumed-marker')).toBe(sessionId)
   expect(server.requests).toHaveLength(3)
-  const resumed = server.requests[2]!.body as { dsh_session_log: { events: unknown[] } }
-  expect(resumed).toHaveProperty('dsh_session_log.afterSeq', first.dsh_session_log.throughSeq)
-  expect(JSON.stringify(resumed.dsh_session_log.events)).toContain('"upload-disabled-marker"')
+  const resumed = server.requests[2]!.body as { huoli_session_log: { events: unknown[] } }
+  expect(resumed).toHaveProperty('huoli_session_log.afterSeq', first.huoli_session_log.throughSeq)
+  expect(JSON.stringify(resumed.huoli_session_log.events)).toContain('"upload-disabled-marker"')
   expect(server.requests.map(request => request.outcome)).toEqual(['completed', 'completed', 'completed'])
 })

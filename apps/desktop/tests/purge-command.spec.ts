@@ -53,7 +53,7 @@ it('forwards the documented pnpm purge command through both package scripts to t
   }
   await Promise.all(Object.entries(stubs).map(([name, contents]) => writeFile(join(scripts, name), contents)))
   const env = Object.fromEntries(Object.entries(process.env).filter(([name]) =>
-    !/KEY|SECRET|TOKEN|PASSWORD|^NODE_OPTIONS$|^DSH_|^DOWNLOAD_|^PACKAGE_/iu.test(name)))
+    !/KEY|SECRET|TOKEN|PASSWORD|^NODE_OPTIONS$|^HUOLI_|^DOWNLOAD_|^PACKAGE_/iu.test(name)))
   const args = [join(root, 'node_modules/pnpm/bin/pnpm.mjs'), 'run', 'purge:latest', 'mac-arm64']
   const result = await execute(process.execPath, args, { cwd: directory, env, timeout: 30_000 }).catch((error: unknown) => {
     expect(error).not.toMatchObject({ killed: true })

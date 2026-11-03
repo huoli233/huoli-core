@@ -77,7 +77,7 @@ async function mount(
   config: Partial<Config> & {
     readonly state?: ReturnType<typeof stateFile>
     /** Mount with no owner state file configured, so the HUOLI_HOME default is read. */
-    readonly useDshHome?: boolean
+    readonly useHuoliHome?: boolean
   } = {},
 ): Promise<Mounted> {
   const handlers = new Map<string, (...args: unknown[]) => Promise<unknown>>()
@@ -99,10 +99,10 @@ async function mount(
     if (!handlers.has(name)) handlers.set(name, listener as (...args: unknown[]) => Promise<unknown>)
     return originalOn(name as never, listener as never)
   }) as never
-  const { state, useDshHome, ...rest } = config
+  const { state, useHuoliHome, ...rest } = config
   const files = state ?? stateFile()
   await apply(ctx, {
-    ...(useDshHome === true ? {} : { ownerStateFile: files.file }),
+    ...(useHuoliHome === true ? {} : { ownerStateFile: files.file }),
     ...rest,
   })
   return { ctx, handlers, routes }
@@ -163,7 +163,7 @@ describe('configuration guards', () => {
     vi.stubEnv('HUOLI_HOME', root)
     vi.stubEnv('LIVESHARE_OWNER_STATE_FILE', '')
     vi.stubEnv('LIVESHARE_OWNER_CREDENTIAL_FILE', '')
-    const mounted = await mount({ useDshHome: true })
+    const mounted = await mount({ useHuoliHome: true })
     expect(mounted.routes.size).toBeGreaterThan(0)
     await mounted.ctx.fiber.dispose()
   })
@@ -175,7 +175,7 @@ describe('configuration guards', () => {
     vi.stubEnv('HUOLI_HOME', '')
     vi.stubEnv('LIVESHARE_OWNER_STATE_FILE', '')
     vi.stubEnv('LIVESHARE_OWNER_CREDENTIAL_FILE', '')
-    const mounted = await mount({ useDshHome: true })
+    const mounted = await mount({ useHuoliHome: true })
     expect(mounted.routes.size).toBeGreaterThan(0)
     await mounted.ctx.fiber.dispose()
   })

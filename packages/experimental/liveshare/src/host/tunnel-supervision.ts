@@ -324,7 +324,7 @@ export function createTunnelSupervision(deps: TunnelSupervisionDeps): TunnelSupe
   let worker: TunnelWorker | undefined
   let pendingRemovalTimer: ReturnType<typeof setTimeout> | undefined
   let pendingRemovalWait = PENDING_REMOVAL_RETRY_MS
-  const dshVersion = bundleVersion()
+  const huoliVersion = bundleVersion()
 
   const settle = (event: TunnelWorkerEvent): void => {
     if (event.type === 'share-access-state') {
@@ -592,7 +592,7 @@ export function createTunnelSupervision(deps: TunnelSupervisionDeps): TunnelSupe
     ...deps.ownerContext,
     ownerDisplayName: readerFacingOwnerName(relay, credential),
     /* v8 ignore next -- the version is read from the package manifest beside this module. */
-    ...(dshVersion === undefined ? {} : { dshVersion }),
+    ...(huoliVersion === undefined ? {} : { huoliVersion }),
     ownerInstanceId: deps.instanceId,
   })
 

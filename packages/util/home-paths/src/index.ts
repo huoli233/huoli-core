@@ -67,7 +67,7 @@ export async function canonicalizeWatchPath(path: string): Promise<string> {
  * Resolve the default Huoli Core home using Node's platform path rules.
  * @returns the absolute default harness home path.
  */
-export function defaultDshHome(): string {
+export function defaultHuoliHome(): string {
   return join(homedir(), HUOLI_HOME_DIR_NAME)
 }
 
@@ -132,8 +132,8 @@ function rootDisplay(resolvedRoot: string, defaultRoot: string, defaultLabel: st
  * @param env - environment mapping used to read `HUOLI_HOME`.
  * @returns the normalized absolute harness home path.
  */
-export function resolveDshHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
-  return resolveRoot(configured, env, HUOLI_HOME_ENV, defaultDshHome)
+export function resolveHuoliHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
+  return resolveRoot(configured, env, HUOLI_HOME_ENV, defaultHuoliHome)
 }
 
 /**
@@ -157,8 +157,8 @@ export function resolveAgentsHome(configured?: string, env: Record<string, strin
  * @param segments - path segments appended to the Harness home; an empty list returns the home itself.
  * @returns the normalized absolute joined path.
  */
-export function dshHomePath(...segments: string[]): string {
-  return join(resolveDshHome(), ...segments)
+export function huoliHomePath(...segments: string[]): string {
+  return join(resolveHuoliHome(), ...segments)
 }
 
 /**
@@ -167,9 +167,9 @@ export function dshHomePath(...segments: string[]): string {
  * @param segments - additional path segments after the first child, if any.
  * @returns the normalized absolute cache path.
  */
-export function dshCachePath(optionsOrSegment: { dshHome?: string } | string = {}, ...segments: string[]): string {
-  if (typeof optionsOrSegment === 'string') return dshHomePath('cache', optionsOrSegment, ...segments)
-  return join(resolveDshHome(optionsOrSegment.dshHome), 'cache', ...segments)
+export function huoliCachePath(optionsOrSegment: { huoliHome?: string } | string = {}, ...segments: string[]): string {
+  if (typeof optionsOrSegment === 'string') return huoliHomePath('cache', optionsOrSegment, ...segments)
+  return join(resolveHuoliHome(optionsOrSegment.huoliHome), 'cache', ...segments)
 }
 
 /**
@@ -177,11 +177,11 @@ export function dshCachePath(optionsOrSegment: { dshHome?: string } | string = {
  *
  * It never returns an absolute machine path: the default home is labelled
  * `~/.huoli`, and any configured home is labelled `$HUOLI_HOME`.
- * @param resolvedHome - the absolute path returned by {@link resolveDshHome}.
+ * @param resolvedHome - the absolute path returned by {@link resolveHuoliHome}.
  * @returns `~/.huoli` for the default home, otherwise `$HUOLI_HOME`.
  */
-export function dshHomeDisplay(resolvedHome: string): string {
-  return rootDisplay(resolvedHome, defaultDshHome(), DEFAULT_HUOLI_HOME_DISPLAY, HUOLI_HOME_ENV)
+export function huoliHomeDisplay(resolvedHome: string): string {
+  return rootDisplay(resolvedHome, defaultHuoliHome(), DEFAULT_HUOLI_HOME_DISPLAY, HUOLI_HOME_ENV)
 }
 
 /**

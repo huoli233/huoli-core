@@ -61,5 +61,5 @@ export const LOWERING_VERSION = 'huoli-worker-transform/1'
  * worker binds them, with no compiler in the worker bundle to agree with.
  */
 export const WRAPPER_PARAMS = [
-  'exports', 'require', 'module', '__filename', '__dirname', '__dsh$meta', '__als',
+  'exports', 'require', 'module', '__filename', '__dirname', '__huoli$meta', '__als',
 ] as const

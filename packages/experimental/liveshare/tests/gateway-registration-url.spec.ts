@@ -54,7 +54,7 @@ describe('Liveshare registration handshake', () => {
   it('leaves every optional fact absent until the share states it', () => {
     const url = registrationUrl(minimal)
 
-    for (const absent of ['sessionMode', 'allowsFork', 'dshVersion', 'ownerInstanceId', 'expiresAt', 'ownerProviderId', 'ownerTenantId', 'allowedSubjectId']) {
+    for (const absent of ['sessionMode', 'allowsFork', 'huoliVersion', 'ownerInstanceId', 'expiresAt', 'ownerProviderId', 'ownerTenantId', 'allowedSubjectId']) {
       expect(url.searchParams.get(absent), absent).toBeNull()
     }
   })
@@ -64,7 +64,7 @@ describe('Liveshare registration handshake', () => {
       ...minimal,
       sessionMode: 'write',
       allowsFork: true,
-      dshVersion: '0.2.0-rc.2',
+      huoliVersion: '0.2.0-rc.2',
       ownerInstanceId: 'instance-one',
       expiresAt: '2026-10-03T00:00:00.000Z',
       ownerProviderId: 'feishu',
@@ -74,7 +74,7 @@ describe('Liveshare registration handshake', () => {
 
     expect(url.searchParams.get('sessionMode')).toBe('write')
     expect(url.searchParams.get('allowsFork')).toBe('1')
-    expect(url.searchParams.get('dshVersion')).toBe('0.2.0-rc.2')
+    expect(url.searchParams.get('huoliVersion')).toBe('0.2.0-rc.2')
     expect(url.searchParams.get('ownerInstanceId')).toBe('instance-one')
     expect(url.searchParams.get('expiresAt')).toBe('2026-10-03T00:00:00.000Z')
     expect(url.searchParams.get('ownerProviderId')).toBe('feishu')

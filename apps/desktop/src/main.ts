@@ -208,7 +208,7 @@ function runtimeResources(): RuntimeResources {
   const pnpm = (development ? process.env.HUOLI_DESKTOP_PNPM_ENTRY : undefined)
     ?? (development ? join(app.getAppPath(), 'node_modules', 'pnpm', 'bin', 'pnpm.mjs')
       : join(process.resourcesPath, 'runtime', 'primary-runtime', 'dependencies', 'pnpm', 'bin', 'pnpm.mjs'))
-  const huoli = (development ? process.env.HUOLI_DESKTOP_DSH_DIR : undefined)
+  const huoli = (development ? process.env.HUOLI_DESKTOP_HUOLI_DIR : undefined)
     ?? (development ? join(app.getAppPath(), '.desktop-build', 'development', 'project') : join(app.getAppPath(), 'huoli'))
   return { node, nodeBin, pnpm, huoli }
 }
@@ -1396,7 +1396,7 @@ async function main(): Promise<void> {
   if (typeof manifest !== 'object' || manifest === null) throw new Error('desktop policy: invalid application manifest')
   const developmentPolicy = app.isPackaged ? undefined : process.env.HUOLI_DESKTOP_MANDATORY_UPDATE_CONFIG
   const policyInput: unknown = app.isPackaged
-    ? ('dshMandatoryUpdatePolicy' in manifest ? manifest.dshMandatoryUpdatePolicy : undefined)
+    ? ('huoliMandatoryUpdatePolicy' in manifest ? manifest.huoliMandatoryUpdatePolicy : undefined)
     : developmentPolicy === undefined ? undefined : JSON.parse(developmentPolicy) as unknown
   const policyConfig = resolveDesktopPolicyConfig(policyInput, !app.isPackaged)
   if (policyConfig !== undefined) {
@@ -1410,7 +1410,7 @@ async function main(): Promise<void> {
     mandatoryPolicy = new DesktopMandatoryUpdatePolicy(policyConfig, {
       platform: process.platform as 'win32' | 'darwin', arch: process.arch as 'x64' | 'arm64',
       channel: updateChannel,
-      bundledDshVersion: app.isPackaged ? readDesktopRuntime(resources.huoli).release.version : app.getVersion(),
+      bundledHuoliVersion: app.isPackaged ? readDesktopRuntime(resources.huoli).release.version : app.getVersion(),
     }, (state) => {
       if (state.error !== 'authentication-required') policyAuthenticationQueued = false
       if (state.blocking) {

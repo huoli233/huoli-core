@@ -6,7 +6,7 @@ import semver from 'semver'
 import { cacheKey, gitRefs, npmPackument, npmTarball, withGitObjects, type FetchLimits, type GitObjects, type GitTransports } from './fetchers.ts'
 import { readJsonFile, writeIfChanged, type PackageFiles } from './files.ts'
 import { GENERATED_ICON, readDisplayMetadata, type Display, type IconFile } from './metadata.ts'
-import { dshRange, findBundlePackages, isBundle, isPrivate, readManifest, type Manifest } from './packages.ts'
+import { huoliRange, findBundlePackages, isBundle, isPrivate, readManifest, type Manifest } from './packages.ts'
 import type { Source } from './sources.ts'
 
 /** One generated version, in the field order of the format. */
@@ -132,7 +132,7 @@ function releaseOf(
   name: string, manifest: Manifest, version: string, publishTimestamp: number, source: Record<string, string>,
   warn: (message: string) => void,
 ): Release | undefined {
-  const range = dshRange(manifest)
+  const range = huoliRange(manifest)
   const release = {
     name,
     version: { version, publishTimestamp, source, ...typeof range === 'string' ? { engines: { huoli: range } } : {} },

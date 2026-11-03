@@ -7,7 +7,7 @@ import {
   DESKTOP_PACKAGES_DIR,
   DESKTOP_PACKAGE_SET_FILE,
   desktopCorePackageOverrides,
-  desktopDshPackageSpec,
+  desktopHuoliPackageSpec,
   parseDesktopCorePackageSet,
   verifyDesktopCoreLockfile,
   verifyDesktopCorePackageSet,
@@ -36,13 +36,13 @@ function packageSetProject(): {
   roots.push(root)
   const packageDir = join(root, DESKTOP_PACKAGES_DIR)
   mkdirSync(packageDir)
-  const dshBody = Buffer.from('huoli')
+  const huoliBody = Buffer.from('huoli')
   const baseBody = Buffer.from('base')
   const hostBody = Buffer.from('host')
-  const huoli = record('@huoli/huoli', 'huoli.tgz', dshBody)
+  const huoli = record('@huoli/huoli', 'huoli.tgz', huoliBody)
   const base = record('@huoli/huoli-base', 'huoli-base.tgz', baseBody)
   const host = record('@huoli/huoli-desktop-host', 'huoli-desktop-host.tgz', hostBody)
-  writeFileSync(join(packageDir, huoli.file), dshBody)
+  writeFileSync(join(packageDir, huoli.file), huoliBody)
   writeFileSync(join(packageDir, base.file), baseBody)
   writeFileSync(join(packageDir, host.file), hostBody)
   writeFileSync(join(root, DESKTOP_PACKAGE_SET_FILE), `${JSON.stringify({
@@ -60,7 +60,7 @@ describe('desktop core package set', () => {
   it('pins the direct huoli dependency and every internal package to local tarballs', () => {
     const { root } = packageSetProject()
     const packageSet = verifyDesktopCorePackageSet(root, '1.2.3')
-    expect(desktopDshPackageSpec(packageSet)).toBe('file:./desktop-packages/huoli.tgz')
+    expect(desktopHuoliPackageSpec(packageSet)).toBe('file:./desktop-packages/huoli.tgz')
     expect(desktopCorePackageOverrides(packageSet)).toEqual({
       '@huoli/huoli': 'file:./desktop-packages/huoli.tgz',
       '@huoli/huoli-base': 'file:./desktop-packages/huoli-base.tgz',

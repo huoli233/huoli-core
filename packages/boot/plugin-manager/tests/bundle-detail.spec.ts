@@ -4,7 +4,7 @@ import { realpath } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { Service, type Context } from '@huoli/cordis'
-import { boot, getDshRuntimeVersion, initProfile, loadProfileDirectory, readProfileManifest, readProfilePatches, type ProfileContext } from '@huoli/huoli-app-boot'
+import { boot, getHuoliRuntimeVersion, initProfile, loadProfileDirectory, readProfileManifest, readProfilePatches, type ProfileContext } from '@huoli/huoli-app-boot'
 import { OFFICIAL_ON_DEMAND_CATALOG } from '@huoli/huoli-official-bundles'
 import { remoteErrorOf } from '@huoli/huoli-typert-protocol'
 import { afterEach, expect, it, onTestFinished, vi } from 'vitest'
@@ -118,7 +118,7 @@ it('serves images beside a bundle document without caching and refuses other pat
 
 it('reads an offered official bundle from the npm CDNs at its offered version, npmmirror first when asked', async () => {
   const name = OFFICIAL_ON_DEMAND_CATALOG[0]!.packageName
-  const version = getDshRuntimeVersion()
+  const version = getHuoliRuntimeVersion()
   const fetch = vi.fn((url: string) => Promise.resolve(url === `https://registry.npmmirror.com/${name}/${version}/files/README.md`
     ? new Response('# Official')
     : url.includes('/files/') ? new Response('missing', { status: 404 }) : Promise.reject(new Error(`unexpected ${url}`))))
@@ -136,7 +136,7 @@ it('reads an offered official bundle from the npm CDNs at its offered version, n
 
 it.each([undefined, { npmFileSources: [] }])('asks the CDNs in configured order unless npmmirror is asked first (%o)', async (options) => {
   const name = OFFICIAL_ON_DEMAND_CATALOG[0]!.packageName
-  const version = getDshRuntimeVersion()
+  const version = getHuoliRuntimeVersion()
   const fetch = vi.fn(() => Promise.resolve(new Response('missing', { status: 404 })))
   vi.stubGlobal('fetch', fetch)
   const { manager } = await fixture({ detailNpmFileSources: ['unpkg', 'npmmirror'] })

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PackageFiles } from '../src/files.ts'
 import { readDisplayMetadata } from '../src/metadata.ts'
-import { dshRange, findBundlePackages, isBundle, isPrivate, readManifest, type Manifest } from '../src/packages.ts'
+import { huoliRange, findBundlePackages, isBundle, isPrivate, readManifest, type Manifest } from '../src/packages.ts'
 import { parseSources } from '../src/sources.ts'
 
 /** An in-memory tree from relative path → file contents. */
@@ -46,7 +46,7 @@ describe('parseSources', () => {
   })
 })
 
-describe('isBundle and dshRange', () => {
+describe('isBundle and huoliRange', () => {
   it('accepts only a bundle whose patch is a string or a list of strings', () => {
     expect([
       { patch: 'a.yml' }, { patch: ['a.yml', 'b.yml'] }, { patch: [] }, { patch: [1] }, {}, [], null, 'a.yml',
@@ -60,34 +60,34 @@ describe('isBundle and dshRange', () => {
   })
 
   it('copies engines.huoli, else joins HUOLI peer ranges, and refuses ranges installation rejects', () => {
-    expect(dshRange({ engines: { huoli: '>=0.2.0' }, peerDependencies: { '@huoli/huoli': '1' } })).toBe('>=0.2.0')
-    expect(dshRange({ peerDependencies: { react: '18', '@huoli/huoli-agent': 'workspace:*', '@huoli/huoli': '*' } })).toBeUndefined()
+    expect(huoliRange({ engines: { huoli: '>=0.2.0' }, peerDependencies: { '@huoli/huoli': '1' } })).toBe('>=0.2.0')
+    expect(huoliRange({ peerDependencies: { react: '18', '@huoli/huoli-agent': 'workspace:*', '@huoli/huoli': '*' } })).toBeUndefined()
     // Installation refuses an empty range, any `workspace:` engines.huoli, and a padded workspace peer on every HUOLI version.
     for (const manifest of [
       { peerDependencies: { '@huoli/huoli': ' ' } }, { engines: { huoli: '' } }, { engines: { huoli: 'workspace:*' } },
       { peerDependencies: { '@huoli/huoli': ' workspace:*' } },
-    ]) expect(dshRange(manifest)).toBeInstanceOf(Error)
-    expect(dshRange({ engines: { huoli: '>1 <1' } })).toEqual(new Error('no HUOLI version satisfies the HUOLI range: >1 <1'))
-    expect(dshRange({ engines: { huoli: ' * ' } })).toBeUndefined()
-    expect(dshRange({ engines: { node: '22' }, peerDependencies: [] })).toBeUndefined()
-    expect(dshRange({
+    ]) expect(huoliRange(manifest)).toBeInstanceOf(Error)
+    expect(huoliRange({ engines: { huoli: '>1 <1' } })).toEqual(new Error('no HUOLI version satisfies the HUOLI range: >1 <1'))
+    expect(huoliRange({ engines: { huoli: ' * ' } })).toBeUndefined()
+    expect(huoliRange({ engines: { node: '22' }, peerDependencies: [] })).toBeUndefined()
+    expect(huoliRange({
       peerDependencies: { '@huoli/huoli-a': '^0.2.0 || ^0.3.0', '@huoli/huoli-b': '>=0.2.1', '@huoli/huoli-c': '>=0.2.1', '@huoli/huoli-d': '<1 ||' },
     })).toBe('>=0.2.0 <0.3.0-0 >=0.2.1 || >=0.3.0 <0.4.0-0 >=0.2.1')
     // A hyphen range is expanded before combining, and combinations no version satisfies are dropped.
-    expect(dshRange({ peerDependencies: { '@huoli/huoli': '1.0.0 - 2.0.0', '@huoli/huoli-x': '>=1.5.0 || <0.5.0' } })).toBe('>=1.0.0-0 <2.0.1-0 >=1.5.0')
-    expect(dshRange({ peerDependencies: { '@huoli/huoli': '^0.1.0', '@huoli/huoli-x': '^0.2.0' } }))
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli': '1.0.0 - 2.0.0', '@huoli/huoli-x': '>=1.5.0 || <0.5.0' } })).toBe('>=1.0.0-0 <2.0.1-0 >=1.5.0')
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli': '^0.1.0', '@huoli/huoli-x': '^0.2.0' } }))
       .toEqual(new Error('no HUOLI version satisfies every HUOLI peer range: ^0.1.0, ^0.2.0'))
-    expect(dshRange({ peerDependencies: { '@huoli/huoli': '^0.2.0-rc.1' } })).toBe('^0.2.0-rc.1')
-    expect(dshRange({ peerDependencies: { '@huoli/huoli': '>=0.1.0 || *', '@huoli/huoli-x': '^0.2.0 || *' } })).toBeUndefined()
-    expect(dshRange({ peerDependencies: { '@huoli/huoli': '<0.1.0', '@huoli/huoli-x': '>=0.2.0' } }))
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli': '^0.2.0-rc.1' } })).toBe('^0.2.0-rc.1')
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli': '>=0.1.0 || *', '@huoli/huoli-x': '^0.2.0 || *' } })).toBeUndefined()
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli': '<0.1.0', '@huoli/huoli-x': '>=0.2.0' } }))
       .toEqual(new Error('no HUOLI version satisfies every HUOLI peer range: <0.1.0, >=0.2.0'))
-    expect(dshRange({ peerDependencies: { '@huoli/huoli': '*', '@huoli/huoli-x': '>=0' } })).toBeUndefined()
-    expect(dshRange({ peerDependencies: { '@huoli/huoli-llm': '*', '@huoli/huoli-x': '*' } })).toBeUndefined()
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli': '*', '@huoli/huoli-x': '>=0' } })).toBeUndefined()
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli-llm': '*', '@huoli/huoli-x': '*' } })).toBeUndefined()
     const wide = Object.fromEntries(Array.from({ length: 3 }, (_, peer) => [`@huoli/huoli-${peer}`, Array.from({ length: 10 }, (_, minor) => `>=0.${minor}.${peer}`).join(' || ')]))
-    expect(dshRange({ peerDependencies: wide })).toEqual(new Error('HUOLI peer ranges combine into more than 256 alternatives'))
-    expect(dshRange({ peerDependencies: { '@huoli/huoli-a': 'workspace:>=1' } })).toEqual(new Error('HUOLI range "workspace:>=1" is not a valid SemVer range'))
-    expect(dshRange({ engines: { huoli: 'not a range' } })).toBeInstanceOf(Error)
-    expect(dshRange({ peerDependencies: { '@huoli/huoli': '>=0.2.0', '@huoli/huoli-x': 'not a range' } })).toEqual(new Error('HUOLI range "not a range" is not a valid SemVer range'))
+    expect(huoliRange({ peerDependencies: wide })).toEqual(new Error('HUOLI peer ranges combine into more than 256 alternatives'))
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli-a': 'workspace:>=1' } })).toEqual(new Error('HUOLI range "workspace:>=1" is not a valid SemVer range'))
+    expect(huoliRange({ engines: { huoli: 'not a range' } })).toBeInstanceOf(Error)
+    expect(huoliRange({ peerDependencies: { '@huoli/huoli': '>=0.2.0', '@huoli/huoli-x': 'not a range' } })).toEqual(new Error('HUOLI range "not a range" is not a valid SemVer range'))
   })
 })
 

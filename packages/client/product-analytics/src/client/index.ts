@@ -26,7 +26,7 @@ class DesktopAnalytics extends Service {
         // Missing or disconnected Remote services must not interrupt the interaction.
       }
     }
-    if (!('dshDesktop' in globalThis)) return
+    if (!('huoliDesktop' in globalThis)) return
     const stream = ctx.remote.$stream<boolean>({
       name: 'product analytics policy', open: signal => ctx.remote.productAnalytics.watchPolicy(signal),
       ended: () => new Error('product analytics policy stream ended'),

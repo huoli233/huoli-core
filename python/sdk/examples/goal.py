@@ -41,7 +41,7 @@ def main() -> None:
     if not args.objective.strip() or not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
         parser.error("objective must be non-blank and timeout-seconds must be finite and positive")
     with DeepSeekHarness(
-        dsh_home=str(args.dsh_home.resolve()), cwd=str(args.workspace.resolve()),
+        huoli_home=str(args.huoli_home.resolve()), cwd=str(args.workspace.resolve()),
         profile="sdk", model=args.model, env={"HUOLI_PERMISSION_MODE": "workspace-write"},
     ) as harness:
         session = harness.start_session()

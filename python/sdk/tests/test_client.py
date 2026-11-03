@@ -977,10 +977,10 @@ def test_public_signatures_omit_unsupported_wire_parameters() -> None:
     assert "reasoning_effort" in inspect.signature(HarnessClient.initialize).parameters
     assert "client_name" not in HarnessConfig.__dataclass_fields__
     assert "client_version" not in HarnessConfig.__dataclass_fields__
-    assert {"dsh_bin", "profile", "patches", "dsh_home"} <= set(
+    assert {"huoli_bin", "profile", "patches", "huoli_home"} <= set(
         DeepSeekHarnessConfig.__dataclass_fields__
     )
-    assert {"dsh_bin", "profile", "patches", "dsh_home"} <= set(
+    assert {"huoli_bin", "profile", "patches", "huoli_home"} <= set(
         HarnessConfig.__dataclass_fields__
     )
     assert "initialize_timeout_seconds" in DeepSeekHarnessConfig.__dataclass_fields__
@@ -1083,7 +1083,7 @@ with open(os.environ["SEEN"], "w") as seen:
         json.loads(line)
 
 
-def _install_fake_bundled_dsh(
+def _install_fake_bundled_huoli(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Install a fake runtime package that records huoli argv and serves lifecycle calls."""
@@ -1122,14 +1122,14 @@ def resolve_bundled_launch_args(mode=None):
     monkeypatch.delitem(sys.modules, "deepseek_harness_runtime", raising=False)
 
 
-def test_client_default_launch_uses_bundled_dsh_sdk_profile_and_explicit_home(
+def test_client_default_launch_uses_bundled_huoli_sdk_profile_and_explicit_home(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     env_dump = tmp_path / "env.json"
     home = tmp_path / "home"
     patch = tmp_path / "sdk.patch.yml"
     patch.write_text("[]\n")
-    _install_fake_bundled_dsh(tmp_path, monkeypatch)
+    _install_fake_bundled_huoli(tmp_path, monkeypatch)
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("HUOLI_HOME", str(tmp_path / "ambient-home"))
     monkeypatch.delenv("HUOLI_CORDIS_CONFIG", raising=False)
@@ -1137,7 +1137,7 @@ def test_client_default_launch_uses_bundled_dsh_sdk_profile_and_explicit_home(
     with HarnessClient(HarnessConfig(
         profile="sdk",
         patches=("sdk.patch.yml",),
-        dsh_home=str(home),
+        huoli_home=str(home),
         env={"ENV_DUMP": str(env_dump), "HUOLI_HOME": str(tmp_path / "env-home")},
     )) as client:
         init = client.initialize(provider="deepseek-official", cwd="/workspace", model="deepseek-v4-pro")
@@ -1150,12 +1150,12 @@ def test_client_default_launch_uses_bundled_dsh_sdk_profile_and_explicit_home(
     }
 
 
-def test_client_accepts_explicit_environment_dsh_home(
+def test_client_accepts_explicit_environment_huoli_home(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     env_dump = tmp_path / "env.json"
     home = tmp_path / "environment-home"
-    _install_fake_bundled_dsh(tmp_path, monkeypatch)
+    _install_fake_bundled_huoli(tmp_path, monkeypatch)
 
     with HarnessClient(
         HarnessConfig(profile="custom", env={"ENV_DUMP": str(env_dump), "HUOLI_HOME": str(home)})
@@ -1169,13 +1169,13 @@ def test_client_accepts_explicit_environment_dsh_home(
     }
 
 
-def test_client_rejects_an_implicit_default_dsh_home(
+def test_client_rejects_an_implicit_default_huoli_home(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _install_fake_bundled_dsh(tmp_path, monkeypatch)
+    _install_fake_bundled_huoli(tmp_path, monkeypatch)
     monkeypatch.delenv("HUOLI_HOME", raising=False)
 
-    with pytest.raises(ValueError, match="explicit dsh_home or non-empty HUOLI_HOME"):
+    with pytest.raises(ValueError, match="explicit huoli_home or non-empty HUOLI_HOME"):
         HarnessClient(HarnessConfig(env={})).start()
 
 
@@ -1184,4 +1184,4 @@ def test_client_reports_missing_bundled_runtime_dependency(monkeypatch: pytest.M
     monkeypatch.setattr(sys, "path", [])
 
     with pytest.raises(FileNotFoundError, match="Install huoli-core-runtime-bin"):
-        HarnessClient(HarnessConfig(dsh_home="/explicit/home")).start()
+        HarnessClient(HarnessConfig(huoli_home="/explicit/home")).start()

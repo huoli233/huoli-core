@@ -73,7 +73,7 @@ export function createElectronBuilderConfig(
   const buildPaths = desktopTargetBuildPaths(resolveDesktopBuildTarget(env, hostPlatform, hostArch), env)
   const output = desktopArtifactOutput(buildPaths, { unsigned, skipNotarization })
   let primaryRuntimeDestination
-  let dshDestination
+  let huoliDestination
   let windowsCode = []
   const unpack = ['**/*.{node,dylib,dll,so,exe}', '**/*.so.*', '**/spawn-helper', '**/@vscode/ripgrep-*/bin/rg',
     `**/node_modules/@deepseek-ai/libreoffice-kit-${resolvedPlatform}-${resolvedArch}/**/*`]
@@ -84,7 +84,7 @@ export function createElectronBuilderConfig(
         tokenPin: env.HUOLI_DESKTOP_WINDOWS_TOKEN_PIN,
         keyContainer: env.HUOLI_DESKTOP_WINDOWS_KEY_CONTAINER,
         preserveSignature: async path => {
-          for (const [sourceRoot, destinationRoot] of [[join(buildPaths.runtime, 'primary-runtime'), primaryRuntimeDestination], [buildPaths.huoli, dshDestination]]) {
+          for (const [sourceRoot, destinationRoot] of [[join(buildPaths.runtime, 'primary-runtime'), primaryRuntimeDestination], [buildPaths.huoli, huoliDestination]]) {
             if (destinationRoot !== undefined && await preserveWindowsRuntimeSignature(path, {
               sourceRoot, destinationRoot, runDirectory: env.HUOLI_DESKTOP_PACKAGING_RUN_DIR,
             })) return true
@@ -108,11 +108,11 @@ export function createElectronBuilderConfig(
     appId,
     protocols: [{ name: 'Huoli Core', schemes: ['huoli'] }],
     extraMetadata: {
-      dshDesktopAppId: appId,
-      dshDesktopUpdateChannel: update?.channel ?? 'nightly',
-      ...(policy === undefined ? {} : { dshMandatoryUpdatePolicy: policy }),
+      huoliDesktopAppId: appId,
+      huoliDesktopUpdateChannel: update?.channel ?? 'nightly',
+      ...(policy === undefined ? {} : { huoliMandatoryUpdatePolicy: policy }),
       ...buildVersion === productVersion ? {} : { version: buildVersion },
-      ...packaged === undefined ? {} : { dshBuildCommit: packaged.commit, dshBuildDirty: packaged.dirty },
+      ...packaged === undefined ? {} : { huoliBuildCommit: packaged.commit, huoliBuildDirty: packaged.dirty },
     },
     productName: 'Huoli Core',
     // The default copyright uses author.name; this line names the product instead.
@@ -193,7 +193,7 @@ export function createElectronBuilderConfig(
       if (packagesWindows) windowsCode = await prepareWindowsAsarUnpack(context, buildPaths.huoli)
       if (windowsSigner !== undefined) {
         primaryRuntimeDestination = join(context.appOutDir, 'resources', 'runtime', 'primary-runtime')
-        dshDestination = join(context.appOutDir, 'resources', 'app.asar.unpacked', 'huoli')
+        huoliDestination = join(context.appOutDir, 'resources', 'app.asar.unpacked', 'huoli')
       }
       if (policy === undefined) return
       const { resolveDesktopPolicyConfig } = await import('../lib/types/mandatory-update-policy.js')

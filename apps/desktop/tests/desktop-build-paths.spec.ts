@@ -21,9 +21,9 @@ describe('desktop build paths', () => {
       'runtime',
       'packageSet',
       'huoli',
-      'dshPnpm',
+      'huoliPnpm',
       'electron',
-      'packedDsh',
+      'packedHuoli',
       'packedVendor',
       'packedLandlock',
     ] as const

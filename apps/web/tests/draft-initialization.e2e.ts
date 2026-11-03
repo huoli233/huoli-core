@@ -55,7 +55,7 @@ async function observeDraftApi(page: Page): Promise<void> {
   // Observe one shipped module's apply, using the page-owned loader interception from default-product-isolation.e2e.ts.
   await page.addInitScript(() => {
     const observation: DraftApiObservation = {}
-    Reflect.set(globalThis, '__dshDraftApiObservation', observation)
+    Reflect.set(globalThis, '__huoliDraftApiObservation', observation)
     Object.defineProperty(globalThis, '__ModuleLoader__', {
       configurable: true,
       set(target: ClientModuleLoaderTarget) {
@@ -102,7 +102,7 @@ async function observeDraftApi(page: Page): Promise<void> {
 
 async function startSession(page: Page, workspaceId: string | undefined, options: DraftOptions): Promise<void> {
   await page.evaluate(({ workspaceId, options }) => {
-    const observation = Reflect.get(globalThis, '__dshDraftApiObservation') as DraftApiObservation | undefined
+    const observation = Reflect.get(globalThis, '__huoliDraftApiObservation') as DraftApiObservation | undefined
     if (observation?.startSession === undefined) throw new Error('The shipped Workspace apply has not been observed')
     observation.startSession(workspaceId, options)
   }, { workspaceId, options })
@@ -234,7 +234,7 @@ async function launchDraftFixture(beforeBrowserOpen?: (page: Page, scaffold: Web
   await beforeBrowserOpen?.(page, scaffold)
   await page.goto(scaffold.authenticatedUrl, { waitUntil: 'load' })
   await expect.poll(() => page.evaluate(() => {
-    const observation = Reflect.get(globalThis, '__dshDraftApiObservation') as DraftApiObservation | undefined
+    const observation = Reflect.get(globalThis, '__huoliDraftApiObservation') as DraftApiObservation | undefined
     return typeof observation?.startSession
   }), SETTLE).toBe('function')
   await composer(page).waitFor()

@@ -774,8 +774,8 @@ describe('workspace context instruction discovery', () => {
       await write(join(envHome, 'AGENTS.md'), 'environment rule')
       pinHarnessHome(envHome)
 
-      const files = await discoverBaselineInstructionFiles({ cwd: root, dshHome: ownerHome })
-      const loaded = await loadBaselineInstructions({ cwd: root, dshHome: ownerHome, maxBytes: 65536 })
+      const files = await discoverBaselineInstructionFiles({ cwd: root, huoliHome: ownerHome })
+      const loaded = await loadBaselineInstructions({ cwd: root, huoliHome: ownerHome, maxBytes: 65536 })
 
       expect(files).toEqual([{ absolutePath: join(ownerHome, 'AGENTS.md'), displayPath: '$HUOLI_HOME/AGENTS.md' }])
       expect(loaded?.text).toContain('owner-resolved rule')
@@ -1815,7 +1815,7 @@ describe('workspace context request injection', () => {
       await write(join(rowHome, 'AGENTS.md'), 'stale row instruction')
       pinHarnessHome(processHome)
       // Schemastery retains unknown row keys, so the actual plugin must ignore them.
-      const rowConfig = { maxBytes: 65536, dshHome: rowHome, agentsHome: rowHome }
+      const rowConfig = { maxBytes: 65536, huoliHome: rowHome, agentsHome: rowHome }
       await mountAgentInstructions(ctx, rowConfig)
       const agent = await stubAgent(root)
 

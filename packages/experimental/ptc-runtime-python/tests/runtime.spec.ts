@@ -2609,7 +2609,7 @@ describe('PythonPtcRuntime — programs and bindings', () => {
   })
 
   it('rejects a namespace global colliding with a runtime-owned name at the seam', async () => {
-    // `__dsh_main__` passes the identifier check, but exec()ing the generated
+    // `__huoli_main__` passes the identifier check, but exec()ing the generated
     // wrapper would silently overwrite the binding after injection. `console`
     // is the WORKER backend's slot — refused here too so a namespace list
     // valid on one backend is valid on all.
@@ -2618,7 +2618,7 @@ describe('PythonPtcRuntime — programs and bindings', () => {
     // compiles a bare `__debug__` reference to the constant True and refuses to
     // assign the name at compile time, so an injected global under it is
     // unreachable from the program — accepted by the seam, unusable here.
-    for (const global of ['__dsh_main__', 'console', '__debug__']) {
+    for (const global of ['__huoli_main__', 'console', '__debug__']) {
       await expect(runtime.run(runtime.resolve({
         program: 'x = 1',
         bindings: [{ global, functions: {} }],
@@ -3333,7 +3333,7 @@ describe('PythonPtcRuntime — budgets, termination, disposal', () => {
       program: [
         'import signal, sys, time',
         'signal.signal(signal.SIGXCPU, lambda *a: None)',
-        // Walk out of __dsh_main__ to _run's frame and take its local.
+        // Walk out of __huoli_main__ to _run's frame and take its local.
         'die = None',
         'depth = 1',
         'while depth < 12:',
@@ -4159,7 +4159,7 @@ describe('PythonPtcRuntime — hostile peer', () => {
     // _RuntimeError`. If that name were bound as a pump BODY local, it would be
     // captured at pump-start — but `_run` reaches the model's top-level
     // statements (which run before the pump's first step, since there is no
-    // suspension point between `create_task` and `await __dsh_main__`) with the
+    // suspension point between `create_task` and `await __huoli_main__`) with the
     // rebind already applied, so `_RuntimeError` would capture the REBOUND class
     // and the closed-loop `RuntimeError` would escape, killing the pump. Binding
     // it as a DEF-TIME default argument captures the original before any model

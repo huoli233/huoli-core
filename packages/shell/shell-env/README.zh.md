@@ -1,5 +1,5 @@
 ---
-description: "受管 DSH_* shell 环境，供选择、配置或扩展每次模型 shell 调用所运行环境的使用者与维护者阅读。"
+description: "受管 HUOLI_* shell 环境，供选择、配置或扩展每次模型 shell 调用所运行环境的使用者与维护者阅读。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`huoli-shell-env` 提供每次模型 shell 调用——bash 或 pwsh——所运行的受信 `DSH_*` 环境：内置事实如 `HUOLI_HOME`、`HUOLI_SHELL=1`、agent（智能体）的 `HUOLI_SESSION_ID`，以及所启动 profile 的 `HUOLI_PROFILE` 与 `HUOLI_PROFILE_DIR`。插件作者可以注册自己的事实，带声明键、按每次执行收集，并随插件释放；重复所有权或未声明的运行时键会明确报错，而不是静默覆盖。注册表不会改变模型看到的其他任何内容——shell 工具拥有各自的 schema 与提示词。任何挂载了模型 shell 工具的组合都适合选择它；配置只决定 Harness 主目录。
+`huoli-shell-env` 提供每次模型 shell 调用——bash 或 pwsh——所运行的受信 `HUOLI_*` 环境：内置事实如 `HUOLI_HOME`、`HUOLI_SHELL=1`、agent（智能体）的 `HUOLI_SESSION_ID`，以及所启动 profile 的 `HUOLI_PROFILE` 与 `HUOLI_PROFILE_DIR`。插件作者可以注册自己的事实，带声明键、按每次执行收集，并随插件释放；重复所有权或未声明的运行时键会明确报错，而不是静默覆盖。注册表不会改变模型看到的其他任何内容——shell 工具拥有各自的 schema 与提示词。任何挂载了模型 shell 工具的组合都适合选择它；配置只决定 Harness 主目录。
 
 ## 目录
 
@@ -25,7 +25,7 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
-在任何挂载模型 shell 工具（`huoli-tool-bash` 或 `huoli-tool-pwsh`）的组合中加载本插件：此后每次前台或后台 shell 调用都会运行在新收集的受管环境中，而不是进程继承来的任意 `DSH_*` 值。
+在任何挂载模型 shell 工具（`huoli-tool-bash` 或 `huoli-tool-pwsh`）的组合中加载本插件：此后每次前台或后台 shell 调用都会运行在新收集的受管环境中，而不是进程继承来的任意 `HUOLI_*` 值。
 
 ### 每次 shell 调用都会收到什么
 
@@ -33,7 +33,7 @@ kind: "package-reference"
 
 ### 添加你自己的环境事实
 
-其他插件通过注册一个 contributor 来贡献事实，需要提供稳定名称、它可能返回的完整 `DSH_*` 键集合、每个键的描述，以及为一次执行计算取值的 resolver：
+其他插件通过注册一个 contributor 来贡献事实，需要提供稳定名称、它可能返回的完整 `HUOLI_*` 键集合、每个键的描述，以及为一次执行计算取值的 resolver：
 
 ```ts
 import type { Context } from '@huoli/cordis'
@@ -54,17 +54,17 @@ contributor 必须声明它返回的每个键；返回未声明或非字符串�
 
 ### 选择 Harness 主目录
 
-唯一配置字段决定暴露为 `HUOLI_HOME` 的主目录；默认解析顺序为 `dshHome` 配置、环境变量 `$HUOLI_HOME`，然后是 `~/.huoli`。
+唯一配置字段决定暴露为 `HUOLI_HOME` 的主目录；默认解析顺序为 `huoliHome` 配置、环境变量 `$HUOLI_HOME`，然后是 `~/.huoli`。
 
 | 字段 | 默认值 | 含义 |
 |---|---|---|
-| `dshHome` | `$HUOLI_HOME`，然后 `~/.huoli` | 暴露为 `HUOLI_HOME` 的 Harness 主目录绝对路径 |
+| `huoliHome` | `$HUOLI_HOME`，然后 `~/.huoli` | 暴露为 `HUOLI_HOME` 的 Harness 主目录绝对路径 |
 
 生成的[配置目录](../../../docs/config-catalog.zh.md#huolidsh-shell-env)是每个受支持字段及其 JSDoc 的穷尽式真源。
 
 ### 可能出什么问题
 
-两个 contributor 声明同一个键，或 contributor 声称拥有保留内置键（`HUOLI_HOME`、`HUOLI_SHELL`、`HUOLI_SESSION_ID`、`HUOLI_PROFILE`、`HUOLI_PROFILE_DIR`），都会导致插件加载时明确报错。`DSH_*` 键必须全大写并带下划线（例如 `HUOLI_REGION`），缺少描述也会让注册失败。
+两个 contributor 声明同一个键，或 contributor 声称拥有保留内置键（`HUOLI_HOME`、`HUOLI_SHELL`、`HUOLI_SESSION_ID`、`HUOLI_PROFILE`、`HUOLI_PROFILE_DIR`），都会导致插件加载时明确报错。`HUOLI_*` 键必须全大写并带下划线（例如 `HUOLI_REGION`），缺少描述也会让注册失败。
 
 -----
 
@@ -78,7 +78,7 @@ contributor 必须声明它返回的每个键；返回未声明或非字符串�
 
 ### 设计理念
 
-- **受信命名空间，每次调用重建。** 环境是归 Harness 所有的 `DSH_*` 命名空间：shell 执行器丢弃继承的 `DSH_*` 值，并为每次执行合并注册表的当前快照，因此嵌套 harness 与并发的父子 agent 无法泄漏陈旧身份，`process.env` 也永不被修改。
+- **受信命名空间，每次调用重建。** 环境是归 Harness 所有的 `HUOLI_*` 命名空间：shell 执行器丢弃继承的 `HUOLI_*` 值，并为每次执行合并注册表的当前快照，因此嵌套 harness 与并发的父子 agent 无法泄漏陈旧身份，`process.env` 也永不被修改。
 - **声明所有权，冲突明确报错。** contributor 预先声明键，使重复所有权在第一条命令之前就被发现；resolver 只能返回已声明的键。
 - **内置键留在这里。** `HUOLI_HOME`、`HUOLI_SHELL`、`HUOLI_SESSION_ID`、`HUOLI_PROFILE` 与 `HUOLI_PROFILE_DIR` 为注册表保留；contributor 不能声称拥有它们。
 
@@ -90,7 +90,7 @@ contributor 必须声明它返回的每个键；返回未声明或非字符串�
 
 ### 收集
 
-`collect(execution)` 从内置键出发，当执行携带 agent 时加入会话 id，再按 contributor 名称排序合并每个已注册 contributor 解析出的值。结果是一个冻结、按键排序的快照，通过 `ShellExecRequest.dshEnv` 传递。`list()` 枚举声明而不运行 resolver，因此无法反映依赖执行的值。
+`collect(execution)` 从内置键出发，当执行携带 agent 时加入会话 id，再按 contributor 名称排序合并每个已注册 contributor 解析出的值。结果是一个冻结、按键排序的快照，通过 `ShellExecRequest.huoliEnv` 传递。`list()` 枚举声明而不运行 resolver，因此无法反映依赖执行的值。
 
 </details>
 
@@ -113,7 +113,7 @@ contributor 必须声明它返回的每个键；返回未声明或非字符串�
 <a id="model-experience"></a>
 ## 模型体验
 
-通过 shell 工具（`huoli-tool-bash`、`huoli-tool-pwsh`）间接产生影响；这些工具把本注册表的受管 `DSH_*` 事实暴露在每次 shell 工具调用中。
+通过 shell 工具（`huoli-tool-bash`、`huoli-tool-pwsh`）间接产生影响；这些工具把本注册表的受管 `HUOLI_*` 事实暴露在每次 shell 工具调用中。
 
 #### KV Cache 影响
 

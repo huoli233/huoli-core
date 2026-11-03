@@ -42,7 +42,7 @@ Mount the plugin in a Cordis composition with the application identity; override
 |---|---|---|
 | `endpoint` | `https://huoli-otel-collector.deepseeksvc.com/v1/logs` | Full HTTP(S) logs URL |
 | `serviceName`, `serviceVersion` | required | Application identity on the OTel resource |
-| `channel` | `dsh_otel_report` | Collector `x-channel` header |
+| `channel` | `huoli_otel_report` | Collector `x-channel` header |
 | `compression` | SDK environment | `gzip` or `none`; omission honors OTel compression environment variables |
 | `maxExportBatchSize`, `maxQueueSize` | `512`, `2048` | Record-count limits; batch size cannot exceed queue size |
 | `scheduledDelayMillis` | `30000` | Partial-batch export interval |

@@ -47,7 +47,7 @@ function contextAnswer(mode: { readonly sessionMode: string; readonly sessionMod
     shareId: 'share-1',
     sessionId: 'fx-alpha',
     ownerDisplayName: 'Owner',
-    dshVersion: '0.1.5-rc.2+fixture',
+    huoliVersion: '0.1.5-rc.2+fixture',
     capabilities: {
       readOnly: true,
       ...mode,

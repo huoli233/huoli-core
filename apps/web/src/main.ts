@@ -3,12 +3,12 @@ import '@huoli/huoli-client-ui-theme/brand-font.css'
 import { AppWebEntry, applyIndexInjections } from '@huoli/huoli-client-web'
 
 interface DesktopBootGlobal {
-  dshDesktopBoot?: {
+  huoliDesktopBoot?: {
     failed(message: string): Promise<void>
     ready(): Promise<{ injections: Parameters<typeof applyIndexInjections>[0]; streamBaseUrl: string }>
   }
 }
-const desktop = (globalThis as DesktopBootGlobal).dshDesktopBoot
+const desktop = (globalThis as DesktopBootGlobal).huoliDesktopBoot
 const reportFailure = (reason: unknown): void => {
   if (desktop === undefined) throw reason
   void desktop.failed(reason instanceof Error ? reason.message : String(reason)).catch(console.error)

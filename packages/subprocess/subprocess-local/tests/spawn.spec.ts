@@ -1476,7 +1476,7 @@ describe('environment and spill-file hardening', () => {
     }
   })
 
-  it('forwards explicit DSH_* env entries while scrubbing ambient ones', async () => {
+  it('forwards explicit HUOLI_* env entries while scrubbing ambient ones', async () => {
     // Both facts through one explicit map: the ambient HUOLI_STALE is dropped by
     // the scrub, and the deliberately supplied current values merge after it.
     process.env.HUOLI_STALE = 'old-value'

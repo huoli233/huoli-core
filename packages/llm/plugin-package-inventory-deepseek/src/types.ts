@@ -14,6 +14,6 @@ export interface DeepSeekPluginPackageInventoryExtension {
 
 declare module '@huoli/huoli-deepseek-llm-api-extensions/types' {
   interface DeepSeekLlmApiExtensionMap {
-    dsh_plugin_packages: DeepSeekPluginPackageInventoryExtension
+    huoli_plugin_packages: DeepSeekPluginPackageInventoryExtension
   }
 }

@@ -6,9 +6,9 @@
 
 /* v8 ignore file -- built-bin acceptance exercises this self-executing dispatch. */
 
-import { getDshRuntimeVersion, loadLayeredEnv, StartupError } from '@huoli/huoli-app-boot'
-import { resolveDshHome } from '@huoli/huoli-home-paths'
-import { parseDshArgs } from './args.ts'
+import { getHuoliRuntimeVersion, loadLayeredEnv, StartupError } from '@huoli/huoli-app-boot'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
+import { parseHuoliArgs } from './args.ts'
 import { reportStartupFailure } from './startup-diagnostics.ts'
 import type { RunProfileOptions } from './profile-boot.ts'
 
@@ -24,9 +24,9 @@ export type RunCliOptions = Pick<RunProfileOptions, 'packageManager'> & {
  * @returns a promise that settles when the selected command mode finishes.
  */
 export async function runCli(options: RunCliOptions = {}): Promise<void> {
-  const version = getDshRuntimeVersion()
+  const version = getHuoliRuntimeVersion()
   const { manageDesktopProfile, ...profileOptions } = options
-  const invocation = parseDshArgs(process.argv.slice(2), version, manageDesktopProfile)
+  const invocation = parseHuoliArgs(process.argv.slice(2), version, manageDesktopProfile)
 
   switch (invocation.mode) {
     case 'profile': {
@@ -42,7 +42,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<void> {
         })
       } catch (error) {
         if (!(error instanceof StartupError)) throw error
-        await reportStartupFailure(error, { home: resolveDshHome(), version, profile: invocation.profile })
+        await reportStartupFailure(error, { home: resolveHuoliHome(), version, profile: invocation.profile })
         process.exit(1)
       }
       break

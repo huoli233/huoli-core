@@ -1302,7 +1302,7 @@ describe('tool-owned UI presentation (presentCall / presentResult)', () => {
 })
 
 describe('the model-facing bash tool builds its request from named args only (no {...args} forward)', () => {
-  const recordingDshHome = join(spillDir, 'huoli-home')
+  const recordingHuoliHome = join(spillDir, 'huoli-home')
 
   /**
    * Records every {@link ShellExecRequest} the consumer hands to `resolve()`, so a
@@ -1330,7 +1330,7 @@ describe('the model-facing bash tool builds its request from named args only (no
         ...request.signal ? { signal: request.signal } : {},
         ...request.stdin !== undefined ? { stdin: request.stdin } : {},
         ...request.env !== undefined ? { env: request.env } : {},
-        ...request.dshEnv !== undefined ? { dshEnv: request.dshEnv } : {},
+        ...request.huoliEnv !== undefined ? { huoliEnv: request.huoliEnv } : {},
         sandboxPolicy: request.sandboxPolicy,
       }
     }
@@ -1360,7 +1360,7 @@ describe('the model-facing bash tool builds its request from named args only (no
     await ctx.plugin(AgentRegistry)
     await ctx.plugin(LocalJobRegistry)
     await ctx.plugin(ToolJobs)
-    await ctx.plugin(BashEnvPlugin, { dshHome: recordingDshHome })
+    await ctx.plugin(BashEnvPlugin, { huoliHome: recordingHuoliHome })
     await ctx.plugin(RecordingBashExecutor)
     await ctx.plugin(ToolBash)
     return { ctx, bash: ctx.shell as RecordingBashExecutor }
@@ -1369,7 +1369,7 @@ describe('the model-facing bash tool builds its request from named args only (no
   it('describes the managed harness environment namespace to the model', async () => {
     const { ctx } = await setupRecording()
     const description = ctx.tools.get('bash')?.description ?? ''
-    expect(description).toContain('$DSH_*')
+    expect(description).toContain('$HUOLI_*')
   })
 
   it('injects built-ins and the stable session id into a foreground request', async () => {
@@ -1385,8 +1385,8 @@ describe('the model-facing bash tool builds its request from named args only (no
       agent,
     })
 
-    expect(bash.requests[0]?.dshEnv).toEqual({
-      HUOLI_HOME: recordingDshHome,
+    expect(bash.requests[0]?.huoliEnv).toEqual({
+      HUOLI_HOME: recordingHuoliHome,
       HUOLI_SESSION_ID: 'request-fg',
       HUOLI_SHELL: '1',
     })
@@ -1411,8 +1411,8 @@ describe('the model-facing bash tool builds its request from named args only (no
     })
 
     expect(bash.requests[0]?.env).toBeUndefined()
-    expect(bash.requests[0]?.dshEnv).toEqual({
-      HUOLI_HOME: recordingDshHome,
+    expect(bash.requests[0]?.huoliEnv).toEqual({
+      HUOLI_HOME: recordingHuoliHome,
       HUOLI_SESSION_ID: 'request-bg',
       HUOLI_SHELL: '1',
     })
@@ -1433,14 +1433,14 @@ describe('the model-facing bash tool builds its request from named args only (no
       })
     }
 
-    expect(bash.requests.map(request => request.dshEnv)).toEqual([
+    expect(bash.requests.map(request => request.huoliEnv)).toEqual([
       {
-        HUOLI_HOME: recordingDshHome,
+        HUOLI_HOME: recordingHuoliHome,
         HUOLI_SESSION_ID: 'request-parent',
         HUOLI_SHELL: '1',
       },
       {
-        HUOLI_HOME: recordingDshHome,
+        HUOLI_HOME: recordingHuoliHome,
         HUOLI_SESSION_ID: 'request-child',
         HUOLI_SHELL: '1',
       },

@@ -102,7 +102,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY || !runtime).each(['native', 'ptc'
           { insert: [{ id: 'skill-office', name: '@huoli/huoli-skill-office', config: { assetRoot, node: process.execPath, ...fixture ? { cli: fixture.cli } : {} } }] },
           { insert: [{ id: 'workspace-dependencies', name: '@huoli/huoli-tool-workspace-dependencies', config: { source: runtime! } }] },
           ...officeModelPatches(),
-          { id: 'attachment-local', config: { dshHome: imageRoot } },
+          { id: 'attachment-local', config: { huoliHome: imageRoot } },
           { id: 'session-persistence-jsonl', config: { root: sessionRoot, compression: 'none' } },
         ]))
       },

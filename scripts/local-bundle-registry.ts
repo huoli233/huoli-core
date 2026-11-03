@@ -114,7 +114,7 @@ export interface RegistryManifest {
     /** Whether the checkout had uncommitted changes, so the commit alone is not the snapshot. */
     readonly dirty: boolean
     /** Running HUOLI version the catalog installation target names. */
-    readonly dshVersion: string
+    readonly huoliVersion: string
   }
   /** Catalog roots in admission order. */
   readonly entries: readonly string[]
@@ -489,14 +489,14 @@ export async function writeRegistryManifest(path: string, manifest: RegistryMani
 /**
  * Record which checkout produced a run.
  * @param root - repository root.
- * @param dshVersion - running HUOLI version the catalog installation target names.
+ * @param huoliVersion - running HUOLI version the catalog installation target names.
  * @returns The commit, whether the tree was dirty, and the version served.
  */
-export function sourceEvidence(root: string, dshVersion: string): RegistryManifest['source'] {
+export function sourceEvidence(root: string, huoliVersion: string): RegistryManifest['source'] {
   return {
     commit: capture('git', ['rev-parse', 'HEAD'], { cwd: root }),
     dirty: capture('git', ['status', '--porcelain'], { cwd: root }) !== '',
-    dshVersion,
+    huoliVersion,
   }
 }
 

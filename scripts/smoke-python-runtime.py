@@ -53,9 +53,9 @@ AUTHORING_PROMPT = "Query the packaged Python environment for Office authoring."
 IS_WINDOWS = sys.platform == "win32"
 MINIMAL_SHELL_TOOL = "pwsh" if IS_WINDOWS else "bash"
 MINIMAL_SHELL_COMMAND = (
-    "$global:dshSdkCounter = [int]$global:dshSdkCounter + 1; "
-    'Write-Output "COUNT=$global:dshSdkCounter CWD=$((Get-Location).Path)"; '
-    "if ($global:dshSdkCounter -eq 1) { Set-Location $env:TEMP }"
+    "$global:huoliSdkCounter = [int]$global:huoliSdkCounter + 1; "
+    'Write-Output "COUNT=$global:huoliSdkCounter CWD=$((Get-Location).Path)"; '
+    "if ($global:huoliSdkCounter -eq 1) { Set-Location $env:TEMP }"
     if IS_WINDOWS
     else (
         "counter=$(( ${counter:-0} + 1 )); export counter; "
@@ -984,7 +984,7 @@ def _smoke_sdk_authoring_cached(base_url: str, executable: Path, update_snapshot
             first = len(MockModelHandler.requests)
             with DeepSeekHarness(
                 provider="deepseek-official", model="smoke-model", cwd=str(root),
-                dsh_bin=str(executable), dsh_home=str(home), patches=(str(patch),),
+                huoli_bin=str(executable), huoli_home=str(home), patches=(str(patch),),
                 api_key="sk-keyless-smoke", base_url=base_url,
                 env={"HUOLI_PERMISSION_MODE": "danger-full-access", "HUOLI_TELEMETRY_DISABLED": "1", "HUOLI_RESOURCE_CACHE": str(cache)},
                 request_timeout_seconds=60,
@@ -1059,7 +1059,7 @@ def smoke_sdk_plugin_manager(base_url: str, executable: Path, cache: Path) -> No
         environment = {"PATH": "", "HUOLI_RESOURCE_CACHE": str(cache),
                        "HUOLI_PERMISSION_MODE": "workspace-write", "HUOLI_TELEMETRY_DISABLED": "1"}
         config = dict(provider="deepseek-official", model="smoke-model", cwd=str(root),
-                      dsh_bin=str(executable), dsh_home=str(home), env=environment,
+                      huoli_bin=str(executable), huoli_home=str(home), env=environment,
                       api_key="sk-keyless-smoke", base_url=base_url, request_timeout_seconds=60)
         with ThreadPoolExecutor(max_workers=2) as worker:
             harness = DeepSeekHarness(**config, approval_requests=True)
@@ -1140,7 +1140,7 @@ def smoke_sdk_office(executable: Path) -> None:
         document = documents["docx"]
 
         environment = {key: value for key, value in os.environ.items()
-                       if not key.startswith("DSH_") and not any(part in key.upper() for part in ("KEY", "SECRET", "TOKEN", "PASSWORD"))}
+                       if not key.startswith("HUOLI_") and not any(part in key.upper() for part in ("KEY", "SECRET", "TOKEN", "PASSWORD"))}
         environment.update(PATH="")
         node = office / "node/bin" / ("node.exe" if native.startswith("win32-") else "node")
         cli = adapter.parent / "lib/cli.js"
@@ -1164,8 +1164,8 @@ def smoke_sdk_office(executable: Path) -> None:
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
-            dsh_bin=str(relocated),
-            dsh_home=str(root / f"home-{mode}"),
+            huoli_bin=str(relocated),
+            huoli_home=str(root / f"home-{mode}"),
             patches=(str(patch),),
             api_key="sk-keyless-smoke",
             base_url="http://127.0.0.1:9",
@@ -1274,8 +1274,8 @@ def smoke_sdk_live() -> None:
 
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-live-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         marker = root / "live-api-marker.txt"
         session_id = "installed-wheel-live-api"
         shell_tool = "pwsh" if IS_WINDOWS else "bash"
@@ -1288,7 +1288,7 @@ def smoke_sdk_live() -> None:
             provider="deepseek-official",
             model="deepseek-v4-flash",
             cwd=str(root),
-            dsh_home=str(dsh_home),
+            huoli_home=str(huoli_home),
             env={
                 "HUOLI_PERMISSION_MODE": "danger-full-access",
                 "HUOLI_TELEMETRY_DISABLED": "1",
@@ -1379,13 +1379,13 @@ def smoke_sdk_default(base_url: str) -> None:
 
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-default-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         with DeepSeekHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
-            dsh_home=str(dsh_home),
+            huoli_home=str(huoli_home),
             env={
                 "HUOLI_PERMISSION_MODE": "danger-full-access",
                 "HUOLI_TELEMETRY_DISABLED": "1",
@@ -1402,16 +1402,16 @@ def smoke_sdk_default(base_url: str) -> None:
         )
         assert_zstd_session_log(sessions)
         # The installed runtime starts with an empty PATH; no checkout or global pnpm can satisfy the tool.
-        before = (dsh_home / "profiles/sdk/package.json").read_bytes()
+        before = (huoli_home / "profiles/sdk/package.json").read_bytes()
         with DeepSeekHarness(
-            provider="deepseek-official", model="smoke-model", cwd=str(root), dsh_home=str(dsh_home),
+            provider="deepseek-official", model="smoke-model", cwd=str(root), huoli_home=str(huoli_home),
             env={"HUOLI_PERMISSION_MODE": "danger-full-access", "HUOLI_TELEMETRY_DISABLED": "1", "PATH": "",
                  "HUOLI_PRIMARY_RUNTIME": "", "HUOLI_RESOURCE_CACHE": str(root / "empty-resource-cache")},
             api_key="sk-keyless-smoke", base_url=base_url, request_timeout_seconds=60,
         ) as harness:
             package_result = harness.run("check missing plugin package manager", session_id="missing-pnpm")
         assert package_result.final_response == EXPECTED_TEXT, package_result.final_response
-        assert (dsh_home / "profiles/sdk/package.json").read_bytes() == before
+        assert (huoli_home / "profiles/sdk/package.json").read_bytes() == before
 
 
 def smoke_sdk_custom(base_url: str, executable: Path) -> None:
@@ -1424,15 +1424,15 @@ def smoke_sdk_custom(base_url: str, executable: Path) -> None:
     for mode, turns in cases:
         with tempfile.TemporaryDirectory(prefix=f"huoli-sdk-custom-{mode}-") as temporary:
             root = Path(temporary).resolve()
-            dsh_home = root / "home"
-            sessions = dsh_home / "sessions"
+            huoli_home = root / "home"
+            sessions = huoli_home / "sessions"
             patch = write_advanced_profile_patch(root, "custom.patch.yml", sessions, mode)
             with DeepSeekHarness(
                 provider="deepseek-official",
                 model="smoke-model",
                 cwd=str(root),
-                dsh_bin=str(executable),
-                dsh_home=str(dsh_home),
+                huoli_bin=str(executable),
+                huoli_home=str(huoli_home),
                 patches=(str(patch),),
                 env={
                     "HUOLI_PERMISSION_MODE": "danger-full-access",
@@ -1458,8 +1458,8 @@ def smoke_sdk_minimal(
     first_request = len(MockModelHandler.requests)
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-minimal-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         patches = ()
         if in_history:
             patch = root / "in-history.patch.yml"
@@ -1477,8 +1477,8 @@ def smoke_sdk_minimal(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
-            dsh_bin=str(executable),
-            dsh_home=str(dsh_home),
+            huoli_bin=str(executable),
+            huoli_home=str(huoli_home),
             profile="sdk-minimal",
             patches=patches,
             api_key="sk-keyless-smoke",
@@ -1513,10 +1513,10 @@ def smoke_sdk_dynamic_tools(base_url: str, executable: Path, update_snapshots: b
     first_request = len(MockModelHandler.requests)
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-dynamic-tools-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
+        huoli_home = root / "home"
         user_home = root / "user-home"
         user_home.mkdir()
-        sessions = dsh_home / "sessions"
+        sessions = huoli_home / "sessions"
         # Own the baseline instruction message instead of inheriting host instructions.
         (root / "AGENTS.md").write_text("Use the tools requested by the user.\n", encoding="utf-8")
         task = root / "dynamic-tool-task.txt"
@@ -1537,7 +1537,7 @@ def smoke_sdk_dynamic_tools(base_url: str, executable: Path, update_snapshots: b
         ])
         with DeepSeekHarness(
             provider="deepseek-official", model="smoke-model", cwd=str(root),
-            dsh_bin=str(executable), dsh_home=str(dsh_home), patches=(str(patch),),
+            huoli_bin=str(executable), huoli_home=str(huoli_home), patches=(str(patch),),
             env={
                 "HUOLI_PERMISSION_MODE": "danger-full-access", "HUOLI_TELEMETRY_DISABLED": "1",
                 "HOME": str(user_home), "USERPROFILE": str(user_home),
@@ -1567,8 +1567,8 @@ def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-fs-search-") as temporary:
         root = Path(temporary).resolve()
         (root / "needle.txt").write_text(f"{FS_SEARCH_MARKER}\n")
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         patch = write_profile_patch(root, "fs-search.patch.yml", sessions, [
             {"id": "skill-filesystem", "disabled": True},
             {"id": "tool-fs-search", "config": {"sampleOverCapGlobResults": False}},
@@ -1577,8 +1577,8 @@ def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
-            dsh_bin=str(executable),
-            dsh_home=str(dsh_home),
+            huoli_bin=str(executable),
+            huoli_home=str(huoli_home),
             patches=(str(patch),),
             env={
                 "HUOLI_PERMISSION_MODE": "danger-full-access",
@@ -1600,15 +1600,15 @@ def smoke_sdk_spawn_node(base_url: str, executable: Path) -> None:
 
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-spawn-node-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         patch = write_profile_patch(root, "spawn-node.patch.yml", sessions, [])
         with DeepSeekHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
-            dsh_bin=str(executable),
-            dsh_home=str(dsh_home),
+            huoli_bin=str(executable),
+            huoli_home=str(huoli_home),
             patches=(str(patch),),
             env={
                 "HUOLI_PERMISSION_MODE": "danger-full-access",
@@ -1630,8 +1630,8 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
 
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-mcp-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         server_script = root / "mcp_server.py"
         server_script.write_text(MCP_SERVER_SCRIPT)
         patch = write_mcp_patch(root, sessions, server_script)
@@ -1640,8 +1640,8 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
-            dsh_bin=None if executable is None else str(executable),
-            dsh_home=str(dsh_home),
+            huoli_bin=None if executable is None else str(executable),
+            huoli_home=str(huoli_home),
             patches=(str(patch),),
             env={
                 "HUOLI_PERMISSION_MODE": "danger-full-access",
@@ -1670,7 +1670,7 @@ def smoke_sdk_profile_plugin(base_url: str) -> None:
 
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-profile-plugin-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
+        huoli_home = root / "home"
         plugin = root / "plugin"
         plugin.mkdir()
         (plugin / "package.json").write_text(json.dumps({
@@ -1700,7 +1700,7 @@ def smoke_sdk_profile_plugin(base_url: str) -> None:
         }], indent=2))
 
         huoli = Path(sysconfig.get_path("scripts")) / ("huoli.exe" if IS_WINDOWS else "huoli")
-        environment = {**os.environ, "HUOLI_HOME": str(dsh_home)}
+        environment = {**os.environ, "HUOLI_HOME": str(huoli_home)}
         installed = subprocess.run(
             [str(huoli), "plugin", "--profile", "sdk", "add", f"file:{plugin}"],
             cwd=root,
@@ -1715,7 +1715,7 @@ def smoke_sdk_profile_plugin(base_url: str) -> None:
                 f"returncode={installed.returncode} (0x{installed.returncode & 0xffffffff:08x}) "
                 f"stdout={installed.stdout!r} stderr={installed.stderr!r}"
             )
-        manifest = json.loads((dsh_home / "profiles" / "sdk" / "package.json").read_text())
+        manifest = json.loads((huoli_home / "profiles" / "sdk" / "package.json").read_text())
         if "huoli-python-blackbox-plugin" not in manifest.get("dependencies", {}):
             raise AssertionError(f"huoli plugin did not record the external dependency: {manifest}")
         if "huoli-python-blackbox-plugin" not in manifest["huoli"]["profile"]["bundles"]:
@@ -1725,7 +1725,7 @@ def smoke_sdk_profile_plugin(base_url: str) -> None:
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
-            dsh_home=str(dsh_home),
+            huoli_home=str(huoli_home),
             env={
                 "HUOLI_PERMISSION_MODE": "danger-full-access",
                 "HUOLI_TELEMETRY_DISABLED": "1",
@@ -1743,7 +1743,7 @@ def smoke_sdk_profile_plugin(base_url: str) -> None:
             ) from error
 
         assert result.final_response == PROFILE_PLUGIN_TEXT, result.final_response
-        assert_zstd_session_log(dsh_home / "sessions")
+        assert_zstd_session_log(huoli_home / "sessions")
 
 
 def smoke_sdk_snapshot(base_url: str, executable: Path, update_snapshots: bool) -> None:
@@ -1760,8 +1760,8 @@ def smoke_sdk_snapshot_mode(
 
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-snapshot-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         patch = write_advanced_profile_patch(root, "snapshot.patch.yml", sessions, mode)
         feedback_patch = write_profile_patch(root, "feedback.patch.yml", sessions, [{"insert": [
             {"id": "snapshot-tool", "name": (
@@ -1792,8 +1792,8 @@ def smoke_sdk_snapshot_mode(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
-            dsh_bin=str(executable),
-            dsh_home=str(dsh_home),
+            huoli_bin=str(executable),
+            huoli_home=str(huoli_home),
             patches=(str(patch), str(feedback_patch), str(creation_patch)),
             env={
                 "HUOLI_PERMISSION_MODE": "danger-full-access",
@@ -1888,8 +1888,8 @@ def smoke_sdk_restart_snapshot(base_url: str, executable: Path, update_snapshots
 
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-restart-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         patch = write_advanced_profile_patch(root, "restart.patch.yml", sessions)
         first_request = len(MockModelHandler.requests)
 
@@ -1898,8 +1898,8 @@ def smoke_sdk_restart_snapshot(base_url: str, executable: Path, update_snapshots
                 provider="deepseek-official",
                 model=model,
                 cwd=str(root),
-                dsh_bin=str(executable),
-                dsh_home=str(dsh_home),
+                huoli_bin=str(executable),
+                huoli_home=str(huoli_home),
                 patches=(str(patch),),
                 env={
                     "HUOLI_PERMISSION_MODE": "danger-full-access",
@@ -2013,8 +2013,8 @@ def smoke_sdk_scheduler_recovery(base_url: str, executable: Path, update_snapsho
     first_request = len(MockModelHandler.requests)
     with tempfile.TemporaryDirectory(prefix="huoli-sdk-scheduler-recovery-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         base_patch = write_advanced_profile_patch(root, "base.patch.yml", sessions)
         patch = write_profile_patch(root, "recovery.patch.yml", sessions, [
             {"id": "tool-todo", "disabled": False},
@@ -2032,7 +2032,7 @@ def smoke_sdk_scheduler_recovery(base_url: str, executable: Path, update_snapsho
         def connect() -> DeepSeekHarness:
             return DeepSeekHarness(
                 provider="deepseek-official", model="smoke-model", cwd=str(root),
-                dsh_bin=str(executable), dsh_home=str(dsh_home),
+                huoli_bin=str(executable), huoli_home=str(huoli_home),
                 patches=(str(base_patch), str(patch)),
                 env={"HUOLI_PERMISSION_MODE": "danger-full-access", "HUOLI_TELEMETRY_DISABLED": "1"},
                 api_key="sk-keyless-smoke", base_url=base_url, request_timeout_seconds=60,
@@ -2100,12 +2100,12 @@ def smoke_sdk_scheduler_recovery(base_url: str, executable: Path, update_snapsho
 def smoke_direct(base_url: str, executable: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="huoli-direct-") as temporary:
         root = Path(temporary).resolve()
-        dsh_home = root / "home"
-        sessions = dsh_home / "sessions"
+        huoli_home = root / "home"
+        sessions = huoli_home / "sessions"
         patch = write_profile_patch(root, "direct.patch.yml", sessions, [])
         environment = {
             **os.environ,
-            "HUOLI_HOME": str(dsh_home),
+            "HUOLI_HOME": str(huoli_home),
             "HUOLI_PERMISSION_MODE": "danger-full-access",
             "HUOLI_TELEMETRY_DISABLED": "1",
             "DEEPSEEK_API_KEY": "sk-keyless-smoke",

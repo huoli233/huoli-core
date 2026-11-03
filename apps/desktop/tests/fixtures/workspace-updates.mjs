@@ -196,7 +196,7 @@ async function qualify() {
     await fixture.ready.promise
     console.log('workspace qualification: Host process ready')
     mainWindow = await windowAt('huoli-app://app/')
-    await documentReady(mainWindow, `document.querySelector('[class*="frame"]') && window.dshDesktop?.updates`)
+    await documentReady(mainWindow, `document.querySelector('[class*="frame"]') && window.huoliDesktop?.updates`)
     assert.equal(mainWindow.isVisible(), true, 'Workspace qualification requires a visible application window')
     console.log('workspace qualification: workspace document ready')
     const acknowledgeNotice = `[...document.querySelectorAll('button')].find(button => button.textContent.trim() === '继续')`
@@ -321,7 +321,7 @@ async function qualify() {
     await screenshot(mandatory, 'mandatory-block.png')
     server.policy('failure')
     checkMenu.click()
-    await waitFor(async () => (await mandatory.webContents.executeJavaScript('window.dshMandatoryUpdate.status()')).policy.error === 'unavailable', 'retained policy failure')
+    await waitFor(async () => (await mandatory.webContents.executeJavaScript('window.huoliMandatoryUpdate.status()')).policy.error === 'unavailable', 'retained policy failure')
     assert.equal(await mandatory.webContents.executeJavaScript("document.getElementById('error').hidden"), true)
     assert.equal((await control('status')).queued, 1)
     await screenshot(mandatory, 'mandatory-retained-error.png')

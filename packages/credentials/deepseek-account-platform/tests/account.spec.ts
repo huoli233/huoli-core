@@ -134,7 +134,7 @@ async function fixture(
       count++
       exchanged.resolve(undefined)
       if (hold) await release.promise
-      value = { user: null, token: 'dsh_mock_test', authorized_url: `${origin}/huoli/authorized?result=test&locale=zh_CN`, ...exchangeOverride }
+      value = { user: null, token: 'huoli_mock_test', authorized_url: `${origin}/huoli/authorized?result=test&locale=zh_CN`, ...exchangeOverride }
     }
     res.setHeader('content-type', 'application/json')
     res.end(JSON.stringify({ code: 0, data: { biz_code: businessCode, biz_msg: 'sensitive diagnostic', biz_data: value } }))
@@ -262,10 +262,10 @@ it('stores a grant before redirecting, restores account presence, and signs out 
   expect(f.init()).not.toHaveProperty('client_type')
   expect(response.headers.get('location')).toBe(`${f.origin}/huoli/authorized?result=test&locale=zh_CN&login_source=desktop`)
   expect((await f.account.getState()).status).toBe('credential-stored')
-  expect(await readFile(join(f.home, 'credentials.yaml'), 'utf8')).toContain('dsh_mock_test')
+  expect(await readFile(join(f.home, 'credentials.yaml'), 'utf8')).toContain('huoli_mock_test')
   // The Host publishes identity from a separate profile read; the snapshot only reuses it.
   await f.account.getProfile(clientMetadata())
-  expect(await f.account.getPlatformSession()).toEqual({ origin: f.origin, userId: 'test-user', token: 'dsh_mock_test',
+  expect(await f.account.getPlatformSession()).toEqual({ origin: f.origin, userId: 'test-user', token: 'huoli_mock_test',
     requestHeaders: {} })
   expect(await f.account.resolveToken('https://api.deepseek.com')).toBeUndefined()
   await f.account.signOut(clientMetadata())
@@ -570,7 +570,7 @@ it('adds private deployment cookies to every Platform request without exposing t
   expect(paths.at(-1)).toBe('/auth-api/v0/users/logout')
   expect(headers.every(item => item.cookie === 'test_gate=synthetic')).toBe(true)
   const grantedPaths = new Set(['/auth-api/v0/users/current', '/api/v0/users/get_user_summary', '/auth-api/v0/users/logout'])
-  expect(headers.filter(item => grantedPaths.has(item.path ?? '')).every(item => item.authorization === 'dsh_mock_test')).toBe(true)
+  expect(headers.filter(item => grantedPaths.has(item.path ?? '')).every(item => item.authorization === 'huoli_mock_test')).toBe(true)
   expect(headers.filter(item => !grantedPaths.has(item.path ?? '')).every(item => item.authorization === undefined)).toBe(true)
 })
 
@@ -875,7 +875,7 @@ it('carries the configured embedded frontend selector in the private Platform se
   await f.wait('waiting-browser')
   await fetch(f.callback(), { redirect: 'manual' })
   await f.account.getProfile(clientMetadata())
-  expect(await f.account.getPlatformSession()).toEqual({ origin: f.origin, userId: 'test-user', token: 'dsh_mock_test', embeddedPageDist: 'feat/test',
+  expect(await f.account.getPlatformSession()).toEqual({ origin: f.origin, userId: 'test-user', token: 'huoli_mock_test', embeddedPageDist: 'feat/test',
     requestHeaders: {} })
 })
 
@@ -898,7 +898,7 @@ it.each([
   await f.wait('waiting-browser')
   await fetch(f.callback(), { redirect: 'manual' })
   await readDetails(f.account)
-  expect(await f.account.getPlatformSession()).toEqual({ origin: f.origin, userId: 'test-user', token: 'dsh_mock_test',
+  expect(await f.account.getPlatformSession()).toEqual({ origin: f.origin, userId: 'test-user', token: 'huoli_mock_test',
     requestHeaders: { cookie: 'test_gate=synthetic', ...overrides } })
   await f.account.signOut(clientMetadata())
   await expect.poll(f.logoutCount).toBe(1)

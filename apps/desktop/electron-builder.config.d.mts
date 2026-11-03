@@ -14,7 +14,7 @@ export interface DesktopElectronBuilderConfig {
     { readonly from: string, readonly to: 'huoli', readonly filter: readonly ['**/*'] },
     { readonly from: string, readonly to: 'huoli/node_modules', readonly filter: readonly ['**/*'] },
   ]
-  readonly extraMetadata: { readonly dshDesktopAppId: string }
+  readonly extraMetadata: { readonly huoliDesktopAppId: string }
   readonly asarUnpack: readonly string[]
   readonly extraResources: readonly [
     { readonly from: string, readonly to: 'runtime' },

@@ -152,9 +152,9 @@ export function prepareDevelopmentProject(options: DevelopmentProjectOptions): s
     ...mirrorDependencyLinks(options.dependencyDir, destinationModules),
     ...mirrorWorkspaceDependencies([options.cliDir, options.hostDir], destinationModules),
   ]
-  const dshLink = join(destinationModules, '@huoli', 'huoli')
-  removeOwnedPath(dshLink)
-  linkDirectory(options.cliDir, dshLink)
+  const huoliLink = join(destinationModules, '@huoli', 'huoli')
+  removeOwnedPath(huoliLink)
+  linkDirectory(options.cliDir, huoliLink)
   const hostLink = join(destinationModules, '@huoli', 'huoli-desktop-host')
   removeOwnedPath(hostLink)
   linkDirectory(options.hostDir, hostLink)

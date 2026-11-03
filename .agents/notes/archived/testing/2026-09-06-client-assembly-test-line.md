@@ -39,7 +39,7 @@ App-owned built-bundle tests install a fresh `RemoteMock` through `__HUOLI_TRANS
 
 - `client/connection`: `ClientTransportHooks.rpc?` accepts an already decoded carrier owned by an in-process composition; `fetch` is optional. `installConnection(ctx, options)` installs the same production service from instance-local transport, recovery, and location inputs.
 - `client/hmr`: `tearDownEntryFiber(entry)` is the registry-first fiber teardown `reload` already performed.
-- `client/modules`: `parseDshClient` and `exactPackageSpecifier` are exported from the client face and shared by the Host and roster reader. Test factories use the existing registration queue. The roster-to-boot-graph synthesis has only test consumers and lives in the tier.
+- `client/modules`: `parseHuoliClient` and `exactPackageSpecifier` are exported from the client face and shared by the Host and roster reader. Test factories use the existing registration queue. The roster-to-boot-graph synthesis has only test consumers and lives in the tier.
 - `client/web`: `bootClient` and `mountClient` are extracted from `AppWebEntry.run()`, which now calls them.
 - `api/gateway`: `carrierFailure` and `cancelledFailure` are exported so a stand-in for the generated client folds identically.
 

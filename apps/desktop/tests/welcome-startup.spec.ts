@@ -186,7 +186,7 @@ it.each([false, true])('starts welcome onboarding without carrying update focus 
   vi.stubEnv('HUOLI_DESKTOP_DEV_PROJECT_DIR', '/development-profile')
   vi.stubEnv('HUOLI_DESKTOP_NODE_BINARY', '/runtime/node')
   vi.stubEnv('HUOLI_DESKTOP_PNPM_ENTRY', '/runtime/pnpm')
-  vi.stubEnv('HUOLI_DESKTOP_DSH_DIR', '/runtime/huoli')
+  vi.stubEnv('HUOLI_DESKTOP_HUOLI_DIR', '/runtime/huoli')
   vi.stubEnv('HUOLI_DESKTOP_PRIMARY_RUNTIME_DIR', '/runtime/primary-runtime')
   vi.stubEnv('HUOLI_DESKTOP_HOST_INSPECT_PORT', undefined)
   vi.stubEnv('HUOLI_DESKTOP_OPEN_DEVTOOLS', '0')

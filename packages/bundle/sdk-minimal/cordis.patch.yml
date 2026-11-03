@@ -172,7 +172,7 @@
     - id: sessions
       name: '@huoli/huoli-session-persistence-jsonl'
       config:
-        root: !!js dshHomePath('sessions')
+        root: !!js huoliHomePath('sessions')
         compression: none
 
     - id: session-checkpoint-policy

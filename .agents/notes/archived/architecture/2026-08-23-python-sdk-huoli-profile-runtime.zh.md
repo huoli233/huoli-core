@@ -17,9 +17,9 @@ Python SDK 分发一个私有 Node 应用，直接启动完整外部 `cordis.yml
 
 运行时可执行程序打包 `@huoli/huoli` 并运行其普通命令语法。Python 客户端默认选择 `--profile sdk`，转发有序绝对 `--patch` 路径，也可以选择另一个 `huoli` 可执行程序或 profile。可运行极简示例选择随附 `sdk-minimal` profile。私有 `@huoli/huoli-sdk-python-runtime` 应用包和检入的运行时 `cordis.yml` 均不存在。JSON-RPC 服务仍由 `@huoli/huoli-sdk-app` bundle 与 `@huoli/huoli-sdk-jsonrpc-server` 插件提供，而不是 Python 自有启动路径。
 
-公开 Python 配置包括 `dsh_bin`、`profile`、有序 `patches`、`dsh_home`、进程 cwd／环境、provider／model／token 选择、有界初始化 timeout，以及可选的轮次／关闭 timeout。它不暴露完整 Cordis 树或任意启动 argv。`RunResult` 报告协议所有的运行值，不重复 profile 的持久化路径。
+公开 Python 配置包括 `huoli_bin`、`profile`、有序 `patches`、`huoli_home`、进程 cwd／环境、provider／model／token 选择、有界初始化 timeout，以及可选的轮次／关闭 timeout。它不暴露完整 Cordis 树或任意启动 argv。`RunResult` 报告协议所有的运行值，不重复 profile 的持久化路径。
 
-每次 Python 启动都要求显式 `dsh_home`，或子进程环境中的非空 `HUOLI_HOME`。SDK 绝不会发现 `~/.huoli`。所选 home 统一拥有 profile、外部插件、凭据、设置与会话。
+每次 Python 启动都要求显式 `huoli_home`，或子进程环境中的非空 `HUOLI_HOME`。SDK 绝不会发现 `~/.huoli`。所选 home 统一拥有 profile、外部插件、凭据、设置与会话。
 
 ### 插件自定义
 

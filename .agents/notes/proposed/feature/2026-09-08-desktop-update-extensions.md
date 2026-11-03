@@ -23,7 +23,7 @@ If Desktop-only fixes become necessary on a prerelease line, evaluate the reserv
 < 0.1.3-rc.3
 ```
 
-Such a release would record Desktop `0.1.3-rc.2.dsk.1` separately from bundled huoli `0.1.3-rc.2`. Introduce independent `desktopVersion`, `bundledDshVersion`, and `releaseChannel` records only with corresponding build, runtime descriptor, profile reconciliation, publisher, and backend-policy validation. The initial build continues to require equal versions.
+Such a release would record Desktop `0.1.3-rc.2.dsk.1` separately from bundled huoli `0.1.3-rc.2`. Introduce independent `desktopVersion`, `bundledHuoliVersion`, and `releaseChannel` records only with corresponding build, runtime descriptor, profile reconciliation, publisher, and backend-policy validation. The initial build continues to require equal versions.
 
 Do not use `0.1.3-dsk.1` to repair stable `0.1.3`: SemVer orders it below the stable release. Stable fixes require a higher shared huoli/Desktop patch version, such as `0.1.4`. Independent prerelease revisions are an exceptional release path, not a routine per-build counter.
 

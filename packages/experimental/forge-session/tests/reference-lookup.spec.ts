@@ -63,7 +63,7 @@ async function fixture() {
   await ctx.plugin(LlmRuntime)
   await ctx.plugin(AgentRegistry)
   await ctx.plugin(AgentLoop, { agents: [] })
-  await ctx.plugin(ShellEnv, { dshHome: process.cwd() })
+  await ctx.plugin(ShellEnv, { huoliHome: process.cwd() })
   await ctx.plugin(LookupShell)
   const { agent } = await ctx.agents.create({ sessionId: SessionId('reference-observer') })
   const controller = new AbortController()
@@ -94,7 +94,7 @@ describe('PR reference lookup', () => {
     await vi.waitFor(() => { expect(f.records()).toEqual([{ action: 'reference', url: pullUrl(9) }]) })
     expect(resolve).toHaveBeenCalledWith(expect.objectContaining({
       command: 'env gh pr view 9 --repo octo/demo --json url', workdir: process.cwd(), timeoutMs: 1_234,
-      dshEnv: f.ctx.shellEnv.collect(f.exec),
+      huoliEnv: f.ctx.shellEnv.collect(f.exec),
     }))
     f.ctx.forgeSession.dismiss(f.agent.session, pullUrl(9))
     f.emit()

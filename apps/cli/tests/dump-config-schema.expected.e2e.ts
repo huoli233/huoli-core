@@ -90,7 +90,7 @@ async function dump(
   const env = Object.fromEntries(Object.entries(process.env).filter(
     (entry): entry is [string, string] => entry[1] !== undefined
       && !/KEY|SECRET|TOKEN|PASSWORD/i.test(entry[0])
-      && !/^(DSH_|NODE_OPTIONS$|NODE_PATH$)/i.test(entry[0]),
+      && !/^(HUOLI_|NODE_OPTIONS$|NODE_PATH$)/i.test(entry[0]),
   ))
   const result = await execa(process.execPath, [
     builtBin, '--profile', profileName, format, ...args,

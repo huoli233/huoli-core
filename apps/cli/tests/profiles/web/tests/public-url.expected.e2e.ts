@@ -16,8 +16,8 @@ import { PROCESS_SHUTDOWN_TIMEOUT_MS } from '../../../../src/process-shutdown.ts
 import { materializeTlsFixture } from '../../../../../../packages/host/webserver/tests/tls-fixture.ts'
 
 const repoRoot = fileURLToPath(new URL('../../../../../../', import.meta.url))
-const dshBin = join(repoRoot, 'apps/cli/lib/bin.js')
-const builtArtifactsExist = existsSync(dshBin)
+const huoliBin = join(repoRoot, 'apps/cli/lib/bin.js')
+const builtArtifactsExist = existsSync(huoliBin)
 
 /** Browser-facing mount the reference proxy serves and strips. */
 const MOUNT = '/tools/huoli/'
@@ -43,7 +43,7 @@ type StoppedWeb = Awaited<WebChild>
 /** Start one keyless Web process with an outer lifetime deadline. */
 function spawnWeb(root: string, patch: string, interrupt: string, flags: string[]) {
   return execa(process.execPath, [
-    dshBin,
+    huoliBin,
     '--profile', 'web',
     '--patch', patch,
     '--no-open',

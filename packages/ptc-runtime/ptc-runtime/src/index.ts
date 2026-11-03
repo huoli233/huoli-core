@@ -24,7 +24,7 @@ export type {
 /**
  * Binding globals EVERY backend refuses because SOME backend owns the slot in
  * the program's namespace: `console` (Node's log capture), and
- * `__dsh_main__`/`__builtins__`/`__name__` (the Python backend's bootstrap
+ * `__huoli_main__`/`__builtins__`/`__name__` (the Python backend's bootstrap
  * wrapper and seeded module globals),
  * and `__debug__`. One shared set — rather than each backend refusing only its
  * own slots — keeps the portability promise real: a namespace list valid on
@@ -42,7 +42,7 @@ export type {
  */
 export const RESERVED_BINDING_GLOBALS: ReadonlySet<string> = new Set([
   'console',
-  '__dsh_main__', '__builtins__', '__name__', '__debug__',
+  '__huoli_main__', '__builtins__', '__name__', '__debug__',
 ])
 
 /**

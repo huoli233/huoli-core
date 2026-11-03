@@ -26,10 +26,10 @@ UserQuestionHandler: TypeAlias = Callable[[UserQuestionRequest, threading.Event]
 class HarnessConfig:
     """Configuration for launching the local Huoli Core SDK runtime."""
 
-    dsh_bin: str | None = None
+    huoli_bin: str | None = None
     profile: str = "sdk"
     patches: tuple[str, ...] = ()
-    dsh_home: str | None = None
+    huoli_home: str | None = None
     cwd: str | None = None
     env: dict[str, str] | None = None
     initialize_timeout_seconds: float = 30.0
@@ -586,7 +586,7 @@ class HarnessClient:
         return "\n".join(parts)
 
     def _default_launch_args(self, env: dict[str, str]) -> tuple[str, ...]:
-        if self.config.dsh_bin is None:
+        if self.config.huoli_bin is None:
             try:
                 from deepseek_harness_runtime import resolve_bundled_launch_args
             except ImportError as exc:
@@ -596,15 +596,15 @@ class HarnessClient:
                 ) from exc
             base = resolve_bundled_launch_args()
         else:
-            base = (str(Path(self.config.dsh_bin).expanduser().resolve()),)
+            base = (str(Path(self.config.huoli_bin).expanduser().resolve()),)
 
-        if self.config.dsh_home is not None:
-            if not self.config.dsh_home.strip():
-                raise ValueError("HarnessConfig requires a non-empty dsh_home")
-            env["HUOLI_HOME"] = str(Path(self.config.dsh_home).expanduser().resolve())
+        if self.config.huoli_home is not None:
+            if not self.config.huoli_home.strip():
+                raise ValueError("HarnessConfig requires a non-empty huoli_home")
+            env["HUOLI_HOME"] = str(Path(self.config.huoli_home).expanduser().resolve())
         elif not env.get("HUOLI_HOME", "").strip():
             raise ValueError(
-                "HarnessConfig requires an explicit dsh_home or non-empty HUOLI_HOME; "
+                "HarnessConfig requires an explicit huoli_home or non-empty HUOLI_HOME; "
                 "the Python SDK never uses ~/.huoli implicitly"
             )
 

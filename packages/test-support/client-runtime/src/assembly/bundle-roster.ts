@@ -19,7 +19,7 @@ import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { evaluate, isJsExpr, type EntryOptions } from '@huoli/cordis-plugin-loader'
 import { applyEntryPatches, entryListSchema, type PatchOptions } from '@huoli/cordis-plugin-include'
-import { exactPackageSpecifier, parseDshClient } from '@huoli/huoli-client-modules/client'
+import { exactPackageSpecifier, parseHuoliClient } from '@huoli/huoli-client-modules/client'
 import * as yaml from 'js-yaml'
 import { ClientRoster, type ClientRosterRow } from './roster.ts'
 
@@ -75,7 +75,7 @@ export function bundleRoster(
     if (manifest.name !== name) {
       throw new Error(`client-test-runtime: ${manifestPath} names ${JSON.stringify(manifest.name)}, expected ${name}`)
     }
-    const declaration = parseDshClient(name, manifest.huoli?.client)
+    const declaration = parseHuoliClient(name, manifest.huoli?.client)
     if (declaration === undefined || declaration.platform !== 'web') continue
     if (disabled.some(value => value !== undefined && value !== null && typeof value !== 'boolean'
       && !(disabledContext !== undefined && isJsExpr(value)))) {

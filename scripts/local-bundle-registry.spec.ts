@@ -414,7 +414,7 @@ describe('run record', () => {
     const { artifact } = fabricate({ destination, name: '@scope/local', version: '1.0.0', source: 'export default 1\n' })
     const manifest = createRegistryManifest({
       buildId: 'run-1',
-      source: { commit: 'a'.repeat(40), dirty: true, dshVersion: '0.0.0-test' },
+      source: { commit: 'a'.repeat(40), dirty: true, huoliVersion: '0.0.0-test' },
       entries: ['@scope/local'],
       workspaceNames: ['@scope/local', '@scope/absent'],
       artifacts: [artifact],
@@ -422,7 +422,7 @@ describe('run record', () => {
     expect(manifest).toEqual({
       schemaVersion: 1,
       buildId: 'run-1',
-      source: { commit: 'a'.repeat(40), dirty: true, dshVersion: '0.0.0-test' },
+      source: { commit: 'a'.repeat(40), dirty: true, huoliVersion: '0.0.0-test' },
       entries: ['@scope/local'],
       workspaceNames: ['@scope/local', '@scope/absent'],
       packages: [{ name: '@scope/local', version: '1.0.0', file: artifact.file, bytes: artifact.bytes, integrity: artifact.integrity }],

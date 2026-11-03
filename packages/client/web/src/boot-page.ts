@@ -32,11 +32,11 @@ export class BootPage {
    */
   constructor(container: HTMLElement) {
     this.root = div(css.boot)
-    this.root.dataset.dshBoot = ''
+    this.root.dataset.huoliBoot = ''
     this.card = div(css.card)
     this.wordmark = div(css.wordmark, 'HARNESS')
     this.spinner = div(css.spinner)
-    this.spinner.dataset.dshBootSpinner = ''
+    this.spinner.dataset.huoliBootSpinner = ''
     this.hint = div(css.hint, 'Loading plugins…')
     this.card.append(this.wordmark, this.spinner, this.hint)
     this.root.append(this.card)

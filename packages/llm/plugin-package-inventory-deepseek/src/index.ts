@@ -30,7 +30,7 @@ export const inject = ['agents', 'deepseekLlmApiExtensions', 'loader']
 
 /** Plugin-package request contribution configuration. */
 export interface Config {
-  /** Contribute `dsh_plugin_packages` to official DeepSeek requests. Defaults to `true`. */
+  /** Contribute `huoli_plugin_packages` to official DeepSeek requests. Defaults to `true`. */
   enabled?: boolean
 }
 
@@ -192,7 +192,7 @@ function collectActivePluginPackages(
 }
 
 /**
- * Register the complete `dsh_plugin_packages` request contribution when enabled.
+ * Register the complete `huoli_plugin_packages` request contribution when enabled.
  * @param ctx - plugin context carrying Loader entry metadata and the DeepSeek request-extension registry.
  * @param config - validated default-on configuration.
  */
@@ -202,7 +202,7 @@ export function apply(ctx: Context, config: Config): void {
   const resolver = new PackageIdentityResolver(hostBaseUrl, ctx.get('pluginPackages'))
   // Unreadable identities are re-resolved on every request; log each module once.
   const unreadable = new Set<string>()
-  ctx.deepseekLlmApiExtensions.register('dsh_plugin_packages', {
+  ctx.deepseekLlmApiExtensions.register('huoli_plugin_packages', {
     prepare: (request) => {
       const value: DeepSeekPluginPackageInventoryExtension = {
         version: 1,

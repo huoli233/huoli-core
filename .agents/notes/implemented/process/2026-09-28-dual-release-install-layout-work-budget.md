@@ -10,7 +10,7 @@ The `Dependency layout` lane packs two incompatible synthetic HUOLI releases int
 
 ## Decision
 
-`scripts/verify-npm-install-layout.ts` decides growth with `assertResolutionWorkBudget`, which bounds `dshPackagesPerVersion * checkedDshEdges` against `MAX_RESOLUTION_WORK_UNITS = 1_134_400`. Both counts come from the summary `assertDualDshInstallLayout` returns, so the budget applies to the graph npm actually produced rather than to a prediction of it. A graph above the budget fails with its own counts, the budget, and the instruction to measure the new resolution cost and raise the constant.
+`scripts/verify-npm-install-layout.ts` decides growth with `assertResolutionWorkBudget`, which bounds `huoliPackagesPerVersion * checkedHuoliEdges` against `MAX_RESOLUTION_WORK_UNITS = 1_134_400`. Both counts come from the summary `assertDualHuoliInstallLayout` returns, so the budget applies to the graph npm actually produced rather than to a prediction of it. A graph above the budget fails with its own counts, the budget, and the instruction to measure the new resolution cost and raise the constant.
 
 The npm child keeps a wall-clock limit, `NPM_HANG_GUARD_MS`, derived as `4 * MAX_RESOLUTION_WORK_UNITS * SECONDS_PER_WORK_UNIT` (about 1,180 s). It is a hang guard, not the growth criterion: a runner up to four times slower than the measured host cannot decide the gate's outcome, and deriving it from the budget keeps the two values from drifting apart.
 
@@ -18,7 +18,7 @@ This restores the [published dependency faces](2026-08-26-published-dependency-f
 
 ## What the resolution costs
 
-Measured 2026-10-26 on an idle Apple M5 Pro with Node 24.17.0 and npm 11.13.0, using `buildDualDshRegistry`, `resolveNpmPackageLock`, and `assertDualDshInstallLayout` sequentially with fresh temporary consumers: the #5960 graph (315 packages per release, 2782 internal edges, 876,330 work units) resolved in 75.27 s; the #5961 graph (320 packages, 2836 edges, 907,520 units) resolved in 71.03 s, with a second verification at 97.73 s. All placements passed, shared one Cordis installation, and requested no archives. The measurements calibrate graph admission and do not establish a runtime improvement. The current budget is 1.25 times its 907,520 units; the earlier, slower per-unit timing remains the conservative hang-guard calibration.
+Measured 2026-10-26 on an idle Apple M5 Pro with Node 24.17.0 and npm 11.13.0, using `buildDualHuoliRegistry`, `resolveNpmPackageLock`, and `assertDualHuoliInstallLayout` sequentially with fresh temporary consumers: the #5960 graph (315 packages per release, 2782 internal edges, 876,330 work units) resolved in 75.27 s; the #5961 graph (320 packages, 2836 edges, 907,520 units) resolved in 71.03 s, with a second verification at 97.73 s. All placements passed, shared one Cordis installation, and requested no archives. The measurements calibrate graph admission and do not establish a runtime improvement. The current budget is 1.25 times its 907,520 units; the earlier, slower per-unit timing remains the conservative hang-guard calibration.
 
 Measured 2026-09-28 on an idle M-series host, against `origin/master` (277 HUOLI packages per release, 2524 internal edges), by running the lane's own npm invocation with `--timing` and `--cpu-prof`:
 

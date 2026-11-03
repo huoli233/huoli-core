@@ -11,4 +11,4 @@ const api: UpdateDialogApi = {
     return () => { ipcRenderer.removeListener(UPDATE_DIALOG_IPC.changed, receive) }
   },
 }
-if (location.href === 'huoli-app://shell/update-dialog.html') contextBridge.exposeInMainWorld('dshUpdateDialog', api)
+if (location.href === 'huoli-app://shell/update-dialog.html') contextBridge.exposeInMainWorld('huoliUpdateDialog', api)

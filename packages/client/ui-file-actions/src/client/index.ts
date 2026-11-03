@@ -22,7 +22,7 @@ declare module '@huoli/huoli-client-ui-slots' {
 export const inject = []
 /** @param ctx - plugin-owned Client context. */
 export function apply(ctx: Context): void {
-  const desktop = (window as Window & { dshDesktop?: { fileActions?: DesktopFileActions } }).dshDesktop?.fileActions
+  const desktop = (window as Window & { huoliDesktop?: { fileActions?: DesktopFileActions } }).huoliDesktop?.fileActions
   const actions = new BrowserFileActions(desktop)
   ctx.provide('fileActions', actions)
   ctx.effect(() => () => { actions.dispose() }, 'file actions: lifetime')

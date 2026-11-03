@@ -29,16 +29,16 @@ kind: "package-library"
 ### 解析主目录
 
 ```ts
-import { resolveDshHome, dshHomePath, dshCachePath } from '@huoli/huoli-home-paths'
+import { resolveHuoliHome, huoliHomePath, huoliCachePath } from '@huoli/huoli-home-paths'
 
-const home = resolveDshHome()                // configured path, else $HUOLI_HOME, else ~/.huoli
-const settings = dshHomePath('settings')     // join one child onto the resolved home
-const cache = dshCachePath('models')         // $HUOLI_HOME/cache/models, default ~/.huoli/cache/models
+const home = resolveHuoliHome()                // configured path, else $HUOLI_HOME, else ~/.huoli
+const settings = huoliHomePath('settings')     // join one child onto the resolved home
+const cache = huoliCachePath('models')         // $HUOLI_HOME/cache/models, default ~/.huoli/cache/models
 ```
 
 显式配置的路径优先级最高，然后是 `$HUOLI_HOME`，最后是默认的 `~/.huoli`。空或仅含空白的 `$HUOLI_HOME` 视为未设置，因此空白的覆盖值绝不会把主目录解析到当前工作目录。
 
-`dshCachePath(...segments)` 从解析出的主目录下的 `cache` 目录派生路径。不传路径段时返回缓存目录本身。传入首个选项对象 `dshCachePath({ dshHome: home }, ...segments)` 可使用显式配置的主目录，遵循相同的优先级与波浪号展开规则。它返回绝对路径，不会创建目录。
+`huoliCachePath(...segments)` 从解析出的主目录下的 `cache` 目录派生路径。不传路径段时返回缓存目录本身。传入首个选项对象 `huoliCachePath({ huoliHome: home }, ...segments)` 可使用显式配置的主目录，遵循相同的优先级与波浪号展开规则。它返回绝对路径，不会创建目录。
 
 ### 解析共享 agents 根目录
 
@@ -49,7 +49,7 @@ const agents = resolveAgentsHome()   // configured path, else $HUOLI_AGENTS_HOME
 agentsHomeDisplay(agents)            // ~/.agents, or $HUOLI_AGENTS_HOME for any configured root
 ```
 
-`resolveAgentsHome` 采用与 `resolveDshHome` 相同的优先级、空白值处理与波浪号展开。该根目录刻意位于 `$HUOLI_HOME` 之外，因为其他 agent 工具也会共享它：`huoli-agent-instructions` 读取其中的用户全局 `AGENTS.md`，`huoli-skill-filesystem` 扫描其中的 `skills/` 目录。
+`resolveAgentsHome` 采用与 `resolveHuoliHome` 相同的优先级、空白值处理与波浪号展开。该根目录刻意位于 `$HUOLI_HOME` 之外，因为其他 agent 工具也会共享它：`huoli-agent-instructions` 读取其中的用户全局 `AGENTS.md`，`huoli-skill-filesystem` 扫描其中的 `skills/` 目录。
 
 ### 展示主目录
 
@@ -81,7 +81,7 @@ agentsHomeDisplay(agents)            // ~/.agents, or $HUOLI_AGENTS_HOME for any
 
 ### 解析规则
 
-`resolveDshHome` 先读显式覆盖值，然后读 `$HUOLI_HOME`，最后回退到操作系统主目录拼接 `.huoli`。`resolveAgentsHome` 对 `$HUOLI_AGENTS_HOME` 与 `~/.agents` 读取同样的三层值。选中的值经过波浪号展开并规范化为绝对路径；`dshHomePath` 用 Node 的平台路径规则拼接子路径段。`dshHomeDisplay` 与 `agentsHomeDisplay` 把解析出的路径与默认根目录比较并返回符号标签，因此已配置的根目录绝不泄露其绝对路径。
+`resolveHuoliHome` 先读显式覆盖值，然后读 `$HUOLI_HOME`，最后回退到操作系统主目录拼接 `.huoli`。`resolveAgentsHome` 对 `$HUOLI_AGENTS_HOME` 与 `~/.agents` 读取同样的三层值。选中的值经过波浪号展开并规范化为绝对路径；`huoliHomePath` 用 Node 的平台路径规则拼接子路径段。`huoliHomeDisplay` 与 `agentsHomeDisplay` 把解析出的路径与默认根目录比较并返回符号标签，因此已配置的根目录绝不泄露其绝对路径。
 
 ### 规范化机制
 

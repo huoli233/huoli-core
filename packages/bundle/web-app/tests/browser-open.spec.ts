@@ -27,9 +27,9 @@ afterEach(async () => {
   internals.resolveDistIndex = originalResolveDistIndex
   internals.openBrowser = originalOpenBrowser
   vi.unstubAllEnvs()
-  Reflect.deleteProperty(globalThis, '__dshWebAppApply')
-  Reflect.deleteProperty(globalThis, '__dshWebServer')
-  Reflect.deleteProperty(globalThis, '__dshConnection')
+  Reflect.deleteProperty(globalThis, '__huoliWebAppApply')
+  Reflect.deleteProperty(globalThis, '__huoliWebServer')
+  Reflect.deleteProperty(globalThis, '__huoliConnection')
 })
 
 describe('web app browser startup', () => {
@@ -45,16 +45,16 @@ describe('web app browser startup', () => {
     const webserverModule = join(root, 'webserver.mjs')
     const connectionModule = join(root, 'connection.mjs')
     const webAppModule = join(root, 'web-app.mjs')
-    writeFileSync(webserverModule, 'export default globalThis.__dshWebServer\n')
+    writeFileSync(webserverModule, 'export default globalThis.__huoliWebServer\n')
     writeFileSync(connectionModule, [
       "export const inject = ['webServer']",
-      "export const apply = ctx => ctx.provide('connection', globalThis.__dshConnection)",
+      "export const apply = ctx => ctx.provide('connection', globalThis.__huoliConnection)",
       '',
     ].join('\n'))
     writeFileSync(webAppModule, [
       "export const name = 'fixture-web-app'",
       "export const inject = ['webServer']",
-      'export const apply = (ctx, config) => globalThis.__dshWebAppApply(ctx, config)',
+      'export const apply = (ctx, config) => globalThis.__huoliWebAppApply(ctx, config)',
       '',
     ].join('\n'))
     const config = join(root, 'cordis.yml')
@@ -76,18 +76,18 @@ describe('web app browser startup', () => {
     ].join('\n'))
 
     const globals = globalThis as unknown as {
-      __dshWebAppApply: typeof apply
-      __dshWebServer: typeof WebServer
-      __dshConnection: {
+      __huoliWebAppApply: typeof apply
+      __huoliWebServer: typeof WebServer
+      __huoliConnection: {
         authenticatedUrl(baseUrl: string): string
         authorizeIndex(): boolean
         requestRejection(): undefined
         rpc: object
       }
     }
-    globals.__dshWebAppApply = apply
-    globals.__dshWebServer = WebServer
-    globals.__dshConnection = {
+    globals.__huoliWebAppApply = apply
+    globals.__huoliWebServer = WebServer
+    globals.__huoliConnection = {
       authenticatedUrl: (baseUrl) => {
         const url = new URL(baseUrl)
         url.searchParams.set('token', 'fixture-token')

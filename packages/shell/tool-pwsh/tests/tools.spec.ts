@@ -4,7 +4,7 @@
  * registry. The fake executor makes every seam outcome scriptable — output
  * text, truncation, timeout, abort, nonzero exits, background handles — so
  * these tests verify the schema, argument validation, workdir derivation,
- * managed `DSH_*` collection, abort translation, canonical result projection,
+ * managed `HUOLI_*` collection, abort translation, canonical result projection,
  * sandbox denial rendering with the escalation surface, rendering,
  * background job wiring, and the UI presenters. Real-pwsh behavior
  * is pinned separately in integration.spec.ts.
@@ -79,7 +79,7 @@ class FakeBash extends ShellExecutor {
       ...request.signal ? { signal: request.signal } : {},
       ...request.stdin !== undefined ? { stdin: request.stdin } : {},
       ...request.env !== undefined ? { env: request.env } : {},
-      ...request.dshEnv !== undefined ? { dshEnv: request.dshEnv } : {},
+      ...request.huoliEnv !== undefined ? { huoliEnv: request.huoliEnv } : {},
       sandboxPolicy: request.sandboxPolicy,
     }
   }
@@ -148,7 +148,7 @@ function killableProcess(): ShellProcess {
   return proc
 }
 
-async function setup(toolConfig: Partial<ToolPwsh.Config> = {}, dshHome?: string) {
+async function setup(toolConfig: Partial<ToolPwsh.Config> = {}, huoliHome?: string) {
   const ctx = new Context()
   provideWorkingDirectoryFixture(ctx)
   await ctx.plugin(SystemPrompt)
@@ -156,7 +156,7 @@ async function setup(toolConfig: Partial<ToolPwsh.Config> = {}, dshHome?: string
   await ctx.plugin(SessionProjectionRegistry)
   await ctx.plugin(NativeToolExecutor)
   await ctx.plugin(AgentRegistry)
-  await ctx.plugin(BashEnvPlugin, dshHome === undefined ? {} : { dshHome })
+  await ctx.plugin(BashEnvPlugin, huoliHome === undefined ? {} : { huoliHome })
   await ctx.plugin(FakeBash)
   await ctx.plugin(ToolPwsh, toolConfig)
   const bash = ctx.shell as FakeBash
@@ -164,7 +164,7 @@ async function setup(toolConfig: Partial<ToolPwsh.Config> = {}, dshHome?: string
 }
 
 /** Full harness: the generic job runtime + its controller, then the pwsh tool. */
-async function setupWithJobs(toolConfig: Partial<ToolPwsh.Config> = {}, dshHome?: string) {
+async function setupWithJobs(toolConfig: Partial<ToolPwsh.Config> = {}, huoliHome?: string) {
   const ctx = new Context()
   provideWorkingDirectoryFixture(ctx)
   await ctx.plugin(SystemPrompt)
@@ -174,7 +174,7 @@ async function setupWithJobs(toolConfig: Partial<ToolPwsh.Config> = {}, dshHome?
   await ctx.plugin(AgentRegistry)
   await ctx.plugin(LocalJobRegistry)
   await ctx.plugin(ToolJobs)
-  await ctx.plugin(BashEnvPlugin, dshHome === undefined ? {} : { dshHome })
+  await ctx.plugin(BashEnvPlugin, huoliHome === undefined ? {} : { huoliHome })
   await ctx.plugin(FakeBash)
   await ctx.plugin(ToolPwsh, toolConfig)
   const bash = ctx.shell as FakeBash
@@ -205,7 +205,7 @@ class ConfiningFakeBash extends ShellExecutor {
       onExpiry: request.onExpiry ?? 'kill',
       stdoutMaxBytes: request.stdoutMaxBytes ?? 64_000,
       ...request.signal ? { signal: request.signal } : {},
-      ...request.dshEnv !== undefined ? { dshEnv: request.dshEnv } : {},
+      ...request.huoliEnv !== undefined ? { huoliEnv: request.huoliEnv } : {},
       sandboxPolicy: request.sandboxPolicy,
     }
   }
@@ -438,10 +438,10 @@ describe('argument validation', () => {
 })
 
 describe('execution through the bash seam', () => {
-  it('forwards command, session cwd, timeout, and managed DSH_* environment', async () => {
-    const dshHome = mkdtempSync(join(tmpdir(), 'huoli-tool-pwsh-home-'))
-    tempDirs.push(dshHome)
-    const { ctx, bash } = await setup({}, dshHome)
+  it('forwards command, session cwd, timeout, and managed HUOLI_* environment', async () => {
+    const huoliHome = mkdtempSync(join(tmpdir(), 'huoli-tool-pwsh-home-'))
+    tempDirs.push(huoliHome)
+    const { ctx, bash } = await setup({}, huoliHome)
     bash.handler = () => runResult('hi\n')
     const agent = await registerFakeAgent(ctx, 'session-1')
     Object.assign(agent.session.header, { cwd: '/sessions/s1' })
@@ -455,8 +455,8 @@ describe('execution through the bash seam', () => {
     expect(request?.command).toBe('Write-Output hi')
     expect(request?.workdir).toBe('/sessions/s1')
     expect(request?.timeoutMs).toBe(1234)
-    expect(request?.dshEnv).toEqual({
-      HUOLI_HOME: dshHome,
+    expect(request?.huoliEnv).toEqual({
+      HUOLI_HOME: huoliHome,
       HUOLI_SHELL: '1',
       HUOLI_SESSION_ID: 'session-1',
     })
@@ -479,11 +479,11 @@ describe('execution through the bash seam', () => {
     bash.handler = () => runResult('ok\n')
     await call(ctx, 'pwsh', { command: 'Write-Output ok', description: 'ok' })
     expect(bash.requests[0]).not.toHaveProperty('workdir')
-    const dshEnv = bash.requests[0]?.dshEnv
-    expect(dshEnv).toBeDefined()
-    expect(dshEnv?.['HUOLI_SHELL']).toBe('1')
-    expect(dshEnv?.['HUOLI_HOME']).toEqual(expect.any(String))
-    expect(dshEnv).not.toHaveProperty('HUOLI_SESSION_ID')
+    const huoliEnv = bash.requests[0]?.huoliEnv
+    expect(huoliEnv).toBeDefined()
+    expect(huoliEnv?.['HUOLI_SHELL']).toBe('1')
+    expect(huoliEnv?.['HUOLI_HOME']).toEqual(expect.any(String))
+    expect(huoliEnv).not.toHaveProperty('HUOLI_SESSION_ID')
   })
 
   it('forwards exec.signal into the resolved request', async () => {

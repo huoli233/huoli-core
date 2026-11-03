@@ -209,10 +209,10 @@ describe('rewritten references keep their operation', () => {
 describe('emitted import statements', () => {
   test('named and default imports declare no locals; namespace imports keep theirs', () => {
     const code = transformModule("import d, { a, b as c } from 'p'\nimport * as ns from 'q'\nexport const out = [d, a, c, ns]\n")
-    expect(code).toContain('const __dsh$m1=require("p");')
-    expect(code).toContain('const ns=__dsh$ns(__dsh$m2);')
+    expect(code).toContain('const __huoli$m1=require("p");')
+    expect(code).toContain('const ns=__huoli$ns(__huoli$m2);')
     expect(code).not.toMatch(/const (d|a|c)=/)
-    expect(code).toContain('__dsh$m1["b"]')
+    expect(code).toContain('__huoli$m1["b"]')
   })
 
   test('a reference ahead of its import declaration reads the same module', () => {
@@ -309,6 +309,6 @@ describe('refused forms', () => {
   })
 
   test('a declaration using the reserved prefix fails the transform', () => {
-    expect(refusal("import { x } from 'p'\nfunction f() { const __dsh$m1 = x }\n")).toContain('reserved __dsh$ prefix')
+    expect(refusal("import { x } from 'p'\nfunction f() { const __huoli$m1 = x }\n")).toContain('reserved __huoli$ prefix')
   })
 })

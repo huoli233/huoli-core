@@ -520,7 +520,7 @@ const URL_SCHEME = /^[a-z][a-z\d+.-]*:/i
  * to contain the shorter prefix out of that rewrite, and keeps the source maps
  * that carry the loaded module text byte-stable across builds.
  */
-const PACKAGE_ASSET_CALL = '__dshPackageAsset_5f8e2c1a9b7d'
+const PACKAGE_ASSET_CALL = '__huoliPackageAsset_5f8e2c1a9b7d'
 
 /** Compile one asset reference into the resolver call. */
 function packageAssetCall(reference: string): string {
@@ -672,7 +672,7 @@ function packageAssets(manifest: PackageManifest, packageDir: string): PackageAs
         if (/[#?]/u.test(url.url)) {
           throw new Error(`tsdown: ${name}: ${stylesheet} references ${JSON.stringify(url.url)}; a package asset url() takes no fragment or query`)
         }
-        const placeholder = `__dshPackageAsset_${nonce}_${String(inserted.size)}__`
+        const placeholder = `__huoliPackageAsset_${nonce}_${String(inserted.size)}__`
         inserted.set(placeholder, reference(context, resolvePath(base, url.url)))
         return { ...url, url: placeholder }
       }

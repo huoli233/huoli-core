@@ -37,7 +37,7 @@ const startupFailureConfigPath = fileURLToPath(new URL('./fixtures/startup-activ
 const startupFailurePluginUrl = new URL('./fixtures/startup-activation-error/activation-error.mjs', import.meta.url).href
 const startupFailureExpected = join(goldensDir, 'startup-activation-error', 'stderr.expected.txt')
 const binScript = fileURLToPath(new URL('../../../../../../packages/test-support/loader-smoke/tests/fixtures/headless-driver.ts', import.meta.url))
-const dshBinScript = fileURLToPath(new URL('../../../../src/bin.ts', import.meta.url))
+const huoliBinScript = fileURLToPath(new URL('../../../../src/bin.ts', import.meta.url))
 const tsconfigPath = fileURLToPath(new URL('../../../../../../tsconfig.json', import.meta.url))
 const reasoningConfigPath = fileURLToPath(new URL('./fixtures/cli.patch.yml', import.meta.url))
 const deepseekDefaultsConfigPath = fileURLToPath(new URL('./fixtures/deepseek-defaults.patch.yml', import.meta.url))
@@ -306,7 +306,7 @@ describe('headless stream-json snapshots', () => {
     const cwd = await mkdtemp(join(tmpdir(), 'headless-auto-shutdown-'))
     const options = {
       cwd,
-      binScript: dshBinScript,
+      binScript: huoliBinScript,
       configPath: autoShutdownOverlayPath,
       tsconfigPath,
       env: { HUOLI_TELEMETRY_DISABLED: '1' },
@@ -389,7 +389,7 @@ describe('headless stream-json snapshots', () => {
       mode,
       sourceImport: 'tsx/esm',
       tempDirPrefix: 'headless-snapshot-profile-',
-      binScript: dshBinScript,
+      binScript: huoliBinScript,
       configPath: headlessOverlayPath,
       binArgs: ['headless', '--patch', headlessOverlayPath, task],
       tsconfigPath,
@@ -424,7 +424,7 @@ describe('headless stream-json snapshots', () => {
     const result = await runLoaderSmoke({
       label: 'product headless profile json snapshot',
       tempDirPrefix: 'headless-snapshot-profile-json-',
-      binScript: dshBinScript,
+      binScript: huoliBinScript,
       configPath: headlessOverlayPath,
       binArgs: [
         '--profile', 'headless', '--patch', headlessOverlayPath,
@@ -464,7 +464,7 @@ describe('headless stream-json snapshots', () => {
     const result = await runLoaderSmoke({
       label: 'product headless profile unknown session',
       tempDirPrefix: 'headless-snapshot-profile-unknown-session-',
-      binScript: dshBinScript,
+      binScript: huoliBinScript,
       configPath: headlessOverlayPath,
       binArgs: [
         '--profile', 'headless', '--patch', headlessOverlayPath,
@@ -499,7 +499,7 @@ describe('headless stream-json snapshots', () => {
       const first = await runLoaderSmoke({
         label: 'product headless profile resume first wake',
         cwd,
-        binScript: dshBinScript,
+        binScript: huoliBinScript,
         configPath: headlessOverlayPath,
         binArgs: ['--profile', 'headless', '--patch', headlessOverlayPath, '--json', firstTask],
         tsconfigPath,
@@ -513,7 +513,7 @@ describe('headless stream-json snapshots', () => {
       const second = await runLoaderSmoke({
         label: 'product headless profile resume second wake',
         cwd,
-        binScript: dshBinScript,
+        binScript: huoliBinScript,
         configPath: headlessOverlayPath,
         binArgs: [
           '--profile', 'headless', '--patch', headlessOverlayPath,
@@ -548,7 +548,7 @@ describe('headless stream-json snapshots', () => {
     const result = await runLoaderSmoke({
       label: `headless Auto review ${mode}`,
       tempDirPrefix: 'headless-auto-',
-      binScript: dshBinScript,
+      binScript: huoliBinScript,
       configPath: autoReviewOverlayPath,
       binArgs: [
         '--profile', 'headless', '--patch', headlessOverlayPath, '--patch', autoReviewOverlayPath,
@@ -588,7 +588,7 @@ describe('headless stream-json snapshots', () => {
   it('rejects Auto selection without the experimental integration', async () => {
     const result = await runLoaderSmoke({
       label: 'headless absent Auto integration', tempDirPrefix: 'headless-auto-absent-',
-      binScript: dshBinScript, configPath: headlessOverlayPath,
+      binScript: huoliBinScript, configPath: headlessOverlayPath,
       binArgs: ['--profile', 'headless', '--patch', headlessOverlayPath, '--permission-mode', 'auto', '--json', 'Do it.'],
       tsconfigPath, expectedExitCode: 1, env: { HUOLI_TELEMETRY_DISABLED: '1' },
     })
@@ -603,7 +603,7 @@ describe('headless stream-json snapshots', () => {
     const args = ['--profile', 'headless', '--patch', headlessOverlayPath, '--patch', autoReviewOverlayPath, '--json']
     try {
       const first = await runLoaderSmoke({
-        label: 'headless Auto denied wake', cwd, binScript: dshBinScript, configPath: autoReviewOverlayPath,
+        label: 'headless Auto denied wake', cwd, binScript: huoliBinScript, configPath: autoReviewOverlayPath,
         binArgs: [...args, '--permission-mode', 'auto', '--approval-policy', 'never', 'Run the CLI probe.'], tsconfigPath,
         env: { HUOLI_AUTO_REVIEW_TEST_MODE: 'deny', HUOLI_TELEMETRY_DISABLED: '1' },
       })
@@ -613,7 +613,7 @@ describe('headless stream-json snapshots', () => {
         error: { code: 'AUTO_REVIEW_DENIED' },
       })
       const second = await runLoaderSmoke({
-        label: 'headless Auto authorized wake', cwd, binScript: dshBinScript, configPath: autoReviewOverlayPath,
+        label: 'headless Auto authorized wake', cwd, binScript: huoliBinScript, configPath: autoReviewOverlayPath,
         binArgs: [...args, '--session-id', sessionId, 'I authorize the exact CLI probe. Retry it.'], tsconfigPath,
         env: { HUOLI_AUTO_REVIEW_TEST_MODE: 'allow', HUOLI_TELEMETRY_DISABLED: '1' },
         inspect: async (directory) => {
@@ -639,7 +639,7 @@ describe('headless stream-json snapshots', () => {
     const result = await runLoaderSmoke({
       label: 'product headless profile model failure snapshot',
       tempDirPrefix: 'headless-snapshot-profile-failure-',
-      binScript: dshBinScript,
+      binScript: huoliBinScript,
       configPath: headlessOverlayPath,
       binArgs: ['--profile', 'headless', '--patch', headlessOverlayPath, 'Trigger the keyless model failure.'],
       tsconfigPath,
@@ -659,7 +659,7 @@ describe('headless stream-json snapshots', () => {
     const result = await runLoaderSmoke({
       label: 'headless best-effort startup snapshot',
       tempDirPrefix: 'headless-snapshot-startup-error-',
-      binScript: dshBinScript,
+      binScript: huoliBinScript,
       configPath: startupFailureConfigPath,
       binArgs: [
         '--profile', 'headless',

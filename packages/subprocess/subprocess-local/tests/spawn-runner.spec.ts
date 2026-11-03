@@ -112,7 +112,7 @@ function internals(overrides: Partial<SpawnRunnerInternals> = {}): SpawnRunnerIn
 async function runWindows(
   host: FakeRunnerHost,
   native: SpawnRunnerInternals,
-  start: unknown = { type: 'start', cwd: 'C:\\target', env: { TARGET: 'yes', dsh_subprocess_runner: 'restored' } },
+  start: unknown = { type: 'start', cwd: 'C:\\target', env: { TARGET: 'yes', huoli_subprocess_runner: 'restored' } },
   targetArgv: string[] = ['tool.exe', 'literal arg'],
 ): Promise<void> {
   const running = runSpawnRunner(
@@ -708,13 +708,13 @@ describe('Windows Job runner protocol owner', () => {
     expect(native.resolveWindowsExecutable).toHaveBeenCalledWith(
       'tool.exe',
       'C:\\target',
-      { TARGET: 'yes', dsh_subprocess_runner: 'restored' },
+      { TARGET: 'yes', huoli_subprocess_runner: 'restored' },
       undefined,
       { SAFE: 'bootstrap' },
     )
     expect(native.spawnCurrentTokenJobProcess).toHaveBeenCalledWith(expect.anything(), {
       command: 'tool.exe', applicationName: 'C:\\resolved\\tool.exe', args: ['literal arg'], cwd: 'C:\\target',
-      env: { TARGET: 'yes', dsh_subprocess_runner: 'restored' },
+      env: { TARGET: 'yes', huoli_subprocess_runner: 'restored' },
       stdio: { stdin: 4, stdout: 5, stderr: 6 },
     })
     expect(closeFileDescriptor).toHaveBeenCalledTimes(3)

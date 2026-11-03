@@ -27,7 +27,7 @@ The root build wrapper supplies one exact public environment to both bundlers. E
 
 **Replace values only in Vite.** A dynamic plugin's `lib/client.js` is loaded as an independent script and never enters Vite's module graph, so the expression would remain in a browser that has no `process`.
 
-**Expose every `DSH_*` value.** Host, test, and CI variables already use that prefix and may contain credentials or local paths. The narrower `HUOLI_CLIENT_*` prefix makes exposure intent auditable.
+**Expose every `HUOLI_*` value.** Host, test, and CI variables already use that prefix and may contain credentials or local paths. The narrower `HUOLI_CLIENT_*` prefix makes exposure intent auditable.
 
 **Provide a complete `process.env` object in the browser.** This would permit build-environment enumeration and turn a Node compatibility shim into a runtime API. Exact static substitutions are sufficient for build choices.
 

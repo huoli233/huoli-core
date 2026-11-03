@@ -77,7 +77,7 @@ describe('ui-sidebar-browser apply', () => {
       release: vi.fn(async () => {}),
       onOpenRequested: vi.fn(() => () => {}),
     }
-    vi.stubGlobal('dshDesktop', { protocolVersion, browser: bridge })
+    vi.stubGlobal('huoliDesktop', { protocolVersion, browser: bridge })
     const h = await boot()
     expect(h.tabs.get(BROWSER_KIND)?.keepMounted).toBe(protocolVersion === 1)
     const injectFace = h.registered.find(entry => entry.name === 'sidebar.right.pane.tab')!.inject as

@@ -59,7 +59,7 @@ def main():
             state = root / (name + ".json")
             info = {"CFBundleName": name, "CFBundleDisplayName": name,
                     "CFBundleExecutable": "fixture", "CFBundlePackageType": "APPL",
-                    "DSHFixtureStatePath": str(state), "DSHFixtureBackground": True}
+                    "HUOLIFixtureStatePath": str(state), "HUOLIFixtureBackground": True}
             if bundle_id is not None:
                 info["CFBundleIdentifier"] = bundle_id
             (app / "Contents/Info.plist").write_bytes(plistlib.dumps(info))

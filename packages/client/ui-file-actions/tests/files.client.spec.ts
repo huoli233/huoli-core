@@ -187,7 +187,7 @@ describe('file actions', () => {
 
   it.each([false, true])('binds the optional Desktop adapter (%s) for the plugin lifetime', async (desktop) => {
     const bridge = native()
-    if (desktop) vi.stubGlobal('dshDesktop', { fileActions: bridge })
+    if (desktop) vi.stubGlobal('huoliDesktop', { fileActions: bridge })
     const ctx = new Context(), fiber = ctx.plugin({ apply: clientApply })
     await fiber.await()
     expect(hostApply).not.toThrow()

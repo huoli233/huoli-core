@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { Context } from '@huoli/cordis'
 import Group from '@huoli/cordis-plugin-group'
 import Loader from '@huoli/cordis-plugin-loader'
-import { getDshRuntimeVersion, type ProfileContext } from '@huoli/huoli-app-boot'
+import { getHuoliRuntimeVersion, type ProfileContext } from '@huoli/huoli-app-boot'
 import { createScope } from '@huoli/huoli-scope'
 import { expect, it, onTestFinished } from 'vitest'
 import { harness, declare } from './harness.ts'
@@ -139,7 +139,7 @@ it('mounts a profile-denied row disabled and the same row active once exempted',
     scopes.push(deniedScope)
     mounts.push(await mountPreset(deniedScope.ctx, 'denied', [row]))
     loadedWhileDenied.push(existsSync(loaded))
-    writeFileSync(compatibilityPath, JSON.stringify({ 'incompatible-preset-plugin@1.0.0': [getDshRuntimeVersion()] }))
+    writeFileSync(compatibilityPath, JSON.stringify({ 'incompatible-preset-plugin@1.0.0': [getHuoliRuntimeVersion()] }))
     const exemptedScope = createScope(owner, {})
     scopes.push(exemptedScope)
     mounts.push(await mountPreset(exemptedScope.ctx, 'exempted', [row]))

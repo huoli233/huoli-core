@@ -18,7 +18,7 @@ import z from '@huoli/schemastery'
 import type Schema from '@huoli/schemastery'
 import { parse as parseYaml } from 'yaml'
 import type { FileSystem, FsDirEntry, FsTarget } from '@huoli/huoli-fs'
-import { canonicalizeWatchPath, resolveAgentsHome, resolveDshHome } from '@huoli/huoli-home-paths'
+import { canonicalizeWatchPath, resolveAgentsHome, resolveHuoliHome } from '@huoli/huoli-home-paths'
 import {
   BUNDLED_SKILL_RANK,
   isSkillName,
@@ -51,7 +51,7 @@ export interface Config {
   /** Whether project and user roots are included around custom roots. */
   includeDefaultRoots?: boolean
   /** Huoli Core config root. Defaults to `$HUOLI_HOME` or `~/.huoli`. */
-  dshHome?: string
+  huoliHome?: string
   /** Shared agent config root. Defaults to `$HUOLI_AGENTS_HOME` or `~/.agents`. */
   agentsHome?: string
   /** Additional skill roots scanned after project roots and before user roots. */
@@ -75,7 +75,7 @@ export interface Config {
 export const Config: Schema<Config> = z.object({
   providerName: z.string().min(1).default('filesystem'),
   includeDefaultRoots: z.boolean().default(true),
-  dshHome: z.string(),
+  huoliHome: z.string(),
   agentsHome: z.string(),
   customSkillDirs: z.array(z.string()).default([]),
   watch: z.boolean().default(true),
@@ -149,7 +149,7 @@ export function apply(ctx: Context, config: Config = {}): void {
 export class FileSystemSkillProvider implements SkillProvider {
   readonly name: string
   private readonly includeDefaultRoots: boolean
-  private readonly dshHome: string
+  private readonly huoliHome: string
   private readonly agentsHome: string
   private readonly customSkillDirs: string[]
   private readonly watchManager: SkillWatchManager
@@ -163,7 +163,7 @@ export class FileSystemSkillProvider implements SkillProvider {
   ) {
     this.name = config.providerName ?? 'filesystem'
     this.includeDefaultRoots = config.includeDefaultRoots ?? true
-    this.dshHome = resolveDshHome(config.dshHome)
+    this.huoliHome = resolveHuoliHome(config.huoliHome)
     this.agentsHome = resolveAgentsHome(config.agentsHome)
     this.customSkillDirs = (config.customSkillDirs ?? []).map(root => resolve(root))
     this.watchManager = new SkillWatchManager(ctx, control.invalidate, resolveWatchConfig(config))
@@ -260,7 +260,7 @@ export class FileSystemSkillProvider implements SkillProvider {
     roots.push(...this.customSkillDirs.map(path => ({ path, source: 'custom' as const, rank: CUSTOM_RANK })))
     if (this.includeDefaultRoots) {
       roots.push(
-        { path: join(this.dshHome, 'skills'), source: 'user-huoli', rank: USER_HUOLI_RANK, skipSystem: true },
+        { path: join(this.huoliHome, 'skills'), source: 'user-huoli', rank: USER_HUOLI_RANK, skipSystem: true },
         { path: join(this.agentsHome, 'skills'), source: 'user-agents', rank: USER_AGENTS_RANK },
       )
     }

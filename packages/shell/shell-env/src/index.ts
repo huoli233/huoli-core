@@ -1,6 +1,6 @@
 /**
  * Tool-independent shell environment plugin: owns the `ctx.shellEnv` registry of
- * trusted, per-execution `DSH_*` variables consumed by the model-facing shell
+ * trusted, per-execution `HUOLI_*` variables consumed by the model-facing shell
  * tools (`huoli-tool-bash`, `huoli-tool-pwsh`). Built-in shell facts are owned by
  * the registry itself while plugins can register additional, enumerable facts
  * with effect-scoped disposal.
@@ -12,7 +12,7 @@ import { Service, type Context } from '@huoli/cordis'
 import z from '@huoli/schemastery'
 import { HUOLI_ENV_PREFIX } from '@huoli/huoli-shell'
 import type { HuoliEnvironment, HuoliEnvironmentKey } from '@huoli/huoli-shell'
-import { HUOLI_HOME_ENV, resolveDshHome } from '@huoli/huoli-home-paths'
+import { HUOLI_HOME_ENV, resolveHuoliHome } from '@huoli/huoli-home-paths'
 import type { ToolExecution } from '@huoli/huoli-tools'
 // Declares `Context.profileContext`, the launcher-provided profile the built-ins read.
 import type {} from '@huoli/huoli-app-boot'
@@ -29,15 +29,15 @@ export const inject: string[] = []
 /** Plugin config (all optional — the built-in facts resolve without defaults). */
 export interface Config {
   /** Huoli Core home directory exposed as `HUOLI_HOME`; defaults to `$HUOLI_HOME` or `~/.huoli`. */
-  dshHome?: string
+  huoliHome?: string
 }
 
 /** Runtime configuration schema for the shell-env plugin. */
 export const Config: z<Config> = z.object({
-  dshHome: z.string(),
+  huoliHome: z.string(),
 })
 
-/** Model-visible metadata for one managed `DSH_*` environment variable. */
+/** Model-visible metadata for one managed `HUOLI_*` environment variable. */
 export interface BashEnvVariable {
   /** Concise description of the environment fact represented by the variable. */
   description: string
@@ -51,7 +51,7 @@ export interface BashEnvVariable {
 export interface BashEnvContributor {
   /** Stable contributor name used in diagnostics and duplicate detection. */
   name: string
-  /** Complete set of `DSH_*` keys this contributor may return. */
+  /** Complete set of `HUOLI_*` keys this contributor may return. */
   variables: Readonly<Record<HuoliEnvironmentKey, BashEnvVariable>>
   /**
    * Resolve this contributor's available values for one tool execution.
@@ -65,7 +65,7 @@ export interface BashEnvContributor {
 export interface BashEnvVariableInfo extends BashEnvVariable {
   /** Contributor that owns the variable. */
   contributor: string
-  /** Declared `DSH_*` environment variable name. */
+  /** Declared `HUOLI_*` environment variable name. */
   key: HuoliEnvironmentKey
 }
 
@@ -83,8 +83,8 @@ const RESERVED_BASH_ENV_KEYS = new Set<HuoliEnvironmentKey>([
 const BASH_ENV_KEY_SUFFIX = /^[A-Z][A-Z0-9_]*$/
 
 /**
- * Registry (`ctx.shellEnv`) for trusted, per-execution `DSH_*` variables.
- * The namespace is rebuilt for every model shell call: ambient `DSH_*` values
+ * Registry (`ctx.shellEnv`) for trusted, per-execution `HUOLI_*` variables.
+ * The namespace is rebuilt for every model shell call: ambient `HUOLI_*` values
  * are discarded by the executor, then the registry's current snapshot is
  * injected. Built-in shell facts remain owned by the registry itself while
  * plugins can register additional, enumerable facts with effect-scoped
@@ -93,7 +93,7 @@ const BASH_ENV_KEY_SUFFIX = /^[A-Z][A-Z0-9_]*$/
 export class ShellEnvRegistry extends Service {
   private readonly contributors = new Map<string, BashEnvContributor>()
   private readonly keyOwners = new Map<HuoliEnvironmentKey, string>()
-  private readonly dshHome: string
+  private readonly huoliHome: string
 
   /**
    * Create and install the `ctx.shellEnv` service.
@@ -102,7 +102,7 @@ export class ShellEnvRegistry extends Service {
    */
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'shellEnv')
-    this.dshHome = resolveDshHome(config.dshHome)
+    this.huoliHome = resolveHuoliHome(config.huoliHome)
   }
 
   /**
@@ -149,13 +149,13 @@ export class ShellEnvRegistry extends Service {
   }
 
   /**
-   * Build the trusted `DSH_*` snapshot for one shell tool execution.
+   * Build the trusted `HUOLI_*` snapshot for one shell tool execution.
    * @param execution - the current tool execution.
    * @returns an immutable environment overlay containing built-ins and current contributions.
    */
   collect(execution: ToolExecution): HuoliEnvironment {
     const values: Record<HuoliEnvironmentKey, string> = {
-      [HUOLI_HOME_ENV]: this.dshHome,
+      [HUOLI_HOME_ENV]: this.huoliHome,
       [HUOLI_SHELL_KEY]: '1',
     }
     if (execution.agent !== undefined) {

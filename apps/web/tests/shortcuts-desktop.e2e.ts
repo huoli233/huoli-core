@@ -52,7 +52,7 @@ it.each([
           const fixture = { recording: false, closedWindows: 0,
             deliver(input: DesktopShortcutInput) { for (const listener of listeners) listener(input) },
           }
-          Object.assign(window, { shortcutFixture: fixture, dshDesktop: { protocolVersion: 1,
+          Object.assign(window, { shortcutFixture: fixture, huoliDesktop: { protocolVersion: 1,
             shortcuts: {
               get: window.desktopShortcutsGet, edit: window.desktopShortcutsEdit,
               recording: async (active: boolean) => { fixture.recording = active }, subscribe: () => () => {},

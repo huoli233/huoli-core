@@ -78,23 +78,23 @@ describe('SubprocessRuntime seam', () => {
     await expect(ctx.plugin(SecondService)).rejects.toThrow(/service "subprocess" has been registered/)
   })
 
-  it('scrubbedParentEnv drops credential-shaped and DSH_ names (case-insensitively) but keeps PATH', () => {
+  it('scrubbedParentEnv drops credential-shaped and HUOLI_ names (case-insensitively) but keeps PATH', () => {
     process.env.HUOLI_SCRUB_PROBE = 'stale'
-    process.env.dsh_scrub_probe_lower = 'stale'
+    process.env.huoli_scrub_probe_lower = 'stale'
     process.env.SCRUB_PROBE_TOKEN = 'secret'
     process.env.SCRUB_PROBE_PASSWORD = 'secret'
     process.env.SCRUB_PROBE_PLAIN = 'visible'
     try {
       const env = scrubbedParentEnv()
       expect(env.HUOLI_SCRUB_PROBE).toBeUndefined()
-      expect(env.dsh_scrub_probe_lower).toBeUndefined()
+      expect(env.huoli_scrub_probe_lower).toBeUndefined()
       expect(env.SCRUB_PROBE_TOKEN).toBeUndefined()
       expect(env.SCRUB_PROBE_PASSWORD).toBeUndefined()
       expect(env.SCRUB_PROBE_PLAIN).toBe('visible')
       expect(env.PATH).toBeDefined()
     } finally {
       delete process.env.HUOLI_SCRUB_PROBE
-      delete process.env.dsh_scrub_probe_lower
+      delete process.env.huoli_scrub_probe_lower
       delete process.env.SCRUB_PROBE_TOKEN
       delete process.env.SCRUB_PROBE_PASSWORD
       delete process.env.SCRUB_PROBE_PLAIN

@@ -17,7 +17,7 @@ interface CarrierGlobals {
 }
 
 interface MarkedFailure {
-  readonly dshRemoteStreamFailure?: { readonly kind: 'carrier' | 'remote'; readonly code?: string; readonly details?: object }
+  readonly huoliRemoteStreamFailure?: { readonly kind: 'carrier' | 'remote'; readonly code?: string; readonly details?: object }
 }
 
 /** One request the carrier posted. */
@@ -95,8 +95,8 @@ async function readStream(answers: readonly { readonly status: number; readonly 
   }
 }
 
-function markerOf(error: unknown): MarkedFailure['dshRemoteStreamFailure'] {
-  return (error as MarkedFailure | undefined)?.dshRemoteStreamFailure
+function markerOf(error: unknown): MarkedFailure['huoliRemoteStreamFailure'] {
+  return (error as MarkedFailure | undefined)?.huoliRemoteStreamFailure
 }
 
 const OPENED = { status: 200, body: { opened: true } }

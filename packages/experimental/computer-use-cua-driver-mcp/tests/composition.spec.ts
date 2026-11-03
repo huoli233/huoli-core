@@ -87,7 +87,7 @@ async function load(mode?: string): Promise<{ ctx: Context; root: string; model:
         reconnect: { initialDelayMs: 20, maxDelayMs: 40, maxAttempts: 2 },
       }
       : name === '@huoli/huoli-attachment-local'
-        ? { dshHome: root }
+        ? { huoliHome: root }
         : name === '@huoli/huoli-agent-loop' ? { agents: [] } : {},
   }))))
   const ctx = new Context()

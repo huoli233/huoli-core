@@ -240,7 +240,7 @@ describe('child env layering (through the subprocess seam)', () => {
     }
   })
 
-  it('forwards explicit DSH_* config entries to the child', async () => {
+  it('forwards explicit HUOLI_* config entries to the child', async () => {
     // A deployment sets child-harness facts like HUOLI_PERMISSION_MODE in
     // config.env; the seam's scrub drops only the AMBIENT namesakes, so the
     // explicit entry merges after it and the child must see the value.

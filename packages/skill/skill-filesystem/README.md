@@ -50,7 +50,7 @@ Default roots are scanned in this provider's rank order:
 | 100 | `project-huoli` | `<projectRoot>/.huoli/skills` |
 | 200 | `project-agents` | `<projectRoot>/.agents/skills` |
 | 300 | `custom` | `Config.customSkillDirs` |
-| 400 | `user-huoli` | `<dshHome>/skills` |
+| 400 | `user-huoli` | `<huoliHome>/skills` |
 | 500 | `user-agents` | `<agentsHome>/skills` |
 
 The project root is the nearest ancestor containing `.git`; without one, the current cwd is used. The user HUOLI root skips its `.system` child. `includeDefaultRoots: false` omits the project and user rows plus the `$HUOLI_BUNDLED_SKILL_DIR` default so an isolated provider sees only its own configured roots; `bundledSkillDir` adds a bundled root at rank 600.
@@ -68,7 +68,7 @@ Load the plugin alongside the skill registry; it requires `ctx.skills`.
 |---|---|---|
 | `providerName` | `filesystem` | Unique provider name registered on `ctx.skills` |
 | `includeDefaultRoots` | `true` | Include project and user roots around `customSkillDirs` |
-| `dshHome` | `$HUOLI_HOME` or `~/.huoli` | Harness config root; its `skills` subdirectory is scanned |
+| `huoliHome` | `$HUOLI_HOME` or `~/.huoli` | Harness config root; its `skills` subdirectory is scanned |
 | `agentsHome` | `$HUOLI_AGENTS_HOME` or `~/.agents` | Shared agent config root scanned for compatible skills |
 | `customSkillDirs` | `[]` | Additional local skill roots, after project roots and before user roots |
 | `watch` | `true` | Watch local roots and invalidate the provider when the catalog may have changed |
@@ -124,7 +124,7 @@ Read these pages when the package-level contract is not enough. They move from t
 - [Skill subsystem reference](../../../docs/subsystems/skills.md) — the registry contract and the local discovery priority table.
 - [skill package](../skill/README.md) — the registry this provider registers on.
 - [tool-skill package](../tool-skill/README.md) — how discovered skills reach the session catalog and the model.
-- [home-paths package](../../util/home-paths/README.md) — how `dshHome` and `agentsHome` resolve.
+- [home-paths package](../../util/home-paths/README.md) — how `huoliHome` and `agentsHome` resolve.
 
 -----
 

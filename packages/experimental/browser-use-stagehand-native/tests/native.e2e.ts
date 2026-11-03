@@ -46,7 +46,7 @@ it.skipIf(process.env.HUOLI_STAGEHAND_E2E !== '1')('launches and attaches to ins
     const url = `http://127.0.0.1:${address.port}/`
     await mountAgentLoopTestDependencies(ctx)
     await ctx.plugin(BrowserUseRegistry)
-    await ctx.plugin(LocalAttachmentStore, { dshHome: root })
+    await ctx.plugin(LocalAttachmentStore, { huoliHome: root })
     ctx.llm.registerAdapter(['visual-fixture'], new ImageCapabilities())
     const harness = await mountAgentLoopTestHarness(ctx)
     const agent = await harness.create(SessionId('stagehand-live'), { provider: 'visual-fixture', model: 'vision' })

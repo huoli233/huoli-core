@@ -53,13 +53,13 @@ describe('assembled shortcut command owners', () => {
 
   it('toggles foreground dialogs, permits shortcuts above settings, and blocks settings behind shortcuts', async ({ start }) => {
     const previous = document.documentElement.dataset.platform
-    const previousBridge = Object.getOwnPropertyDescriptor(window, 'dshDesktop')
+    const previousBridge = Object.getOwnPropertyDescriptor(window, 'huoliDesktop')
     const listeners = new Set<(input: DesktopShortcutInput) => void>()
     const keyboard: DesktopKeyboardApi = {
       subscribe: (listener) => { listeners.add(listener); return () => { listeners.delete(listener) } },
       closeWindow: async () => {},
     }
-    Object.defineProperty(window, 'dshDesktop', { configurable: true, value: { keyboard } })
+    Object.defineProperty(window, 'huoliDesktop', { configurable: true, value: { keyboard } })
     document.documentElement.dataset.platform = 'darwin'
     const modal = document.createElement('div')
     modal.setAttribute('role', 'dialog')
@@ -67,8 +67,8 @@ describe('assembled shortcut command owners', () => {
     onTestFinished(() => {
       cleanup()
       modal.remove()
-      if (previousBridge === undefined) Reflect.deleteProperty(window, 'dshDesktop')
-      else Object.defineProperty(window, 'dshDesktop', previousBridge)
+      if (previousBridge === undefined) Reflect.deleteProperty(window, 'huoliDesktop')
+      else Object.defineProperty(window, 'huoliDesktop', previousBridge)
       if (previous === undefined) delete document.documentElement.dataset.platform
       else document.documentElement.dataset.platform = previous
     })

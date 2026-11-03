@@ -50,15 +50,15 @@ const servers: Server[] = []
 // The backend resolves the harness home's anonymous user id at construction;
 // pin HUOLI_HOME to a temp dir so the suite never touches the ambient ~/.huoli.
 let tempHome: string
-let previousDshHome: string | undefined
+let previousHuoliHome: string | undefined
 beforeAll(() => {
   tempHome = mkdtempSync(join(tmpdir(), 'huoli-otel-home-'))
-  previousDshHome = process.env.HUOLI_HOME
+  previousHuoliHome = process.env.HUOLI_HOME
   process.env.HUOLI_HOME = tempHome
 })
 afterAll(() => {
-  if (previousDshHome === undefined) delete process.env.HUOLI_HOME
-  else process.env.HUOLI_HOME = previousDshHome
+  if (previousHuoliHome === undefined) delete process.env.HUOLI_HOME
+  else process.env.HUOLI_HOME = previousHuoliHome
   rmSync(tempHome, { recursive: true, force: true })
 })
 

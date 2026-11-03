@@ -42,7 +42,7 @@ import { mkdir, readFile, stat } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { Document, isMap, isScalar, parseDocument, type YAMLError } from 'yaml'
 import { withFileLock, writeFileAtomic } from '@huoli/huoli-atomic-write'
-import { canonicalizeWatchPath, resolveDshHome } from '@huoli/huoli-home-paths'
+import { canonicalizeWatchPath, resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { launchEnvironmentOf } from '@huoli/huoli-launch-environment'
 import { CredentialProvider, credentialRef, parseCredentialKey } from '@huoli/huoli-credentials'
 import type {
@@ -65,7 +65,7 @@ export interface Config {
   /** Credentials document path; defaults to `.credentials.yaml` under the harness home. */
   path?: string
   /** Harness home used when `path` is omitted; defaults to `$HUOLI_HOME` or `~/.huoli`. */
-  dshHome?: string
+  huoliHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
   /** Watcher write-settle window in milliseconds; defaults to 100. */
@@ -87,7 +87,7 @@ interface ResolvedSpec {
  */
 export function resolveSpec(config: Config): ResolvedSpec {
   return {
-    filename: resolve(config.path ?? join(resolveDshHome(config.dshHome), CREDENTIALS_FILENAME)),
+    filename: resolve(config.path ?? join(resolveHuoliHome(config.huoliHome), CREDENTIALS_FILENAME)),
     watch: config.watch ?? true,
     debounceMs: config.debounceMs ?? 100,
   }
@@ -517,7 +517,7 @@ function sameJsonValue(left: unknown, right: unknown): boolean {
 export class LocalCredentialProvider extends CredentialProvider {
   static Config: z<Config> = z.object({
     path: z.string(),
-    dshHome: z.string(),
+    huoliHome: z.string(),
     watch: z.boolean().default(true),
     debounceMs: z.number().min(0).default(100),
   })

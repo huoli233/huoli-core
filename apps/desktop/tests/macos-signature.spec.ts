@@ -62,14 +62,14 @@ describe('desktop macOS release signature', () => {
     expect(config.extraResources).toHaveLength(2)
     expect(config.extraResources[0]?.to).toBe('runtime')
     expect(portablePath(config.extraResources[0]?.from ?? '')).toContain('/.desktop-build/targets/mac-arm64/runtime')
-    const [dshFiles, dshNodeModules] = config.files.slice(-2)
-    if (!dshFiles || !dshNodeModules || typeof dshFiles === 'string' || typeof dshNodeModules === 'string') {
+    const [huoliFiles, huoliNodeModules] = config.files.slice(-2)
+    if (!huoliFiles || !huoliNodeModules || typeof huoliFiles === 'string' || typeof huoliNodeModules === 'string') {
       throw new Error('desktop HUOLI resources must use electron-builder file mappings')
     }
-    expect(portablePath(dshFiles.from)).toContain('/.desktop-build/targets/mac-arm64/huoli')
-    expect(dshFiles.to).toBe('huoli')
-    expect(portablePath(dshNodeModules.from)).toContain('/.desktop-build/targets/mac-arm64/huoli/node_modules')
-    expect(dshNodeModules.to).toBe('huoli/node_modules')
+    expect(portablePath(huoliFiles.from)).toContain('/.desktop-build/targets/mac-arm64/huoli')
+    expect(huoliFiles.to).toBe('huoli')
+    expect(portablePath(huoliNodeModules.from)).toContain('/.desktop-build/targets/mac-arm64/huoli/node_modules')
+    expect(huoliNodeModules.to).toBe('huoli/node_modules')
     expect(config.asarUnpack).toEqual(expect.arrayContaining([
       '**/*.{node,dylib,dll,so,exe}',
       '**/@vscode/ripgrep-*/bin/rg',
@@ -166,7 +166,7 @@ describe('desktop macOS release signature', () => {
     expect(config.mac).toMatchObject({ identity: '-', forceCodeSigning: false, notarize: false, target: ['dmg'] })
     expect(config.dmg).toMatchObject({ sign: false, writeUpdateInfo: false })
     expect(config.publish).toBeNull()
-    expect(config.extraMetadata).not.toHaveProperty('dshMandatoryUpdatePolicy')
+    expect(config.extraMetadata).not.toHaveProperty('huoliMandatoryUpdatePolicy')
     await expect(config.afterSign({ electronPlatformName: 'darwin' } as Parameters<typeof config.afterSign>[0])).resolves.toBeUndefined()
     expect(config.artifactBuildCompleted({ file: '/tmp/local-unsigned.dmg' })).toBeUndefined()
   })
@@ -174,7 +174,7 @@ describe('desktop macOS release signature', () => {
   it('omits mandatory-update policy from local macOS builds even when release settings are supplied', async () => {
     const { createElectronBuilderConfig } = await import('../scripts/electron-builder-config.mjs')
     const config = createElectronBuilderConfig({ ...RELEASE_ENVIRONMENT, HUOLI_DESKTOP_UNSIGNED: '1' }, 'darwin', 'arm64')
-    expect(config.extraMetadata).not.toHaveProperty('dshMandatoryUpdatePolicy')
+    expect(config.extraMetadata).not.toHaveProperty('huoliMandatoryUpdatePolicy')
     expect(config.publish).toBeNull()
   })
 

@@ -39,7 +39,7 @@ console.log(JSON.stringify({ paths: app.paths, home: process.env.HUOLI_HOME, jou
 `)
       const results = []
       for (const version of versions) {
-        await writeFile(join(bootstrap, 'package.json'), JSON.stringify({ type: 'module', version, dshDesktopAppId: run.appId }))
+        await writeFile(join(bootstrap, 'package.json'), JSON.stringify({ type: 'module', version, huoliDesktopAppId: run.appId }))
         const { stdout, stderr } = await promisify(execFile)(process.execPath, [join(bootstrap, 'qualification-bootstrap.mjs')], {
           windowsHide: true, env: { SystemRoot: process.env.SystemRoot, PATH: process.env.PATH,
             HUOLI_HOME: 'must-not-be-used', HUOLI_DESKTOP_UPDATE_JOURNAL_DIR: 'must-not-be-used' },
@@ -60,7 +60,7 @@ console.log(JSON.stringify({ paths: app.paths, home: process.env.HUOLI_HOME, jou
       const env = { HUOLI_HOME: 'existing' }
       const app = { getPath: () => directory, setPath: (): never => { throw new Error('unexpected path change') } }
       expect(() => configureInstalledUpdateIdentity(app, { id: 'a'.repeat(24), versions },
-        { version: versions[0], dshDesktopAppId: 'com.deepseek.huoli' }, env)).toThrow('identity')
+        { version: versions[0], huoliDesktopAppId: 'com.deepseek.huoli' }, env)).toThrow('identity')
       expect(await readdir(directory)).toEqual([])
       expect(env).toEqual({ HUOLI_HOME: 'existing' })
     })

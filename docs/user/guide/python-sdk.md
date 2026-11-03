@@ -101,13 +101,13 @@ from pathlib import Path
 from deepseek_harness import DeepSeekHarness
 
 workspace = Path("/absolute/path/to/disposable-workspace").resolve()
-dsh_home = Path("/absolute/path/to/example-huoli-home").resolve()
+huoli_home = Path("/absolute/path/to/example-huoli-home").resolve()
 with DeepSeekHarness(
     provider="deepseek-official",
     model="deepseek-v4-flash",
     max_tokens=49_152,
     cwd=str(workspace),
-    dsh_home=str(dsh_home),
+    huoli_home=str(huoli_home),
     profile="sdk-minimal",
 ) as harness:
     result = harness.run(
@@ -172,7 +172,7 @@ Pass `patches=("/absolute/path/to/editor.patch.yml",)` when constructing `DeepSe
 | Shell timeout | 300 seconds |
 | Optional runtime context | Absent |
 | Context compaction | Automatic; summarizes older history through an additional model request |
-| Session persistence | Uncompressed JSONL under `<dsh_home>/sessions` |
+| Session persistence | Uncompressed JSONL under `<huoli_home>/sessions` |
 
 The profile's sole bundle inserts the complete tree over an empty root and does not include `huoli-base`; later base-profile tools therefore cannot appear implicitly. It contains the SDK protocol, one environment-configured DeepSeek adapter, local execution, and persistence, while text file tools, settings, managed credentials, OTel telemetry, Web tools, subagents, and local instruction discovery are absent. The [DeepSeek session-log contributor](../../../packages/session/session-log-deepseek/README.md) uploads unaccepted log events with DeepSeek requests by default, at most `maxBytes` (8 MiB) per request; set `session-log-deepseek.enabled: false` in a profile patch to disable it. It pins `danger-full-access`, so the platform-selected persistent shell can modify any path visible to the runtime; use a disposable checkout or container.
 
