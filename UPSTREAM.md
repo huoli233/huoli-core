@@ -7,7 +7,6 @@
 
 | 项 | 值 |
 |---|---|
-| 上游提交 | `ce7073d5` |
 | 上游版本 | `0.2.2-alpha.2` |
 | 上游镜像 | `E:\HuoLiFish\.tmp\upstream-git-backup\git`（浅克隆，可 `git archive` 导出完整树） |
 | 变换工具 | `tools/identity/`（参数表 `identity.config.mjs`，执行器 `apply-identity.mjs`） |

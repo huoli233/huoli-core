@@ -112,6 +112,6 @@ for (const item of renamePlan) {
   stats.renamed += 1;
 }
 
-console.log(`${APPLY ? '已执行' : '预演'} · 基线 ${UPSTREAM_BASE.commit} (${UPSTREAM_BASE.version})`);
+console.log(`${APPLY ? '已执行' : '预演'} · 基线 ${UPSTREAM_BASE.version}`);
 console.log(`文件 ${stats.files} · 需改 ${stats.changed} · 替换 ${stats.replacements} 处 · 重命名 ${stats.renamed} 项`);
 if (!APPLY) console.log('加 --apply 才写入');

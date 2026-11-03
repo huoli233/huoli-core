@@ -3,7 +3,6 @@
 // 本目录被执行器整体排除，否则规则会被自己的规则改写
 
 export const UPSTREAM_BASE = {
-  commit: 'ce7073d5',
   version: '0.2.2-alpha.2',
   remote: 'deepseek-ai/deepseek-harness'
 };
