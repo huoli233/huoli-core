@@ -19,7 +19,7 @@ The version rules in the [Desktop release rules](../../../../apps/desktop/README
 
 This supersedes two requirements of that note. Release-family manifests are no longer rewritten, and the shell version no longer equals the bundled runtime version: the runtime is the huoli package at the product version, and `verifyDesktopRuntime` receives the version whoever prepared that tree wrote, which installed-update qualification rewrites for its own materials. The application already reported the two separately to the mandatory update policy.
 
-Every artifact records `huoliBuildCommit` and `huoliBuildDirty` in its manifest. A production upload tags the packaged commit as `desktop-v<version>` after the artifacts are public, and reports the command to run by hand rather than failing an upload that already completed; a build from a modified checkout is not tagged. Test and local builds are deliberately left untagged, because a tag per test build would bury the releases.
+Every artifact records `dshBuildCommit` and `dshBuildDirty` in its manifest. A production upload tags the packaged commit as `desktop-v<version>` after the artifacts are public, and reports the command to run by hand rather than failing an upload that already completed; a build from a modified checkout is not tagged. Test and local builds are deliberately left untagged, because a tag per test build would bury the releases.
 
 Upload reads the published version from the completion record packaging wrote, not from a variable, so [release fields still come only from the target file](../../../../apps/desktop/README.md#release-versions).
 

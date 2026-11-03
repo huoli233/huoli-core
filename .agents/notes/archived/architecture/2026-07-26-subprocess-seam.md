@@ -7,7 +7,7 @@ English | [中文](2026-07-26-subprocess-seam.zh.md)
 
 ## Problem
 
-`huoli-bash-local` bundled two capabilities that change for different reasons: *running a bash command* (command defaulting, timeout classification, model-friendly terminal environment, the stdout/stderr merge the bash tool renders) and *running and managing a child process* (detached process groups, bounded tail-keep output with spill files, the credential scrub and `HUOLI_*` merge order, SIGTERM→grace→SIGKILL escalation, kill-and-join disposal). The process half — `run.ts`, roughly half the package — had no seam of its own: a future non-shell runner (a direct-argv executor, a worker supervisor) would have to re-implement or reach into bash internals, and the shared `HUOLI_*`/`CollectedOutput` vocabulary lived in a package whose name promises shell semantics. The bundling also tied background-process lifetime to the executor's fiber: reloading the bash executor killed every live background process, unlike the sibling [job registry](2026-07-26-job-registry-seam.md), whose registrations deliberately outlive producer fibers.
+`huoli-bash-local` bundled two capabilities that change for different reasons: *running a bash command* (command defaulting, timeout classification, model-friendly terminal environment, the stdout/stderr merge the bash tool renders) and *running and managing a child process* (detached process groups, bounded tail-keep output with spill files, the credential scrub and `DSH_*` merge order, SIGTERM→grace→SIGKILL escalation, kill-and-join disposal). The process half — `run.ts`, roughly half the package — had no seam of its own: a future non-shell runner (a direct-argv executor, a worker supervisor) would have to re-implement or reach into bash internals, and the shared `DSH_*`/`CollectedOutput` vocabulary lived in a package whose name promises shell semantics. The bundling also tied background-process lifetime to the executor's fiber: reloading the bash executor killed every live background process, unlike the sibling [job registry](2026-07-26-job-registry-seam.md), whose registrations deliberately outlive producer fibers.
 
 ## Decision
 
@@ -36,7 +36,7 @@ Observed stream and lifecycle needs then moved the eligible process consumers on
 
 **Put `run_in_background`/task semantics into the subprocess capability seam instead.** Rejected: that boundary already exists — `ctx.jobs` owns ids, ownership, and notices, and the bash tool adapts a `ShellProcess` into task hooks. The subprocess seam sits *below* the bash executor, not beside the job registry.
 
-**Move `ENV_OVERRIDES` (TERM=dumb, PAGER=cat …) into the subprocess service.** Rejected: a generic subprocess service must not impose terminal presentation policy on non-terminal consumers; the ambient scrub (credential-shaped and `HUOLI_*` names) is a security/identity invariant and stays, but terminal friendliness is the bash tool's choice, expressed through the spec's explicit env where a caller's own entry still wins.
+**Move `ENV_OVERRIDES` (TERM=dumb, PAGER=cat …) into the subprocess service.** Rejected: a generic subprocess service must not impose terminal presentation policy on non-terminal consumers; the ambient scrub (credential-shaped and `DSH_*` names) is a security/identity invariant and stays, but terminal friendliness is the bash tool's choice, expressed through the spec's explicit env where a caller's own entry still wins.
 
 ## Consequences
 

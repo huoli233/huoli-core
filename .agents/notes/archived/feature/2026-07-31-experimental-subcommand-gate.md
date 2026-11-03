@@ -13,7 +13,7 @@ The `meta` and `upgrade` entry points carried their experimental status in their
 
 `huoli experimental-meta` is `huoli meta` and `huoli experimental-upgrade` is `huoli upgrade`. Each runs only when the invocation passes its `--experimental` flag or the environment carries `HUOLI_EXPERIMENTAL=1`; otherwise the command fails loud on stderr with exit 1, naming both opt-ins. Per the pre-release stance, the old names are gone with no aliases, and `args.spec.ts` pins their rejection.
 
-The gate has two halves with one owner each. The per-invocation half is a Commander `--experimental` option on each experimental subcommand, checked inside its action after the leaked-parent-option rejection. The environment half is a boolean `parseHuoliArgs` parameter: `bin.ts` reads `process.env.HUOLI_EXPERIMENTAL === '1'` at the process boundary (after `loadEnv`, so a project `.env` can set it) and passes the result down, so the parser's environment dependency is explicit in its signature and the tests need no env mutation. `1` is the only enabling value — the variable is an explicit opt-in, not a truthiness check.
+The gate has two halves with one owner each. The per-invocation half is a Commander `--experimental` option on each experimental subcommand, checked inside its action after the leaked-parent-option rejection. The environment half is a boolean `parseDshArgs` parameter: `bin.ts` reads `process.env.HUOLI_EXPERIMENTAL === '1'` at the process boundary (after `loadEnv`, so a project `.env` can set it) and passes the result down, so the parser's environment dependency is explicit in its signature and the tests need no env mutation. `1` is the only enabling value — the variable is an explicit opt-in, not a truthiness check.
 
 Stabilizing a command later means deleting its `--experimental` option and `requireExperimental` call; the name does not move.
 
@@ -27,7 +27,7 @@ Stabilizing a command later means deleting its `--experimental` option and `requ
 
 **A parent-level `--experimental` flag (`huoli --experimental meta`).** Rejected: the default surface is deliberately option-only with `enablePositionalOptions`, so parent options that leak across the subcommand boundary are treated as mistyped invocations. A parent flag consumed only by two subcommands would be exactly the leaked-option shape the adapter rejects everywhere else.
 
-**Read `process.env` inside `parseHuoliArgs`.** Rejected: the repo validates at the process boundary and keeps typed seams pure; tests would have to mutate and restore `process.env` around each case.
+**Read `process.env` inside `parseDshArgs`.** Rejected: the repo validates at the process boundary and keeps typed seams pure; tests would have to mutate and restore `process.env` around each case.
 
 **Accept any non-empty `HUOLI_EXPERIMENTAL`.** Rejected: the telemetry switch prefers off-by-mistake for a privacy control, but an experimental gate is an acknowledgement — `HUOLI_EXPERIMENTAL=0` must not enable the commands it names.
 

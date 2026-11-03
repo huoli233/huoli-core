@@ -16,7 +16,7 @@ code-runtime seam 承诺：在一个后端上有效的绑定命名空间列表�
 Service Definition 包（`@huoli/huoli-code-runtime`）以四个具名常量导出可移植标识符排除约定，每个 Service Provider 导入它们而非重新声明：
 
 - `PORTABLE_RESERVED_WORDS`——ECMAScript 与 Python 保留字的联集。任何命名空间 global 或 error-class 名称匹配其中之一，都在所有后端上被拒绝，因此 `lambda` 即便是合法的 JS 参数名也被拒绝。新增一门语言即扩宽此联集，这是对现有绑定名称的一次有意的破坏性复审。
-- `RESERVED_BINDING_GLOBALS`——某个后端在程序命名空间中拥有的 global：`console`（worker 的日志捕获）、`__huoli_main__`/`__builtins__`/`__name__`（Python bootstrap 的包装器与预置模块 global），以及 `__debug__`（不是 seed 的槽位，而是 CPython 编译期常量，赋值会被拒，故以该名注入的 global 不可达——同一种可移植性分裂，只是机制不同）。在所有后端上被拒绝，使命名空间列表无法选到一个在某后端能用、在另一后端冲突的名称。
+- `RESERVED_BINDING_GLOBALS`——某个后端在程序命名空间中拥有的 global：`console`（worker 的日志捕获）、`__dsh_main__`/`__builtins__`/`__name__`（Python bootstrap 的包装器与预置模块 global），以及 `__debug__`（不是 seed 的槽位，而是 CPython 编译期常量，赋值会被拒，故以该名注入的 global 不可达——同一种可移植性分裂，只是机制不同）。在所有后端上被拒绝，使命名空间列表无法选到一个在某后端能用、在另一后端冲突的名称。
 - `RESERVED_ERROR_MEMBERS`——每个后端都拒绝的 error-member 名称：JS `Error` 槽位（`name`、`message`、`stack`）与 Python 异常协议成员（`args`、`with_traceback`、`add_note`）。
 - `DUNDER_MEMBER`——dunder 形式正则（`__x__`，非空中缀），作为 error member 被整体拒绝，因为其中若干是受约束的 CPython 描述符，其确切集合是解释器版本细节。
 
@@ -28,7 +28,7 @@ Service Definition 同时把可移植标识符子集收窄为 `[A-Za-z_][A-Za-z0
 
 本决策交付 Service Definition 扩展与 worker-thread 后端对它的采用。`py-types` 渲染器与 PTC mode 的语言分发归[语言分发 note](../feature/2026-07-31-ptc-language-dispatch.zh.md)所有。私有的实验性 CPython 子进程后端（`huoli-experimental-code-runtime-python`）采用同一 portable-identifier 契约。
 
-`RESERVED_BINDING_GLOBALS` 先于后端本身编码了 Python bootstrap 的具体设计：它恰好 seed `__builtins__`/`__name__`，并把程序包装在 `__huoli_main__` 之下。任何 seed 额外模块 global（`__doc__`、`__loader__`、`__spec__`、`__file__`、`__package__` 等）的 Python 后端必须在同一改动中扩宽此集合，正如新增一门语言即扩宽 `PORTABLE_RESERVED_WORDS`——bootstrap 会 seed 却不在集合中的名称，正是本约定要防止的可移植性分裂。
+`RESERVED_BINDING_GLOBALS` 先于后端本身编码了 Python bootstrap 的具体设计：它恰好 seed `__builtins__`/`__name__`，并把程序包装在 `__dsh_main__` 之下。任何 seed 额外模块 global（`__doc__`、`__loader__`、`__spec__`、`__file__`、`__package__` 等）的 Python 后端必须在同一改动中扩宽此集合，正如新增一门语言即扩宽 `PORTABLE_RESERVED_WORDS`——bootstrap 会 seed 却不在集合中的名称，正是本约定要防止的可移植性分裂。
 
 ## Alternatives considered
 
@@ -42,4 +42,4 @@ Service Definition 同时把可移植标识符子集收窄为 `[A-Za-z_][A-Za-z0
 
 获得：一个地方——Service Definition 包——定义什么是可移植绑定名称，每个后端通过导入执行同一约定。在一个后端上有效的命名空间列表在所有后端上都有效，这是可验证的，而非取决于调用方测试了哪个后端的巧合。
 
-代价：现有使用含 `$` global 的 worker 调用方现在会在标识符校验时失败。在预发布立场下这是对基础设计的一次纠正，而非需要 shim 的兼容性破坏。worker 的 Service Definition misuse 测试新增了 `$tools`、Python 异常成员（`args`）、dunder（`__dict__`）与一个 Python 拥有的 global（`__huoli_main__`）等用例，从 worker 侧证明共享集合被执行。
+代价：现有使用含 `$` global 的 worker 调用方现在会在标识符校验时失败。在预发布立场下这是对基础设计的一次纠正，而非需要 shim 的兼容性破坏。worker 的 Service Definition misuse 测试新增了 `$tools`、Python 异常成员（`args`）、dunder（`__dict__`）与一个 Python 拥有的 global（`__dsh_main__`）等用例，从 worker 侧证明共享集合被执行。

@@ -13,7 +13,7 @@ Archived: 2026-08-03
 
 `huoli experimental-meta` 改为 `huoli meta`，`huoli experimental-upgrade` 改为 `huoli upgrade`。二者只有在调用时传入各自的 `--experimental` 标志、或环境中带有 `HUOLI_EXPERIMENTAL=1` 时才会运行；否则命令在 stderr 上明确报错并以退出码 1 结束，同时指明两种选择加入方式。依据发布前立场，旧名称已移除且没有别名，`args.spec.ts` 钉住了对它们的拒绝。
 
-该门槛分为两半，各有其归属。按调用的一半是每个实验性子命令上的 Commander `--experimental` 选项，在其 action 内、泄漏父级选项的拒绝之后检查。环境的一半是 `parseHuoliArgs` 的一个布尔参数：`bin.ts` 在进程边界读取 `process.env.HUOLI_EXPERIMENTAL === '1'`（在 `loadEnv` 之后，因此项目 `.env` 也可以设置它）并向下传递结果，因此解析器对环境的依赖显式体现在签名中，测试也无需改动环境变量。`1` 是唯一的启用值——该变量是显式的选择加入，而不是真值判断。
+该门槛分为两半，各有其归属。按调用的一半是每个实验性子命令上的 Commander `--experimental` 选项，在其 action 内、泄漏父级选项的拒绝之后检查。环境的一半是 `parseDshArgs` 的一个布尔参数：`bin.ts` 在进程边界读取 `process.env.HUOLI_EXPERIMENTAL === '1'`（在 `loadEnv` 之后，因此项目 `.env` 也可以设置它）并向下传递结果，因此解析器对环境的依赖显式体现在签名中，测试也无需改动环境变量。`1` 是唯一的启用值——该变量是显式的选择加入，而不是真值判断。
 
 之后要稳定某个命令，只需删除它的 `--experimental` 选项和 `requireExperimental` 调用；名字不再变动。
 
@@ -27,7 +27,7 @@ Archived: 2026-08-03
 
 **父级 `--experimental` 标志（`huoli --experimental meta`）。** 拒绝：默认界面刻意保持纯选项形式并启用 `enablePositionalOptions`，跨子命令边界泄漏的父级选项都被视为拼错的调用。一个只被两个子命令消费的父级标志，恰恰就是适配器在其他所有地方都拒绝的泄漏选项形态。
 
-**在 `parseHuoliArgs` 内部读取 `process.env`。** 拒绝：本仓库在进程边界做验证，并保持类型化接缝的纯粹性；否则测试必须在每个用例前后修改并恢复 `process.env`。
+**在 `parseDshArgs` 内部读取 `process.env`。** 拒绝：本仓库在进程边界做验证，并保持类型化接缝的纯粹性；否则测试必须在每个用例前后修改并恢复 `process.env`。
 
 **接受任何非空的 `HUOLI_EXPERIMENTAL`。** 拒绝：遥测开关作为隐私控制倾向于误关而非误开，但实验性门槛是一种确认——`HUOLI_EXPERIMENTAL=0` 绝不能启用它所指名的命令。
 

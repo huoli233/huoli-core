@@ -11,7 +11,7 @@ Archived: 2026-09-30
 
 ## Decision
 
-Harness 从已安装 kit API 的 `optionalDependencies` 中选择一个引擎。声明了 `@deepseek-ai/libreoffice-kit-${platform}-${arch}` 的目标要求该原生包，其余目标要求共享 WASM 包。受支持的原生目标集合由 kit 发布版本决定，不由 Harness 中的操作系统分支决定。已声明的原生包缺失表示安装不完整，不会改选 WASM。provider 不直接依赖 WASM。
+Harness 从已安装 kit API 的 `optionalDependencies` 中选择一个引擎。声明了 `@huoli/libreoffice-kit-${platform}-${arch}` 的目标要求该原生包，其余目标要求共享 WASM 包。受支持的原生目标集合由 kit 发布版本决定，不由 Harness 中的操作系统分支决定。已声明的原生包缺失表示安装不完整，不会改选 WASM。provider 不直接依赖 WASM。
 
 Python sidecar 组装仅复制所选引擎及其依赖闭包。wheel 打包和运行时查找依据同一份 kit 清单选择；迁移目录后的转换冒烟检查所选后端。Desktop 在签名和完整性封装前将 npm 安装结果过滤为该引擎。引擎编译、解析器兼容性、npm 平台元数据、资格验证与发布仍由 kit 仓库负责。
 

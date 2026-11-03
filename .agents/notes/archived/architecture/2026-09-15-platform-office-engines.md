@@ -11,7 +11,7 @@ Installing WASM beside a usable native engine adds a second LibreOffice payload 
 
 ## Decision
 
-Harness selects one engine from the installed kit API’s `optionalDependencies`. A declared `@deepseek-ai/libreoffice-kit-${platform}-${arch}` requires that native package; other targets require the shared WASM package. The supported native target set belongs to the kit release, not an operating-system branch in Harness. A missing declared native package is an incomplete installation and never selects WASM. The provider has no direct WASM dependency.
+Harness selects one engine from the installed kit API’s `optionalDependencies`. A declared `@huoli/libreoffice-kit-${platform}-${arch}` requires that native package; other targets require the shared WASM package. The supported native target set belongs to the kit release, not an operating-system branch in Harness. A missing declared native package is an incomplete installation and never selects WASM. The provider has no direct WASM dependency.
 
 Python sidecar assembly copies only the selected engine and its dependency closure. Wheel packaging and runtime lookup select from the same kit manifest; the relocated conversion smoke checks the selected backend. Desktop filters its npm installation to that engine before signing and integrity sealing. Engine compilation, resolver compatibility, npm platform metadata, qualification, and publication remain in the kit repository.
 

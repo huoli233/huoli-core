@@ -7,7 +7,7 @@ Archived: 2026-09-04
 
 ## 问题
 
-`huoli-bash-local` 原先把两项因不同原因而变化的能力捆绑在一起：*运行一条 bash 命令*（命令默认值补全、超时分类、对模型友好的终端环境、bash 工具所渲染的 stdout/stderr 合并）与*运行并管理一个子进程*（detached 进程组、附带 spill 文件的有界尾部保留输出、凭据清除与 `HUOLI_*` 合并次序、SIGTERM→宽限期→SIGKILL 升级、先终止再等待退出的 dispose（资源释放））。进程这一半（`run.ts`）约占整个包的一半，却没有属于自己的 seam：未来的非 shell 运行器（直接执行 argv 的执行器、worker supervisor）将不得不重新实现这套机制，或者探入 bash 内部；而共享的 `HUOLI_*`/`CollectedOutput` 词汇则存放在一个名字承诺 shell 语义的包里。这种捆绑还把后台进程的存续期系在执行器的 fiber 上：重载 bash 执行器会杀死每一个存活的后台进程。这一点不同于兄弟的[任务注册表](2026-07-26-job-registry-seam.zh.md)：后者的注册存续期刻意长于生产方 fiber。
+`huoli-bash-local` 原先把两项因不同原因而变化的能力捆绑在一起：*运行一条 bash 命令*（命令默认值补全、超时分类、对模型友好的终端环境、bash 工具所渲染的 stdout/stderr 合并）与*运行并管理一个子进程*（detached 进程组、附带 spill 文件的有界尾部保留输出、凭据清除与 `DSH_*` 合并次序、SIGTERM→宽限期→SIGKILL 升级、先终止再等待退出的 dispose（资源释放））。进程这一半（`run.ts`）约占整个包的一半，却没有属于自己的 seam：未来的非 shell 运行器（直接执行 argv 的执行器、worker supervisor）将不得不重新实现这套机制，或者探入 bash 内部；而共享的 `DSH_*`/`CollectedOutput` 词汇则存放在一个名字承诺 shell 语义的包里。这种捆绑还把后台进程的存续期系在执行器的 fiber 上：重载 bash 执行器会杀死每一个存活的后台进程。这一点不同于兄弟的[任务注册表](2026-07-26-job-registry-seam.zh.md)：后者的注册存续期刻意长于生产方 fiber。
 
 ## 决策
 
@@ -36,7 +36,7 @@ Archived: 2026-09-04
 
 **改把 `run_in_background`/任务语义放进 subprocess 能力 seam。**否决：那条边界已经存在。`ctx.jobs` 拥有 id、所有权与通知，bash 工具则把 `ShellProcess` 适配成任务钩子。subprocess seam 位于 bash 执行器*之下*，而不是与任务注册表并列。
 
-**把 `ENV_OVERRIDES`（TERM=dumb、PAGER=cat 等）移入服务。**否决：通用进程服务不得把终端呈现策略强加给非终端消费方；对环境中凭据形态名称与 `HUOLI_*` 名称的清除是安全与身份不变式，予以保留，但终端友好性是 bash 工具自己的选择，经 spec 的显式 env 表达，而调用方自己的条目依旧优先。
+**把 `ENV_OVERRIDES`（TERM=dumb、PAGER=cat 等）移入服务。**否决：通用进程服务不得把终端呈现策略强加给非终端消费方；对环境中凭据形态名称与 `DSH_*` 名称的清除是安全与身份不变式，予以保留，但终端友好性是 bash 工具自己的选择，经 spec 的显式 env 表达，而调用方自己的条目依旧优先。
 
 ## 后果
 

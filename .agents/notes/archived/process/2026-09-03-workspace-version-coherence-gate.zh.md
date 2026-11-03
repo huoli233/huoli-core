@@ -13,7 +13,7 @@ huoli 发布序列在全部可发布成员（`packages/` 非实验成员与 `app
 
 ## 决策
 
-`check-workspace-constraints` 现在拥有覆盖整个家族的版本规则。其 `checkHuoliFamilyVersion` 划定边界：任何被扫描的工作区清单，名字为 `@huoli/huoli` 或 `@huoli/huoli-*`，都必须携带工作区根的版本。该测试基于名字而非目录，因此覆盖 `packages/`（可发布与私有/实验成员）、`apps/` 与根清单本身，并让 vendored 框架与 Landlock 序列留在各自的版本线上。原 `packages/` 作用域的比较曾是该规则唯一的静态家园；与它相邻的形态检查（cordis peer/dev 配对、`type`、`main`/`types`/`exports`、发布 `files`）仍限定在 `packages/`。
+`check-workspace-constraints` 现在拥有覆盖整个家族的版本规则。其 `checkDshFamilyVersion` 划定边界：任何被扫描的工作区清单，名字为 `@huoli/huoli` 或 `@huoli/huoli-*`，都必须携带工作区根的版本。该测试基于名字而非目录，因此覆盖 `packages/`（可发布与私有/实验成员）、`apps/` 与根清单本身，并让 vendored 框架与 Landlock 序列留在各自的版本线上。原 `packages/` 作用域的比较曾是该规则唯一的静态家园；与它相邻的形态检查（cordis peer/dev 配对、`type`、`main`/`types`/`exports`、发布 `files`）仍限定在 `packages/`。
 
 边界与 `release:huoli` 所写一致：根、可发布成员、以及 `packages/*/*` 下每个私有 huoli 包。因此分歧会让零构建静态通道失败——`ci-static`、`ci-primary` 与 `hygiene` 中的 `constraints`，它们跑在每次 PR 与 master 推送——而不是只在一个新快照的发布通道中浮现。
 
