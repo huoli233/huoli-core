@@ -13974,6 +13974,19 @@ importers:
         specifier: workspace:*
         version: link:../../core/tools
 
+  packages/qq/qq-channel:
+    dependencies:
+      '@huoli/huoli-qq-pacing':
+        specifier: workspace:*
+        version: link:../qq-pacing
+    devDependencies:
+      '@huoli/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@huoli/huoli-tools':
+        specifier: workspace:*
+        version: link:../../core/tools
+
   packages/qq/qq-continuity:
     devDependencies:
       '@huoli/cordis':
