@@ -1,0 +1,173 @@
+{
+  "name": "@huoli/huoli-api-session-controller",
+  "description": "Session Remote commands, cold reads, and live control transport",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/api/session-controller"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./remote-events": {
+      "types": "./lib/types/remote-events.d.ts",
+      "default": "./lib/types/remote-events.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./typert": {
+      "types": "./lib/typert.host.d.ts",
+      "default": "./lib/typert.host.js"
+    },
+    "./remote": {
+      "types": "./lib/typert.remote-client.d.ts",
+      "default": "./lib/typert.remote-client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "external": [
+        "@huoli/huoli-api-gateway/client"
+      ],
+      "inject": [
+        "@huoli/huoli-api-gateway",
+        "@huoli/huoli-client-file-upload"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts",
+    "lib/typert.host.js",
+    "lib/typert.host.d.ts",
+    "lib/typert.remote-client.js",
+    "lib/typert.remote-client.d.ts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-deque": "workspace:*",
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "mime-types": "^3.0.2",
+    "zod": "4.4.3"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-default-model": "workspace:*",
+    "@huoli/huoli-agent-preset-registry": "workspace:*",
+    "@huoli/huoli-api-gateway": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-file-upload": "workspace:*",
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-credentials": "workspace:*",
+    "@huoli/huoli-file-reference": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-native-command": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-session-projection-cache": "workspace:*",
+    "@huoli/huoli-session-query": "workspace:*",
+    "@huoli/huoli-session-title": "workspace:*",
+    "@huoli/huoli-settings": "workspace:*",
+    "@huoli/huoli-skill": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-typert-registry": "workspace:*",
+    "@huoli/huoli-util-time": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "@huoli/huoli-workspace": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@huoli/huoli-session-persistence": {
+      "optional": true
+    },
+    "@huoli/huoli-session-projection-cache": {
+      "optional": true
+    },
+    "@huoli/huoli-settings": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@huoli/huoli-api-remote-access": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-default-model": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-agent-preset-registry": "workspace:*",
+    "@huoli/huoli-api-gateway": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-attachment-local": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-file-upload": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-credentials": "workspace:*",
+    "@huoli/huoli-file-reference": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-native-command": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-remote-mock": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*",
+    "@huoli/huoli-session-persistence-jsonl": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-session-projection-cache": "workspace:*",
+    "@huoli/huoli-session-query": "workspace:*",
+    "@huoli/huoli-session-title": "workspace:*",
+    "@huoli/huoli-settings": "workspace:*",
+    "@huoli/huoli-skill": "workspace:*",
+    "@huoli/huoli-storage": "workspace:*",
+    "@huoli/huoli-storage-domain": "workspace:*",
+    "@huoli/huoli-storage-json": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-typert-registry": "workspace:*",
+    "@huoli/huoli-util-crypto": "workspace:*",
+    "@huoli/huoli-util-time": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "@huoli/huoli-workspace": "workspace:*",
+    "@types/mime-types": "^3.0.1",
+    "@huoli/huoli-working-directory": "workspace:*"
+  }
+}

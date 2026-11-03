@@ -1,0 +1,61 @@
+{
+  "name": "@huoli/huoli-experimental-computer-use-cua-driver-native",
+  "description": "Experimental computer-use provider embedding the Cua Driver native npm SDK",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/experimental/computer-use-cua-driver-native"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-computer-use": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-mcp-client": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "@trycua/cua-driver": "0.28.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-attachment-local": "workspace:*",
+    "@huoli/huoli-computer-use": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*"
+  }
+}

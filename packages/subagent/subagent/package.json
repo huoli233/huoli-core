@@ -1,0 +1,137 @@
+{
+  "name": "@huoli/huoli-subagent",
+  "description": "Abstract subagent seam (ctx.subagents): named-provider registry for delegating to child agents",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/subagent/subagent"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./internal": {
+      "types": "./lib/types/internal.d.ts",
+      "default": "./lib/types/internal.js"
+    },
+    "./client": {
+      "types": "./lib/types/client.d.ts",
+      "default": "./lib/types/client.js"
+    },
+    "./typert": {
+      "types": "./lib/typert.host.d.ts",
+      "default": "./lib/typert.host.js"
+    },
+    "./remote": {
+      "types": "./lib/typert.remote-client.d.ts",
+      "default": "./lib/typert.remote-client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts",
+    "lib/typert.host.js",
+    "lib/typert.host.d.ts",
+    "lib/typert.remote-client.js",
+    "lib/typert.remote-client.d.ts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-chunked-list": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "zod": "4.4.3"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-preset-registry": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-sandbox": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-session-query": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-user-approval": "workspace:*",
+    "@huoli/huoli-util-time": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-workspace": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@huoli/huoli-agent-preset-registry": {
+      "optional": true
+    },
+    "@huoli/huoli-permission-presets": {
+      "optional": true
+    },
+    "@huoli/huoli-sandbox": {
+      "optional": true
+    },
+    "@huoli/huoli-sandbox-policy": {
+      "optional": true
+    },
+    "@huoli/huoli-session-persistence": {
+      "optional": true
+    },
+    "@huoli/huoli-session-query": {
+      "optional": true
+    },
+    "@huoli/huoli-workspace": {
+      "optional": true
+    },
+    "@huoli/huoli-user-approval": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-preset-registry": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-sandbox": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-session-query": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-user-approval": "workspace:*",
+    "@huoli/huoli-util-time": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-workspace": "workspace:*",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-fs-sandbox": "workspace:*",
+    "@huoli/huoli-tool-fs": "workspace:*",
+    "@huoli/huoli-session-persistence-jsonl": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*"
+  }
+}

@@ -1,0 +1,10 @@
+version: 1
+scenario: subagent-huoli-sdk-dynamic-route
+profile: sdk
+composition: sdk-huoli-sdk-dynamic-route
+recording: authored
+header:
+  class: sdk-huoli-sdk-dynamic-route
+  pin: true
+  childSystemPrompts: [1]
+  childToolSchemas: [1]

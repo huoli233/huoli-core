@@ -1,0 +1,7 @@
+# This scenario adds Ralph over the shared headless composition.
+- insert:
+    - id: tool-ralph
+      name: '@huoli/huoli-tool-ralph'
+      config:
+        subagentProvider: spawn
+        maxRounds: 64

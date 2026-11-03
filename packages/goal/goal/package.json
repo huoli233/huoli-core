@@ -1,0 +1,83 @@
+{
+  "name": "@huoli/huoli-goal",
+  "description": "Event-sourced same-session goal state and lifecycle service for the Huoli Core",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/goal/goal"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./client": {
+      "types": "./lib/types/client.d.ts",
+      "default": "./lib/types/client.js"
+    },
+    "./typert": {
+      "types": "./lib/typert.host.d.ts",
+      "default": "./lib/typert.host.js"
+    },
+    "./remote": {
+      "types": "./lib/typert.remote-client.d.ts",
+      "default": "./lib/typert.remote-client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts",
+    "lib/typert.host.js",
+    "lib/typert.host.d.ts",
+    "lib/typert.remote-client.js",
+    "lib/typert.remote-client.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/cordis": "workspace:~"
+  },
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-bash-local": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-loader-smoke": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-checkpoint-policy": "workspace:*",
+    "@huoli/huoli-session-persistence-jsonl": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/cordis": "workspace:~"
+  }
+}

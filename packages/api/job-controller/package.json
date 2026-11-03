@@ -1,0 +1,88 @@
+{
+  "name": "@huoli/huoli-api-job-controller",
+  "description": "Job Remote observation stream and the reference-counted client job-output service",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/api/job-controller"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./typert": {
+      "types": "./lib/typert.host.d.ts",
+      "default": "./lib/typert.host.js"
+    },
+    "./remote": {
+      "types": "./lib/typert.remote-client.d.ts",
+      "default": "./lib/typert.remote-client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "external": [
+        "@huoli/huoli-api-gateway/client"
+      ],
+      "inject": [
+        "@huoli/huoli-api-gateway",
+        "@huoli/huoli-client-connection"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts",
+    "lib/typert.host.js",
+    "lib/typert.host.d.ts",
+    "lib/typert.remote-client.js",
+    "lib/typert.remote-client.d.ts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "zod": "4.4.3"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-api-gateway": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-jobs": "workspace:*",
+    "@huoli/huoli-jobs-local": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-typert-registry": "workspace:*"
+  }
+}

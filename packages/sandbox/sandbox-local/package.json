@@ -1,0 +1,49 @@
+{
+  "name": "@huoli/huoli-sandbox-local",
+  "description": "Local process-sandbox backends for the Huoli Core sandbox seam: bwrap, the npm-distributed landlock-run launcher, macOS Seatbelt, or the Windows ACL restricted-token runner — functionally probed, fail-closed",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/sandbox/sandbox-local"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-sandbox": "workspace:*",
+    "@huoli/huoli-session": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-sandbox-windows-acl": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/node-addon-system": "workspace:~",
+    "@huoli/schemastery": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-sandbox": "workspace:*",
+    "@huoli/huoli-session": "workspace:*"
+  }
+}

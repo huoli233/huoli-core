@@ -1,0 +1,10 @@
+- insert:
+    - id: cua-provider-registry
+      name: '@huoli/huoli-computer-use'
+    - id: cua
+      name: '@huoli/huoli-experimental-cua-macos'
+      disabled: !!js process.platform !== 'darwin'
+      config:
+        agentPreset: ptc
+    - id: ui-cua
+      name: '@huoli/huoli-cua'

@@ -1,0 +1,10 @@
+- insert:
+    - id: experimental-inspector
+      name: '@huoli/huoli-experimental-inspector'
+      disabled: false
+      config:
+        captureFetch: true
+    - id: session-inspector
+      name: '@huoli/huoli-experimental-session-inspector'
+    - id: client-ui-stats
+      name: '@huoli/huoli-experimental-client-ui-stats'

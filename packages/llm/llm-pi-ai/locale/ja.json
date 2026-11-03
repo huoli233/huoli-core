@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "pi-ai モデルアダプター",
+    "description": "pi-ai を通じて Huoli Core に DeepSeek モデルを接続する、huoli-llm-deepseek の設計検証用実装です。"
+  }
+}

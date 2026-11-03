@@ -1,0 +1,43 @@
+{
+  "name": "@huoli/huoli-remote-mock",
+  "description": "Endpoint-named mock for Typert Remote traffic: unary answers and stream scripts per <namespace>/<method>, live stream control, a log, and the Connection carrier face whole-client specs install",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/test-support/remote-mock"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@vitest/spy": "^4.1.11"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-typert-protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-api-settings-controller": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "typescript": "^6.0.3"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

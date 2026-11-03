@@ -1,0 +1,29 @@
+# Experimental Agent Teams profile layer. Apply after huoli-base so these replacements
+# keep direct delegation and coordination on the Team tools.
+
+- id: tool-subagent-control
+  disabled: true
+
+- id: tool-subagent
+  disabled: true
+
+- id: tool-subagent-fork
+  disabled: true
+
+- insert:
+    - id: agent-team
+      name: '@huoli/huoli-experimental-agent-team'
+      config:
+        maxMembers: 8
+        maxTasks: 256
+        maxMessageBytes: 65536
+        disposalTimeoutMs: 5000
+
+    - id: tool-agent-team
+      name: '@huoli/huoli-experimental-tool-agent-team'
+      config:
+        freshProvider: spawn
+        forkProvider: fork
+
+    - id: ui-agent-team
+      name: '@huoli/huoli-experimental-client-ui-agent-team'

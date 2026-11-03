@@ -1,0 +1,70 @@
+{
+  "name": "@huoli/huoli-command-feedback",
+  "description": "Log-only session feedback: the record event, the sessionFeedback Host Remote, and the human-facing slash command",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/feedback/command-feedback"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./typert": {
+      "types": "./lib/typert.host.d.ts",
+      "default": "./lib/typert.host.js"
+    },
+    "./remote": {
+      "types": "./lib/typert.remote-client.d.ts",
+      "default": "./lib/typert.remote-client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts",
+    "lib/typert.host.js",
+    "lib/typert.host.d.ts",
+    "lib/typert.remote-client.js",
+    "lib/typert.remote-client.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-anonymous-user-id": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-typert-protocol": "workspace:*"
+  },
+  "dependencies": {
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-anonymous-user-id": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-typert-protocol": "workspace:*"
+  }
+}

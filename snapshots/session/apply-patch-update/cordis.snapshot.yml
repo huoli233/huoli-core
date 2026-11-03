@@ -1,0 +1,90 @@
+# Minimal keyless composition: real app and filesystem tools; replayed model.
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  disabled: true
+
+- insert:
+    - id: llm-replay
+      name: '@huoli/huoli-llm-replay'
+      config:
+        providers:
+          - id: deepseek-official
+            name: DeepSeek
+            models:
+              - id: deepseek-v4-pro
+                contextWindow: 1000000
+                defaultMaxTokens: 256000
+                reasoningEfforts: [off, low, high, max]
+                defaultReasoningEffort: high
+
+- id: subprocess
+  name: '@huoli/huoli-subprocess-local'
+
+- id: agent-default-model
+  name: '@huoli/huoli-agent-default-model'
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-pro
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js dshHomePath('sessions')
+    compression: none
+
+- id: agent-instructions
+  name: '@huoli/huoli-agent-instructions'
+  disabled: true
+
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+  config:
+    personaPrefix: You are a concise snapshot agent.
+
+- id: tool-jobs
+  name: '@huoli/huoli-tool-jobs'
+  disabled: true
+
+- id: goal
+  name: '@huoli/huoli-goal'
+  disabled: true
+
+- id: goal-round-driver
+  name: '@huoli/huoli-goal-round-driver'
+  disabled: true
+
+- id: command-goal
+  name: '@huoli/huoli-command-goal'
+  disabled: true
+
+- id: tool-goal
+  name: '@huoli/huoli-tool-goal'
+  disabled: true
+
+- id: skill
+  name: '@huoli/huoli-skill'
+  disabled: true
+
+- id: skill-filesystem
+  name: '@huoli/huoli-skill-filesystem'
+  disabled: true
+
+- id: tool-skill
+  name: '@huoli/huoli-tool-skill'
+  disabled: true
+
+- id: tool-fs
+  config:
+    applyPatch: true
+
+- id: spill-local
+  name: '@huoli/huoli-spill-local'
+  config:
+    root: !!js process.env.HUOLI_SNAPSHOT_SPILL_ROOT ?? './.spill'
+
+- insert:
+    - id: snapshot-spill-locators
+      name: ../../../scripts/snapshot-spill-locators.ts
+      config:
+        root: !!js process.env.HUOLI_SNAPSHOT_SPILL_ROOT
+        locatorRoot: !!js process.env.HUOLI_SNAPSHOT_SPILL_LOCATOR_ROOT

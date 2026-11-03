@@ -1,0 +1,79 @@
+{
+  "name": "@huoli/huoli-client-ui-reference",
+  "description": "Unified Web @file and @session reference source",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-reference"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-api-remotes",
+        "@huoli/huoli-api-session-controller",
+        "@huoli/huoli-client-connection",
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-conversation",
+        "@huoli/huoli-client-ui-renderer",
+        "@huoli/huoli-client-ui-input-trigger",
+        "@huoli/huoli-client-ui-sidebar-right",
+        "@huoli/huoli-client-ui-context-menu"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/huoli-api-remotes": "workspace:*",
+    "@huoli/huoli-api-session-controller": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-client-ui-conversation": "workspace:*",
+    "react": "^18.2.0",
+    "@huoli/huoli-client-ui-input-trigger": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-file-reference": "workspace:*",
+    "@huoli/huoli-session-reference": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-client-ui-sidebar-right": "workspace:*",
+    "@huoli/huoli-client-ui-context-menu": "workspace:*"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

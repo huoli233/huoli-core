@@ -1,0 +1,4 @@
+- id: sandbox
+  name: '@huoli/huoli-sandbox-local'
+- id: skills
+  name: '@huoli/huoli-skill'

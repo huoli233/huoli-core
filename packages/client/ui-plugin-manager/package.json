@@ -1,0 +1,95 @@
+{
+  "name": "@huoli/huoli-client-ui-plugin-manager",
+  "description": "Plugin management for the huoli web client: the sidebar Plugins panel installs, enables, disables, retries, and composes installed plugin packages",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-plugin-manager"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./typert": {
+      "types": "./lib/typert.host.d.ts",
+      "default": "./lib/typert.host.js"
+    },
+    "./remote": {
+      "types": "./lib/typert.remote-client.d.ts",
+      "default": "./lib/typert.remote-client.js"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-api-remotes",
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-layout",
+        "@huoli/huoli-client-ui-sidebar"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-api-remote-access": "workspace:*",
+    "@huoli/huoli-api-remotes": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-client-ui-layout": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-official-bundles": "workspace:*",
+    "@huoli/huoli-package-manifest": "workspace:*",
+    "@testing-library/react": "^16.3.3",
+    "clsx": "^2.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@huoli/huoli-util-crypto": "workspace:*",
+    "@huoli/huoli-client-ui-settings": "workspace:*",
+    "@huoli/huoli-plugin-manager": "workspace:*",
+    "@huoli/huoli-client-product-analytics": "workspace:*"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts",
+    "lib/typert.host.js",
+    "lib/typert.host.d.ts",
+    "lib/typert.remote-client.js",
+    "lib/typert.remote-client.d.ts"
+  ],
+  "dependencies": {
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "zod": "4.4.3",
+    "@huoli/huoli-typert-protocol": "workspace:*"
+  }
+}

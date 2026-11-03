@@ -1,0 +1,89 @@
+{
+  "name": "@huoli/huoli-experimental-auto-review",
+  "description": "Per-tool LLM authorization review for the Huoli Core Auto permission preset",
+  "version": "0.2.2-alpha.2",
+  "icon": "./icon.svg",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/experimental/auto-review"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./locale/*.json": "./locale/*.json",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "docs",
+    "lib/index.js",
+    "cordis.patch.yml",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-instructions": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-working-directory": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-util-values": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-instructions": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-bash-sandbox": "workspace:*",
+    "@huoli/huoli-compaction": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-fs-observation-policy": "workspace:*",
+    "@huoli/huoli-fs-sandbox": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-deepseek": "workspace:*",
+    "@huoli/huoli-llm-deepseek-api-key": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-ptc-runtime-node": "workspace:*",
+    "@huoli/huoli-sandbox": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-shell": "workspace:*",
+    "@huoli/huoli-shell-env": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tool-bash": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-executor-ptc": "workspace:*",
+    "@huoli/huoli-tool-fs": "workspace:*",
+    "@huoli/huoli-tool-subagent": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-user-approval": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-working-directory": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "huoli": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

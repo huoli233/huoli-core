@@ -1,0 +1,55 @@
+{
+  "name": "@huoli/huoli-session-title-first-prompt-llm",
+  "description": "First-message LLM provider plugin for Huoli Core session titles",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/session/session-title-first-prompt-llm"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-title": "workspace:*",
+    "@huoli/huoli-session-title-llm": "workspace:*",
+    "@huoli/cordis": "workspace:~"
+  },
+  "dependencies": {
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/schemastery": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-deepseek": "workspace:*",
+    "@huoli/huoli-llm-deepseek-api-key": "workspace:*",
+    "@huoli/huoli-llm-pi-ai": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-title": "workspace:*",
+    "@huoli/huoli-session-title-llm": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*"
+  }
+}

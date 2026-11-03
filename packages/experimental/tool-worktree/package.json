@@ -1,0 +1,71 @@
+{
+  "name": "@huoli/huoli-experimental-tool-worktree",
+  "description": "Model tool that creates and enters a new Git worktree",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "docs",
+    "lib/index.js",
+    "cordis.patch.yml",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/experimental/tool-worktree"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-experimental-worktree": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-sandbox": "workspace:*",
+    "@huoli/huoli-sandbox-local": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*",
+    "@huoli/huoli-experimental-worktree": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*"
+  },
+  "icon": "./icon.svg",
+  "huoli": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@huoli/huoli-experimental-worktree": "workspace:*"
+  }
+}

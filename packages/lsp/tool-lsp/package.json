@@ -1,0 +1,62 @@
+{
+  "name": "@huoli/huoli-tool-lsp",
+  "description": "Model-facing lsp tool over the Huoli Core LSP capability seam (ctx.lsp) \u2014 one read-only tool with goToDefinition/findReferences/goToImplementation/hover operations, one-based UTF-16 cursor coordinates, bounded location rendering, and hover normalization",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/lsp/tool-lsp"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-lsp": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/schemastery": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-lsp": "workspace:*",
+    "@huoli/huoli-lsp-stdio": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/huoli-tool-call-timeout-policy": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*"
+  }
+}

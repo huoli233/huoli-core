@@ -1,0 +1,48 @@
+{
+  "name": "@huoli/huoli-tool-workspace-dependencies",
+  "description": "The load_workspace_dependencies tool: absolute paths into a bundled Python, Node.js, and pnpm payload",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/skill/tool-workspace-dependencies"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~"
+  }
+}

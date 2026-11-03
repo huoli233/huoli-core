@@ -1,0 +1,44 @@
+{
+  "name": "@huoli/huoli-desktop-host",
+  "description": "Private Node-mode host process for the Electron desktop application",
+  "version": "0.2.2-alpha.2",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "files": [
+    "lib/index.js",
+    "lib/cli.js"
+  ],
+  "dependencies": {
+    "koffi": "3.1.1",
+    "@huoli/libreoffice-kit": "^0.1.5",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli": "workspace:*",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-app-boot": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-host-webserver": "workspace:*",
+    "@huoli/huoli-home-paths": "workspace:*",
+    "@huoli/huoli-jobs": "workspace:*",
+    "@huoli/huoli-schedule": "workspace:*",
+    "@huoli/huoli-tool-workspace-dependencies": "workspace:*",
+    "@huoli/huoli-skill-office": "workspace:*",
+    "@huoli/huoli-deepseek-account": "workspace:*",
+    "@huoli/huoli-workspace": "workspace:*",
+    "@huoli/huoli-plugin-manager": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/huoli-skill": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*"
+  }
+}

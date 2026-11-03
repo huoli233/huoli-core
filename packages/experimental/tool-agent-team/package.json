@@ -1,0 +1,63 @@
+{
+  "name": "@huoli/huoli-experimental-tool-agent-team",
+  "description": "Scoped model-facing Agent Teams tools over ctx.agentTeams",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/experimental/tool-agent-team"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./locale/*.json": "./locale/*.json",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~"
+  },
+  "peerDependencies": {
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-experimental-agent-team": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-session-persistence-jsonl": "workspace:*",
+    "@huoli/huoli-session-query": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-subagent-fork-in-process": "workspace:*",
+    "@huoli/huoli-subagent-spawn-in-process": "workspace:*",
+    "@huoli/huoli-tool-subagent-control": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-experimental-agent-team": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-deepseek": "workspace:*"
+  }
+}

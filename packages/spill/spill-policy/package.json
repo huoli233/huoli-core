@@ -1,0 +1,79 @@
+{
+  "name": "@huoli/huoli-spill-policy",
+  "description": "Token-budgeted tool-result retention with recoverable text and image paths",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/spill/spill-policy"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./notice": {
+      "types": "./lib/types/notice.d.ts",
+      "default": "./lib/types/notice.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-output-retention": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-spill": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-token-meter": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-ptc-runtime-node": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-output-retention": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-spill": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-sandbox-local": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-token-meter": "workspace:*",
+    "@huoli/huoli-mcp-client": "workspace:*",
+    "@huoli/huoli-spill-local": "workspace:*",
+    "@huoli/huoli-llm-deepseek": "workspace:*",
+    "@huoli/huoli-ptc-runtime": "workspace:*",
+    "@huoli/huoli-attachment-local": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-executor-ptc": "workspace:*",
+    "@huoli/huoli-tool-fs": "workspace:*",
+    "sharp": "0.35.5",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*"
+  }
+}

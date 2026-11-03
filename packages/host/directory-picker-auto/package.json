@@ -1,0 +1,56 @@
+{
+  "name": "@huoli/huoli-host-directory-picker-auto",
+  "description": "Adaptive chooser of the directory-picker seam: resolves the host situation at boot and mounts the native or browse backend for the Huoli Core web GUI host",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/host/directory-picker-auto"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-ui-directory-picker-browse": "workspace:*",
+    "@huoli/huoli-client-ui-directory-picker-native": "workspace:*",
+    "@huoli/huoli-host-directory-picker-browse": "workspace:*",
+    "@huoli/huoli-host-directory-picker-native": "workspace:*",
+    "@huoli/huoli-host-webserver": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-ui-directory-picker-browse": "workspace:*",
+    "@huoli/huoli-client-ui-directory-picker-native": "workspace:*",
+    "@huoli/huoli-host-directory-picker": "workspace:*",
+    "@huoli/huoli-host-directory-picker-browse": "workspace:*",
+    "@huoli/huoli-host-directory-picker-native": "workspace:*",
+    "@huoli/huoli-host-webserver": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-launch-environment": "workspace:*"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "name": "@huoli/huoli-sdk-minimal",
+  "description": "The standalone minimal SDK profile bundle: JSON-RPC, one DeepSeek adapter, persistent shell, and JSONL sessions",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/bundle/sdk-minimal"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "huoli": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@huoli/cordis-plugin-timer": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-attachment-local": "workspace:*",
+    "@huoli/huoli-compaction-basic": "workspace:*",
+    "@huoli/huoli-compaction-image-offload": "workspace:*",
+    "@huoli/huoli-deepseek-llm-api-extensions": "workspace:*",
+    "@huoli/huoli-jobs-local": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-deepseek-api-key": "workspace:*",
+    "@huoli/huoli-llm-retry": "workspace:*",
+    "@huoli/huoli-mcp-resources": "workspace:*",
+    "@huoli/huoli-plugin-package-inventory-deepseek": "workspace:*",
+    "@huoli/huoli-sandbox-local": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-sdk-app": "workspace:*",
+    "@huoli/huoli-sdk-jsonrpc-server": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-checkpoint-policy": "workspace:*",
+    "@huoli/huoli-session-log-deepseek": "workspace:*",
+    "@huoli/huoli-session-persistence-jsonl": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-session-title": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-terminal": "workspace:*",
+    "@huoli/huoli-terminal-bash": "workspace:*",
+    "@huoli/huoli-token-meter": "workspace:*",
+    "@huoli/huoli-tool-bash-persistent": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-fs": "workspace:*",
+    "@huoli/huoli-tool-pwsh-persistent": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*",
+    "@huoli/huoli-tool-working-directory": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~"
+  }
+}

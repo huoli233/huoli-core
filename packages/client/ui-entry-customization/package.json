@@ -1,0 +1,54 @@
+{
+  "name": "@huoli/huoli-client-ui-entry-customization",
+  "version": "0.2.2-alpha.2",
+  "description": "Customize plugin entries in the left sidebar, conversation views, and right sidebar, and quickly create new plugins.",
+  "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-entry-customization"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": { "types": "./lib/types/index.d.ts", "default": "./lib/index.js" },
+    "./client": { "types": "./lib/types/client/index.d.ts", "default": "./lib/client.js" },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": ["locale/*.json", "lib/index.js", "lib/client.js", "lib/types/**/*.d.ts"],
+  "license": "MIT",
+  "peerDependencies": { "@huoli/cordis": "workspace:~" },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-product-analytics": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar": "workspace:*",
+    "@huoli/huoli-client-ui-conversation": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-right": "workspace:*",
+    "@huoli/huoli-client-ui-plugin-manager": "workspace:*",
+    "@huoli/huoli-client-ui-workspace": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "clsx": "^2.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@testing-library/react": "^16.3.3"
+  },
+  "huoli": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-plugin-manager",
+        "@huoli/huoli-client-ui-workspace"
+      ]
+    }
+  },
+  "scripts": { "bundle": "tsdown", "watch": "tsdown --watch" }
+}

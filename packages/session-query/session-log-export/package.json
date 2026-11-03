@@ -1,0 +1,87 @@
+{
+  "name": "@huoli/huoli-session-log-export",
+  "description": "Web Session-log ZIP export and Session Markdown copy",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/session-query/session-log-export"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/huoli-session-format": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "fflate": "^0.8.2",
+    "@huoli/huoli-brand": "workspace:*"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-ui-commands": "workspace:*",
+    "@huoli/huoli-client-ui-conversation": "workspace:*",
+    "@huoli/huoli-client-ui-layout": "workspace:*",
+    "@huoli/huoli-client-ui-message-feedback": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-session": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*",
+    "@huoli/huoli-session-query": "workspace:*",
+    "@huoli/huoli-session-title": "workspace:*",
+    "react": "^18.2.0"
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-commands",
+        "@huoli/huoli-client-ui-conversation",
+        "@huoli/huoli-client-ui-layout",
+        "@huoli/huoli-client-ui-renderer",
+        "@huoli/huoli-client-ui-session"
+      ],
+      "platform": "web"
+    }
+  }
+}

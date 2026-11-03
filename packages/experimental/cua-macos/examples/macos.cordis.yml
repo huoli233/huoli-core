@@ -1,0 +1,9 @@
+- insert:
+    - id: cua-provider-registry
+      name: '../../../computer-use/computer-use/src/index.ts'
+    - id: cua
+      name: '../src/index.ts'
+      config:
+        agentPreset: false
+        # HUOLI_CUA_HELPER must name HUOLI Computer Use.app/Contents/MacOS/huoli-cua-native.
+        helperPath: !!js process.env.HUOLI_CUA_HELPER

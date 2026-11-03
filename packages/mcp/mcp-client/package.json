@@ -1,0 +1,75 @@
+{
+  "name": "@huoli/huoli-mcp-client",
+  "description": "MCP client bridge: connects to MCP servers and registers their tools on ctx.tools",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/mcp/mcp-client"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-subprocess": "workspace:*",
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-mcp-resources": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~",
+    "@modelcontextprotocol/client": "2.2.0",
+    "@huoli/huoli-util-values": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-attachment-local": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-subprocess": "workspace:*",
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@modelcontextprotocol/server-everything": "^2026.8.31",
+    "@modelcontextprotocol/server-filesystem": "^2026.8.31",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-http-proxy": "workspace:*",
+    "@modelcontextprotocol/server": "2.2.0",
+    "@modelcontextprotocol/node": "2.0.0",
+    "zod": "4.4.3",
+    "@huoli/huoli-mcp-resources": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@huoli/huoli-mcp-resources": {
+      "optional": true
+    },
+    "@huoli/huoli-system-prompt": {
+      "optional": true
+    }
+  }
+}

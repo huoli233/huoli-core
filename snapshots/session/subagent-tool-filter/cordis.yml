@@ -1,0 +1,44 @@
+# The parent owns its file and web tools; the child selects a separate preset.
+- id: tool-fs
+  disabled: true
+
+- id: tool-fs-search
+  disabled: true
+
+- id: tool-web
+  disabled: true
+
+- insert:
+    - id: agent-preset-registry
+      name: '@huoli/huoli-agent-preset-registry'
+      config:
+        default: parent
+    - id: preset-parent
+      name: '@huoli/huoli-agent-preset'
+      config:
+        id: parent
+        plugins:
+          - name: '@huoli/huoli-tool-fs'
+          - name: '@huoli/huoli-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - name: '@huoli/huoli-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+    - id: preset-child
+      name: '@huoli/huoli-agent-preset'
+      config:
+        id: child
+        plugins: []
+    - id: parent-agent-preset
+      name: '../../../packages/test-support/session-snapshot/tests/fixtures/parent-agent-preset.ts'
+
+- id: tool-subagent
+  name: '@huoli/huoli-tool-subagent'
+  inject: [agentPresets]
+  config:
+    provider: spawn
+    toolName: subagent
+    maxDepth: 1
+    agentPreset: child

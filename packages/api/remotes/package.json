@@ -1,0 +1,104 @@
+{
+  "name": "@huoli/huoli-api-remotes",
+  "description": "Remote BFF assembly for application-selected Host capabilities",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/api/remotes"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-api-gateway"
+      ],
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "dependencies": {
+    "@huoli/huoli-deque": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-scope": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-preset-registry": "workspace:*",
+    "@huoli/huoli-api-gateway": "workspace:*",
+    "@huoli/huoli-api-job-controller": "workspace:*",
+    "@huoli/huoli-api-session-controller": "workspace:*",
+    "@huoli/huoli-api-settings-controller": "workspace:*",
+    "@huoli/huoli-api-workspace-controller": "workspace:*",
+    "@huoli/huoli-api-workspace-files": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-file-upload": "workspace:*",
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-cordis-host-runner": "workspace:*",
+    "@huoli/huoli-credentials": "workspace:*",
+    "@huoli/huoli-file-reference": "workspace:*",
+    "@huoli/huoli-goal": "workspace:*",
+    "@huoli/huoli-host-plugin-inventory": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-message-feedback": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-schedule": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-reference": "workspace:*",
+    "@huoli/huoli-settings": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-user-approval": "workspace:*",
+    "@huoli/huoli-user-questions": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "zod": "4.4.3",
+    "@huoli/huoli-command-feedback": "workspace:*",
+    "@huoli/huoli-api-terminal-controller": "workspace:*",
+    "@huoli/huoli-plugin-manager": "workspace:*",
+    "@huoli/huoli-plugin-market": "workspace:*",
+    "@huoli/huoli-client-ui-plugin-manager": "workspace:*",
+    "@huoli/huoli-office-to-pdf": "workspace:*",
+    "@huoli/huoli-api-account-controller": "workspace:*",
+    "@huoli/huoli-deepseek-account": "workspace:*",
+    "@huoli/huoli-client-product-analytics": "workspace:*",
+    "@huoli/huoli-client-ui-trajectory": "workspace:*"
+  }
+}

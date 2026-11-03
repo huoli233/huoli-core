@@ -1,0 +1,114 @@
+{
+  "name": "@huoli/huoli-client-ui-chat",
+  "description": "Chat Conversation target, node definitions, renderers, and details surface",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-chat"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./assets/*": "./lib/assets/*",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-api-session-controller",
+        "@huoli/huoli-api-workspace-controller",
+        "@huoli/huoli-client-connection",
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-conversation",
+        "@huoli/huoli-client-ui-input-trigger",
+        "@huoli/huoli-client-ui-layout",
+        "@huoli/huoli-client-ui-renderer",
+        "@huoli/huoli-client-ui-session",
+        "@huoli/huoli-client-ui-settings",
+        "@huoli/huoli-client-ui-sidebar-right",
+        "@huoli/huoli-client-ui-workspace",
+        "@huoli/huoli-client-ui-file-drag",
+        "@huoli/huoli-client-ui-context-menu"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-api-remotes": "workspace:*",
+    "@huoli/huoli-api-session-controller": "workspace:*",
+    "@huoli/huoli-api-workspace-controller": "workspace:*",
+    "@huoli/huoli-api-workspace-files": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-ui-approval": "workspace:*",
+    "@huoli/huoli-client-ui-conversation": "workspace:*",
+    "@huoli/huoli-client-ui-input-trigger": "workspace:*",
+    "@huoli/huoli-client-ui-layout": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-session": "workspace:*",
+    "@huoli/huoli-client-ui-settings": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-browser": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-documentpreview": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-right": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-client-ui-workspace": "workspace:*",
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-compaction": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-retry": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-stats": "workspace:*",
+    "@huoli/huoli-session-turn-outline": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-token-meter": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "@huoli/huoli-tool-executor-ptc": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@tanstack/react-virtual": "3.14.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@huoli/huoli-settings": "workspace:*",
+    "@huoli/huoli-client-product-analytics": "workspace:*",
+    "@huoli/huoli-client-ui-file-drag": "workspace:*",
+    "@huoli/huoli-client-ui-context-menu": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/assets",
+    "lib/types/**/*.d.ts"
+  ]
+}

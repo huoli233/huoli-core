@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "адаптация модели пи-ай",
+    "description": "Обеспечение адаптации модели DeepSeek через pi-ai для Huoli Core в качестве проверенной реализации huoli-llm-deepseek."
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "name": "@huoli/huoli-experimental-forge-session",
+  "description": "Binds change requests to the Session that created, pushed, or tracked them",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts"
+    },
+    "./locale/*.json": "./locale/*.json",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/experimental/forge-session"
+  },
+  "dependencies": {
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "shell-quote": "^1.12.0",
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-experimental-forge": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-shell": "workspace:*",
+    "@huoli/huoli-shell-env": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-bash-local": "workspace:*",
+    "@huoli/huoli-experimental-forge": "workspace:*",
+    "@huoli/huoli-experimental-forge-github": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-shell-env": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tool-bash": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*",
+    "@huoli/huoli-shell": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@huoli/huoli-shell": {
+      "optional": true
+    },
+    "@huoli/huoli-shell-env": {
+      "optional": true
+    },
+    "@huoli/huoli-tools": {
+      "optional": true
+    },
+    "@huoli/huoli-sandbox-policy": {
+      "optional": true
+    }
+  }
+}

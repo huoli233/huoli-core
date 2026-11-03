@@ -1,0 +1,70 @@
+{
+  "name": "@huoli/huoli-experimental-translator",
+  "description": "Machine translation with reusable Session results",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/experimental/translator"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-credentials": "workspace:*",
+    "@huoli/huoli-launch-environment": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-app-boot": "workspace:*",
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence": "workspace:*",
+    "@huoli/huoli-session-persistence-jsonl": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-credentials": "workspace:*",
+    "@huoli/huoli-launch-environment": "workspace:*",
+    "@huoli/huoli-llm-deepseek": "workspace:*",
+    "@huoli/huoli-llm-deepseek-api-key": "workspace:*",
+    "@huoli/huoli-llm-deepseek-account": "workspace:*",
+    "@huoli/huoli-deepseek-account": "workspace:*",
+    "@huoli/huoli-deepseek-llm-api-extensions": "workspace:*",
+    "@huoli/huoli-session-log-deepseek": "workspace:*",
+    "@huoli/huoli-session-query-sqlite": "workspace:*"
+  }
+}

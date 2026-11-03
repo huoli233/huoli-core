@@ -1,0 +1,25 @@
+- name: '@huoli/huoli-llm'
+- name: '@huoli/huoli-session'
+- name: '@huoli/huoli-session-projection'
+- name: '@huoli/huoli-system-prompt'
+- name: '@huoli/huoli-tools'
+- name: '@huoli/huoli-tool-executor-native'
+- name: '@huoli/huoli-agent'
+- name: '@huoli/huoli-agent-loop'
+  config:
+    agents: []
+- name: '@huoli/huoli-credentials-local'
+  config:
+    path: {{credentials}}
+    watch: false
+- name: '@huoli/huoli-llm-deepseek-api-key'
+  config:
+    apiKeyEnv: DEEPSEEK_API_KEY
+    baseURL: {{endpoint}}
+    thinking: enabled
+    reasoningEffort: high
+    maxTokens: 256000
+    streamIdleTimeoutMs: 300000
+- name: '@huoli/huoli-llm-deepseek-account'
+  config:
+    baseURL: {{endpoint}}

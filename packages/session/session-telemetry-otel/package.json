@@ -1,0 +1,64 @@
+{
+  "name": "@huoli/huoli-session-telemetry-otel",
+  "description": "Feedback-authorized Session logs over byte-bounded OpenTelemetry HTTP requests",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/session/session-telemetry-otel"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@opentelemetry/api-logs": "0.222.0",
+    "@huoli/schemastery": "workspace:~"
+  },
+  "peerDependencies": {
+    "@huoli/huoli-command-feedback": "workspace:*",
+    "@huoli/huoli-message-feedback": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-telemetry": "workspace:*",
+    "@huoli/huoli-anonymous-user-id": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-otel": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis-plugin-logger-console": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-app-boot": "workspace:*",
+    "@huoli/huoli-bash-local": "workspace:*",
+    "@huoli/huoli-command-feedback": "workspace:*",
+    "@huoli/huoli-message-feedback": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-loader-smoke": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-checkpoint-policy": "workspace:*",
+    "@huoli/huoli-session-persistence-jsonl": "workspace:*",
+    "@huoli/huoli-session-telemetry": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-anonymous-user-id": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-http-proxy": "workspace:*",
+    "@huoli/huoli-otel": "workspace:*"
+  }
+}

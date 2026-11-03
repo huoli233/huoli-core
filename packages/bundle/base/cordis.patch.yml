@@ -1,0 +1,534 @@
+# The huoli-base bundle patch: the shared core of each base-backed profile, applied as
+# ONE insert over the empty profile root. Later bundle patches and the user's
+# profile cordis.patch.yml address these rows by id, with the last write
+# winning per row.
+#
+# A patch replaces the targeted row's whole `config` rather than merging into
+# it, so a row whose value differs by mode does NOT live here: it belongs to
+# each mode bundle, keeping any single row down to one bundle layer plus the
+# user's. Mode-specific rows appear below only with shared plugin identity and
+# neutral defaults; each mode bundle restates its complete configuration.
+#
+# Row order carries no load semantics (activation is service-availability
+# driven); the grouping is for readers.
+
+- insert:
+    - id: tool-plugin-manager
+      name: '@huoli/huoli-plugin-manager/tools'
+      disabled: true
+
+    - id: plugin-manager
+      name: '@huoli/huoli-plugin-manager'
+      disabled: !!js "!ctx.get('profileContext')"
+
+    - id: timer
+      name: '@huoli/cordis-plugin-timer'
+
+    # Profile configuration reloads by default; module roots are opt-in.
+    - id: hmr
+      name: '@huoli/huoli-hmr'
+      disabled: !!js "!ctx.get('profileContext')"
+      config:
+        root: []
+
+    - id: llm
+      name: '@huoli/huoli-llm'
+
+    - id: deepseek-llm-api-extensions
+      name: '@huoli/huoli-deepseek-llm-api-extensions'
+
+    - id: session
+      name: '@huoli/huoli-session'
+
+    - id: session-log-deepseek
+      name: '@huoli/huoli-session-log-deepseek'
+
+    - id: typert
+      name: '@huoli/huoli-typert-registry'
+
+    - id: typert-loader
+      name: '@huoli/huoli-typert-loader'
+
+    - id: typert-gateway
+      name: '@huoli/huoli-api-gateway'
+
+    # Method-level access control for non-owner Peers; the Gateway requires it,
+    # and its Client half publishes the standard access Hooks.
+    - id: remote-access
+      name: '@huoli/huoli-api-remote-access'
+
+    - id: session-title
+      name: '@huoli/huoli-session-title'
+      config:
+        fallbackMaxWords: 5
+        fallbackMaxBytes: 40
+        maxTitleBytes: 80
+
+    - id: session-title-llm
+      name: '@huoli/huoli-session-title-first-prompt-llm'
+      config:
+        targetWords: 5
+        targetCjkCharacters: 10
+        maxInputBytes: 4096
+        # A ceiling against runaway output, not a length target: the prompt
+        # keeps titles short, while reasoning a model cannot switch off also
+        # counts as output. Stays within common model output limits.
+        maxOutputTokens: 4096
+        timeoutMs: 60000
+
+    - id: user-questions
+      name: '@huoli/huoli-user-questions'
+
+    - id: agent
+      name: '@huoli/huoli-agent'
+
+    - id: plugin-package-inventory-deepseek
+      name: '@huoli/huoli-plugin-package-inventory-deepseek'
+
+    # The transport-independent default for Agents created by entry points.
+    # Settings may supply a saved selection; consumers read it at creation time.
+    - id: agent-default-model
+      name: '@huoli/huoli-agent-default-model'
+      config:
+        provider: deepseek-official
+        model: deepseek-flash
+
+    - id: jobs
+      name: '@huoli/huoli-jobs-local'
+
+    - id: llm-retry
+      name: '@huoli/huoli-llm-retry'
+
+    # Live Config forms persist through the active profile patch.
+
+    # Live configuration forms persist through the launcher's profile.
+    - id: config-editor
+      name: '@huoli/huoli-config-editor'
+      disabled: !!js "!ctx.get('profileContext')"
+
+    - id: settings
+      name: '@huoli/huoli-settings'
+      disabled: !!js "!ctx.get('profileContext')"
+
+    # Credential sources: managed `$HUOLI_HOME/.credentials.yaml`, then inherited
+    # environment, project `.env`, and user `.env` fallbacks.
+    # Adapters resolve references per request; the Models page writes only the
+    # managed document, which is never materialized into the process environment.
+    - id: authorization
+      name: '@huoli/huoli-authorization'
+
+    - id: deepseek-account
+      name: '@huoli/huoli-deepseek-account-platform'
+      config:
+        desktopPlatform: !!js "ctx.get('profileContext')?.name === 'desktop' && ['darwin', 'win32'].includes(process.platform) ? process.platform : null"
+
+    - id: credentials
+      name: '@huoli/huoli-credentials-local'
+
+    # The pi-ai multi-provider twin, mounted dormant: zero routes (and no extra
+    # models in the picker) until a `llm-pi-ai:` settings section supplies provider
+    # profiles — then those routes register live, keys resolving per request
+    # through their apiKeyEnv references, and drop again when the section empties.
+    # Supplying those profiles is exactly what the web Models page does. Which
+    # adapters exist is composition; which providers run is the user's settings
+    # document.
+    - id: llm-pi-ai
+      name: '@huoli/huoli-llm-pi-ai'
+
+    - id: session-persistence-jsonl
+      name: '@huoli/huoli-session-persistence-jsonl'
+      config:
+        root: !!js dshHomePath('sessions')
+
+    # Durable image bytes live outside the append-only session log. Messages
+    # keep content-addressed references that this shared backend resolves for
+    # provider requests and authorized history reads.
+    - id: attachment-local
+      name: '@huoli/huoli-attachment-local'
+
+    # Full-text session search is opt-in. `openAt: never` keeps
+    # ctx.sessionQuery mounted — exact reads, titles, and lineage traces
+    # (session export, subagent-fork Workspace inheritance) stay available —
+    # while search calls fail with SESSION_QUERY_SEARCH_DISABLED and SQLite is
+    # never opened; the Web sidebar search matches titles and workspace names
+    # only. Deployments enabling content search override `openAt` to
+    # `first-search` or `startup` in a later patch layer (profile
+    # cordis.patch.yml or a --patch overlay), typically with a durable `path`.
+    - id: session-query-sqlite
+      name: '@huoli/huoli-session-query-sqlite'
+      config:
+        path: ':memory:'
+        openAt: never
+
+    # Shared projection registry: subagent catalog identity (mode/label) folds
+    # through its registered units, so the `list_agents` surface below fails
+    # loud without it; web layers reuse this same mount for list rows.
+    - id: working-directory
+      name: '@huoli/huoli-working-directory'
+
+    - id: tool-working-directory
+      name: '@huoli/huoli-tool-working-directory'
+
+    - id: session-projection
+      name: '@huoli/huoli-session-projection'
+
+    # Durable KV storage: the storage hub, the json backend, and the
+    # schema-validated domain form over them. Session-layer persistence (the
+    # projection cache below; workspace in web layers)
+    # routes through this stack, so it belongs to the shared base.
+    - id: storage
+      name: '@huoli/huoli-storage'
+
+    - id: storage-json
+      name: '@huoli/huoli-storage-json'
+      config:
+        root: !!js dshHomePath('storages')
+
+    - id: storage-domain
+      name: '@huoli/huoli-storage-domain'
+      config:
+        backend: json
+
+    # Persisted projection cache: throttled write-behind over the
+    # session_projcache domain (per-record layout — one version-stamped
+    # checkpoint document per session), serving the session listing's
+    # projection column.
+    - id: session-projection-cache
+      name: '@huoli/huoli-session-projection-cache'
+      config:
+        writeEveryEvents: 200
+        writeIntervalMs: 5000
+
+    - id: otel
+      name: '@huoli/huoli-otel'
+
+    # OTel releases a Session-log prefix only after explicit user feedback,
+    # regardless of model provider. Ordinary activity never triggers capture.
+    # HUOLI_TELEMETRY_OTLP_URL overrides the production endpoint. A non-empty
+    # HUOLI_TELEMETRY_DISABLED — any value, including '0'/'false' — opts the
+    # process out (the launchers patch the row disabled; config cannot disable
+    # a row). Exports carry the harness home's anonymous user id ($HUOLI_HOME/.anonymous-user-id,
+    # random UUID; delete the file to reset the identity) as the Resource's
+    # user.id. Byte-bounded batching may turn an authorized prefix into
+    # several HTTP requests. Requests run serially; each has its own 1s
+    # transport timeout and 1.5s watchdog. A watchdog does not release the
+    # active request slot. The outer 3s shutdown deadline stops queued sends;
+    # large prefixes or an unsettled transport may leave records unsent.
+    # Every CLI exit path drains by disposing the root on SIGINT/SIGTERM.
+    - id: session-telemetry-otel
+      name: '@huoli/huoli-session-telemetry-otel'
+      config:
+        mode: !!js process.env.HUOLI_TELEMETRY_MODE || 'FEEDBACK_ONLY'
+        shutdownTimeoutMillis: 3000
+        maxRequestBytes: 4000000
+        exporter:
+          url: !!js process.env.HUOLI_TELEMETRY_OTLP_URL ?? 'https://huoli-otel-collector.deepseeksvc.com/v1/logs'
+          compression: gzip
+          timeoutMillis: 1000
+        processor:
+          scheduledDelayMillis: 10000
+          maxQueueSize: 2048
+          maxExportBatchSize: 2048
+          exportTimeoutMillis: 1500
+
+    - id: subprocess
+      name: '@huoli/huoli-subprocess-local'
+
+    # Every shipped CLI mode starts with the same file-effect boundary.
+    # The environment remains an explicit deployment override; otherwise fresh
+    # sessions pin workspace-write + ask through the permission service below.
+    - id: sandbox
+      name: '@huoli/huoli-sandbox-local'
+
+    - id: sandbox-policy
+      name: '@huoli/huoli-sandbox-policy'
+      config:
+        mode: !!js process.env.HUOLI_PERMISSION_MODE ?? 'workspace-write'
+        workspaceRoot: !!js process.cwd()
+
+    - id: bash-sandbox
+      name: '@huoli/huoli-bash-sandbox'
+      disabled: !!js process.platform === 'win32'
+      config:
+        timeoutMs: 60000
+
+    - id: pwsh-sandbox
+      name: '@huoli/huoli-pwsh-sandbox'
+      disabled: !!js process.platform !== 'win32'
+
+    - id: approval
+      name: '@huoli/huoli-user-approval'
+      config:
+        policy: !!js "(process.env.HUOLI_PERMISSION_MODE ?? 'workspace-write') === 'danger-full-access' ? 'never' : 'ask'"
+
+    - id: permission
+      name: '@huoli/huoli-permission-presets'
+      config:
+        presets:
+          read-only:
+            sandbox: read-only
+            approval: ask
+          workspace-write:
+            sandbox: workspace-write
+            approval: ask
+          danger-full-access:
+            sandbox: danger-full-access
+            approval: never
+
+    - id: shell-env
+      name: '@huoli/huoli-shell-env'
+
+    - id: tool-bash
+      name: '@huoli/huoli-tool-bash'
+      disabled: !!js process.platform === 'win32'
+
+    - id: tool-pwsh
+      name: '@huoli/huoli-tool-pwsh'
+      disabled: !!js process.platform !== 'win32'
+
+    - id: tool-jobs
+      name: '@huoli/huoli-tool-jobs'
+
+    - id: fs-observation-policy
+      name: '@huoli/huoli-fs-observation-policy'
+
+    - id: tool-fs
+      name: '@huoli/huoli-tool-fs'
+      config:
+        # Set true to add the apply_patch tool beside edit.
+        applyPatch: false
+
+    - id: tool-fs-search
+      name: '@huoli/huoli-tool-fs-search'
+      config:
+        sampleOverCapGlobResults: false
+
+    - id: agent-instructions
+      name: '@huoli/huoli-agent-instructions'
+      config:
+        maxBytes: 65536
+
+    - id: skill
+      name: '@huoli/huoli-skill'
+
+    - id: skill-filesystem
+      name: '@huoli/huoli-skill-filesystem'
+
+    - id: tool-skill
+      name: '@huoli/huoli-tool-skill'
+
+    - id: commands
+      name: '@huoli/huoli-commands'
+
+    - id: command-feedback
+      name: '@huoli/huoli-command-feedback'
+
+    - id: goal
+      name: '@huoli/huoli-goal'
+
+    - id: goal-round-driver
+      name: '@huoli/huoli-goal-round-driver'
+
+    - id: command-goal
+      name: '@huoli/huoli-command-goal'
+
+    - id: plan-mode
+      name: '@huoli/huoli-plan-mode'
+      config:
+        section: |
+              You are in plan mode. Stay in plan mode until the user approves your plan through exit_plan_mode or switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
+
+              Explore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.
+
+              The tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed only to keep the request shape stable. Do not use todo_write to track this planning phase: it tracks implementation after an approved plan, while the plan itself belongs in exit_plan_mode.
+
+              Resolve discoverable facts by inspection. Use ask_user_question only for user-owned choices or material ambiguity that inspection cannot answer. Do not ask the user where code lives or how current behavior works when you can find out.
+
+              Make the plan decision-complete: state the goal and success criteria; group implementation changes by subsystem; identify public API, schema, and data-flow changes; cover edge cases, failure modes, tests, acceptance criteria, and explicit assumptions. Keep it concise enough to review but detailed enough that another engineer can implement it without making design decisions.
+
+              When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.
+
+    - id: token-meter
+      name: '@huoli/huoli-token-meter'
+
+    - id: compaction-basic
+      name: '@huoli/huoli-compaction-basic'
+
+    # Human `/compact`: one useful reduction below the automatic threshold. Backend
+    # independent, so it follows whichever compaction service this leaf mounts.
+    - id: command-compact
+      name: '@huoli/huoli-command-compact'
+
+    - id: subagent
+      name: '@huoli/huoli-subagent'
+
+    - id: subagent-spawn-in-process
+      name: '@huoli/huoli-subagent-spawn-in-process'
+      config:
+        providerName: spawn
+
+    - id: subagent-fork-in-process
+      name: '@huoli/huoli-subagent-fork-in-process'
+      config:
+        providerName: fork
+
+    # Continuable background children are selected per delegation tool. The
+    # separately loaded follow-up tool registers the one global `send_message`.
+    - id: tool-subagent-control
+      name: '@huoli/huoli-tool-subagent-control'
+
+    - id: tool-subagent
+      name: '@huoli/huoli-tool-subagent'
+      config:
+        provider: spawn
+        toolName: subagent
+
+    # Fork omits model-selection arguments for KV Cache reuse. Parent and child
+    # share the messaging tools; return guidance follows the inherited history.
+    # See packages/subagent/tool-subagent/README.md
+    # and .agents/notes/implemented/architecture/2026-08-10-fork-children-stay-one-shot.md.
+    - id: tool-subagent-fork
+      name: '@huoli/huoli-tool-subagent'
+      config:
+        provider: fork
+        toolName: subagent_fork
+
+    - id: ptc-runtime
+      name: '@huoli/huoli-ptc-runtime-node'
+
+    - id: workflow-ptc
+      name: '@huoli/huoli-workflow-ptc'
+      config:
+        provider: spawn
+
+    - id: tool-workflow
+      name: '@huoli/huoli-tool-workflow'
+
+    - id: timeout-policy
+      name: '@huoli/huoli-tool-call-timeout-policy'
+
+    - id: spill-local
+      name: '@huoli/huoli-spill-local'
+
+    - id: spill-policy
+      name: '@huoli/huoli-spill-policy'
+      config:
+        maxInlineTokens: 12500
+
+    # Durability checkpoints before each model request and top-level dispatch.
+    - id: session-checkpoint-policy
+      name: '@huoli/huoli-session-checkpoint-policy'
+
+    # Compacts oversized tool results before the broader conversation compactor
+    # runs, preserving the model-visible result within the configured budget.
+    - id: tool-result-pruner
+      name: '@huoli/huoli-compaction-tool-result-pruner'
+      config:
+        thresholdChars: 8192
+        headChars: 4096
+        tailChars: 1024
+
+    # When an image-capable route rejects a request as over its image budget,
+    # replace the oldest images with placeholders on the surface and retry.
+    - id: image-offload
+      name: '@huoli/huoli-compaction-image-offload'
+
+    - id: tool-todo
+      name: '@huoli/huoli-tool-todo'
+      config:
+        allowParallelInProgress: true
+
+    # Persisted same-session goals reach the model and the slash menu here; the
+    # domain, driver, and `/goal` command are above.
+    - id: tool-goal
+      name: '@huoli/huoli-tool-goal'
+
+    # Consecutive-repeat reminders on the tool chain.
+    - id: repeat-tool-reminder
+      name: '@huoli/huoli-repeat-tool-reminder'
+      config:
+        thresholds: [3, 5, 8]
+        argumentsPreviewChars: 500
+
+    # The shared base enables the stable model-facing web_search and web_fetch
+    # tools. The Web app disables this host row and composes both tools per agent
+    # preset; products with a stricter network policy override tool-web. DeepSeek
+    # search resolves the same DEEPSEEK_API_KEY
+    # credential the Models page manages for chat, at each search; its Messages
+    # endpoint is configured independently from the model route, so it takes its own
+    # base-URL override. Anonymous fetch accepts only public HTTP(S) destinations,
+    # resolves and validates every destination, and pins every actual connection.
+    # Search is a full auxiliary model request with server-side retrieval, so this
+    # shipped DeepSeek route gets 60s while the provider-neutral tool default
+    # remains 30s. The DeepSeek Search and Fetch APIs register as
+    # deepseek-search-api and deepseek-fetch-api with the same credential; the Web
+    # search settings switch selects both in place of these defaults.
+    - id: web
+      name: '@huoli/huoli-web'
+      config:
+        searchProvider: deepseek-official
+        fetchProvider: http
+
+    - id: web-search-deepseek
+      name: '@huoli/huoli-web-search-deepseek'
+      config:
+        apiKeyEnv: DEEPSEEK_API_KEY
+
+    - id: web-deepseek-api
+      name: '@huoli/huoli-web-deepseek-api'
+      config:
+        apiKeyEnv: DEEPSEEK_API_KEY
+
+    - id: web-fetch-http
+      name: '@huoli/huoli-web-fetch-http'
+
+    - id: tool-web
+      name: '@huoli/huoli-tool-web'
+      config:
+        fetch: true
+        searchTimeoutMs: 60000
+
+    - id: mcp-resources
+      name: '@huoli/huoli-mcp-resources'
+
+    # ── rows every mode mounts, whose values each overlay may state ──────────────
+
+    # Shared tool definitions and the deployment’s native executor.
+    - id: tools
+      name: '@huoli/huoli-tools'
+
+    - id: tool-executor-native
+      name: '@huoli/huoli-tool-executor-native'
+
+    - id: tool-executor-ptc
+      name: '@huoli/huoli-tool-executor-ptc'
+      disabled: true
+
+    # The deployment persona is a deployment choice; plan-mode and tool plugins own
+    # their own prompt sections.
+    - id: system-prompt
+      name: '@huoli/huoli-system-prompt'
+      config:
+        personaPrefix: ''
+
+    # Agents created at startup. The base stays empty; raw overlays may create
+    # agents, while Web creates sessions on client request.
+    - id: agent-loop
+      name: '@huoli/huoli-agent-loop'
+      config:
+        agents: []
+
+    # The sandboxed filesystem provider. `cwd` defaults to `process.cwd()`; an
+    # overlay can pin another workspace.
+    - id: fs-sandbox
+      name: '@huoli/huoli-fs-sandbox'
+
+    # The native DeepSeek adapter. No key or endpoint is inlined: both resolve per
+    # request from the `llm-deepseek:` settings section over this entry, with the
+    # key coming from the credential store below. Thinking defaults are a deployment
+    # choice.
+    - id: llm-deepseek
+      name: '@huoli/huoli-llm-deepseek-api-key'
+
+    - id: llm-deepseek-account
+      name: '@huoli/huoli-llm-deepseek-account'

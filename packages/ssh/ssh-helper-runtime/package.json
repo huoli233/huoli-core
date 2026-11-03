@@ -1,0 +1,64 @@
+{
+  "name": "@huoli/huoli-ssh-helper-runtime",
+  "description": "Private executable carrier for the POSIX SSH helper and managed workers",
+  "version": "0.2.2-alpha.2",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-app-boot": "workspace:*",
+    "@huoli/huoli-fs-ssh": "workspace:*",
+    "@huoli/huoli-subprocess-ssh": "workspace:*",
+    "@huoli/huoli-sandbox-ssh": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cosmokit": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-fs-sandbox": "workspace:*",
+    "@huoli/huoli-http-proxy": "workspace:*",
+    "@huoli/huoli-lazy-require": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-ptc-runtime": "workspace:*",
+    "@huoli/huoli-ptc-runtime-node": "workspace:*",
+    "@huoli/huoli-sandbox": "workspace:*",
+    "@huoli/huoli-sandbox-local": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-sandbox-windows-acl": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-skill": "workspace:*",
+    "@huoli/huoli-ssh": "workspace:*",
+    "@huoli/huoli-subprocess": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-timeout": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-util-crypto": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/huoli-win32-process": "workspace:*",
+    "@huoli/node-addon-system": "workspace:~",
+    "@huoli/schemastery": "workspace:~"
+  }
+}

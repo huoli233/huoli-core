@@ -1,0 +1,9 @@
+- insert:
+    - id: subagent-codex
+      name: '@huoli/huoli-subagent-codex'
+    - id: tool-subagent-codex
+      name: '@huoli/huoli-tool-subagent'
+      config:
+        provider: codex
+        toolName: subagent_codex
+        maxDepth: provider-managed

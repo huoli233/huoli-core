@@ -1,0 +1,8 @@
+- insert:
+    - id: translator
+      name: '@huoli/huoli-experimental-translator'
+    - id: cot-translation
+      name: '@huoli/huoli-experimental-client-ui-cot-translation'
+      config:
+        provider: bing
+        targetLanguage: auto

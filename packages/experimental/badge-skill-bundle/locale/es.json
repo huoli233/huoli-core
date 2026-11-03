@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Habilidad de insignia HUOLI",
+    "description": "Permita que los agentes agreguen una insignia \"con tecnología de huoli\" a documentos, solicitudes de extracción y otros resultados.",
+    "detail": "docs/DETAIL.md"
+  }
+}

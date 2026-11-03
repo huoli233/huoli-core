@@ -1,0 +1,10 @@
+- insert:
+    - id: skill-badge
+      name: '@huoli/huoli-skill-badge'
+
+- id: skill-filesystem
+  config:
+    watch: false
+
+- id: session-telemetry-otel
+  disabled: true

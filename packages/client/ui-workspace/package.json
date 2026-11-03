@@ -1,0 +1,95 @@
+{
+  "name": "@huoli/huoli-client-ui-workspace",
+  "description": "Workspace picker plugin: one WorkspacePicker registered into the sidebar and empty-state workspace slots",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-workspace"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-api-remote-access",
+        "@huoli/huoli-api-remotes",
+        "@huoli/huoli-api-session-controller",
+        "@huoli/huoli-api-workspace-controller",
+        "@huoli/huoli-client-connection",
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-shortcuts",
+        "@huoli/huoli-client-ui-conversation",
+        "@huoli/huoli-client-ui-layout",
+        "@huoli/huoli-client-ui-renderer",
+        "@huoli/huoli-client-ui-session",
+        "@huoli/huoli-client-ui-sidebar",
+        "@huoli/huoli-client-ui-context-menu"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/huoli-api-remote-access": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-api-remotes": "workspace:*",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-preset-registry": "workspace:*",
+    "@huoli/huoli-api-session-controller": "workspace:*",
+    "@huoli/huoli-api-workspace-controller": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-client-ui-conversation": "workspace:*",
+    "@huoli/huoli-client-ui-layout": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-session": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-jobs": "workspace:*",
+    "@huoli/huoli-schedule": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "clsx": "^2.0.0",
+    "react": "^18.2.0",
+    "@huoli/huoli-client-shortcuts": "workspace:*",
+    "@huoli/huoli-client-product-analytics": "workspace:*",
+    "@huoli/huoli-client-ui-context-menu": "workspace:*"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

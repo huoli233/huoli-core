@@ -1,0 +1,172 @@
+{
+  "name": "@huoli/huoli-experimental-liveshare",
+  "description": "Opt-in LiveShare host bundle: share a Session through a separate Relay at the view or bounded-write tier, with forking and attachment uploads as independent switches",
+  "version": "0.2.2-alpha.2",
+  "icon": "./icon.svg",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/experimental/liveshare"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./viewer-declarations": {
+      "types": "./lib/types/viewer-declarations.d.ts",
+      "default": "./lib/viewer-declarations.js"
+    },
+    "./typert": {
+      "types": "./lib/typert.host.d.ts",
+      "default": "./lib/typert.host.js"
+    },
+    "./remote": {
+      "types": "./lib/typert.remote-client.d.ts",
+      "default": "./lib/typert.remote-client.js"
+    },
+    "./types": {
+      "types": "./lib/types/share-api-types.d.ts"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml",
+    "lib/owner-gateway/cli.js",
+    "lib/retry-backoff-*.js",
+    "lib/viewer-declarations.js",
+    "lib/viewer-declarations-*.js",
+    "lib/types/**/*.d.ts",
+    "lib/typert.host.js",
+    "lib/typert.host.d.ts",
+    "lib/typert.remote-client.js",
+    "lib/typert.remote-client.d.ts"
+  ],
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/huoli-atomic-write": "workspace:*",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-experimental-liveshare-protocol": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "ws": "^8.18.3",
+    "zod": "4.4.3"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-scope": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-api-gateway": "workspace:*",
+    "@huoli/huoli-api-remote-access": "workspace:*",
+    "@huoli/huoli-api-remotes": "workspace:*",
+    "@huoli/huoli-api-session-controller": "workspace:*",
+    "@huoli/huoli-api-settings-controller": "workspace:*",
+    "@huoli/huoli-api-workspace-controller": "workspace:*",
+    "@huoli/huoli-api-workspace-files": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-file-upload": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-modules": "workspace:*",
+    "@huoli/huoli-client-resources": "workspace:*",
+    "@huoli/huoli-client-shortcuts": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-client-ui-agent-preset": "workspace:*",
+    "@huoli/huoli-client-ui-approval": "workspace:*",
+    "@huoli/huoli-client-ui-attachment": "workspace:*",
+    "@huoli/huoli-client-ui-brand-official": "workspace:*",
+    "@huoli/huoli-client-ui-chat": "workspace:*",
+    "@huoli/huoli-client-ui-commands": "workspace:*",
+    "@huoli/huoli-client-ui-context-menu": "workspace:*",
+    "@huoli/huoli-client-ui-conversation": "workspace:*",
+    "@huoli/huoli-client-ui-deliverables": "workspace:*",
+    "@huoli/huoli-client-ui-input-trigger": "workspace:*",
+    "@huoli/huoli-client-ui-jobs": "workspace:*",
+    "@huoli/huoli-client-ui-layout": "workspace:*",
+    "@huoli/huoli-client-ui-plan": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-reference": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-session": "workspace:*",
+    "@huoli/huoli-client-ui-settings": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-right": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-client-ui-subagent": "workspace:*",
+    "@huoli/huoli-client-ui-theme": "workspace:*",
+    "@huoli/huoli-client-ui-tool": "workspace:*",
+    "@huoli/huoli-client-ui-trajectory": "workspace:*",
+    "@huoli/huoli-client-ui-user-questions": "workspace:*",
+    "@huoli/huoli-client-ui-workflow-run": "workspace:*",
+    "@huoli/huoli-client-ui-workspace": "workspace:*",
+    "@huoli/huoli-client-web": "workspace:*",
+    "@huoli/huoli-cua": "workspace:*",
+    "@huoli/huoli-experimental-api-speech-to-text": "workspace:*",
+    "@huoli/huoli-experimental-claude-code-mods": "workspace:*",
+    "@huoli/huoli-experimental-client-ui-cot-translation": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-fs-local": "workspace:*",
+    "@huoli/huoli-fs-observation-policy": "workspace:*",
+    "@huoli/huoli-fs-sandbox": "workspace:*",
+    "@huoli/huoli-host-webserver": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-sandbox": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-settings": "workspace:*",
+    "@huoli/huoli-tool-executor-native": "workspace:*",
+    "@huoli/huoli-tool-fs": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-typert-registry": "workspace:*",
+    "@huoli/huoli-workspace": "workspace:*",
+    "@types/ws": "^8.18.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "huoli": {
+    "bundle": {
+      "patch": "./cordis.patch.yml",
+      "listedByDefault": false
+    },
+    "client": {
+      "inject": [
+        "@huoli/huoli-api-remote-access",
+        "@huoli/huoli-api-remotes",
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-conversation",
+        "@huoli/huoli-client-ui-primitives",
+        "@huoli/huoli-client-ui-renderer",
+        "@huoli/huoli-client-ui-session"
+      ],
+      "platform": "web"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

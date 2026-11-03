@@ -1,0 +1,81 @@
+{
+  "name": "@huoli/huoli-web-frontend",
+  "description": "Web application entry: vite build over the @huoli/huoli-client-web shell library; dist/ served by apps/cli's huoli web",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "apps/web"
+  },
+  "type": "module",
+  "exports": {
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/preview.html",
+    "!dist/preview"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "watch": "vite build --watch --no-emptyOutDir",
+    "build:preview": "pnpm --filter @huoli/huoli-experimental-webworker-runtime exec tsdown && pnpm --filter @huoli/huoli-experimental-webworker-packer exec tsdown && vite build && huoli-pack-vfs-image --out dist/preview/vfs-image.tar.gz",
+    "serve:preview": "http-server dist -a 0.0.0.0 -p 4173 -c-1",
+    "render:app-icons": "tsx scripts/render-app-icons.ts"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@huoli/cordis-plugin-group": "workspace:~",
+    "@huoli/huoli-client-modules": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-llm-mock-server": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-client-ui-deliverables": "workspace:*",
+    "@huoli/huoli-client-ui-dockkit": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-client-web": "workspace:*",
+    "@huoli/huoli-cmdline": "workspace:*",
+    "@huoli/huoli-pwsh-local": "workspace:*",
+    "@huoli/huoli-experimental-agent-team": "workspace:*",
+    "@huoli/huoli-experimental-webworker-packer": "workspace:*",
+    "@huoli/huoli-experimental-webworker-runtime": "workspace:*",
+    "@huoli/huoli-remote-mock": "workspace:*",
+    "@huoli/huoli-session-projection-cache": "workspace:*",
+    "@huoli/huoli-tool-testkit": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@types/node": "^22.20.1",
+    "@types/ws": "8.18.1",
+    "@vitejs/plugin-react": "^4.7.0",
+    "http-server": "^14.1.1",
+    "fflate": "^0.8.2",
+    "playwright": "^1.49.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sharp": "0.35.5",
+    "typescript": "^6.0.3",
+    "vite": "^6.4.3",
+    "vitest": "^4.1.11",
+    "ws": "8.21.3",
+    "@huoli/huoli-client-ui-theme": "workspace:*",
+    "@huoli/huoli-launch-environment": "workspace:*",
+    "@huoli/huoli-workspace-changes": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*",
+    "@huoli/huoli-experimental-auto-review": "workspace:*",
+    "@huoli/huoli-experimental-speech-to-text": "workspace:*",
+    "@huoli/huoli-experimental-voice-input-bundle": "workspace:*",
+    "@huoli/huoli-experimental-cot-translation-bundle": "workspace:*",
+    "@huoli/huoli-experimental-worktree": "workspace:*",
+    "@huoli/huoli-experimental-plugin-market-bundle": "workspace:*",
+    "@huoli/huoli-experimental-forge-bundle": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-message-quotes": "workspace:*"
+  }
+}

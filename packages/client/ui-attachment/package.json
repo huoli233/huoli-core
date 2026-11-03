@@ -1,0 +1,76 @@
+{
+  "name": "@huoli/huoli-client-ui-attachment",
+  "description": "Dynamic attachment presentation plugin for conversation input, message-image, and trajectory image slots",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-attachment"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-chat",
+        "@huoli/huoli-client-ui-conversation",
+        "@huoli/huoli-client-ui-renderer",
+        "@huoli/huoli-client-ui-trajectory",
+        "@huoli/huoli-client-ui-tool",
+        "@huoli/huoli-client-ui-file-drag",
+        "@huoli/huoli-client-ui-context-menu"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-ui-chat": "workspace:*",
+    "@huoli/huoli-client-ui-conversation": "workspace:*",
+    "@huoli/huoli-client-ui-trajectory": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-client-ui-tool": "workspace:*",
+    "clsx": "^2.0.0",
+    "@huoli/huoli-client-ui-file-drag": "workspace:*",
+    "@huoli/huoli-util-file-drag": "workspace:*",
+    "@huoli/huoli-client-ui-context-menu": "workspace:*"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  }
+}

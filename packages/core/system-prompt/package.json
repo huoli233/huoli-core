@@ -1,0 +1,44 @@
+{
+  "name": "@huoli/huoli-system-prompt",
+  "description": "System prompt assembly registry for the Huoli Core",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/core/system-prompt"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/cordis": "workspace:~"
+  },
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/cordis": "workspace:~"
+  }
+}

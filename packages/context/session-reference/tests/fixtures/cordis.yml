@@ -1,0 +1,20 @@
+- name: '@huoli/huoli-session'
+- name: '@huoli/huoli-system-prompt'
+- name: '@huoli/huoli-tools'
+- name: '@huoli/huoli-tool-executor-native'
+- name: '@huoli/huoli-fs-local'
+- name: '@huoli/huoli-session-projection'
+- name: '@huoli/huoli-working-directory'
+- name: '@huoli/huoli-tool-fs'
+- name: '@huoli/huoli-session-query-sqlite'
+  config:
+    path: ':memory:'
+    openAt: never
+- name: '@huoli/huoli-session-reference'
+  config:
+    maxReferenceBytes: 360
+- name: './source-session.ts'
+- name: '@huoli/huoli-spill-local'
+  config:
+    root: '{{spillRoot}}'
+    cleanupPeriodDays: 0

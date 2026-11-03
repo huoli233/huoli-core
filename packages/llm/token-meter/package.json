@@ -1,0 +1,63 @@
+{
+  "name": "@huoli/huoli-token-meter",
+  "description": "Replay-aware token measurement service (ctx.tokenMeter) for the Huoli Core",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/llm/token-meter"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client.d.ts",
+      "default": "./lib/types/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./estimate": {
+      "types": "./lib/types/estimate.d.ts",
+      "default": "./lib/types/estimate.js"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-compaction": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-retry": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-compaction-image-offload": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-compaction": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-retry": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-compaction-image-offload": "workspace:*"
+  }
+}

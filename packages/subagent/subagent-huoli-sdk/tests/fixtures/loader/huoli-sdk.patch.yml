@@ -1,0 +1,63 @@
+# Test-only SDK provider patch over the shipped headless profile. The child
+# is a complete sdk profile; the parent omits `cwd` to exercise inheritance.
+- id: headless-startup
+  disabled: true
+
+- id: headless-runner
+  disabled: true
+
+- id: agent-loop
+  config:
+    agents:
+      - id: main
+        provider: mock
+        model: mock-delegate
+        cwd: !!js process.cwd()
+
+- id: session-persistence-jsonl
+  config:
+    root: './.sessions'
+    compression: none
+
+- id: tool-subagent
+  disabled: true
+
+- insert:
+    - id: mock-llm
+      name: './mock-delegating-llm.ts'
+
+    - id: subagent-model-selection-settings
+      name: '@huoli/huoli-tool-subagent/model-selection-settings'
+      config:
+        enabled: true
+        allowedModels:
+          - provider: mock
+            model: mock-routed
+
+    - id: test-tool-subagent
+      name: './scoped-tool-subagent.ts'
+      config:
+        provider: huoli-sdk
+        toolName: subagent
+        agentOptions:
+          maxTokens: 777
+        maxDepth: 'provider-managed'
+
+    # providerName is omitted to exercise the shipped `huoli-sdk` default.
+    - id: subagent-huoli-sdk
+      name: '@huoli/huoli-subagent-huoli-sdk'
+      config:
+        profile: sdk
+        patches: !!js JSON.parse(process.env.HUOLI_TEST_CHILD_PATCHES ?? '[]')
+        dshHome: !!js process.env.HUOLI_TEST_CHILD_HOME
+        provider: mock
+        model: mock-routed
+        env:
+          HUOLI_TELEMETRY_DISABLED: '1'
+          HUOLI_TEST_CHILD_FAILURE: !!js String(process.env.HUOLI_TEST_CHILD_FAILURE ?? '')
+
+- id: sandbox-policy
+  inject: []
+  config:
+    mode: !!js process.env.HUOLI_PERMISSION_MODE ?? 'workspace-write'
+    workspaceRoot: !!js process.cwd()

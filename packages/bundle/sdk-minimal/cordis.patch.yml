@@ -1,0 +1,179 @@
+# Standalone minimal SDK application. Unlike the ordinary SDK profile, this
+# bundle does not layer over huoli-base: this insert is the complete Cordis tree.
+# User profile, home, and invocation patches still apply above it.
+
+- insert:
+    - id: sdk-app-startup
+      name: '@huoli/huoli-sdk-app'
+      config:
+        profile: sdk-minimal
+
+    - id: sdk-jsonrpc-server
+      name: '@huoli/huoli-sdk-jsonrpc-server'
+      inject: [sdkAppStartup, loader]
+      config:
+        maxTokensAsSuccess: false
+
+    - id: deepseek-llm-api-extensions
+      name: '@huoli/huoli-deepseek-llm-api-extensions'
+
+    - id: session-log-deepseek
+      name: '@huoli/huoli-session-log-deepseek'
+
+    - id: plugin-package-inventory-deepseek
+      name: '@huoli/huoli-plugin-package-inventory-deepseek'
+
+    - id: llm-deepseek
+      name: '@huoli/huoli-llm-deepseek-api-key'
+      config:
+        apiKeyEnv: DEEPSEEK_API_KEY
+        defaultContextWindow: !!js Number(process.env.HUOLI_CONTEXT_WINDOW ?? 1000000)
+        streamIdleTimeoutMs: 172800000
+
+    - id: sandbox
+      name: '@huoli/huoli-sandbox-local'
+
+    # Shared projection registry: sandbox-policy and terminal-bash fold
+    # sandbox-mode state through its units and require it as a hard injection.
+    - id: filesystem
+      name: '@huoli/huoli-fs-local'
+
+    - id: attachment-local
+      name: '@huoli/huoli-attachment-local'
+
+    - id: tool-fs
+      name: '@huoli/huoli-tool-fs'
+      config:
+        read: false
+        readImage: true
+        write: false
+        edit: false
+
+    - id: working-directory
+      name: '@huoli/huoli-working-directory'
+
+    - id: tool-working-directory
+      name: '@huoli/huoli-tool-working-directory'
+
+    - id: session-projection
+      name: '@huoli/huoli-session-projection'
+
+    - id: token-meter
+      name: '@huoli/huoli-token-meter'
+
+    - id: compaction-basic
+      name: '@huoli/huoli-compaction-basic'
+
+    - id: image-offload
+      name: '@huoli/huoli-compaction-image-offload'
+
+    - id: sandbox-policy
+      name: '@huoli/huoli-sandbox-policy'
+      config:
+        mode: danger-full-access
+        workspaceRoot: !!js process.cwd()
+
+    - id: subprocess
+      name: '@huoli/huoli-subprocess-local'
+
+    - id: pty
+      name: '@huoli/huoli-terminal'
+
+    - id: terminal-bash
+      name: '@huoli/huoli-terminal-bash'
+      disabled: !!js process.platform === 'win32'
+      config:
+        timeoutMs: 300000
+
+    - id: terminal-pwsh
+      name: '@huoli/huoli-terminal-bash'
+      disabled: !!js process.platform !== 'win32'
+      config:
+        shellDialect: pwsh
+        timeoutMs: 300000
+
+    # Keep the minimal agent kernel explicit: unlike huoli-base, this profile
+    # owns each service row and omits every optional producer it does not use.
+    - id: timer
+      name: '@huoli/cordis-plugin-timer'
+
+    - id: llm
+      name: '@huoli/huoli-llm'
+
+    - id: session
+      name: '@huoli/huoli-session'
+
+    - id: session-title
+      name: '@huoli/huoli-session-title'
+      config:
+        fallbackMaxWords: 5
+        fallbackMaxBytes: 40
+        maxTitleBytes: 80
+
+    - id: system-prompt
+      name: '@huoli/huoli-system-prompt'
+      config:
+        includeHarnessIdentity: false
+        includeRuntimeContext: false
+        personaPrefix: !!js process.env.HUOLI_SYSTEM_PROMPT ?? 'You are a helpful software engineer assistant.'
+
+    - id: tools
+      name: '@huoli/huoli-tools'
+
+    - id: tool-executor-native
+      name: '@huoli/huoli-tool-executor-native'
+
+    - id: mcp-resources
+      name: '@huoli/huoli-mcp-resources'
+
+    - id: agent
+      name: '@huoli/huoli-agent'
+
+
+    - id: llm-retry
+      name: '@huoli/huoli-llm-retry'
+
+    - id: jobs
+      name: '@huoli/huoli-jobs-local'
+
+    - id: agent-loop
+      name: '@huoli/huoli-agent-loop'
+      config:
+        agents: []
+
+    - id: persistent-bash
+      name: '@huoli/huoli-tool-bash-persistent'
+      disabled: !!js process.platform === 'win32'
+      config:
+        timeoutMs: 300000
+        description: |-
+          Run commands in a bash shell
+          * When invoking this tool, the contents of the "command" parameter does NOT need to be XML-escaped.
+          * Network access depends on the task environment. Prefer configured mirrors/proxies when they are available.
+          * State is persistent across command calls and discussions with the user.
+          * To inspect a particular line range of a file, e.g. lines 10-25, try 'sed -n 10,25p /path/to/the/file'.
+          * Please avoid commands that may produce a very large amount of output.
+          * Please run long lived commands in the background, e.g. 'sleep 10 &' or start a server in the background.
+
+    - id: persistent-pwsh
+      name: '@huoli/huoli-tool-pwsh-persistent'
+      disabled: !!js process.platform !== 'win32'
+      config:
+        timeoutMs: 300000
+        description: |-
+          Run commands in a PowerShell shell
+          * When invoking this tool, the contents of the "command" parameter does NOT need to be XML-escaped.
+          * You don't have access to the internet via this tool.
+          * State is persistent across command calls and discussions with the user.
+          * Use native Windows paths (C:\...) and $env:NAME variables; this is PowerShell, not bash.
+          * Please avoid commands that may produce a very large amount of output.
+          * Please run long lived commands in the background, e.g. 'Start-Job' or start a server with Start-Process.
+
+    - id: sessions
+      name: '@huoli/huoli-session-persistence-jsonl'
+      config:
+        root: !!js dshHomePath('sessions')
+        compression: none
+
+    - id: session-checkpoint-policy
+      name: '@huoli/huoli-session-checkpoint-policy'

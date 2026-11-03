@@ -1,0 +1,62 @@
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  disabled: true
+
+- id: plugin-package-inventory-deepseek
+  disabled: true
+
+- id: agent-default-model
+  name: '@huoli/huoli-agent-default-model'
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-flash-vision-exp
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js dshHomePath('sessions')
+    compression: none
+
+- id: tool-executor-native
+  disabled: true
+
+- id: tool-executor-ptc
+  disabled: false
+
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+  config:
+    personaPrefix: |
+      You are a coding assistant powered by the {{model}} model.
+
+      Verify your work by running the code or tests. Keep answers brief and factual.
+
+- insert:
+    - id: llm-replay
+      name: '@huoli/huoli-llm-replay'
+      config:
+        providers:
+          - id: deepseek-official
+            name: DeepSeek
+            models:
+              - id: deepseek-v4-flash-vision-exp
+                inputModalities: [text, image]
+
+- id: attachment-local
+  name: '@huoli/huoli-attachment-local'
+
+- insert:
+    - id: computer-use
+      name: '@huoli/huoli-computer-use'
+    - id: cua-native
+      name: '@huoli/huoli-experimental-cua-macos'
+      config:
+        agentPreset: false
+        helperPath: !!js process.cwd() + '/native-helper.mjs'
+
+- id: user-questions
+  name: '@huoli/huoli-user-questions'
+
+- insert:
+    - id: cua-consent-fixture
+      name: './consent-fixture.mjs'

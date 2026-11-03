@@ -1,0 +1,29 @@
+# SDK-profile patch for the child runtime in the cwd-inheritance proof.
+
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  disabled: true
+
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+  config:
+    personaPrefix: 'Echo where you run.'
+
+- id: agent-instructions
+  name: '@huoli/huoli-agent-instructions'
+  disabled: true
+
+- id: skill-filesystem
+  name: '@huoli/huoli-skill-filesystem'
+  config:
+    includeDefaultRoots: false
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js dshHomePath('sessions')
+    compression: none
+
+- insert:
+    - id: child-mock-llm
+      name: './child-mock-llm.ts'

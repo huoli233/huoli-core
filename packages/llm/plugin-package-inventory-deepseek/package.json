@@ -1,0 +1,65 @@
+{
+  "name": "@huoli/huoli-plugin-package-inventory-deepseek",
+  "description": "Active Loader-backed plugin package inventory for official DeepSeek LLM API requests",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/llm/plugin-package-inventory-deepseek"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/schemastery": "workspace:~"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-preset-registry": "workspace:*",
+    "@huoli/huoli-deepseek-llm-api-extensions": "workspace:*",
+    "@huoli/huoli-session": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@huoli/huoli-agent-preset-registry": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@huoli/huoli-app-boot": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-preset-registry": "workspace:*",
+    "@huoli/huoli-deepseek-llm-api-extensions": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "name": "@huoli/huoli-headless",
+  "description": "The huoli one-shot bundle: a direct core Agent/Session runner over huoli-base with no Host, HTTP, or browser layer",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/bundle/headless"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./startup": {
+      "types": "./lib/types/startup.d.ts",
+      "default": "./lib/startup.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./src/*": "./src/*",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/startup.js",
+    "cordis.patch.yml",
+    "lib/json-stream-*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "huoli": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-cmdline": "workspace:*",
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "commander": "^15.0.0"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-default-model": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-query": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-user-approval": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-default-model": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-query": "workspace:*",
+    "@huoli/huoli-fs": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-user-approval": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@huoli/huoli-permission-presets": {
+      "optional": true
+    },
+    "@huoli/huoli-sandbox-policy": {
+      "optional": true
+    },
+    "@huoli/huoli-subagent": {
+      "optional": true
+    }
+  }
+}

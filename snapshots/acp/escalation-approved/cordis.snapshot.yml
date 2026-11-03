@@ -1,0 +1,52 @@
+# Replay-only patch layered after `cordis.yml`: replace the network adapter
+# with recorded JSONL, pin the recorded top-level model, and keep persistence
+# raw for fixture harvesting.
+
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  disabled: true
+
+- id: acp
+  name: '@huoli/huoli-acp'
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-flash
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js process.env.HUOLI_SNAPSHOT_SESSIONS_ROOT ?? dshHomePath('sessions')
+    compression: none
+
+- id: sandbox
+  name: '@huoli/huoli-sandbox-local'
+  config:
+    runnerCommand:
+      - bash
+      - -c
+      - while [ "$1" != "--" ]; do shift; done; shift; exec "$@"
+      - passthrough-runner
+    runnerFailureSignatures:
+      - 'passthrough-runner: profile rejected'
+
+- insert:
+    - id: llm-replay
+      name: '@huoli/huoli-llm-replay'
+      config:
+        providers:
+          - id: deepseek-official
+            name: DeepSeek
+            models:
+              - id: deepseek-v4-flash
+              - id: deepseek-v4-pro
+
+    - id: subagent-settlement-marker
+      name: './subagent-settlement-marker.ts'
+
+- insert:
+    - id: snapshot-shell-path
+      name: ../../../scripts/snapshot-shell-path.ts
+      config:
+        command: "printf 'escalated\\n' > /tmp/huoli-escalated.txt && cat /tmp/huoli-escalated.txt && rm /tmp/huoli-escalated.txt"
+        recordedPath: /tmp/huoli-escalated.txt
+        livePath: !!js process.env.HUOLI_SNAPSHOT_SPILL_ROOT + '/huoli-escalated.txt'

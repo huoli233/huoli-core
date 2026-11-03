@@ -1,0 +1,104 @@
+{
+  "name": "@huoli/huoli-client-ui-sidebar-documentpreview",
+  "description": "Extensible Sidebar previews for Office documents, spreadsheets, Markdown, code, images, PDF, HTML, and plain text",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-sidebar-documentpreview"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-api-gateway",
+        "@huoli/huoli-api-workspace-files",
+        "@huoli/huoli-client-resources",
+        "@huoli/huoli-client-ui-sidebar-right",
+        "@huoli/huoli-client-ui-session",
+        "@huoli/huoli-api-remotes",
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-settings",
+        "@huoli/huoli-client-ui-file-drag",
+        "@huoli/huoli-client-ui-context-menu"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-api-gateway": "workspace:*",
+    "@huoli/huoli-api-remotes": "workspace:*",
+    "@huoli/huoli-api-workspace-files": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-resources": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-client-ui-dockkit": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-session": "workspace:*",
+    "@huoli/huoli-client-ui-settings": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-files": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-right": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-office-to-pdf": "workspace:*",
+    "@huoli/huoli-host-webserver": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "@fortune-sheet/core": "1.0.4",
+    "@fortune-sheet/react": "1.0.4",
+    "@testing-library/react": "^16.3.3",
+    "@types/papaparse": "^5.3.16",
+    "clsx": "^2.0.0",
+    "dompurify": "^3.4.16",
+    "exceljs": "4.4.0",
+    "fast-xml-parser": "5.11.1",
+    "fflate": "^0.8.3",
+    "papaparse": "5.7.0",
+    "pdfjs-dist": "6.3.289",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "yaml": "^2.9.0",
+    "@huoli/huoli-client-ui-file-drag": "workspace:*",
+    "@huoli/huoli-client-ui-context-menu": "workspace:*"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/client.*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "dependencies": {
+    "@huoli/schemastery": "workspace:~"
+  }
+}

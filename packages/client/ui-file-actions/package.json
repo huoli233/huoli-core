@@ -1,0 +1,73 @@
+{
+  "name": "@huoli/huoli-client-ui-file-actions",
+  "description": "Original-file saving and image clipboard actions for Web and Desktop",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-file-actions"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./types": {
+      "types": "./lib/types/types.d.ts"
+    }
+  },
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-ui-context-menu",
+        "@huoli/huoli-api-workspace-files",
+        "@huoli/huoli-api-session-controller"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "react": "^18.2.0",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-api-session-controller": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-util-file-drag": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-ui-context-menu": "workspace:*",
+    "@huoli/huoli-api-workspace-files": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "mime": "^4.1.0",
+    "@huoli/huoli-client-ui-renderer": "workspace:*"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

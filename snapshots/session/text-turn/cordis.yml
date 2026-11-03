@@ -1,0 +1,81 @@
+# Live-recording patch shared by the ordinary headless snapshot composition.
+# The shipped profile owns application startup; this patch fixes only the
+# deterministic test composition and raw persistence needed for recording.
+
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  config:
+    thinking: enabled
+    reasoningEffort: max
+    models:
+      - id: deepseek-v4-flash
+      - id: deepseek-v4-pro
+      - id: deepseek-v4-flash-vision-exp
+        inputModalities: [text, image]
+
+- id: sandbox-policy
+  name: '@huoli/huoli-sandbox-policy'
+  config:
+    mode: !!js "process.env.HUOLI_PERMISSION_MODE ?? (process.env.HUOLI_SNAPSHOT === undefined ? 'workspace-write' : 'danger-full-access')"
+    workspaceRoot: !!js process.cwd()
+
+- id: approval
+  name: '@huoli/huoli-user-approval'
+  config:
+    policy: !!js "(process.env.HUOLI_PERMISSION_MODE ?? (process.env.HUOLI_SNAPSHOT === undefined ? 'workspace-write' : 'danger-full-access')) === 'danger-full-access' ? 'never' : 'ask'"
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js dshHomePath('sessions')
+    compression: none
+
+- id: session-title-llm
+  disabled: true
+
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+  config:
+    personaPrefix: |
+      You are a coding assistant powered by the {{model}} model. Your bash tool runs under a file sandbox — a `[sandbox: file access denied …]` result is policy, not a command bug.
+
+      Verify your work by running the code or tests. Keep answers brief and factual.
+
+- id: agent-instructions
+  name: '@huoli/huoli-agent-instructions'
+  config:
+    maxBytes: 65536
+
+- id: tool-subagent
+  name: '@huoli/huoli-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent
+    maxDepth: 1
+
+- id: tool-subagent-fork
+  name: '@huoli/huoli-tool-subagent'
+  config:
+    provider: fork
+    toolName: subagent_fork
+    maxDepth: 1
+
+- id: fs-sandbox
+  name: '@huoli/huoli-fs-sandbox'
+  config:
+    cwd: !!js process.cwd()
+
+- insert:
+    - id: hooks-claude-code
+      name: '@huoli/huoli-hooks-claude-code'
+      config:
+        configPath: ./hooks.json
+
+    - id: hooks-codex
+      name: '@huoli/huoli-hooks-codex'
+      config:
+        configPath: ./codex-hooks.json
+
+- id: session-log-deepseek
+  config:
+    enabled: false

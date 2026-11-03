@@ -1,0 +1,13 @@
+- insert:
+    - id: action-cards
+      name: '@huoli/huoli-action-cards'
+    - id: client-ui-action-cards
+      name: '@huoli/huoli-client-ui-action-cards'
+    - id: creation-recommendations
+      name: '@huoli/huoli-creation-recommendations'
+    - id: client-ui-creation-recommendations
+      name: '@huoli/huoli-client-ui-creation-recommendations'
+    - id: plugin-recommendations
+      name: '@huoli/huoli-plugin-recommendations'
+    - id: client-ui-plugin-recommendations
+      name: '@huoli/huoli-client-ui-plugin-recommendations'

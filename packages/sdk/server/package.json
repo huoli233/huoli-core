@@ -1,0 +1,85 @@
+{
+  "name": "@huoli/huoli-sdk-jsonrpc-server",
+  "description": "Stdio JSON-RPC server plugin for out-of-process Huoli Core SDK clients",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/sdk/server"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/schemastery": "workspace:~"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-goal": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-deepseek-api-key": "workspace:*",
+    "@huoli/huoli-schedule": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-sdk-protocol": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-user-approval": "workspace:*",
+    "@huoli/huoli-user-questions": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-agent-loop": "workspace:*",
+    "@huoli/huoli-agent-loop-testkit": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-command-compact": "workspace:*",
+    "@huoli/huoli-command-goal": "workspace:*",
+    "@huoli/huoli-commands": "workspace:*",
+    "@huoli/huoli-compaction-basic": "workspace:*",
+    "@huoli/huoli-goal": "workspace:*",
+    "@huoli/huoli-goal-round-driver": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-llm-deepseek-api-key": "workspace:*",
+    "@huoli/huoli-permission-presets": "workspace:*",
+    "@huoli/huoli-plan-mode": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-schedule": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-sdk-protocol": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-session-persistence-jsonl": "workspace:*",
+    "@huoli/huoli-session-projection": "workspace:*",
+    "@huoli/huoli-shell": "workspace:*",
+    "@huoli/huoli-subagent": "workspace:*",
+    "@huoli/huoli-token-meter": "workspace:*",
+    "@huoli/huoli-tool-goal": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*",
+    "@huoli/huoli-user-approval": "workspace:*",
+    "@huoli/huoli-user-questions": "workspace:*",
+    "@huoli/huoli-working-directory": "workspace:*"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Entwicklertools",
+    "description": "Zur Fehlersuche: Sehen Sie in „Sitzungsprotokoll“, was HUOLI für eine Sitzung aufgezeichnet hat, prüfen Sie im Tab „Statistik“ Kontext, Dauer, Cache und Werkzeugkosten pro Runde und Schritt und debuggen Sie das HUOLI-Backend in Chrome DevTools.",
+    "detail": "docs/DETAIL.md"
+  }
+}

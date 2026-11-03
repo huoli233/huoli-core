@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "HUOLI habilidade de distintivo",
+    "description": "Permita que os agentes adicionem um selo “powered by huoli” a documentos, pull requests e outros resultados.",
+    "detail": "docs/DETAIL.md"
+  }
+}

@@ -1,0 +1,5 @@
+- insert:
+    - id: worktree
+      name: '@huoli/huoli-experimental-worktree'
+    - id: tool-worktree
+      name: '@huoli/huoli-experimental-tool-worktree'

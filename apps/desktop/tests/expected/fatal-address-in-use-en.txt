@@ -1,0 +1,6 @@
+Huoli Core is unavailable
+The application could not start or stopped unexpectedly.
+Another HUOLI instance (such as huoli web or the desktop app) is running. They cannot start at the same time. Quit the other running HUOLI instance, then restart.
+The diagnostic report could not be saved. You can provide a screenshot of this dialog when requesting support.
+Exit
+Restart

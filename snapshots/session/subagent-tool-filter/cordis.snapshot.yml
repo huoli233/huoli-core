@@ -1,0 +1,85 @@
+# Replay patch shared by the ordinary headless snapshot composition. The model
+# script comes from the scenario's committed session JSONL.
+
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  disabled: true
+
+- id: plugin-package-inventory-deepseek
+  disabled: true
+
+- id: session-title-llm
+  disabled: true
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js dshHomePath('sessions')
+    compression: none
+
+- id: sandbox
+  name: '@huoli/huoli-sandbox-local'
+  config:
+    runnerCommand:
+      - bash
+      - -c
+      - while [ "$1" != "--" ]; do shift; done; shift; exec "$@"
+      - passthrough-runner
+    runnerFailureSignatures:
+      - 'passthrough-runner: profile rejected'
+
+- insert:
+    - id: llm-replay
+      name: '@huoli/huoli-llm-replay'
+      config:
+        providers:
+          - id: deepseek-official
+            name: DeepSeek
+            models:
+              - id: deepseek-v4-flash
+              - id: deepseek-v4-pro
+
+# The parent owns its file and web tools; the child selects a separate preset.
+- id: tool-fs
+  disabled: true
+
+- id: tool-fs-search
+  disabled: true
+
+- id: tool-web
+  disabled: true
+
+- insert:
+    - id: agent-preset-registry
+      name: '@huoli/huoli-agent-preset-registry'
+      config:
+        default: parent
+    - id: preset-parent
+      name: '@huoli/huoli-agent-preset'
+      config:
+        id: parent
+        plugins:
+          - name: '@huoli/huoli-tool-fs'
+          - name: '@huoli/huoli-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - name: '@huoli/huoli-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+    - id: preset-child
+      name: '@huoli/huoli-agent-preset'
+      config:
+        id: child
+        plugins: []
+    - id: parent-agent-preset
+      name: '../../../packages/test-support/session-snapshot/tests/fixtures/parent-agent-preset.ts'
+
+- id: tool-subagent
+  name: '@huoli/huoli-tool-subagent'
+  inject: [agentPresets]
+  config:
+    provider: spawn
+    toolName: subagent
+    maxDepth: 1
+    agentPreset: child

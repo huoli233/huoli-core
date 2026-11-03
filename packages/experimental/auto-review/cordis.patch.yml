@@ -1,0 +1,3 @@
+- insert:
+    - id: auto-review
+      name: '@huoli/huoli-experimental-auto-review'

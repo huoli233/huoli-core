@@ -1,0 +1,11 @@
+- insert:
+    - id: mcp-pagination-limit
+      name: '@huoli/huoli-mcp-client'
+      config:
+        transport: stdio
+        serverName: pagination-limit
+        command: !!js process.execPath
+        args: !!js '[process.env.HUOLI_MCP_PAGINATION_FIXTURE]'
+        failOnStartupError: true
+        reconnect:
+          enabled: false

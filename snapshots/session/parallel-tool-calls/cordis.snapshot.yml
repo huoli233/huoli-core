@@ -1,0 +1,59 @@
+# Keyless filesystem snapshots combine spill settings with replay. The
+# sandboxed filesystem stack already lives in `huoli-base`; the ACP row re-pins
+# `deepseek-v4-flash` for the recorded corpus.
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  disabled: true
+
+- id: agent-default-model
+  name: '@huoli/huoli-agent-default-model'
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-flash
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js dshHomePath('sessions')
+    compression: none
+
+- id: agent-instructions
+  name: '@huoli/huoli-agent-instructions'
+  config:
+    maxBytes: 65536
+
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+  config:
+    personaPrefix: |
+      You are a coding assistant powered by the {{model}} model. Your bash tool runs under a file sandbox — a `[sandbox: file access denied …]` result is policy, not a command bug.
+
+      Verify your work by running the code or tests. Keep answers brief and factual.
+
+- insert:
+    - id: llm-replay
+      name: '@huoli/huoli-llm-replay'
+      config:
+        providers:
+          - id: deepseek-official
+            name: DeepSeek
+            models:
+              - id: deepseek-v4-flash
+              - id: deepseek-v4-pro
+
+- id: spill-local
+  name: '@huoli/huoli-spill-local'
+  config:
+    root: !!js process.env.HUOLI_SNAPSHOT_SPILL_ROOT ?? './.spill'
+
+- id: spill-policy
+  name: '@huoli/huoli-spill-policy'
+  config:
+    maxInlineTokens: 200
+
+- insert:
+    - id: snapshot-spill-locators
+      name: ../../../scripts/snapshot-spill-locators.ts
+      config:
+        root: !!js process.env.HUOLI_SNAPSHOT_SPILL_ROOT
+        locatorRoot: !!js process.env.HUOLI_SNAPSHOT_SPILL_LOCATOR_ROOT

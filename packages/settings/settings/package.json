@@ -1,0 +1,60 @@
+{
+  "name": "@huoli/huoli-settings",
+  "description": "Abstract user-settings seam (ctx.settings) for the Huoli Core",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/settings/settings"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/schemastery": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "@huoli/cordis-plugin-timer": "workspace:~",
+    "@huoli/huoli-app-boot": "workspace:*",
+    "@huoli/huoli-hmr": "workspace:*",
+    "@huoli/huoli-agent-default-model": "workspace:*",
+    "yaml": "^2.8.1"
+  },
+  "dependencies": {
+    "@huoli/huoli-util-values": "workspace:*",
+    "@huoli/huoli-config-editor": "workspace:*",
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/cosmokit": "workspace:~",
+    "yaml": "^2.8.1"
+  }
+}

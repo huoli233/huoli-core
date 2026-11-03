@@ -1,0 +1,39 @@
+# SDK-profile patch for the deterministic diagnostic child runtime.
+
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  disabled: true
+
+- id: agent-instructions
+  name: '@huoli/huoli-agent-instructions'
+  disabled: true
+
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+  config:
+    personaPrefix: 'Return the scripted HUOLI SDK failure.'
+
+- insert:
+    - id: child-mock-llm
+      name: '../../../packages/subagent/subagent-huoli-sdk/tests/fixtures/loader/child-mock-llm.ts'
+
+# Preserve the explicitly selected pre-desktop recorded compositions.
+# New SDK default-context scenarios do not apply this patch.
+
+- id: present
+  disabled: true
+
+- id: tool-ask-user
+  disabled: true
+
+- id: tool-schedule
+  disabled: true
+
+- id: file-reference-local
+  disabled: true
+
+- id: deliverable-file-references
+  disabled: true
+
+- id: time-context
+  disabled: true

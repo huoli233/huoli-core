@@ -1,0 +1,57 @@
+{
+  "name": "@huoli/huoli-sandbox-windows-acl",
+  "description": "Windows ACL write-restriction sandbox backend (restricted-token spawn with capability-SID write allowlist) for the Huoli Core sandbox seam",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/sandbox/sandbox-windows-acl"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./runner": {
+      "types": "./lib/types/runner.d.ts",
+      "default": "./lib/runner.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/runner.js",
+    "lib/types-*.js",
+    "assets",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-skill": "workspace:*",
+    "@huoli/huoli-subprocess": "workspace:*"
+  },
+  "dependencies": {
+    "@huoli/huoli-lazy-require": "workspace:*",
+    "@huoli/huoli-win32-process": "workspace:*",
+    "koffi": "3.1.1",
+    "yaml": "^2.4.2"
+  },
+  "devDependencies": {
+    "@huoli/cordis-plugin-loader": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/huoli-pwsh-local": "workspace:*",
+    "@huoli/huoli-sandbox-local": "workspace:*",
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-skill": "workspace:*",
+    "@huoli/huoli-subprocess": "workspace:*",
+    "@huoli/huoli-subprocess-local": "workspace:*"
+  }
+}

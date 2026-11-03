@@ -1,0 +1,94 @@
+{
+  "name": "@huoli/huoli-client-ui-open-in-app",
+  "description": "Web \"Open In...\" controls: the Session-header split button opening the workspace directory in an installed application, and the document preview's default-application controls for one file",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/ui-open-in-app"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "huoli": {
+    "client": {
+      "inject": [
+        "@huoli/huoli-api-gateway",
+        "@huoli/huoli-api-remotes",
+        "@huoli/huoli-api-session-controller",
+        "@huoli/huoli-client-locale",
+        "@huoli/huoli-client-shortcuts",
+        "@huoli/huoli-client-ui-conversation",
+        "@huoli/huoli-client-ui-layout",
+        "@huoli/huoli-client-ui-renderer",
+        "@huoli/huoli-client-ui-session",
+        "@huoli/huoli-client-ui-sidebar-documentpreview",
+        "@huoli/huoli-client-ui-context-menu",
+        "@huoli/huoli-client-ui-sidebar-right",
+        "@huoli/huoli-api-workspace-files",
+        "@huoli/huoli-client-ui-workspace"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-api-gateway": "workspace:*",
+    "@huoli/huoli-api-remotes": "workspace:*",
+    "@huoli/huoli-api-session-controller": "workspace:*",
+    "@huoli/huoli-client-locale": "workspace:*",
+    "@huoli/huoli-client-store": "workspace:*",
+    "@huoli/huoli-client-test-runtime": "workspace:*",
+    "@huoli/huoli-client-ui-conversation": "workspace:*",
+    "@huoli/huoli-client-ui-layout": "workspace:*",
+    "@huoli/huoli-client-ui-primitives": "workspace:*",
+    "@huoli/huoli-client-ui-renderer": "workspace:*",
+    "@huoli/huoli-client-ui-session": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-documentpreview": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-files": "workspace:*",
+    "@huoli/huoli-client-ui-slots": "workspace:*",
+    "@huoli/huoli-host-open-in-app": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "react": "^18.2.0",
+    "@huoli/huoli-client-ui-deliverables": "workspace:*",
+    "@huoli/huoli-native-command": "workspace:*",
+    "@huoli/huoli-client-shortcuts": "workspace:*",
+    "@huoli/huoli-client-ui-context-menu": "workspace:*",
+    "@huoli/huoli-client-ui-file-actions": "workspace:*",
+    "@huoli/huoli-util-workspace-path": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-right": "workspace:*",
+    "@huoli/huoli-api-workspace-files": "workspace:*",
+    "@huoli/huoli-client-ui-sidebar-browser": "workspace:*",
+    "@huoli/huoli-client-ui-workspace": "workspace:*"
+  }
+}

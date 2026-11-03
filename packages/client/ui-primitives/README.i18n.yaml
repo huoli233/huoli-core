@@ -1,0 +1,61 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/client/ui-primitives/README.md
+/:
+  en: 6da33cc935e210c4
+  zh: 752948e68a6e2c32
+/huoli-huoli-client-ui-primitives:
+  en: e39769cae26393b8
+  zh: 8743c8cf561fec35
+/huoli-huoli-client-ui-primitives/summary:
+  en: a05472dce901d64f
+  zh: 6747ad81824a5c0d
+/huoli-huoli-client-ui-primitives/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/huoli-huoli-client-ui-primitives/use-this-package:
+  en: ead6be55c7c9d7cf
+  zh: 125ad36db7328551
+/huoli-huoli-client-ui-primitives/use-this-package/component-catalog:
+  en: b9d0c4f0fedba393
+  zh: 046e2f671160794d
+/huoli-huoli-client-ui-primitives/use-this-package/controls-and-icons:
+  en: f13b4ba09521d300
+  zh: a6093993d8fd0cdb
+/huoli-huoli-client-ui-primitives/use-this-package/rendering-agent-output:
+  en: 3271871a42bd52c8
+  zh: 89b7a9f03018454d
+/huoli-huoli-client-ui-primitives/use-this-package/localizing-copy:
+  en: 81e58c7b342baf3c
+  zh: 6cd47b16124b215c
+/huoli-huoli-client-ui-primitives/understand-the-implementation:
+  en: 6fbd9df222b41e09
+  zh: 3bdb4a6b9b6bff9e
+/huoli-huoli-client-ui-primitives/understand-the-implementation/source-map:
+  en: fd510d34404eb090
+  zh: d05b0890db929ae6
+/huoli-huoli-client-ui-primitives/understand-the-implementation/input-modality:
+  en: cb61e1a37d6c27e5
+  zh: 1f3fa79dd5ab2e45
+/huoli-huoli-client-ui-primitives/understand-the-implementation/streaming-markdown:
+  en: 8bbfa14c27f3bfd7
+  zh: 88f7548ac3a114e1
+/huoli-huoli-client-ui-primitives/understand-the-implementation/geometry-and-overflow:
+  en: 45f4cd1ef96bb6d2
+  zh: f264d25b780ad1dc
+/huoli-huoli-client-ui-primitives/further-exploration:
+  en: daa908e173136285
+  zh: 5f8492ce8a4c4e48
+/huoli-huoli-client-ui-primitives/model-experience:
+  en: 3120df665299c634
+  zh: 1d9f365d091d0d2a
+/huoli-huoli-client-ui-primitives/model-experience/kv-cache-effect:
+  en: ca75c51c89c2c9b0
+  zh: de54f3467ef3b9be
+/huoli-huoli-client-ui-primitives/known-limitations-and-deferred-work:
+  en: 2f2db9565903b4e6
+  zh: ca9d8fed836d857c
+/huoli-huoli-client-ui-primitives/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

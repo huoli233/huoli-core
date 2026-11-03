@@ -1,0 +1,77 @@
+# Minimal live counterpart for the pwsh-tool-turn snapshot composition.
+- id: llm-deepseek
+  name: '@huoli/huoli-llm-deepseek-api-key'
+  config:
+    models:
+      - id: deepseek-v4-pro
+
+- id: subprocess
+  name: '@huoli/huoli-subprocess-local'
+
+- id: bash-sandbox
+  name: '@huoli/huoli-bash-sandbox'
+  disabled: true
+
+- id: pwsh-sandbox
+  name: '@huoli/huoli-pwsh-sandbox'
+  disabled: false
+
+- id: shell-env
+  name: '@huoli/huoli-shell-env'
+
+- id: agent-default-model
+  name: '@huoli/huoli-agent-default-model'
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-pro
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js dshHomePath('sessions')
+    compression: !!js 'process.env.HUOLI_SNAPSHOT === undefined ? ''zstd'' : ''none'''
+
+- id: agent-instructions
+  name: '@huoli/huoli-agent-instructions'
+  disabled: true
+
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+  config:
+    personaPrefix: You are a concise snapshot agent.
+
+- id: goal
+  name: '@huoli/huoli-goal'
+  disabled: true
+
+- id: goal-round-driver
+  name: '@huoli/huoli-goal-round-driver'
+  disabled: true
+
+- id: command-goal
+  name: '@huoli/huoli-command-goal'
+  disabled: true
+
+- id: tool-goal
+  name: '@huoli/huoli-tool-goal'
+  disabled: true
+
+- id: skill
+  name: '@huoli/huoli-skill'
+  disabled: true
+
+- id: skill-filesystem
+  name: '@huoli/huoli-skill-filesystem'
+  disabled: true
+
+- id: tool-skill
+  name: '@huoli/huoli-tool-skill'
+  disabled: true
+
+- id: tool-bash
+  name: '@huoli/huoli-tool-bash'
+  disabled: true
+
+- id: tool-pwsh
+  name: '@huoli/huoli-tool-pwsh'
+  disabled: false

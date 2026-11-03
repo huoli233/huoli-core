@@ -1,0 +1,29 @@
+# Workspace-context snapshot patch: the harness exports HUOLI_HOME=<cwd>/.huoli and
+# HUOLI_AGENTS_HOME=<cwd>/.agents, so project-root and both user-global root
+# discoveries stay inside the scenario's temporary cwd.
+- id: agent-default-model
+  name: '@huoli/huoli-agent-default-model'
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-pro
+
+- id: session-persistence-jsonl
+  name: '@huoli/huoli-session-persistence-jsonl'
+  config:
+    root: !!js dshHomePath('sessions')
+    compression: !!js 'process.env.HUOLI_SNAPSHOT === undefined ? ''zstd'' : ''none'''
+
+- id: agent-instructions
+  name: '@huoli/huoli-agent-instructions'
+  config:
+    maxBytes: 65536
+    projectRootMarkers:
+      - .huoli-project
+
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+  config:
+    personaPrefix: |
+      You are a coding assistant powered by the {{model}} model.
+
+      Verify your work by running the code or tests. Keep answers brief and factual.

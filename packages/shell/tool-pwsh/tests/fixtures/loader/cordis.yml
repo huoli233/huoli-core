@@ -1,0 +1,39 @@
+# Minimal tool-pwsh composition: real app boot path, real pwsh executor, real
+# foreground + background tool calls; driven by the package's loader.spec.ts.
+- id: system-prompt
+  name: '@huoli/huoli-system-prompt'
+
+- id: fs
+  name: '@huoli/huoli-fs-local'
+
+- id: session-projections
+  name: '@huoli/huoli-session-projection'
+
+- id: working-directory
+  name: '@huoli/huoli-working-directory'
+
+- id: tools
+  name: '@huoli/huoli-tools'
+
+- id: tool-executor-native
+  name: '@huoli/huoli-tool-executor-native'
+
+- id: subprocess
+  name: '@huoli/huoli-subprocess-local'
+
+- id: bash
+  name: '@huoli/huoli-pwsh-local'
+  config:
+    graceMs: 200
+
+- id: shell-env
+  name: '@huoli/huoli-shell-env'
+
+- id: tasks
+  name: '@huoli/huoli-jobs-local'
+
+- id: tool-jobs
+  name: '@huoli/huoli-tool-jobs'
+
+- id: tool-pwsh
+  name: '@huoli/huoli-tool-pwsh'

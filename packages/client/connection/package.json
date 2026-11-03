@@ -1,0 +1,65 @@
+{
+  "name": "@huoli/huoli-client-connection",
+  "description": "Authenticated RPC transport and generation lifecycle",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/client/connection"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "node": "./lib/client.node.js",
+      "browser": "./lib/client.browser.js",
+      "default": "./lib/client.browser.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "huoli": {
+    "client": {
+      "inject": [],
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@huoli/huoli-credentials": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "zod": "4.4.3"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.browser.js",
+    "lib/client.node.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-scope": "workspace:*"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-attachment": "workspace:*",
+    "@huoli/huoli-brand": "workspace:*",
+    "@huoli/huoli-host-webserver": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
+    "@huoli/huoli-scope": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-typert-protocol": "workspace:*"
+  }
+}

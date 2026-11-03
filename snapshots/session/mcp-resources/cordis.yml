@@ -1,0 +1,11 @@
+- insert:
+    - id: mcp-resource-catalog
+      name: '@huoli/huoli-mcp-client'
+      config:
+        transport: stdio
+        serverName: catalog
+        command: !!js process.execPath
+        args: !!js '[process.env.HUOLI_MCP_RESOURCES_FIXTURE]'
+        failOnStartupError: true
+        reconnect:
+          enabled: false

@@ -1,0 +1,63 @@
+{
+  "name": "@huoli/huoli-sdk-app",
+  "description": "The huoli SDK profile bundle: stdio JSON-RPC serving and process lifecycle over huoli-base",
+  "version": "0.2.2-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/bundle/sdk-app"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./src/*": "./src/*",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "cordis.patch.yml",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "huoli": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@huoli/huoli-cmdline": "workspace:*",
+    "@huoli/huoli-sdk-jsonrpc-server": "workspace:*",
+    "@huoli/schemastery": "workspace:~",
+    "commander": "^15.0.0",
+    "@huoli/huoli-skill-office": "workspace:*",
+    "@huoli/huoli-tool-workspace-dependencies": "workspace:*",
+    "@huoli/huoli-client-connection": "workspace:*",
+    "@huoli/huoli-client-file-upload": "workspace:*",
+    "@huoli/huoli-workspace": "workspace:*",
+    "@huoli/huoli-schedule": "workspace:*",
+    "@huoli/huoli-time-context": "workspace:*",
+    "@huoli/huoli-tool-schedule": "workspace:*",
+    "@huoli/huoli-tool-ask-user": "workspace:*",
+    "@huoli/huoli-tool-present": "workspace:*",
+    "@huoli/huoli-file-reference-local": "workspace:*",
+    "@huoli/huoli-deliverable-file-references": "workspace:*"
+  },
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis-plugin-include": "workspace:~",
+    "@huoli/cordis": "workspace:~"
+  }
+}
