@@ -88,7 +88,7 @@ Each provider instance selects one OAR runtime and registers a unique `providerN
 
 For Claude, select the native permission mode explicitly in `launchArgs` and retain `--permission-prompts none` for unattended work. A Claude instance with no permission-mode argument inherits OAR's permission bypass default. Replacing the example's argument array also replaces its explicit permission settings.
 
-The [configuration catalog](../../../docs/config-catalog.md#huolidsh-experimental-subagent-oar) owns accepted fields and validation. A child that needs an API credential from an environment variable must receive it through `env`; native account files remain available through the native runtime's settings.
+The [configuration catalog](../../../docs/config-catalog.md#huolihuoli-experimental-subagent-oar) owns accepted fields and validation. A child that needs an API credential from an environment variable must receive it through `env`; native account files remain available through the native runtime's settings.
 
 OAR's pinned default registry includes `antigravity`, `claude`, `codex`, `grok`, `kimi`, `opencode`, and `pi`. Provider configuration accepts every registered runtime id. Codex and Claude have native e2e coverage. Other runtimes need an explicit provider and tool mapping and remain unverified.
 

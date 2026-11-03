@@ -53,7 +53,7 @@ With the tools installed, the model does the rest on request — for example, "c
 | `maxMessageBytes` | `65,536` | Maximum size of one sent message |
 | `disposalTimeoutMs` | `5,000` | Time allowed for shutdown cleanup |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-experimental-agent-team) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-experimental-agent-team) is the exhaustive source for every accepted field and its JSDoc.
 
 ### Teammates
 

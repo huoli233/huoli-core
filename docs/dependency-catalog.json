@@ -373,6 +373,66 @@
       ]
     },
     {
+      "name": "@earendil-works/pi-ai",
+      "version": "0.85.1",
+      "installations": [
+        {
+          "location": "node_modules/@earendil-works/pi-ai",
+          "direct": false,
+          "optional": false,
+          "peer": false
+        }
+      ]
+    },
+    {
+      "name": "@earendil-works/pi-telemetry",
+      "version": "0.85.1",
+      "installations": [
+        {
+          "location": "node_modules/@earendil-works/pi-telemetry",
+          "direct": false,
+          "optional": false,
+          "peer": false
+        }
+      ]
+    },
+    {
+      "name": "@emnapi/runtime",
+      "version": "1.11.3",
+      "installations": [
+        {
+          "location": "node_modules/@emnapi/runtime",
+          "direct": false,
+          "optional": true,
+          "peer": false
+        }
+      ]
+    },
+    {
+      "name": "@google/genai",
+      "version": "1.52.0",
+      "installations": [
+        {
+          "location": "node_modules/@google/genai",
+          "direct": false,
+          "optional": false,
+          "peer": false
+        }
+      ]
+    },
+    {
+      "name": "@hono/node-server",
+      "version": "2.1.1",
+      "installations": [
+        {
+          "location": "node_modules/@hono/node-server",
+          "direct": false,
+          "optional": false,
+          "peer": false
+        }
+      ]
+    },
+    {
       "name": "@huoli/cordis",
       "version": "4.0.2",
       "installations": [
@@ -3307,66 +3367,6 @@
         {
           "location": "node_modules/@huoli/schemastery",
           "direct": true,
-          "optional": false,
-          "peer": false
-        }
-      ]
-    },
-    {
-      "name": "@earendil-works/pi-ai",
-      "version": "0.85.1",
-      "installations": [
-        {
-          "location": "node_modules/@earendil-works/pi-ai",
-          "direct": false,
-          "optional": false,
-          "peer": false
-        }
-      ]
-    },
-    {
-      "name": "@earendil-works/pi-telemetry",
-      "version": "0.85.1",
-      "installations": [
-        {
-          "location": "node_modules/@earendil-works/pi-telemetry",
-          "direct": false,
-          "optional": false,
-          "peer": false
-        }
-      ]
-    },
-    {
-      "name": "@emnapi/runtime",
-      "version": "1.11.3",
-      "installations": [
-        {
-          "location": "node_modules/@emnapi/runtime",
-          "direct": false,
-          "optional": true,
-          "peer": false
-        }
-      ]
-    },
-    {
-      "name": "@google/genai",
-      "version": "1.52.0",
-      "installations": [
-        {
-          "location": "node_modules/@google/genai",
-          "direct": false,
-          "optional": false,
-          "peer": false
-        }
-      ]
-    },
-    {
-      "name": "@hono/node-server",
-      "version": "2.1.1",
-      "installations": [
-        {
-          "location": "node_modules/@hono/node-server",
-          "direct": false,
           "optional": false,
           "peer": false
         }

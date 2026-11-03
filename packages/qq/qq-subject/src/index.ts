@@ -20,8 +20,11 @@ export interface QqSubjectSeam {
 
 // 这一行接受的配置
 export interface Config {
+  /** 状态存哪 */
   file?: string
+  /** 一段状态最多写多少字 */
   maxChars?: number
+  /** 每个群叫什么名字，写快照时用 */
   chatNames?: Record<string, string>
 }
 

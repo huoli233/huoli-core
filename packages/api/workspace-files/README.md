@@ -66,7 +66,7 @@ Every operation first uses `lstat` to reject a missing path or the wrong file ki
 | `maxLines` | `5000` | Default and largest page size in lines; a larger `limit` is refused |
 | `maxEntries` | `2000` | Cap on returned directory entries; the rest is dropped and reported cut |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-api-workspace-files) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-api-workspace-files) is the exhaustive source for every accepted field and its JSDoc.
 
 ### Failures
 

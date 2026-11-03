@@ -6284,14 +6284,6 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface DomainTableSpec<K extends string = string, V = unknown> {\n    readonly valueSchema: ZodType<V>;\n    readonly __key?: K;\n}',
   },
   {
-    name: 'HuoliEnvironment',
-    declaration: 'export type HuoliEnvironment = Readonly<Record<HuoliEnvironmentKey, string>>;',
-  },
-  {
-    name: 'HuoliEnvironmentKey',
-    declaration: 'export type HuoliEnvironmentKey = `${typeof HUOLI_ENV_PREFIX}${string}`;',
-  },
-  {
     name: 'DynamicCordisPackage',
     declaration: 'export interface DynamicCordisPackage {\n    pluginId: CordisDynamicPluginId;\n    packageId: CordisDynamicPackageId;\n    pluginRunId: CordisDynamicPluginRunId;\n    name: string;\n}',
   },
@@ -6660,6 +6652,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface HostConnectionRpc {\n    handle(channel: string, handler: ConnectionRpcHandler): () => Promise<void>;\n    intercept(channel: \'/api\', matches: ConnectionRpcEndpointMatcher, handler: ConnectionRpcHandler): () => Promise<void>;\n}',
   },
   {
+    name: 'HuoliEnvironment',
+    declaration: 'export type HuoliEnvironment = Readonly<Record<HuoliEnvironmentKey, string>>;',
+  },
+  {
+    name: 'HuoliEnvironmentKey',
+    declaration: 'export type HuoliEnvironmentKey = `${typeof HUOLI_ENV_PREFIX}${string}`;',
+  },
+  {
     name: 'ImageAttachmentLimits',
     declaration: 'export interface ImageAttachmentLimits {\n    maxImageBytes: number;\n    maxImagesPerMessage: number;\n    maxMessageImageBytes: number;\n    maxImagePixels: number;\n    maxImageDimension: number;\n    mediaTypes: readonly ImageMediaType[];\n}',
   },
@@ -6686,6 +6686,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ImageVariantId',
     declaration: 'export type ImageVariantId = Branded<\'ImageVariantId\'>;',
+  },
+  {
+    name: 'IncomingMessage',
+    declaration: 'export interface IncomingMessage {\n    chatKey: string;\n    senderId: string;\n    senderName: string;\n    text: string;\n    at: number;\n    atMe: boolean;\n    isPoke: boolean;\n    replyToBot: boolean;\n    messageId: string;\n}',
   },
   {
     name: 'IncompatiblePlugin',

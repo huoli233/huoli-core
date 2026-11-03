@@ -49,7 +49,7 @@ kind: "package-reference"
 | `personaSuffix` | `''` | 全局 `deployment:persona-suffix` 模板，顺序为 `10200`，位于第一方指导之后 |
 | `toolOrder` | — | 显式面向模型工具顺序，含一个 `'<unlisted-tools>'` 其余项标记 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#huolidsh-system-prompt)是每个受支持字段的穷尽式真源。没有恰好一个其余项或存在重复项的 `toolOrder` 列表会在加载时失败；已列名称没有对应已注册工具会使每次 `assemble()` 被拒绝。
+生成的[配置目录](../../../docs/config-catalog.zh.md#huolihuoli-system-prompt)是每个受支持字段的穷尽式真源。没有恰好一个其余项或存在重复项的 `toolOrder` 列表会在加载时失败；已列名称没有对应已注册工具会使每次 `assemble()` 被拒绝。
 
 ### 贡献提示词段
 
@@ -159,7 +159,7 @@ You are an AI agent powered by Huoli Core.
 
 #### 模型看到什么
 
-对于已交付工具，模型会收到[生成工具 schema](../../../docs/tool-catalog.zh.md#huolidsh-tool-executor-ptc)中对每个 agent 可见的子集；限制与步骤时激活完成后，按配置或字典序排列。扩展可以通过同一注册表贡献其他定义。段与 schema 提供方是独立的组装输入。限制不会移除段落注册：工具指导插件通过 `text({ scope, toolSet })` 与 `ctx.tools.get(name, scope, toolSet)` 返回空文本或选择适用片段。任意静态段落不会被自动改写。
+对于已交付工具，模型会收到[生成工具 schema](../../../docs/tool-catalog.zh.md#huolihuoli-tool-executor-ptc)中对每个 agent 可见的子集；限制与步骤时激活完成后，按配置或字典序排列。扩展可以通过同一注册表贡献其他定义。段与 schema 提供方是独立的组装输入。限制不会移除段落注册：工具指导插件通过 `text({ scope, toolSet })` 与 `ctx.tools.get(name, scope, toolSet)` 返回空文本或选择适用片段。任意静态段落不会被自动改写。
 
 #### Token 影响
 

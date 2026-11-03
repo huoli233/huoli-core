@@ -27,6 +27,7 @@ export interface QqMemorySeam {
 
 // 这一行接受的配置
 export interface Config {
+  /** 记忆存哪 */
   file?: string
 }
 

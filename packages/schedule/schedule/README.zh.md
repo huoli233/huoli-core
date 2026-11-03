@@ -58,7 +58,7 @@ Schedule 拥有任务存储与投递。Agent 工具和 Web UI 使用同一管理
 | `deliveryHistoryRecords` | `200` | 每个任务保留最新的 1–10,000 条回执。 |
 | `newSessionIntervalSeconds` | `60` | `new` 目标的最小投递间隔，范围 60–604,800 秒。 |
 
-[配置目录](../../../docs/config-catalog.zh.md#huolidsh-schedule)定义全部字段。Remote `deliveryLimits()` 向 UI 提示提供实际的新 Session 投递间隔。
+[配置目录](../../../docs/config-catalog.zh.md#huolihuoli-schedule)定义全部字段。Remote `deliveryLimits()` 向 UI 提示提供实际的新 Session 投递间隔。
 
 通过 `create({ title, prompt, timing, target? }, actorSessionId?, signal?)` 创建任务。`timing.kind` 选择 `after`、`at`、`every`、`daily`、`weekly`、`cron` 或 `rrule`；只接受该类型对应的选择器。[Schedule 参考](../../../docs/subsystems/schedule.zh.md#recurrence-rules)定义各选择器及其边界。例如：
 
@@ -198,7 +198,7 @@ v2 写入后，v1 程序会拒绝该存储。无效或有歧义的回执会被�
 
 #### 模型看到什么
 
-[生成的工具目录](../../../docs/tool-catalog.zh.md#huolidsh-tool-schedule) 包含 `schedule_create`、`schedule_list`、`schedule_view` 和 `schedule_edit` 的描述与 schema；这些工具由 [`@huoli/huoli-tool-schedule`](../tool-schedule/README.zh.md) 贡献给挂载它的 preset。
+[生成的工具目录](../../../docs/tool-catalog.zh.md#huolihuoli-tool-schedule) 包含 `schedule_create`、`schedule_list`、`schedule_view` 和 `schedule_edit` 的描述与 schema；这些工具由 [`@huoli/huoli-tool-schedule`](../tool-schedule/README.zh.md) 贡献给挂载它的 preset。
 
 #### Token 影响
 

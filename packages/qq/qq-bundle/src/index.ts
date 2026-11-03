@@ -13,8 +13,11 @@ import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 
 // 这一行接受的配置
 export interface Config {
+  /** 说话规矩那个文件放哪 */
   rulesFile?: string
+  /** 每天几点整理记忆 */
   dailySweepHour?: number
+  /** 一轮最多走几步 */
   maxSteps?: number
 }
 

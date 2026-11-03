@@ -58,7 +58,7 @@ The service requires `agents`, `sessions`, `storageDomain`, and `sessionPersiste
 | `deliveryHistoryRecords` | `200` | Retain the newest 1–10,000 receipts per task. |
 | `newSessionIntervalSeconds` | `60` | Delivery floor for `new` targets, from 60 through 604,800 seconds. |
 
-The [configuration catalog](../../../docs/config-catalog.md#huolidsh-schedule) defines all fields. Remote `deliveryLimits()` exposes the effective new-Session interval for UI hints.
+The [configuration catalog](../../../docs/config-catalog.md#huolihuoli-schedule) defines all fields. Remote `deliveryLimits()` exposes the effective new-Session interval for UI hints.
 
 Create with `create({ title, prompt, timing, target? }, actorSessionId?, signal?)`. `timing.kind` selects `after`, `at`, `every`, `daily`, `weekly`, `cron`, or `rrule`; only its corresponding selector is accepted. The [Schedule reference](../../../docs/subsystems/schedule.md#recurrence-rules) defines each selector and its bounds. For example:
 
@@ -198,7 +198,7 @@ History stays with the task and is pruned only on append. Missing old history ke
 
 #### What the model sees
 
-The [generated tool catalog](../../../docs/tool-catalog.md#huolidsh-tool-schedule) contains the descriptions and schemas for `schedule_create`, `schedule_list`, `schedule_view`, and `schedule_edit`, which [`@huoli/huoli-tool-schedule`](../tool-schedule/README.md) contributes to the presets that mount it.
+The [generated tool catalog](../../../docs/tool-catalog.md#huolihuoli-tool-schedule) contains the descriptions and schemas for `schedule_create`, `schedule_list`, `schedule_view`, and `schedule_edit`, which [`@huoli/huoli-tool-schedule`](../tool-schedule/README.md) contributes to the presets that mount it.
 
 #### Token effect
 

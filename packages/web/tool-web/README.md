@@ -52,7 +52,7 @@ Load the web service, at least one backend, and this package; both tools registe
 | `searchTimeoutMs` | `30000` | Cooperative tool-call timeout budget (ms) for `web_search` |
 | `fetchMaxOutputChars` | `200000` | Cap on source characters converted synchronously and on one complete `web_fetch` output |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-tool-web) is the exhaustive source for every accepted field and its JSDoc. `searchMaxQueries` bounds the accepted array before exact-string deduplication and provider fan-out; validation rejects an oversized array before any search starts. The timeout budgets attach to each tool definition and are enforced by [`@huoli/huoli-tool-call-timeout-policy`](../../guard/timeout-policy/README.md); the model-facing schemas expose no timeout argument.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-tool-web) is the exhaustive source for every accepted field and its JSDoc. `searchMaxQueries` bounds the accepted array before exact-string deduplication and provider fan-out; validation rejects an oversized array before any search starts. The timeout budgets attach to each tool definition and are enforced by [`@huoli/huoli-tool-call-timeout-policy`](../../guard/timeout-policy/README.md); the model-facing schemas expose no timeout argument.
 
 ### Using web_search
 
@@ -138,9 +138,9 @@ Read these pages when the package-level contract is not enough. They move from t
 - [Web subsystem](../../../docs/subsystems/web.md) — the exhaustive search/fetch requests and results, provider availability, and error codes.
 - [Web package map](../README.md) — the six-package family and each role.
 - [huoli-web](../web/README.md) — the web service the tools execute through.
-- [Generated tool catalog](../../../docs/tool-catalog.md#huolidsh-tool-web) — the exact `web_search` and `web_fetch` schemas.
+- [Generated tool catalog](../../../docs/tool-catalog.md#huolihuoli-tool-web) — the exact `web_search` and `web_fetch` schemas.
 - [huoli-tool-call-timeout-policy](../../guard/timeout-policy/README.md) — the deployment policy that enforces each tool's timeout budget.
-- [Generated configuration catalog](../../../docs/config-catalog.md#huolidsh-tool-web) — every accepted config field and its source declaration.
+- [Generated configuration catalog](../../../docs/config-catalog.md#huolihuoli-tool-web) — every accepted config field and its source declaration.
 - [Web capability seam decision](../../../.agents/notes/implemented/architecture/2026-06-24-web-capability-seam.md) — why search and fetch share one provider-selection service.
 - [Search readiness decision](../../../.agents/notes/implemented/architecture/2026-09-27-web-search-offered-by-provider-readiness.md) — why readiness splits across the provider, `ctx.web`, and this package.
 
@@ -185,7 +185,7 @@ Prefix-stable while visible tools, scope, and guidance text are unchanged. Confi
 
 #### What the model sees
 
-The model sees the generated [`web_search` and `web_fetch` schemas](../../../docs/tool-catalog.md#huolidsh-tool-web). Result-count and timeout budgets are deployment settings, not model arguments.
+The model sees the generated [`web_search` and `web_fetch` schemas](../../../docs/tool-catalog.md#huolihuoli-tool-web). Result-count and timeout budgets are deployment settings, not model arguments.
 
 #### Token effect
 

@@ -20,6 +20,8 @@ export const GROUPS_WITHOUT_SUBSYSTEM_PAGE: Readonly<Record<string, string>> = {
   sdk: 'Out-of-process protocol and client packages whose package READMEs own the SDK contracts.',
   'test-support': 'Repository test harnesses; docs/testing.md owns the testing policy they serve.',
   util: 'Low-level primitives whose business semantics remain with their consuming subsystems.',
+  // 群里的聊天机器人：整套还在接真号试用，包自己的说明文件已经写全，等稳定了再补子系统页
+  qq: 'Chat-agent feature packages whose own READMEs carry the contracts; a subsystem page follows once the set stabilises.',
 }
 
 /** Result of auditing package-group subsystem documentation. */

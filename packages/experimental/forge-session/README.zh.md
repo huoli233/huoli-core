@@ -40,7 +40,7 @@ kind: "package-reference"
 
 `gh pr view`、`edit` 和 `checkout` 的数字编号支持 `--repo OWNER/REPO`、`--repo=OWNER/REPO` 和 `-R OWNER/REPO`，参数可位于编号前后。仓库参数中的主机或字面量 `GH_HOST` 赋值可直接确定 URL；对于单条命令（可通过管道传给 `head`、`tail` 或 `cat`），未写明主机且已完成的前台 Bash 调用会通过相同的 shell 服务、工作目录、字面量环境赋值、托管环境和常设沙箱策略，执行只读的 `gh pr view <number> --repo <repository> --json url` 查询，由 CLI 解析其配置的主机。查询成功后追加 `reference` 绑定记录；失败时保留现有绑定并记录警告。此实时观察器需要 `tools`、`shell` 和 `shellEnv`，仅含投影的组合仍可恢复已记录的 URL。查询共用 `discoveryTimeoutMs`，调用方取消会停止查询，销毁服务会中止并等待查询结束。
 
-绑定操作是 `plugin:forge-session/binding` 插件记录，列于[实验性持久化目录](../../../docs/experimental-persistence-catalog.zh.md)；fork 与恢复会把它们与 shell 事件一同带上，因此 fork 出的 Session 从父 Session 的绑定开始。`discoveryTimeoutMs` 见[配置目录](../../../docs/config-catalog.zh.md#huolidsh-experimental-forge-session)。
+绑定操作是 `plugin:forge-session/binding` 插件记录，列于[实验性持久化目录](../../../docs/experimental-persistence-catalog.zh.md)；fork 与恢复会把它们与 shell 事件一同带上，因此 fork 出的 Session 从父 Session 的绑定开始。`discoveryTimeoutMs` 见[配置目录](../../../docs/config-catalog.zh.md#huolihuoli-experimental-forge-session)。
 
 -----
 

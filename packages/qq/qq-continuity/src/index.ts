@@ -21,6 +21,7 @@ export interface QqContinuitySeam {
 
 // 这一行接受的配置
 export interface Config {
+  /** 收尾记录放哪 */
   file?: string
 }
 

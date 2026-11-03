@@ -24,7 +24,9 @@ export interface QqAttentionSeam {
 
 // 这一行接受的配置
 export interface Config {
+  /** 状态文件放哪 */
   file?: string
+  /** 机器人叫什么，用来认名字 */
   selfNames?: readonly string[]
 }
 

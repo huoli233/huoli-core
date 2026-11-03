@@ -49,7 +49,7 @@ The config owns the fixed opener, runtime context, deployment persona prefix and
 | `personaSuffix` | `''` | Global `deployment:persona-suffix` template at order `10200`, after first-party guidance |
 | `toolOrder` | — | Explicit model-facing tool order with one `'<unlisted-tools>'` rest entry |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-system-prompt) is the exhaustive source for every accepted field. A `toolOrder` list without exactly one rest entry or with duplicates fails at load; a listed name with no registered tool rejects every `assemble()`.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-system-prompt) is the exhaustive source for every accepted field. A `toolOrder` list without exactly one rest entry or with duplicates fails at load; a listed name with no registered tool rejects every `assemble()`.
 
 ### Contribute a prompt section
 
@@ -159,7 +159,7 @@ Prefix-stable while identity, persona, variables, section text, and order render
 
 #### What the model sees
 
-For shipped tools, the model receives the per-agent-visible subset of the [generated tool schemas](../../../docs/tool-catalog.md#huolidsh-tool-executor-ptc), ordered by configuration or lexicographically after restrictions and step-time activation. Extensions can contribute additional definitions through the same registry. Sections and schema providers are separate assembly inputs. A restriction does not remove a section registration: tool-guidance plugins use `text({ scope, toolSet })` and `ctx.tools.get(name, scope, toolSet)` to return empty text or select applicable fragments. Arbitrary static sections are not automatically rewritten.
+For shipped tools, the model receives the per-agent-visible subset of the [generated tool schemas](../../../docs/tool-catalog.md#huolihuoli-tool-executor-ptc), ordered by configuration or lexicographically after restrictions and step-time activation. Extensions can contribute additional definitions through the same registry. Sections and schema providers are separate assembly inputs. A restriction does not remove a section registration: tool-guidance plugins use `text({ scope, toolSet })` and `ctx.tools.get(name, scope, toolSet)` to return empty text or select applicable fragments. Arbitrary static sections are not automatically rewritten.
 
 #### Token effect
 

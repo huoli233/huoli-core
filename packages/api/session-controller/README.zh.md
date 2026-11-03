@@ -104,7 +104,7 @@ GUI 模型选择要求确切提供方／模型对出现在可用目录中；不�
 | `nativeOpen` | 平台探测 | 是否能把 Session 工作区路径交给原生桌面打开器 |
 | `listWorkSliceMs` | `16` | 列表工作时间片，单位为毫秒，取正整数；在完整条目之间检查 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#huolidsh-api-session-controller)是所有受支持字段及其 JSDoc 的完整来源。
+生成的[配置目录](../../../docs/config-catalog.zh.md#huolihuoli-api-session-controller)是所有受支持字段及其 JSDoc 的完整来源。
 
 -----
 

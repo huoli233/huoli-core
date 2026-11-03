@@ -87,7 +87,7 @@ A container can copy both directories into an immutable image layer and set `HUO
 
 #### What the model sees
 
-The model sees the generated [`load_workspace_dependencies` schema](../../../docs/tool-catalog.md#huolidsh-tool-workspace-dependencies).
+The model sees the generated [`load_workspace_dependencies` schema](../../../docs/tool-catalog.md#huolihuoli-tool-workspace-dependencies).
 
 #### Token effect
 

@@ -21,9 +21,13 @@ export interface QqChannelSeam {
 
 // 这一行接受的配置
 export interface Config {
+  /** QQ 那头连过来的地址 */
   url: string
+  /** 机器人自己的 QQ 号 */
   selfId: string
+  /** 连接口令，没设就不带 */
   accessToken?: string
+  /** 断了之后隔多久重连 */
   reconnectMs?: number
 }
 

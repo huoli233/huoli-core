@@ -19,6 +19,7 @@ export interface QqMaterialSeam {
 
 // 这一行接受的配置
 export interface Config {
+  /** 惦记的事存哪 */
   thoughtsFile?: string
 }
 

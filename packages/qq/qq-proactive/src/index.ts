@@ -51,10 +51,15 @@ export interface ConsiderInput {
 
 // 这一行接受的配置
 export interface Config {
+  /** 攒着的和记账都放这个文件 */
   file?: string
+  /** 要不要主动开口 */
   enabled?: boolean
+  /** 一天最多开口几次 */
   dailyMax?: number
+  /** 安静时段从几点开始 */
   quietStart?: string
+  /** 安静时段到几点结束 */
   quietEnd?: string
 }
 

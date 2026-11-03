@@ -39,7 +39,7 @@ Mount the plugin with no configuration:
 - name: '@huoli/huoli-tool-call-timeout-policy'
 ```
 
-The limit is set where the tool is configured. For example, `huoli-tool-web`'s `fetchTimeoutMs`/`searchTimeoutMs` settings (default 30,000 ms) put the limit on `web_fetch` and `web_search`. Tools without a limit — the shipped `bash`, `read`, `write`, and `edit` — are never cut off. The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-tool-web) lists the tool settings that produce limits.
+The limit is set where the tool is configured. For example, `huoli-tool-web`'s `fetchTimeoutMs`/`searchTimeoutMs` settings (default 30,000 ms) put the limit on `web_fetch` and `web_search`. Tools without a limit — the shipped `bash`, `read`, `write`, and `edit` — are never cut off. The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-tool-web) lists the tool settings that produce limits.
 
 ### What you get
 
@@ -89,7 +89,7 @@ Read these pages when the package-level contract is not enough. They move from t
 
 - [Tools subsystem reference](../../../docs/subsystems/tools.md) — the `tools/execute` waterfall and decision shapes this wrapper hooks.
 - [Timeout deadline library Agent Note](../../../.agents/notes/implemented/architecture/2026-07-06-timeout-deadline-library.md) — the timing/termination split and why the deadline only notifies.
-- [Generated configuration catalog](../../../docs/config-catalog.md#huolidsh-tool-web) — `huoli-tool-web`'s `fetchTimeoutMs`/`searchTimeoutMs` budgets the policy enforces.
+- [Generated configuration catalog](../../../docs/config-catalog.md#huolihuoli-tool-web) — `huoli-tool-web`'s `fetchTimeoutMs`/`searchTimeoutMs` budgets the policy enforces.
 - [guard group map](../README.md) — the sibling guard packages and the loop-hygiene family.
 
 -----

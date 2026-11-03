@@ -39,7 +39,7 @@ This package declares `ctx.ptcRuntime` and `ctx.systemPrompt` as required inject
 
 Shared dispatch events and the `ptc-mode` message-source declaration live in `@huoli/huoli-tool-executor-ptc/types`; Client code imports the same declarations through `@huoli/huoli-tool-executor-ptc/client`. Both entries exclude Host service declarations. Host policy extensions use `import type` from the package entry for `PtcDispatchLog` and `tools/ptc-dispatch-log` without mounting the executor.
 
-[Configuration catalog](../../../docs/config-catalog.md#huolidsh-tool-executor-ptc)
+[Configuration catalog](../../../docs/config-catalog.md#huolihuoli-tool-executor-ptc)
 
 -----
 
@@ -85,7 +85,7 @@ When the caller cancels and the runtime reports `abort`, `run_code` waits for cl
 
 #### What the model sees
 
-PTC mode exposes the generated [`run_code` schema](../../../docs/tool-catalog.md#huolidsh-tool-executor-ptc), the SDK instructions below, and the generated exact SDK block for the loaded runtime's language. Both runtime languages list `code` before `description`; this is presentation order, not an enforced JSON member order. REPL and Script runtimes share the generic tool description and SDK instructions; their `executionInstructions` supply syntax and state rules. The TypeScript bash example returns a value for function-body runtimes, and prints output for REPL and Script runtimes. The instructions identify generated declarations as program-only bindings. When the current `bash` parameter schema accepts the example arguments, they also show a complete `run_code` call around `tools.bash(...)`. The `tools:sdk` section uses first-party order 5000 and disables prompt-variable interpolation, preserving literal `{{…}}` text in tool descriptions and schemas for both runtime languages. Under `ptc`, the prompt also carries the `tools:ptc-only` rule earlier in the first-party order, so the model reads which tools it may call before it reads what each one is for.
+PTC mode exposes the generated [`run_code` schema](../../../docs/tool-catalog.md#huolihuoli-tool-executor-ptc), the SDK instructions below, and the generated exact SDK block for the loaded runtime's language. Both runtime languages list `code` before `description`; this is presentation order, not an enforced JSON member order. REPL and Script runtimes share the generic tool description and SDK instructions; their `executionInstructions` supply syntax and state rules. The TypeScript bash example returns a value for function-body runtimes, and prints output for REPL and Script runtimes. The instructions identify generated declarations as program-only bindings. When the current `bash` parameter schema accepts the example arguments, they also show a complete `run_code` call around `tools.bash(...)`. The `tools:sdk` section uses first-party order 5000 and disables prompt-variable interpolation, preserving literal `{{…}}` text in tool descriptions and schemas for both runtime languages. Under `ptc`, the prompt also carries the `tools:ptc-only` rule earlier in the first-party order, so the model reads which tools it may call before it reads what each one is for.
 
 ##### TypeScript PTC mode SDK instructions with bash
 

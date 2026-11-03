@@ -154,7 +154,7 @@ service 运行若在 `idleTimeoutMs` 内没有任何捕获输出即被终止，�
 
 #### 模型看到什么
 
-[`plugin_manager` 工具](../../../docs/tool-catalog.zh.md#huolidsh-plugin-manager) 列出插件条目和组合包，并执行影响整个 profile 的改动。结果包含保存状态变化、应用状态和包管理诊断。未直接应用的变更结果会增加 `nextStep`，这是一句根据应用状态、拒绝代码、包管理器失败类型或重启原因生成的说明，指出模型下一步做什么或告诉用户什么。管理操作不会向 Agent 注入消息。
+[`plugin_manager` 工具](../../../docs/tool-catalog.zh.md#huolihuoli-plugin-manager) 列出插件条目和组合包，并执行影响整个 profile 的改动。结果包含保存状态变化、应用状态和包管理诊断。未直接应用的变更结果会增加 `nextStep`，这是一句根据应用状态、拒绝代码、包管理器失败类型或重启原因生成的说明，指出模型下一步做什么或告诉用户什么。管理操作不会向 Agent 注入消息。
 
 #### Token 影响
 

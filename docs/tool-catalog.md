@@ -51,7 +51,7 @@ This table connects model-visible tool names to the plugin package and service s
 | `@huoli/huoli-tool-workspace-dependencies` | `load_workspace_dependencies` | `ctx.tools` | `tool/call`, `tool/result` | - | - |
 | `@huoli/huoli-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
 
-<a id="huolidsh-plugin-manager"></a>
+<a id="huolihuoli-plugin-manager"></a>
 
 ## `@huoli/huoli-plugin-manager`
 
@@ -121,7 +121,7 @@ List plugins or bundles in the current profile, enable or disable them, install 
 
 Source: [`packages/boot/plugin-manager/src/tools.ts`](../packages/boot/plugin-manager/src/tools.ts)
 
-<a id="huolidsh-plugin-market"></a>
+<a id="huolihuoli-plugin-market"></a>
 
 ## `@huoli/huoli-plugin-market`
 
@@ -171,7 +171,7 @@ List the plugin market indexes the user configured, the installable bundles one 
 
 Source: [`packages/boot/plugin-market/src/tools.ts`](../packages/boot/plugin-market/src/tools.ts)
 
-<a id="huolidsh-mcp-resources"></a>
+<a id="huolihuoli-mcp-resources"></a>
 
 ## `@huoli/huoli-mcp-resources`
 
@@ -251,7 +251,7 @@ Read an MCP resource by URI from the named server. Use a listed URI or an expand
 
 Source: [`packages/mcp/mcp-resources/src/tools.ts`](../packages/mcp/mcp-resources/src/tools.ts)
 
-<a id="huolidsh-experimental-browser-use-stagehand-native"></a>
+<a id="huolihuoli-experimental-browser-use-stagehand-native"></a>
 
 ## `@huoli/huoli-experimental-browser-use-stagehand-native`
 
@@ -498,7 +498,7 @@ List, create, select, or close a Stagehand browser tab.
 
 Source: [`packages/experimental/browser-use-stagehand-native/src/index.ts`](../packages/experimental/browser-use-stagehand-native/src/index.ts)
 
-<a id="huolidsh-action-cards"></a>
+<a id="huolihuoli-action-cards"></a>
 
 ## `@huoli/huoli-action-cards`
 
@@ -541,7 +541,7 @@ Source: [`packages/experimental/action-cards/src/index.ts`](../packages/experime
 
 Declared only to an Agent that loaded the skill of a registered card kind; the kind packages register their actions, and the Personalized recommendations bundle supplies the shipped kinds.
 
-<a id="huolidsh-tool-ask-user"></a>
+<a id="huolihuoli-tool-ask-user"></a>
 
 ## `@huoli/huoli-tool-ask-user`
 
@@ -615,7 +615,7 @@ Source: [`packages/interaction/tool-ask-user/src/index.ts`](../packages/interact
 
 ask_user_question keeps the original blocking behavior by default; set `mode: timed` to opt into a foreground timeout and pending result while the question remains answerable. In timed mode, `timeout: -1` keeps that call blocking indefinitely.
 
-<a id="huolidsh-tool-executor-ptc"></a>
+<a id="huolihuoli-tool-executor-ptc"></a>
 
 ## `@huoli/huoli-tool-executor-ptc`
 
@@ -663,7 +663,7 @@ Source: [`packages/core/tool-executor-ptc/src/ptc.ts`](../packages/core/tool-exe
 
 The PTC executor exposes only run_code to the model and declares other visible capabilities in a generated SDK in the runtime’s language. Program bindings enter the shared guarded tool pipeline in submission order; concurrency-safe bodies overlap up to maxParallelSubCalls, and nested results remain linked to the outer program.
 
-<a id="huolidsh-plan-mode"></a>
+<a id="huolihuoli-plan-mode"></a>
 
 ## `@huoli/huoli-plan-mode`
 
@@ -690,7 +690,7 @@ Source: [`packages/plan/plan-mode/src/index.ts`](../packages/plan/plan-mode/src/
 
 exit_plan_mode stays in the model-facing schema while planning is inactive so transitions add no tool-catalog churn on top of the plan-policy change. Its execute path rejects calls outside plan mode; in plan mode it presents the plan over the user-questions seam (approve / keep planning with feedback), and approval logs plan mode inactive at the step boundary.
 
-<a id="huolidsh-tool-bash"></a>
+<a id="huolihuoli-tool-bash"></a>
 
 ## `@huoli/huoli-tool-bash`
 
@@ -734,7 +734,7 @@ Source: [`packages/shell/tool-bash/src/index.ts`](../packages/shell/tool-bash/sr
 
 The bash tool is the model-facing consumer of the bash executor seam. With a job registry composed every call registers with the generic `ctx.jobs` runtime as it starts, collected/stopped through the `job_*` tools from `@huoli/huoli-tool-jobs`; without one, or with `enableRunInBackground: false`, the tool registers a foreground-only schema without the `run_in_background` parameter.
 
-<a id="huolidsh-tool-present"></a>
+<a id="huolihuoli-tool-present"></a>
 
 ## `@huoli/huoli-tool-present`
 
@@ -778,7 +778,7 @@ Source: [`packages/deliverables/tool-present/src/index.ts`](../packages/delivera
 
 Deliveries belong to the calling Session; Web ui-deliverables supplies source-file opening and cards.
 
-<a id="huolidsh-tool-pwsh"></a>
+<a id="huolihuoli-tool-pwsh"></a>
 
 ## `@huoli/huoli-tool-pwsh`
 
@@ -822,7 +822,7 @@ Source: [`packages/shell/tool-pwsh/src/index.ts`](../packages/shell/tool-pwsh/sr
 
 The pwsh tool is the PowerShell-dialect consumer of the bash executor seam for Windows compositions (a PowerShell executor such as `@huoli/huoli-pwsh-local` backs `ctx.shell`); it mirrors the bash tool call-for-call minus sandbox controls — `run_in_background` runs register with the generic `ctx.jobs` runtime and are collected/stopped through the `job_*` tools, and the managed `HUOLI_*` environment comes from `@huoli/huoli-shell-env`. Each call runs in a fresh process (no persistent PTY session), with native `C:\...` paths and `$env:NAME` variables.
 
-<a id="huolidsh-tool-cordis"></a>
+<a id="huolihuoli-tool-cordis"></a>
 
 ## `@huoli/huoli-tool-cordis`
 
@@ -879,7 +879,7 @@ Source: [`packages/extensions/tool-cordis/src/index.ts`](../packages/extensions/
 
 Creator mode provides two read-only runtime inspection tools. The Cordis host runner supplies the inspection registry; Client queries require a connected page. Author persistent changes as bundles and install them with plugin_manager.
 
-<a id="huolidsh-tool-bash-persistent"></a>
+<a id="huolihuoli-tool-bash-persistent"></a>
 
 ## `@huoli/huoli-tool-bash-persistent`
 
@@ -906,7 +906,7 @@ Source: [`packages/shell/tool-bash-persistent/src/index.ts`](../packages/shell/t
 
 One owner-isolated persistent bash tool; deployment composition supplies the PTY backend and may override the model-facing environment description.
 
-<a id="huolidsh-tool-pwsh-persistent"></a>
+<a id="huolihuoli-tool-pwsh-persistent"></a>
 
 ## `@huoli/huoli-tool-pwsh-persistent`
 
@@ -933,7 +933,7 @@ Source: [`packages/shell/tool-pwsh-persistent/src/index.ts`](../packages/shell/t
 
 One owner-isolated persistent pwsh tool, the Windows counterpart of the persistent bash tool; deployment composition supplies a pwsh-dialect PTY backend and may override the model-facing environment description.
 
-<a id="huolidsh-tool-str-replace-editor"></a>
+<a id="huolihuoli-tool-str-replace-editor"></a>
 
 ## `@huoli/huoli-tool-str-replace-editor`
 
@@ -1039,7 +1039,7 @@ Source: [`packages/fs/tool-str-replace-editor/src/index.ts`](../packages/fs/tool
 
 Standalone view/create/unique literal replace/line insert tool over the filesystem seam; it composes with any shell or terminal API.
 
-<a id="huolidsh-tool-fs"></a>
+<a id="huolihuoli-tool-fs"></a>
 
 ## `@huoli/huoli-tool-fs`
 
@@ -1177,7 +1177,7 @@ Source: [`packages/fs/tool-fs/src/index.ts`](../packages/fs/tool-fs/src/index.ts
 
 The read-before-write/edit policy is added by `@huoli/huoli-fs-observation-policy` (an `fs/*` event-gate plugin, no schema change); a deployment that loads these tools is expected to also load it. The image tool is not registered without `ctx.attachments`; its schema is route-independent, and execution refuses unless the exact routed model declares image input. `apply_patch` registers only with `applyPatch: true`; the catalog sets it so the schema is documented, while shipped compositions keep the switch off on their `tool-fs` rows.
 
-<a id="huolidsh-tool-fs-search"></a>
+<a id="huolihuoli-tool-fs-search"></a>
 
 ## `@huoli/huoli-tool-fs-search`
 
@@ -1237,7 +1237,7 @@ Source: [`packages/fs/tool-fs-search/src/index.ts`](../packages/fs/tool-fs-searc
 
 glob and grep are unconditional discovery tools that spawn the packaged ripgrep binary (`@vscode/ripgrep`) through ctx.subprocess as ordinary foreground calls (never background jobs) — no host `rg` install and no shell layer. The catalog uses `sampleOverCapGlobResults: true`; deployments must choose that behavior explicitly. Capped results save the complete formatted list through the optional ctx.spillStore backend; returned locators are follow-up-readable/searchable when the backend exposes local paths in co-located deployments.
 
-<a id="huolidsh-tool-terminal"></a>
+<a id="huolihuoli-tool-terminal"></a>
 
 ## `@huoli/huoli-tool-terminal`
 
@@ -1402,7 +1402,7 @@ Source: [`packages/experimental/tool-terminal/src/index.ts`](../packages/experim
 
 The six terminal tools are opt-in and complement one-shot shell/filesystem tools. `terminal_send(run_in_background: true)` registers with `ctx.jobs`; TUI, named key sequences, BEL, resize, auto-start, and cross-agent sharing are absent from the schema.
 
-<a id="huolidsh-tool-goal"></a>
+<a id="huolihuoli-tool-goal"></a>
 
 ## `@huoli/huoli-tool-goal`
 
@@ -1496,7 +1496,7 @@ Source: [`packages/goal/tool-goal/src/index.ts`](../packages/goal/tool-goal/src/
 
 create, edit, pause, and resume require direct-human root authority; complete and blocked also accept the exact current goal round. The default blocked lower bound is three admitted rounds.
 
-<a id="huolidsh-tool-schedule"></a>
+<a id="huolihuoli-tool-schedule"></a>
 
 ## `@huoli/huoli-tool-schedule`
 
@@ -1649,7 +1649,7 @@ Source: [`packages/schedule/tool-schedule/src/index.ts`](../packages/schedule/to
 
 A preset or Agent scope mounts this package and decides which agents receive its tools. Management reads and writes Host tasks by id across Sessions. Tasks store an RFC 5545 recurrence and an existing, first-created-and-reused, or per-run-new Session target. Delegated subagents cannot call these tools.
 
-<a id="huolidsh-tool-lsp"></a>
+<a id="huolihuoli-tool-lsp"></a>
 
 ## `@huoli/huoli-tool-lsp`
 
@@ -1697,7 +1697,7 @@ Source: [`packages/lsp/tool-lsp/src/index.ts`](../packages/lsp/tool-lsp/src/inde
 
 The lsp tool keeps provider selection and language-server subprocesses behind ctx.lsp, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@huoli/huoli-lsp-stdio`) at runtime; without one, a query returns the structured `LSP_UNAVAILABLE` error rather than changing the schema.
 
-<a id="huolidsh-tool-ralph"></a>
+<a id="huolihuoli-tool-ralph"></a>
 
 ## `@huoli/huoli-tool-ralph`
 
@@ -1728,7 +1728,7 @@ Source: [`packages/experimental/tool-ralph/src/index.ts`](../packages/experiment
 
 A fixed foreground workflow starts one fresh structured child per round; the model selects only the immutable objective and an optional round cap.
 
-<a id="huolidsh-tool-skill"></a>
+<a id="huolihuoli-tool-skill"></a>
 
 ## `@huoli/huoli-tool-skill`
 
@@ -1753,7 +1753,7 @@ Load the full instructions for a skill. Call it before acting on a task that nam
 
 Source: [`packages/skill/tool-skill/src/index.ts`](../packages/skill/tool-skill/src/index.ts)
 
-<a id="huolidsh-tool-session-query"></a>
+<a id="huolihuoli-tool-session-query"></a>
 
 ## `@huoli/huoli-tool-session-query`
 
@@ -1988,7 +1988,7 @@ Source: [`packages/experimental/tool-session-query/src/index.ts`](../packages/ex
 
 The five read-only tools hide provider cursors and authorize every result from the immutable calling agent session. The package is opt-in; compositions that need enforced deadlines or bounded inline output also mount the generic timeout or spill policies.
 
-<a id="huolidsh-experimental-tool-subagent-oar"></a>
+<a id="huolihuoli-experimental-tool-subagent-oar"></a>
 
 ## `@huoli/huoli-experimental-tool-subagent-oar`
 
@@ -2033,7 +2033,7 @@ Source: [`packages/experimental/tool-subagent-oar/src/index.ts`](../packages/exp
 
 The subagent_oar tool selects among configured aliases for external providers. This catalog shows Codex and Claude Code aliases; each deployment chooses its providers. Native model and permission settings belong to the selected provider configuration.
 
-<a id="huolidsh-tool-subagent"></a>
+<a id="huolihuoli-tool-subagent"></a>
 
 ## `@huoli/huoli-tool-subagent`
 
@@ -2091,7 +2091,7 @@ Source: [`packages/subagent/tool-subagent/src/index.ts`](../packages/subagent/to
 
 The load-time `toolName` selects the delegation name (default `subagent`); `modelSelection` adds optional route fields. `modelDiscovery` defaults off and registers shared discovery on one instance per scope. Web and Desktop presets enable spawn discovery and route fields and leave `subagent_fork` route fields disabled. The Host settings service records authorization for each new top-level Session; child Sessions inherit it. Without a recorded policy, discovery and explicit selection permit only the current parent route. Every delegation returns a child id promptly; local children accept follow-ups, while external backends report their single execution automatically.
 
-<a id="huolidsh-tool-subagent-control"></a>
+<a id="huolihuoli-tool-subagent-control"></a>
 
 ## `@huoli/huoli-tool-subagent-control`
 
@@ -2166,7 +2166,7 @@ Source: [`packages/subagent/tool-subagent-control/src/index.ts`](../packages/sub
 
 The globally named discovery, interruption, and local-message tools over managed subagents: provider-bound `tool-subagent` instances register distinct delegation tools, while one instance of this package registers `send_message`, `interrupt_agent`, and `list_agents`.
 
-<a id="huolidsh-tool-jobs"></a>
+<a id="huolihuoli-tool-jobs"></a>
 
 ## `@huoli/huoli-tool-jobs`
 
@@ -2239,7 +2239,7 @@ Source: [`packages/jobs/tool-jobs/src/index.ts`](../packages/jobs/tool-jobs/src/
 
 The kind-agnostic background-job controller: background bash commands and PTY sends are read, listed, and killed through the same three tools. Loading the plugin attaches the controller that arms producers' `ctx.jobs.start()`.
 
-<a id="huolidsh-experimental-tool-agent-team"></a>
+<a id="huolihuoli-experimental-tool-agent-team"></a>
 
 ## `@huoli/huoli-experimental-tool-agent-team`
 
@@ -2529,7 +2529,7 @@ Source: [`packages/experimental/tool-agent-team/src/index.ts`](../packages/exper
 
 All nine tools are scoped to implicit Team Leads and durable teammates. The shipped huoli-base bundle keeps the package disabled; the documented Agent Teams profile patch enables it while disabling the legacy continuable-child control names.
 
-<a id="huolidsh-tool-todo"></a>
+<a id="huolihuoli-tool-todo"></a>
 
 ## `@huoli/huoli-tool-todo`
 
@@ -2579,7 +2579,7 @@ Source: [`packages/todo/tool-todo/src/index.ts`](../packages/todo/tool-todo/src/
 
 todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task.
 
-<a id="huolidsh-tool-working-directory"></a>
+<a id="huolihuoli-tool-working-directory"></a>
 
 ## `@huoli/huoli-tool-working-directory`
 
@@ -2603,7 +2603,7 @@ Source: [`packages/session/tool-working-directory/src/index.ts`](../packages/ses
 
 Reads or changes the calling Session directory. Existing shells and processes retain their own directories; origin metadata and permission roots stay fixed.
 
-<a id="huolidsh-experimental-tool-worktree"></a>
+<a id="huolihuoli-experimental-tool-worktree"></a>
 
 ## `@huoli/huoli-experimental-tool-worktree`
 
@@ -2631,7 +2631,7 @@ Source: [`packages/experimental/tool-worktree/src/index.ts`](../packages/experim
 
 Explicit experimental composition only. Creates a new branch and checkout from a pinned local commit under existing write permissions, then changes the Session directory. Leaving retains the branch and checkout.
 
-<a id="huolidsh-tool-workflow"></a>
+<a id="huolihuoli-tool-workflow"></a>
 
 ## `@huoli/huoli-tool-workflow`
 
@@ -2726,7 +2726,7 @@ Misused hooks (bad arguments, unknown options, unsupported schemas, tripped caps
 
 Source: [`packages/workflow/tool-workflow/src/index.ts`](../packages/workflow/tool-workflow/src/index.ts)
 
-<a id="huolidsh-tool-workspace-dependencies"></a>
+<a id="huolihuoli-tool-workspace-dependencies"></a>
 
 ## `@huoli/huoli-tool-workspace-dependencies`
 
@@ -2743,7 +2743,7 @@ Get absolute paths to bundled Python and library directories, plus bundled Pytho
 
 Source: [`packages/skill/tool-workspace-dependencies/src/index.ts`](../packages/skill/tool-workspace-dependencies/src/index.ts)
 
-<a id="huolidsh-tool-web"></a>
+<a id="huolihuoli-tool-web"></a>
 
 ## `@huoli/huoli-tool-web`
 

@@ -34,7 +34,7 @@ For an explicit composition, mount this function plugin after the worktree runti
 - name: '@huoli/huoli-experimental-tool-worktree'
 ```
 
-Call `create_worktree({ name?: string, from?: string })`. Success returns the canonical checkout `path`, new `branch`, pinned `baseCommit`, and source `repositoryRoot`, and changes the calling Session's current working directory. To leave, call `working_directory({ cd: path })`; the checkout and branch remain. The [generated tool catalog](../../../docs/tool-catalog.md#huolidsh-experimental-tool-worktree) owns the exact schema and model-facing description.
+Call `create_worktree({ name?: string, from?: string })`. Success returns the canonical checkout `path`, new `branch`, pinned `baseCommit`, and source `repositoryRoot`, and changes the calling Session's current working directory. To leave, call `working_directory({ cd: path })`; the checkout and branch remain. The [generated tool catalog](../../../docs/tool-catalog.md#huolihuoli-experimental-tool-worktree) owns the exact schema and model-facing description.
 
 -----
 
@@ -68,7 +68,7 @@ No runtime invariant companion is published because the tool retains no state in
 
 #### What the model sees
 
-The [tool catalog](../../../docs/tool-catalog.md#huolidsh-experimental-tool-worktree) defines `create_worktree`. Each successful result contains the created checkout's canonical path, branch, base commit, and source checkout’s top-level directory. Failed calls report the operation error.
+The [tool catalog](../../../docs/tool-catalog.md#huolihuoli-experimental-tool-worktree) defines `create_worktree`. Each successful result contains the created checkout's canonical path, branch, base commit, and source checkout’s top-level directory. Failed calls report the operation error.
 
 #### Token effect
 

@@ -48,7 +48,7 @@ agent 会完成该任务，把提供方的每个非空推理（reasoning）增�
 | `json` | `false` | 把本次运行投影为 stdout 上的按行 JSON 事件 |
 | `permissionMode` | 会话策略 | 提交任务前应用已配置的权限预设，恢复会话时同样生效 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#huolidsh-headless)是所有受支持字段及其 JSDoc 的完整真源。
+生成的[配置目录](../../../docs/config-catalog.zh.md#huolihuoli-headless)是所有受支持字段及其 JSDoc 的完整真源。
 
 <a id="credentials"></a>
 ### 凭据
@@ -158,7 +158,7 @@ patch 叠加在 `huoli-base` 之上：继承投影缓存与共享 PTC 运行时�
 - [huoli-base](../base/README.zh.md)——headless 运行其上的共享核心。
 - [huoli-web-app](../web-app/README.zh.md)——用于多轮工作的同级交互式浏览器入口。
 - [huoli-cmdline](../../boot/cmdline/README.zh.md)——启动器如何把命令行交给应用。
-- [生成配置目录](../../../docs/config-catalog.zh.md#huolidsh-headless)——每个受支持配置字段及其源声明。
+- [生成配置目录](../../../docs/config-catalog.zh.md#huolihuoli-headless)——每个受支持配置字段及其源声明。
 
 -----
 

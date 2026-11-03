@@ -47,7 +47,7 @@ Load the subagent service and this backend, then configure one delegation tool p
 |---|---|---|
 | `providerName` | `spawn` | Provider name registered on `ctx.subagents` |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-subagent-spawn-in-process) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-subagent-spawn-in-process) is the exhaustive source for every accepted field and its JSDoc.
 
 ### What a delegation does
 
@@ -95,7 +95,7 @@ Read these pages when the package-level contract is not enough; they move from t
 - [Subagent subsystem](../../../docs/subsystems/subagent.md) — start requests, results, live runs, and the provider contract.
 - [huoli-subagent-fork-in-process](../subagent-fork-in-process/README.md) — the sibling backend that seeds completed parent turns.
 - [huoli-tool-subagent](../tool-subagent/README.md) — the model-facing delegation tool that reaches this provider.
-- [Generated configuration catalog](../../../docs/config-catalog.md#huolidsh-subagent-spawn-in-process) — every accepted config field and its source declaration.
+- [Generated configuration catalog](../../../docs/config-catalog.md#huolihuoli-subagent-spawn-in-process) — every accepted config field and its source declaration.
 
 -----
 

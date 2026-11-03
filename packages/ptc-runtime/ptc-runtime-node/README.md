@@ -57,7 +57,7 @@ Configure the provider row after its required services are available:
 | `graceMs` | `3,000` | Managed termination and output-drain grace |
 | `launch` | Local carrier | Explicit `{ kind: "node-script", executable, bootstrapPath? }` or `{ kind: "embedded", executable }` in the subprocess world |
 
-The [configuration catalog](../../../docs/config-catalog.md#huolidsh-ptc-runtime-node) defines accepted config fields. `resolve(request)` defaults cwd to the sandbox policy workspace root and supplies the numeric or null deadline choice and execution policy; `run(spec)` accepts those resolved inputs and does not fill missing values.
+The [configuration catalog](../../../docs/config-catalog.md#huolihuoli-ptc-runtime-node) defines accepted config fields. `resolve(request)` defaults cwd to the sandbox policy workspace root and supplies the numeric or null deadline choice and execution policy; `run(spec)` accepts those resolved inputs and does not fill missing values.
 
 Profile editors can import `resolvePersistentExecution` from `@huoli/huoli-ptc-runtime-node/configuration` to select retained execution from the effective program format. Merge both returned settings atomically: Script keeps its syntax, while function bodies switch to the REPL.
 

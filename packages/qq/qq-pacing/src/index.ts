@@ -22,8 +22,11 @@ export interface QqPacingSeam {
 
 // 这一行接受的配置
 export interface Config {
+  /** 记账文件放哪 */
   file?: string
+  /** 一段话最多拆几条 */
   maxParts?: number
+  /** 每条最多几个字 */
   maxCharsPerPart?: number
 }
 

@@ -77,7 +77,7 @@ Read these pages when the package-level contract is not enough. They move from t
 - [Local file-reference provider](../file-reference-local/README.md) — the shipped local-workspace implementation of this seam.
 - [Session-reference subsystem](../../../docs/subsystems/session-reference.md) — the shared file-reference and session-reference contracts behind host UIs.
 - [Context group map](../README.md) — sibling request-context packages.
-- [Filesystem tool catalog](../../../docs/tool-catalog.md#huolidsh-tool-fs) — the `read` tool that referenced paths are meant for.
+- [Filesystem tool catalog](../../../docs/tool-catalog.md#huolihuoli-tool-fs) — the `read` tool that referenced paths are meant for.
 
 -----
 

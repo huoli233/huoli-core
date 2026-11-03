@@ -50,7 +50,7 @@ Choose this backend when consumers benefit from one artifact per session — nav
 
 Live-event write batching is not configuration: the batching window is the seam's internal scheduling policy inside each write handle.
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-session-persistence-jsonl) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-session-persistence-jsonl) is the exhaustive source for every accepted field and its JSDoc.
 
 ### On-disk layout
 

@@ -51,7 +51,7 @@ Load the subagent service and this backend, then configure a delegation tool. Th
 |---|---|---|
 | `providerName` | `fork` | Provider name registered on `ctx.subagents` |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-subagent-fork-in-process) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-subagent-fork-in-process) is the exhaustive source for every accepted field and its JSDoc.
 
 ### What a fork delegation does
 
@@ -97,7 +97,7 @@ Read these pages when the package-level contract is not enough; they move from t
 - [Subagent subsystem](../../../docs/subsystems/subagent.md) — start requests, results, provider contract, and in-process depth and seed.
 - [huoli-subagent-spawn-in-process](../subagent-spawn-in-process/README.md) — the fresh-child sibling backend.
 - [huoli-tool-subagent](../tool-subagent/README.md) — the model-facing delegation tool that reaches this provider.
-- [Generated configuration catalog](../../../docs/config-catalog.md#huolidsh-subagent-fork-in-process) — every accepted config field and its source declaration.
+- [Generated configuration catalog](../../../docs/config-catalog.md#huolihuoli-subagent-fork-in-process) — every accepted config field and its source declaration.
 - [Forked children preserve the parent request prefix](../../../.agents/notes/implemented/architecture/2026-08-10-fork-children-stay-one-shot.md) — why continuable fork preserves the inherited request prefix.
 
 -----

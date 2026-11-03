@@ -358,6 +358,20 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 |---|---|---|
 | `@huoli/huoli-ptc-runtime-node` | yes | Node PTC execution with async function, REPL and VM Script evaluators and optional retained state |
 
+## qq
+
+| Package | Config | Description |
+|---|---|---|
+| `@huoli/huoli-qq-attention` | yes | Attention state machine for one chat: read watermark, wait, mark read, close, wake config |
+| `@huoli/huoli-qq-bundle` | yes | 把 QQ 机器人的各个零件装到一起 |
+| `@huoli/huoli-qq-channel` | yes | 接 QQ：连上去、收消息、把要说的话发出去 |
+| `@huoli/huoli-qq-continuity` | yes | 收尾与回想：这段收在哪、下次怎么接、事后想到什么 |
+| `@huoli/huoli-qq-material` | yes | 素材：把群里在聊什么、在跟谁说话、心里惦记什么摊开给模型 |
+| `@huoli/huoli-qq-memory` | yes | 记事情：四层记忆、会慢慢变淡、能按关键词找回来 |
+| `@huoli/huoli-qq-pacing` | yes | 说话的规矩：一条拆几条、隔多久、今天还能说几句 |
+| `@huoli/huoli-qq-proactive` | yes | 主动开口：攒理由、打分、过闸门、先给你看再发 |
+| `@huoli/huoli-qq-subject` | yes | 自己的状态：心情、精力、关系，写成一段话放进每轮提示词 |
+
 ## sandbox
 
 | Package | Config | Description |
@@ -466,8 +480,8 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@huoli/huoli-subagent-acp` | yes | Out-of-process ACP subagent backend: drives a child agent in a spawned subprocess over the Agent Client Protocol |
 | `@huoli/huoli-subagent-claude-code` | yes | One-shot Claude Code subagent provider over the official Agent SDK |
 | `@huoli/huoli-subagent-codex` | yes | One-shot Codex subagent provider over the official app-server protocol |
-| `@huoli/huoli-subagent-huoli-sdk` | yes | Out-of-process SDK subagent backend: drives a child Huoli Core runtime subprocess over stdio JSON-RPC through the TypeScript SDK client |
 | `@huoli/huoli-subagent-fork-in-process` | yes | In-process fork subagent backend: runs a child agent seeded with a prefix of the parent's log |
+| `@huoli/huoli-subagent-huoli-sdk` | yes | Out-of-process SDK subagent backend: drives a child Huoli Core runtime subprocess over stdio JSON-RPC through the TypeScript SDK client |
 | `@huoli/huoli-subagent-spawn-in-process` | yes | In-process spawn subagent backend: runs a fresh child agent on ctx.agents |
 | `@huoli/huoli-tool-subagent` | yes | Model-facing subagent delegation tool over the ctx.subagents seam |
 | `@huoli/huoli-tool-subagent-control` | no | Shared messaging, interruption, and child discovery tools for subagents |

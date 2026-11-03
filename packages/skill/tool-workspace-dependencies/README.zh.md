@@ -87,7 +87,7 @@ kind: "package-reference"
 
 #### 模型看到什么
 
-模型看到生成的 [`load_workspace_dependencies` schema](../../../docs/tool-catalog.zh.md#huolidsh-tool-workspace-dependencies)。
+模型看到生成的 [`load_workspace_dependencies` schema](../../../docs/tool-catalog.zh.md#huolihuoli-tool-workspace-dependencies)。
 
 #### Token 影响
 

@@ -50,7 +50,7 @@ kind: "package-reference"
 
 对于关联的 Git worktree，调用方可通过 `additionalWritableRoots` 授予共享 Git 目录的写权限。调用方必须显式选择该目录；策略不会读取 Git 文件或授权父检出目录。这些授权是组合中所有会话共享的部署配置，而非保存的 Session 权限。授权整个 Git 目录也允许修改钩子和配置，后续主机 Git 调用可能在沙箱之外执行它们；仅对可信任务使用此授权。使用物理绝对目录路径。执行限制的主机拒绝不存在的路径、文件和符号链接根目录，包括两次调用之间被替换为符号链接的目录。远端授权在远端主机上验证。
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#huolidsh-sandbox-policy)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[配置目录](../../../docs/config-catalog.zh.md#huolihuoli-sandbox-policy)是每个受支持字段及其 JSDoc 的穷尽式真源。
 
 ### 切换会话模式
 

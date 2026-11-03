@@ -25,7 +25,7 @@ Change one Session’s working directory while existing processes retain theirs.
 <a id="use-this-package"></a>
 ## Use this package
 
-Mount alongside `fs`, `sessionProjections`, and `systemPrompt`. `defaultDirectory` selects an absolute fallback for Sessions without an original directory; omission uses the launch directory. See the [configuration catalog](../../../docs/config-catalog.md#huolidsh-working-directory).
+Mount alongside `fs`, `sessionProjections`, and `systemPrompt`. `defaultDirectory` selects an absolute fallback for Sessions without an original directory; omission uses the launch directory. See the [configuration catalog](../../../docs/config-catalog.md#huolihuoli-working-directory).
 
 ```yaml
 - name: '@huoli/huoli-working-directory'

@@ -48,7 +48,7 @@ The task and run options use these settings:
 | `json` | `false` | Project the run as newline-delimited events on stdout |
 | `permissionMode` | session policy | Apply a configured permission preset before submitting the task, including on resume |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-headless) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-headless) is the exhaustive source for every accepted field and its JSDoc.
 
 <a id="credentials"></a>
 ### Credentials
@@ -158,7 +158,7 @@ Read these pages when you want to go deeper into the shared core, the sibling GU
 - [huoli-base](../base/README.md) — the shared core headless runs on.
 - [huoli-web-app](../web-app/README.md) — the interactive browser sibling for multi-turn work.
 - [huoli-cmdline](../../boot/cmdline/README.md) — how the launcher hands the command line to the app.
-- [Generated configuration catalog](../../../docs/config-catalog.md#huolidsh-headless) — every accepted config field and its source declaration.
+- [Generated configuration catalog](../../../docs/config-catalog.md#huolihuoli-headless) — every accepted config field and its source declaration.
 
 -----
 

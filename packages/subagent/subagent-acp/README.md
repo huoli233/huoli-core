@@ -43,7 +43,7 @@ Choose this backend when the child must run with its own runtime, model, and too
 | `disposeEofGraceMs` | `6000` | Grace after stdin EOF before platform termination |
 | `disposeGraceMs` | `3000` | Bound for observing structured process facts after failure and, on POSIX, the SIGTERM-to-SIGKILL grace |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-subagent-acp) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-subagent-acp) is the exhaustive source for every accepted field and its JSDoc.
 
 A Huoli Core child uses the product launcher and an explicit absolute `HUOLI_HOME`. The isolated home prevents a nested runtime from discovering the launching person's profiles or credentials; the generic ACP provider does not impose this requirement on non-HUOLI agents.
 
@@ -113,7 +113,7 @@ Read these pages when the package-level contract is not enough. They move from t
 - [huoli-subagent seam](../subagent/README.md) — the registry and start API this provider registers on.
 - [Agent Client Protocol automation server](../../acp/acp/README.md) — the automation-only server this provider drives as a client.
 - [huoli-subprocess seam](../../subprocess/subprocess/README.md) — the process-spawn and teardown machinery behind each run.
-- [Generated configuration catalog](../../../docs/config-catalog.md#huolidsh-subagent-acp) — every accepted config field and its source declaration.
+- [Generated configuration catalog](../../../docs/config-catalog.md#huolihuoli-subagent-acp) — every accepted config field and its source declaration.
 
 -----
 

@@ -35,7 +35,7 @@ Choose this package for persistent scheduled task management.
 ## Related documentation
 
 - [Schedule subsystem](../../docs/subsystems/schedule.md) — task records, recurrence rules, delivery targets, latest receipts, and delivery contracts.
-- [Generated tool catalog](../../docs/tool-catalog.md#huolidsh-tool-schedule) — the `schedule_create`/`schedule_list`/`schedule_view`/`schedule_edit` schemas a mounting preset contributes.
+- [Generated tool catalog](../../docs/tool-catalog.md#huolihuoli-tool-schedule) — the `schedule_create`/`schedule_list`/`schedule_view`/`schedule_edit` schemas a mounting preset contributes.
 - [Schedule user guide](../../docs/user/guide/schedule.md) — create, inspect, run, edit, and delete scheduled tasks.
 - [Automation tasks page](../client/ui-schedule/README.md) — the sidebar page that manages every Host task in the browser.
 

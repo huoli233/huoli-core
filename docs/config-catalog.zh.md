@@ -12,7 +12,7 @@
 每个包的条目用三个标识符标注：`inject` 列出插件注入的服务键，其 `cordis.yml` 树还必须加载这些服务的提供者；`refs` 列出声明引用、但未粘贴在此处的类型；`source` 链接到声明配置的源文件。范围限定为 harness 层级（`packages/`）；配置树还可能加载的 vendored cordis 插件（控制台日志记录器等）固定为上游源代码（参见 [vendoring policy](../vendor/README.md)），未收录于此目录。
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-acp -->
-<a id="huolidsh-acp"></a>
+<a id="huolihuoli-acp"></a>
 
 ## `@huoli/huoli-acp`
 
@@ -36,7 +36,7 @@ export interface AcpConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-acp -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-action-cards -->
-<a id="huolidsh-action-cards"></a>
+<a id="huolihuoli-action-cards"></a>
 
 ## `@huoli/huoli-action-cards`
 
@@ -51,7 +51,7 @@ export type Config = z.infer<typeof Config>
 <!-- END GENERATED config-catalog:@huoli/huoli-action-cards -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-agent-default-model -->
-<a id="huolidsh-agent-default-model"></a>
+<a id="huolihuoli-agent-default-model"></a>
 
 ## `@huoli/huoli-agent-default-model`
 
@@ -72,7 +72,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-agent-default-model -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-agent-instructions -->
-<a id="huolidsh-agent-instructions"></a>
+<a id="huolihuoli-agent-instructions"></a>
 
 ## `@huoli/huoli-agent-instructions`
 
@@ -107,7 +107,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-agent-instructions -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-agent-loop -->
-<a id="huolidsh-agent-loop"></a>
+<a id="huolihuoli-agent-loop"></a>
 
 ## `@huoli/huoli-agent-loop`
 
@@ -139,7 +139,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-agent-loop -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-agent-preset -->
-<a id="huolidsh-agent-preset"></a>
+<a id="huolihuoli-agent-preset"></a>
 
 ## `@huoli/huoli-agent-preset`
 
@@ -154,7 +154,7 @@ export type Config = PresetDefinition
 <!-- END GENERATED config-catalog:@huoli/huoli-agent-preset -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-agent-preset-registry -->
-<a id="huolidsh-agent-preset-registry"></a>
+<a id="huolihuoli-agent-preset-registry"></a>
 
 ## `@huoli/huoli-agent-preset-registry`
 
@@ -174,7 +174,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-agent-preset-registry -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-agent-tool-presentation -->
-<a id="huolidsh-agent-tool-presentation"></a>
+<a id="huolihuoli-agent-tool-presentation"></a>
 
 ## `@huoli/huoli-agent-tool-presentation`
 
@@ -200,7 +200,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-agent-tool-presentation -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-api-gateway -->
-<a id="huolidsh-api-gateway"></a>
+<a id="huolihuoli-api-gateway"></a>
 
 ## `@huoli/huoli-api-gateway`
 
@@ -221,7 +221,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-api-gateway -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-api-job-controller -->
-<a id="huolidsh-api-job-controller"></a>
+<a id="huolihuoli-api-job-controller"></a>
 
 ## `@huoli/huoli-api-job-controller`
 
@@ -240,7 +240,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-api-job-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-api-session-controller -->
-<a id="huolidsh-api-session-controller"></a>
+<a id="huolihuoli-api-session-controller"></a>
 
 ## `@huoli/huoli-api-session-controller`
 
@@ -259,7 +259,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-api-session-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-api-settings-controller -->
-<a id="huolidsh-api-settings-controller"></a>
+<a id="huolihuoli-api-settings-controller"></a>
 
 ## `@huoli/huoli-api-settings-controller`
 
@@ -275,7 +275,7 @@ export interface SettingsControllerInternals {
 <!-- END GENERATED config-catalog:@huoli/huoli-api-settings-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-api-terminal-controller -->
-<a id="huolidsh-api-terminal-controller"></a>
+<a id="huolihuoli-api-terminal-controller"></a>
 
 ## `@huoli/huoli-api-terminal-controller`
 
@@ -321,7 +321,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-api-terminal-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-api-workspace-controller -->
-<a id="huolidsh-api-workspace-controller"></a>
+<a id="huolihuoli-api-workspace-controller"></a>
 
 ## `@huoli/huoli-api-workspace-controller`
 
@@ -340,7 +340,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-api-workspace-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-api-workspace-files -->
-<a id="huolidsh-api-workspace-files"></a>
+<a id="huolihuoli-api-workspace-files"></a>
 
 ## `@huoli/huoli-api-workspace-files`
 
@@ -369,7 +369,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-api-workspace-files -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-attachment-local -->
-<a id="huolidsh-attachment-local"></a>
+<a id="huolihuoli-attachment-local"></a>
 
 ## `@huoli/huoli-attachment-local`
 
@@ -406,7 +406,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-attachment-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-bash-local -->
-<a id="huolidsh-bash-local"></a>
+<a id="huolihuoli-bash-local"></a>
 
 ## `@huoli/huoli-bash-local`
 
@@ -434,12 +434,12 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-bash-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-bash-sandbox -->
-<a id="huolidsh-bash-sandbox"></a>
+<a id="huolihuoli-bash-sandbox"></a>
 
 ## `@huoli/huoli-bash-sandbox`
 
 - `inject`: `subprocess` · `sandbox` · `sandboxPolicy`
-- `refs`: [`LocalConfig`](#huolidsh-bash-local)
+- `refs`: [`LocalConfig`](#huolihuoli-bash-local)
 - `source`: [`packages/shell/bash-sandbox/src/index.ts:36`](../packages/shell/bash-sandbox/src/index.ts)
 
 ```ts config-catalog
@@ -455,7 +455,7 @@ export type Config = LocalConfig
 <!-- END GENERATED config-catalog:@huoli/huoli-bash-sandbox -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-connection -->
-<a id="huolidsh-client-connection"></a>
+<a id="huolihuoli-client-connection"></a>
 
 ## `@huoli/huoli-client-connection`
 
@@ -500,7 +500,7 @@ export interface ConnectionRecoveryConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-client-connection -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-hmr -->
-<a id="huolidsh-client-hmr"></a>
+<a id="huolihuoli-client-hmr"></a>
 
 ## `@huoli/huoli-client-hmr`
 
@@ -517,7 +517,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-client-hmr -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-product-analytics -->
-<a id="huolidsh-client-product-analytics"></a>
+<a id="huolihuoli-client-product-analytics"></a>
 
 ## `@huoli/huoli-client-product-analytics`
 
@@ -541,7 +541,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-client-product-analytics -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-shortcuts -->
-<a id="huolidsh-client-shortcuts"></a>
+<a id="huolihuoli-client-shortcuts"></a>
 
 ## `@huoli/huoli-client-shortcuts`
 
@@ -557,7 +557,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-client-shortcuts -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-ui-plugin-manager -->
-<a id="huolidsh-client-ui-plugin-manager"></a>
+<a id="huolihuoli-client-ui-plugin-manager"></a>
 
 ## `@huoli/huoli-client-ui-plugin-manager`
 
@@ -577,7 +577,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-client-ui-plugin-manager -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-ui-settings-account -->
-<a id="huolidsh-client-ui-settings-account"></a>
+<a id="huolihuoli-client-ui-settings-account"></a>
 
 ## `@huoli/huoli-client-ui-settings-account`
 
@@ -627,7 +627,7 @@ export type OnboardingProcess = 'compact' | 'standard' | 'detailed'
 <!-- END GENERATED config-catalog:@huoli/huoli-client-ui-settings-account -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-ui-settings-models -->
-<a id="huolidsh-client-ui-settings-models"></a>
+<a id="huolihuoli-client-ui-settings-models"></a>
 
 ## `@huoli/huoli-client-ui-settings-models`
 
@@ -643,7 +643,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-client-ui-settings-models -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-ui-sidebar-documentpreview -->
-<a id="huolidsh-client-ui-sidebar-documentpreview"></a>
+<a id="huolihuoli-client-ui-sidebar-documentpreview"></a>
 
 ## `@huoli/huoli-client-ui-sidebar-documentpreview`
 
@@ -677,7 +677,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-client-ui-sidebar-documentpreview -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-ui-theme -->
-<a id="huolidsh-client-ui-theme"></a>
+<a id="huolihuoli-client-ui-theme"></a>
 
 ## `@huoli/huoli-client-ui-theme`
 
@@ -709,7 +709,7 @@ export type ThemePreference = typeof THEME_PREFERENCES[number]
 <!-- END GENERATED config-catalog:@huoli/huoli-client-ui-theme -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-client-ui-trajectory -->
-<a id="huolidsh-client-ui-trajectory"></a>
+<a id="huolihuoli-client-ui-trajectory"></a>
 
 ## `@huoli/huoli-client-ui-trajectory`
 
@@ -726,7 +726,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-client-ui-trajectory -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-compaction-basic -->
-<a id="huolidsh-compaction-basic"></a>
+<a id="huolihuoli-compaction-basic"></a>
 
 ## `@huoli/huoli-compaction-basic`
 
@@ -775,7 +775,7 @@ export interface ModelCompactPolicyConfig extends CompactionPolicyConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-compaction-basic -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-compaction-tool-result-pruner -->
-<a id="huolidsh-compaction-tool-result-pruner"></a>
+<a id="huolihuoli-compaction-tool-result-pruner"></a>
 
 ## `@huoli/huoli-compaction-tool-result-pruner`
 
@@ -796,7 +796,7 @@ export interface ToolResultPruneConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-compaction-tool-result-pruner -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-cordis-host-runner -->
-<a id="huolidsh-cordis-host-runner"></a>
+<a id="huolihuoli-cordis-host-runner"></a>
 
 ## `@huoli/huoli-cordis-host-runner`
 
@@ -815,7 +815,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-cordis-host-runner -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-credentials-local -->
-<a id="huolidsh-credentials-local"></a>
+<a id="huolihuoli-credentials-local"></a>
 
 ## `@huoli/huoli-credentials-local`
 
@@ -837,7 +837,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-credentials-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-deepseek-account-platform -->
-<a id="huolidsh-deepseek-account-platform"></a>
+<a id="huolihuoli-deepseek-account-platform"></a>
 
 ## `@huoli/huoli-deepseek-account-platform`
 
@@ -878,7 +878,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-deepseek-account-platform -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-agent-team -->
-<a id="huolidsh-experimental-agent-team"></a>
+<a id="huolihuoli-experimental-agent-team"></a>
 
 ## `@huoli/huoli-experimental-agent-team`
 
@@ -901,7 +901,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-agent-team -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-api-speech-to-text -->
-<a id="huolidsh-experimental-api-speech-to-text"></a>
+<a id="huolihuoli-experimental-api-speech-to-text"></a>
 
 ## `@huoli/huoli-experimental-api-speech-to-text`
 
@@ -920,7 +920,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-api-speech-to-text -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-browser-use-chrome-devtools-mcp -->
-<a id="huolidsh-experimental-browser-use-chrome-devtools-mcp"></a>
+<a id="huolihuoli-experimental-browser-use-chrome-devtools-mcp"></a>
 
 ## `@huoli/huoli-experimental-browser-use-chrome-devtools-mcp`
 
@@ -935,7 +935,7 @@ export type Config = BrowserMcpConfig
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-browser-use-chrome-devtools-mcp -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-browser-use-playwright-mcp -->
-<a id="huolidsh-experimental-browser-use-playwright-mcp"></a>
+<a id="huolihuoli-experimental-browser-use-playwright-mcp"></a>
 
 ## `@huoli/huoli-experimental-browser-use-playwright-mcp`
 
@@ -950,7 +950,7 @@ export type Config = BrowserMcpConfig
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-browser-use-playwright-mcp -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-browser-use-stagehand-native -->
-<a id="huolidsh-experimental-browser-use-stagehand-native"></a>
+<a id="huolihuoli-experimental-browser-use-stagehand-native"></a>
 
 ## `@huoli/huoli-experimental-browser-use-stagehand-native`
 
@@ -992,7 +992,7 @@ export interface StagehandModelConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-browser-use-stagehand-native -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-claude-code-mods -->
-<a id="huolidsh-experimental-claude-code-mods"></a>
+<a id="huolihuoli-experimental-claude-code-mods"></a>
 
 ## `@huoli/huoli-experimental-claude-code-mods`
 
@@ -1019,7 +1019,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-claude-code-mods -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-client-ui-cot-translation -->
-<a id="huolidsh-experimental-client-ui-cot-translation"></a>
+<a id="huolihuoli-experimental-client-ui-cot-translation"></a>
 
 ## `@huoli/huoli-experimental-client-ui-cot-translation`
 
@@ -1047,7 +1047,7 @@ export interface CotTranslationPreferences {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-client-ui-cot-translation -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-client-ui-forge -->
-<a id="huolidsh-experimental-client-ui-forge"></a>
+<a id="huolihuoli-experimental-client-ui-forge"></a>
 
 ## `@huoli/huoli-experimental-client-ui-forge`
 
@@ -1085,7 +1085,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-client-ui-forge -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-computer-use-cua-driver-mcp -->
-<a id="huolidsh-experimental-computer-use-cua-driver-mcp"></a>
+<a id="huolihuoli-experimental-computer-use-cua-driver-mcp"></a>
 
 ## `@huoli/huoli-experimental-computer-use-cua-driver-mcp`
 
@@ -1109,7 +1109,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-computer-use-cua-driver-mcp -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-cua-macos -->
-<a id="huolidsh-experimental-cua-macos"></a>
+<a id="huolihuoli-experimental-cua-macos"></a>
 
 ## `@huoli/huoli-experimental-cua-macos`
 
@@ -1124,7 +1124,7 @@ export type Config = CuaConfig
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-cua-macos -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-forge -->
-<a id="huolidsh-experimental-forge"></a>
+<a id="huolihuoli-experimental-forge"></a>
 
 ## `@huoli/huoli-experimental-forge`
 
@@ -1146,7 +1146,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-forge -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-forge-github -->
-<a id="huolidsh-experimental-forge-github"></a>
+<a id="huolihuoli-experimental-forge-github"></a>
 
 ## `@huoli/huoli-experimental-forge-github`
 
@@ -1169,7 +1169,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-forge-github -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-forge-session -->
-<a id="huolidsh-experimental-forge-session"></a>
+<a id="huolihuoli-experimental-forge-session"></a>
 
 ## `@huoli/huoli-experimental-forge-session`
 
@@ -1186,7 +1186,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-forge-session -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-inspector -->
-<a id="huolidsh-experimental-inspector"></a>
+<a id="huolihuoli-experimental-inspector"></a>
 
 ## `@huoli/huoli-experimental-inspector`
 
@@ -1255,7 +1255,7 @@ export interface InspectorOptions {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-inspector -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-ptc-runtime-python -->
-<a id="huolidsh-experimental-ptc-runtime-python"></a>
+<a id="huolihuoli-experimental-ptc-runtime-python"></a>
 
 ## `@huoli/huoli-experimental-ptc-runtime-python`
 
@@ -1324,7 +1324,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-ptc-runtime-python -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-speech-to-text -->
-<a id="huolidsh-experimental-speech-to-text"></a>
+<a id="huolihuoli-experimental-speech-to-text"></a>
 
 ## `@huoli/huoli-experimental-speech-to-text`
 
@@ -1343,7 +1343,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-speech-to-text -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-speech-to-text-sensevoice -->
-<a id="huolidsh-experimental-speech-to-text-sensevoice"></a>
+<a id="huolihuoli-experimental-speech-to-text-sensevoice"></a>
 
 ## `@huoli/huoli-experimental-speech-to-text-sensevoice`
 
@@ -1404,7 +1404,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-speech-to-text-sensevoice -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-subagent-oar -->
-<a id="huolidsh-experimental-subagent-oar"></a>
+<a id="huolihuoli-experimental-subagent-oar"></a>
 
 ## `@huoli/huoli-experimental-subagent-oar`
 
@@ -1433,7 +1433,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-subagent-oar -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-tool-agent-team -->
-<a id="huolidsh-experimental-tool-agent-team"></a>
+<a id="huolihuoli-experimental-tool-agent-team"></a>
 
 ## `@huoli/huoli-experimental-tool-agent-team`
 
@@ -1454,7 +1454,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-tool-agent-team -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-tool-subagent-oar -->
-<a id="huolidsh-experimental-tool-subagent-oar"></a>
+<a id="huolihuoli-experimental-tool-subagent-oar"></a>
 
 ## `@huoli/huoli-experimental-tool-subagent-oar`
 
@@ -1473,7 +1473,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-tool-subagent-oar -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-translator -->
-<a id="huolidsh-experimental-translator"></a>
+<a id="huolihuoli-experimental-translator"></a>
 
 ## `@huoli/huoli-experimental-translator`
 
@@ -1512,7 +1512,7 @@ export type PaidTranslationProvider = 'deepseek-account' | 'deepseek-official'
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-translator -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-experimental-worktree -->
-<a id="huolidsh-experimental-worktree"></a>
+<a id="huolihuoli-experimental-worktree"></a>
 
 ## `@huoli/huoli-experimental-worktree`
 
@@ -1541,7 +1541,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-experimental-worktree -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-file-reference-local -->
-<a id="huolidsh-file-reference-local"></a>
+<a id="huolihuoli-file-reference-local"></a>
 
 ## `@huoli/huoli-file-reference-local`
 
@@ -1562,7 +1562,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-file-reference-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-fs-local -->
-<a id="huolidsh-fs-local"></a>
+<a id="huolihuoli-fs-local"></a>
 
 ## `@huoli/huoli-fs-local`
 
@@ -1583,12 +1583,12 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-fs-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-fs-sandbox -->
-<a id="huolidsh-fs-sandbox"></a>
+<a id="huolihuoli-fs-sandbox"></a>
 
 ## `@huoli/huoli-fs-sandbox`
 
 - `inject`: `sandboxPolicy`
-- `refs`: [`LocalConfig`](#huolidsh-fs-local)
+- `refs`: [`LocalConfig`](#huolihuoli-fs-local)
 - `source`: [`packages/fs/fs-sandbox/src/index.ts:45`](../packages/fs/fs-sandbox/src/index.ts)
 
 ```ts config-catalog
@@ -1603,7 +1603,7 @@ export type Config = LocalConfig
 <!-- END GENERATED config-catalog:@huoli/huoli-fs-sandbox -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-goal -->
-<a id="huolidsh-goal"></a>
+<a id="huolihuoli-goal"></a>
 
 ## `@huoli/huoli-goal`
 
@@ -1620,7 +1620,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-goal -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-headless -->
-<a id="huolidsh-headless"></a>
+<a id="huolihuoli-headless"></a>
 
 ## `@huoli/huoli-headless`
 
@@ -1646,7 +1646,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-headless -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-hmr -->
-<a id="huolidsh-hmr"></a>
+<a id="huolihuoli-hmr"></a>
 
 ## `@huoli/huoli-hmr`
 
@@ -1669,7 +1669,7 @@ export interface HmrConfig extends ChokidarOptions {
 <!-- END GENERATED config-catalog:@huoli/huoli-hmr -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-hooks-claude-code -->
-<a id="huolidsh-hooks-claude-code"></a>
+<a id="huolihuoli-hooks-claude-code"></a>
 
 ## `@huoli/huoli-hooks-claude-code`
 
@@ -1708,7 +1708,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-hooks-claude-code -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-hooks-codex -->
-<a id="huolidsh-hooks-codex"></a>
+<a id="huolihuoli-hooks-codex"></a>
 
 ## `@huoli/huoli-hooks-codex`
 
@@ -1736,7 +1736,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-hooks-codex -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-host-directory-picker-browse -->
-<a id="huolidsh-host-directory-picker-browse"></a>
+<a id="huolihuoli-host-directory-picker-browse"></a>
 
 ## `@huoli/huoli-host-directory-picker-browse`
 
@@ -1752,7 +1752,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-host-directory-picker-browse -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-host-frontend-static -->
-<a id="huolidsh-host-frontend-static"></a>
+<a id="huolihuoli-host-frontend-static"></a>
 
 ## `@huoli/huoli-host-frontend-static`
 
@@ -1769,7 +1769,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-host-frontend-static -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-host-open-in-app -->
-<a id="huolidsh-host-open-in-app"></a>
+<a id="huolihuoli-host-open-in-app"></a>
 
 ## `@huoli/huoli-host-open-in-app`
 
@@ -1801,7 +1801,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-host-open-in-app -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-host-product-telemetry-otel -->
-<a id="huolidsh-host-product-telemetry-otel"></a>
+<a id="huolihuoli-host-product-telemetry-otel"></a>
 
 ## `@huoli/huoli-host-product-telemetry-otel`
 
@@ -1838,7 +1838,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-host-product-telemetry-otel -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-host-webserver -->
-<a id="huolidsh-host-webserver"></a>
+<a id="huolihuoli-host-webserver"></a>
 
 ## `@huoli/huoli-host-webserver`
 
@@ -1891,7 +1891,7 @@ export interface TlsConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-host-webserver -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-jobs-local -->
-<a id="huolidsh-jobs-local"></a>
+<a id="huolihuoli-jobs-local"></a>
 
 ## `@huoli/huoli-jobs-local`
 
@@ -1920,7 +1920,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-jobs-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-llm-deepseek-account -->
-<a id="huolidsh-llm-deepseek-account"></a>
+<a id="huolihuoli-llm-deepseek-account"></a>
 
 ## `@huoli/huoli-llm-deepseek-account`
 
@@ -1938,7 +1938,7 @@ export interface Config extends Omit<ProtocolConfig, 'models'>, ModelListingConf
 <!-- END GENERATED config-catalog:@huoli/huoli-llm-deepseek-account -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-llm-deepseek-api-key -->
-<a id="huolidsh-llm-deepseek-api-key"></a>
+<a id="huolihuoli-llm-deepseek-api-key"></a>
 
 ## `@huoli/huoli-llm-deepseek-api-key`
 
@@ -1956,7 +1956,7 @@ export interface Config extends ProtocolConfig, ModelListingConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-llm-deepseek-api-key -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-llm-pi-ai -->
-<a id="huolidsh-llm-pi-ai"></a>
+<a id="huolihuoli-llm-pi-ai"></a>
 
 ## `@huoli/huoli-llm-pi-ai`
 
@@ -2231,7 +2231,7 @@ export type PiAiThinkingTokenBudgetField = NonNullable<OpenAICompletionsCompat['
 <!-- END GENERATED config-catalog:@huoli/huoli-llm-pi-ai -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-llm-replay -->
-<a id="huolidsh-llm-replay"></a>
+<a id="huolihuoli-llm-replay"></a>
 
 ## `@huoli/huoli-llm-replay`
 
@@ -2314,7 +2314,7 @@ export interface ReplayModelConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-llm-replay -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-llm-retry -->
-<a id="huolidsh-llm-retry"></a>
+<a id="huolihuoli-llm-retry"></a>
 
 ## `@huoli/huoli-llm-retry`
 
@@ -2328,7 +2328,7 @@ export type Config = Readonly<Record<string, never>>
 <!-- END GENERATED config-catalog:@huoli/huoli-llm-retry -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-lsp-stdio -->
-<a id="huolidsh-lsp-stdio"></a>
+<a id="huolihuoli-lsp-stdio"></a>
 
 ## `@huoli/huoli-lsp-stdio`
 
@@ -2371,7 +2371,7 @@ export interface LspLocalServerConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-lsp-stdio -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-mcp-client -->
-<a id="huolidsh-mcp-client"></a>
+<a id="huolihuoli-mcp-client"></a>
 
 ## `@huoli/huoli-mcp-client`
 
@@ -2449,7 +2449,7 @@ export interface ReconnectConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-mcp-client -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-message-feedback -->
-<a id="huolidsh-message-feedback"></a>
+<a id="huolihuoli-message-feedback"></a>
 
 ## `@huoli/huoli-message-feedback`
 
@@ -2466,7 +2466,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-message-feedback -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-office-to-pdf -->
-<a id="huolidsh-office-to-pdf"></a>
+<a id="huolihuoli-office-to-pdf"></a>
 
 ## `@huoli/huoli-office-to-pdf`
 
@@ -2518,7 +2518,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-office-to-pdf -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-permission-presets -->
-<a id="huolidsh-permission-presets"></a>
+<a id="huolihuoli-permission-presets"></a>
 
 ## `@huoli/huoli-permission-presets`
 
@@ -2558,7 +2558,7 @@ export interface PresetSpec {
 <!-- END GENERATED config-catalog:@huoli/huoli-permission-presets -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-persona -->
-<a id="huolidsh-persona"></a>
+<a id="huolihuoli-persona"></a>
 
 ## `@huoli/huoli-persona`
 
@@ -2588,7 +2588,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-persona -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-plan-mode -->
-<a id="huolidsh-plan-mode"></a>
+<a id="huolihuoli-plan-mode"></a>
 
 ## `@huoli/huoli-plan-mode`
 
@@ -2605,7 +2605,7 @@ export interface PlanModeConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-plan-mode -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-plugin-manager -->
-<a id="huolidsh-plugin-manager"></a>
+<a id="huolihuoli-plugin-manager"></a>
 
 ## `@huoli/huoli-plugin-manager`
 
@@ -2655,7 +2655,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-plugin-manager -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-plugin-market -->
-<a id="huolidsh-plugin-market"></a>
+<a id="huolihuoli-plugin-market"></a>
 
 ## `@huoli/huoli-plugin-market`
 
@@ -2695,7 +2695,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-plugin-market -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-plugin-package-inventory-deepseek -->
-<a id="huolidsh-plugin-package-inventory-deepseek"></a>
+<a id="huolihuoli-plugin-package-inventory-deepseek"></a>
 
 ## `@huoli/huoli-plugin-package-inventory-deepseek`
 
@@ -2712,7 +2712,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-plugin-package-inventory-deepseek -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-ptc-runtime-node -->
-<a id="huolidsh-ptc-runtime-node"></a>
+<a id="huolihuoli-ptc-runtime-node"></a>
 
 ## `@huoli/huoli-ptc-runtime-node`
 
@@ -2762,7 +2762,7 @@ export type LaunchConfig = {
 <!-- END GENERATED config-catalog:@huoli/huoli-ptc-runtime-node -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-pwsh-local -->
-<a id="huolidsh-pwsh-local"></a>
+<a id="huolihuoli-pwsh-local"></a>
 
 ## `@huoli/huoli-pwsh-local`
 
@@ -2797,12 +2797,12 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-pwsh-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-pwsh-sandbox -->
-<a id="huolidsh-pwsh-sandbox"></a>
+<a id="huolihuoli-pwsh-sandbox"></a>
 
 ## `@huoli/huoli-pwsh-sandbox`
 
 - `inject`: `subprocess` · `sandbox` · `sandboxPolicy`
-- `refs`: [`LocalConfig`](#huolidsh-pwsh-local)
+- `refs`: [`LocalConfig`](#huolihuoli-pwsh-local)
 - `source`: [`packages/shell/pwsh-sandbox/src/index.ts:40`](../packages/shell/pwsh-sandbox/src/index.ts)
 
 ```ts config-catalog
@@ -2818,8 +2818,178 @@ export type Config = LocalConfig
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-pwsh-sandbox -->
 
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-attention -->
+<a id="huolihuoli-qq-attention"></a>
+
+## `@huoli/huoli-qq-attention`
+
+- `inject`: `tools`
+- `source`: [`packages/qq/qq-attention/src/index.ts:26`](../packages/qq/qq-attention/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** 状态文件放哪 */
+  file?: string
+  /** 机器人叫什么，用来认名字 */
+  selfNames?: readonly string[]
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-attention -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-bundle -->
+<a id="huolihuoli-qq-bundle"></a>
+
+## `@huoli/huoli-qq-bundle`
+
+- `inject`: `systemPrompt`
+- `source`: [`packages/qq/qq-bundle/src/index.ts:15`](../packages/qq/qq-bundle/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** 说话规矩那个文件放哪 */
+  rulesFile?: string
+  /** 每天几点整理记忆 */
+  dailySweepHour?: number
+  /** 一轮最多走几步 */
+  maxSteps?: number
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-channel -->
+<a id="huolihuoli-qq-channel"></a>
+
+## `@huoli/huoli-qq-channel`
+
+- `inject`: `tools`
+- `source`: [`packages/qq/qq-channel/src/index.ts:23`](../packages/qq/qq-channel/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** QQ 那头连过来的地址 */
+  url: string
+  /** 机器人自己的 QQ 号 */
+  selfId: string
+  /** 连接口令，没设就不带 */
+  accessToken?: string
+  /** 断了之后隔多久重连 */
+  reconnectMs?: number
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-channel -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-continuity -->
+<a id="huolihuoli-qq-continuity"></a>
+
+## `@huoli/huoli-qq-continuity`
+
+- `inject`: `tools`
+- `source`: [`packages/qq/qq-continuity/src/index.ts:23`](../packages/qq/qq-continuity/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** 收尾记录放哪 */
+  file?: string
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-continuity -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-material -->
+<a id="huolihuoli-qq-material"></a>
+
+## `@huoli/huoli-qq-material`
+
+- `inject`: `tools`
+- `source`: [`packages/qq/qq-material/src/index.ts:21`](../packages/qq/qq-material/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** 惦记的事存哪 */
+  thoughtsFile?: string
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-material -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-memory -->
+<a id="huolihuoli-qq-memory"></a>
+
+## `@huoli/huoli-qq-memory`
+
+- `inject`: `tools`
+- `source`: [`packages/qq/qq-memory/src/index.ts:29`](../packages/qq/qq-memory/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** 记忆存哪 */
+  file?: string
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-memory -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-pacing -->
+<a id="huolihuoli-qq-pacing"></a>
+
+## `@huoli/huoli-qq-pacing`
+
+- `source`: [`packages/qq/qq-pacing/src/index.ts:24`](../packages/qq/qq-pacing/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** 记账文件放哪 */
+  file?: string
+  /** 一段话最多拆几条 */
+  maxParts?: number
+  /** 每条最多几个字 */
+  maxCharsPerPart?: number
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-pacing -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-proactive -->
+<a id="huolihuoli-qq-proactive"></a>
+
+## `@huoli/huoli-qq-proactive`
+
+- `source`: [`packages/qq/qq-proactive/src/index.ts:53`](../packages/qq/qq-proactive/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** 攒着的和记账都放这个文件 */
+  file?: string
+  /** 要不要主动开口 */
+  enabled?: boolean
+  /** 一天最多开口几次 */
+  dailyMax?: number
+  /** 安静时段从几点开始 */
+  quietStart?: string
+  /** 安静时段到几点结束 */
+  quietEnd?: string
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-proactive -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-subject -->
+<a id="huolihuoli-qq-subject"></a>
+
+## `@huoli/huoli-qq-subject`
+
+- `inject`: `systemPrompt`
+- `source`: [`packages/qq/qq-subject/src/index.ts:22`](../packages/qq/qq-subject/src/index.ts)
+
+```ts config-catalog
+export interface Config {
+  /** 状态存哪 */
+  file?: string
+  /** 一段状态最多写多少字 */
+  maxChars?: number
+  /** 每个群叫什么名字，写快照时用 */
+  chatNames?: Record<string, string>
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-subject -->
+
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-repeat-tool-reminder -->
-<a id="huolidsh-repeat-tool-reminder"></a>
+<a id="huolihuoli-repeat-tool-reminder"></a>
 
 ## `@huoli/huoli-repeat-tool-reminder`
 
@@ -2855,7 +3025,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-repeat-tool-reminder -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-sandbox-local -->
-<a id="huolidsh-sandbox-local"></a>
+<a id="huolihuoli-sandbox-local"></a>
 
 ## `@huoli/huoli-sandbox-local`
 
@@ -2889,7 +3059,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-sandbox-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-sandbox-policy -->
-<a id="huolidsh-sandbox-policy"></a>
+<a id="huolihuoli-sandbox-policy"></a>
 
 ## `@huoli/huoli-sandbox-policy`
 
@@ -2927,7 +3097,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-sandbox-policy -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-schedule -->
-<a id="huolidsh-schedule"></a>
+<a id="huolihuoli-schedule"></a>
 
 ## `@huoli/huoli-schedule`
 
@@ -2957,7 +3127,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-schedule -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-sdk-app -->
-<a id="huolidsh-sdk-app"></a>
+<a id="huolihuoli-sdk-app"></a>
 
 ## `@huoli/huoli-sdk-app`
 
@@ -2974,7 +3144,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-sdk-app -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-sdk-jsonrpc-server -->
-<a id="huolidsh-sdk-jsonrpc-server"></a>
+<a id="huolihuoli-sdk-jsonrpc-server"></a>
 
 ## `@huoli/huoli-sdk-jsonrpc-server`
 
@@ -2998,7 +3168,7 @@ export interface JsonRpcConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-sdk-jsonrpc-server -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-log-deepseek -->
-<a id="huolidsh-session-log-deepseek"></a>
+<a id="huolihuoli-session-log-deepseek"></a>
 
 ## `@huoli/huoli-session-log-deepseek`
 
@@ -3022,7 +3192,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-session-log-deepseek -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-log-export -->
-<a id="huolidsh-session-log-export"></a>
+<a id="huolihuoli-session-log-export"></a>
 
 ## `@huoli/huoli-session-log-export`
 
@@ -3042,7 +3212,7 @@ export type SessionLogCompressionLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <!-- END GENERATED config-catalog:@huoli/huoli-session-log-export -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-persistence-jsonl -->
-<a id="huolidsh-session-persistence-jsonl"></a>
+<a id="huolihuoli-session-persistence-jsonl"></a>
 
 ## `@huoli/huoli-session-persistence-jsonl`
 
@@ -3075,7 +3245,7 @@ export type JsonlCompression = 'zstd' | 'none'
 <!-- END GENERATED config-catalog:@huoli/huoli-session-persistence-jsonl -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-projection-cache -->
-<a id="huolidsh-session-projection-cache"></a>
+<a id="huolihuoli-session-projection-cache"></a>
 
 ## `@huoli/huoli-session-projection-cache`
 
@@ -3100,7 +3270,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-session-projection-cache -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-query-sqlite -->
-<a id="huolidsh-session-query-sqlite"></a>
+<a id="huolihuoli-session-query-sqlite"></a>
 
 ## `@huoli/huoli-session-query-sqlite`
 
@@ -3148,7 +3318,7 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 <!-- END GENERATED config-catalog:@huoli/huoli-session-query-sqlite -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-reference -->
-<a id="huolidsh-session-reference"></a>
+<a id="huolihuoli-session-reference"></a>
 
 ## `@huoli/huoli-session-reference`
 
@@ -3171,7 +3341,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-session-reference -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-telemetry-otel -->
-<a id="huolidsh-session-telemetry-otel"></a>
+<a id="huolihuoli-session-telemetry-otel"></a>
 
 ## `@huoli/huoli-session-telemetry-otel`
 
@@ -3218,7 +3388,7 @@ export enum SessionTelemetryMode {
 <!-- END GENERATED config-catalog:@huoli/huoli-session-telemetry-otel -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-title -->
-<a id="huolidsh-session-title"></a>
+<a id="huolihuoli-session-title"></a>
 
 ## `@huoli/huoli-session-title`
 
@@ -3239,7 +3409,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-session-title -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-title-all-prompts-llm -->
-<a id="huolidsh-session-title-all-prompts-llm"></a>
+<a id="huolihuoli-session-title-all-prompts-llm"></a>
 
 ## `@huoli/huoli-session-title-all-prompts-llm`
 
@@ -3259,7 +3429,7 @@ export interface Config extends SessionTitleLlmConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-session-title-all-prompts-llm -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-session-title-first-prompt-llm -->
-<a id="huolidsh-session-title-first-prompt-llm"></a>
+<a id="huolihuoli-session-title-first-prompt-llm"></a>
 
 ## `@huoli/huoli-session-title-first-prompt-llm`
 
@@ -3279,7 +3449,7 @@ export interface Config extends SessionTitleLlmConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-session-title-first-prompt-llm -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-shell-env -->
-<a id="huolidsh-shell-env"></a>
+<a id="huolihuoli-shell-env"></a>
 
 ## `@huoli/huoli-shell-env`
 
@@ -3295,7 +3465,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-shell-env -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-skill -->
-<a id="huolidsh-skill"></a>
+<a id="huolihuoli-skill"></a>
 
 ## `@huoli/huoli-skill`
 
@@ -3311,7 +3481,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-skill -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-skill-filesystem -->
-<a id="huolidsh-skill-filesystem"></a>
+<a id="huolihuoli-skill-filesystem"></a>
 
 ## `@huoli/huoli-skill-filesystem`
 
@@ -3350,7 +3520,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-skill-filesystem -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-skill-office -->
-<a id="huolidsh-skill-office"></a>
+<a id="huolihuoli-skill-office"></a>
 
 ## `@huoli/huoli-skill-office`
 
@@ -3371,7 +3541,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-skill-office -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-spill-local -->
-<a id="huolidsh-spill-local"></a>
+<a id="huolihuoli-spill-local"></a>
 
 ## `@huoli/huoli-spill-local`
 
@@ -3402,7 +3572,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-spill-local -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-spill-policy -->
-<a id="huolidsh-spill-policy"></a>
+<a id="huolihuoli-spill-policy"></a>
 
 ## `@huoli/huoli-spill-policy`
 
@@ -3419,7 +3589,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-spill-policy -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-ssh -->
-<a id="huolidsh-ssh"></a>
+<a id="huolihuoli-ssh"></a>
 
 ## `@huoli/huoli-ssh`
 
@@ -3466,7 +3636,7 @@ export type HelperLaunch = {
 <!-- END GENERATED config-catalog:@huoli/huoli-ssh -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-storage-domain -->
-<a id="huolidsh-storage-domain"></a>
+<a id="huolihuoli-storage-domain"></a>
 
 ## `@huoli/huoli-storage-domain`
 
@@ -3490,7 +3660,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-storage-domain -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-storage-json -->
-<a id="huolidsh-storage-json"></a>
+<a id="huolihuoli-storage-json"></a>
 
 ## `@huoli/huoli-storage-json`
 
@@ -3512,7 +3682,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-storage-json -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-storage-sqlite -->
-<a id="huolidsh-storage-sqlite"></a>
+<a id="huolihuoli-storage-sqlite"></a>
 
 ## `@huoli/huoli-storage-sqlite`
 
@@ -3553,7 +3723,7 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 <!-- END GENERATED config-catalog:@huoli/huoli-storage-sqlite -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-subagent -->
-<a id="huolidsh-subagent"></a>
+<a id="huolihuoli-subagent"></a>
 
 ## `@huoli/huoli-subagent`
 
@@ -3573,7 +3743,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-subagent -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-subagent-acp -->
-<a id="huolidsh-subagent-acp"></a>
+<a id="huolihuoli-subagent-acp"></a>
 
 ## `@huoli/huoli-subagent-acp`
 
@@ -3619,7 +3789,7 @@ export type PermissionPolicy = 'allow' | 'reject'
 <!-- END GENERATED config-catalog:@huoli/huoli-subagent-acp -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-subagent-claude-code -->
-<a id="huolidsh-subagent-claude-code"></a>
+<a id="huolihuoli-subagent-claude-code"></a>
 
 ## `@huoli/huoli-subagent-claude-code`
 
@@ -3655,7 +3825,7 @@ export type ClaudeCodePermissionMode = typeof CLAUDE_CODE_PERMISSION_MODES[numbe
 <!-- END GENERATED config-catalog:@huoli/huoli-subagent-claude-code -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-subagent-codex -->
-<a id="huolidsh-subagent-codex"></a>
+<a id="huolihuoli-subagent-codex"></a>
 
 ## `@huoli/huoli-subagent-codex`
 
@@ -3688,8 +3858,25 @@ export type CodexPermissionMode =
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-subagent-codex -->
 
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-subagent-fork-in-process -->
+<a id="huolihuoli-subagent-fork-in-process"></a>
+
+## `@huoli/huoli-subagent-fork-in-process`
+
+- `inject`: `subagents`
+- `source`: [`packages/subagent/subagent-fork-in-process/src/index.ts:29`](../packages/subagent/subagent-fork-in-process/src/index.ts)
+
+```ts config-catalog
+/** Config: the registry name to register the provider under. */
+export interface Config {
+  /** Provider name on `ctx.subagents` (default `fork`). */
+  providerName: string
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-subagent-fork-in-process -->
+
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-subagent-huoli-sdk -->
-<a id="huolidsh-subagent-huoli-sdk"></a>
+<a id="huolihuoli-subagent-huoli-sdk"></a>
 
 ## `@huoli/huoli-subagent-huoli-sdk`
 
@@ -3736,25 +3923,8 @@ export interface Config {
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-subagent-huoli-sdk -->
 
-<!-- BEGIN GENERATED config-catalog:@huoli/huoli-subagent-fork-in-process -->
-<a id="huolidsh-subagent-fork-in-process"></a>
-
-## `@huoli/huoli-subagent-fork-in-process`
-
-- `inject`: `subagents`
-- `source`: [`packages/subagent/subagent-fork-in-process/src/index.ts:29`](../packages/subagent/subagent-fork-in-process/src/index.ts)
-
-```ts config-catalog
-/** Config: the registry name to register the provider under. */
-export interface Config {
-  /** Provider name on `ctx.subagents` (default `fork`). */
-  providerName: string
-}
-```
-<!-- END GENERATED config-catalog:@huoli/huoli-subagent-fork-in-process -->
-
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-subagent-spawn-in-process -->
-<a id="huolidsh-subagent-spawn-in-process"></a>
+<a id="huolihuoli-subagent-spawn-in-process"></a>
 
 ## `@huoli/huoli-subagent-spawn-in-process`
 
@@ -3771,7 +3941,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-subagent-spawn-in-process -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-system-prompt -->
-<a id="huolidsh-system-prompt"></a>
+<a id="huolihuoli-system-prompt"></a>
 
 ## `@huoli/huoli-system-prompt`
 
@@ -3805,7 +3975,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-system-prompt -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-terminal-bash -->
-<a id="huolidsh-terminal-bash"></a>
+<a id="huolihuoli-terminal-bash"></a>
 
 ## `@huoli/huoli-terminal-bash`
 
@@ -3865,7 +4035,7 @@ export type ShellDialect = 'bash' | 'pwsh'
 <!-- END GENERATED config-catalog:@huoli/huoli-terminal-bash -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-time-context -->
-<a id="huolidsh-time-context"></a>
+<a id="huolihuoli-time-context"></a>
 
 ## `@huoli/huoli-time-context`
 
@@ -3884,7 +4054,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-time-context -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tmux-context -->
-<a id="huolidsh-tmux-context"></a>
+<a id="huolihuoli-tmux-context"></a>
 
 ## `@huoli/huoli-tmux-context`
 
@@ -3901,7 +4071,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tmux-context -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-token-meter -->
-<a id="huolidsh-token-meter"></a>
+<a id="huolihuoli-token-meter"></a>
 
 ## `@huoli/huoli-token-meter`
 
@@ -3915,7 +4085,7 @@ export type TokenMeterConfig = Record<string, never>
 <!-- END GENERATED config-catalog:@huoli/huoli-token-meter -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-ask-user -->
-<a id="huolidsh-tool-ask-user"></a>
+<a id="huolihuoli-tool-ask-user"></a>
 
 ## `@huoli/huoli-tool-ask-user`
 
@@ -3934,7 +4104,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-ask-user -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-bash -->
-<a id="huolidsh-tool-bash"></a>
+<a id="huolihuoli-tool-bash"></a>
 
 ## `@huoli/huoli-tool-bash`
 
@@ -3964,7 +4134,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-bash -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-bash-persistent -->
-<a id="huolidsh-tool-bash-persistent"></a>
+<a id="huolihuoli-tool-bash-persistent"></a>
 
 ## `@huoli/huoli-tool-bash-persistent`
 
@@ -3987,7 +4157,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-bash-persistent -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-executor-ptc -->
-<a id="huolidsh-tool-executor-ptc"></a>
+<a id="huolihuoli-tool-executor-ptc"></a>
 
 ## `@huoli/huoli-tool-executor-ptc`
 
@@ -4004,7 +4174,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-executor-ptc -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-fs -->
-<a id="huolidsh-tool-fs"></a>
+<a id="huolihuoli-tool-fs"></a>
 
 ## `@huoli/huoli-tool-fs`
 
@@ -4037,7 +4207,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-fs -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-fs-search -->
-<a id="huolidsh-tool-fs-search"></a>
+<a id="huolihuoli-tool-fs-search"></a>
 
 ## `@huoli/huoli-tool-fs-search`
 
@@ -4073,7 +4243,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-fs-search -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-goal -->
-<a id="huolidsh-tool-goal"></a>
+<a id="huolihuoli-tool-goal"></a>
 
 ## `@huoli/huoli-tool-goal`
 
@@ -4090,7 +4260,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-goal -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-jobs -->
-<a id="huolidsh-tool-jobs"></a>
+<a id="huolihuoli-tool-jobs"></a>
 
 ## `@huoli/huoli-tool-jobs`
 
@@ -4134,7 +4304,7 @@ export type CompletionDelivery = 'quiet' | 'wakeup'
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-jobs -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-lsp -->
-<a id="huolidsh-tool-lsp"></a>
+<a id="huolihuoli-tool-lsp"></a>
 
 ## `@huoli/huoli-tool-lsp`
 
@@ -4155,7 +4325,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-lsp -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-present -->
-<a id="huolidsh-tool-present"></a>
+<a id="huolihuoli-tool-present"></a>
 
 ## `@huoli/huoli-tool-present`
 
@@ -4172,7 +4342,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-present -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-pwsh -->
-<a id="huolidsh-tool-pwsh"></a>
+<a id="huolihuoli-tool-pwsh"></a>
 
 ## `@huoli/huoli-tool-pwsh`
 
@@ -4202,7 +4372,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-pwsh -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-pwsh-persistent -->
-<a id="huolidsh-tool-pwsh-persistent"></a>
+<a id="huolihuoli-tool-pwsh-persistent"></a>
 
 ## `@huoli/huoli-tool-pwsh-persistent`
 
@@ -4225,7 +4395,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-pwsh-persistent -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-ralph -->
-<a id="huolidsh-tool-ralph"></a>
+<a id="huolihuoli-tool-ralph"></a>
 
 ## `@huoli/huoli-tool-ralph`
 
@@ -4248,7 +4418,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-ralph -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-session-query -->
-<a id="huolidsh-tool-session-query"></a>
+<a id="huolihuoli-tool-session-query"></a>
 
 ## `@huoli/huoli-tool-session-query`
 
@@ -4267,7 +4437,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-session-query -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-skill -->
-<a id="huolidsh-tool-skill"></a>
+<a id="huolihuoli-tool-skill"></a>
 
 ## `@huoli/huoli-tool-skill`
 
@@ -4284,7 +4454,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-skill -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-str-replace-editor -->
-<a id="huolidsh-tool-str-replace-editor"></a>
+<a id="huolihuoli-tool-str-replace-editor"></a>
 
 ## `@huoli/huoli-tool-str-replace-editor`
 
@@ -4303,7 +4473,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-str-replace-editor -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-subagent -->
-<a id="huolidsh-tool-subagent"></a>
+<a id="huolihuoli-tool-subagent"></a>
 
 ## `@huoli/huoli-tool-subagent`
 
@@ -4361,7 +4531,7 @@ export interface PresetSelectionConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-subagent -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-terminal -->
-<a id="huolidsh-tool-terminal"></a>
+<a id="huolihuoli-tool-terminal"></a>
 
 ## `@huoli/huoli-tool-terminal`
 
@@ -4380,7 +4550,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-terminal -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-todo -->
-<a id="huolidsh-tool-todo"></a>
+<a id="huolihuoli-tool-todo"></a>
 
 ## `@huoli/huoli-tool-todo`
 
@@ -4403,7 +4573,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-todo -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-web -->
-<a id="huolidsh-tool-web"></a>
+<a id="huolihuoli-tool-web"></a>
 
 ## `@huoli/huoli-tool-web`
 
@@ -4434,7 +4604,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-web -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-workflow -->
-<a id="huolidsh-tool-workflow"></a>
+<a id="huolihuoli-tool-workflow"></a>
 
 ## `@huoli/huoli-tool-workflow`
 
@@ -4461,7 +4631,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-workflow -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-tool-workspace-dependencies -->
-<a id="huolidsh-tool-workspace-dependencies"></a>
+<a id="huolihuoli-tool-workspace-dependencies"></a>
 
 ## `@huoli/huoli-tool-workspace-dependencies`
 
@@ -4484,7 +4654,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-tool-workspace-dependencies -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-typert-loader -->
-<a id="huolidsh-typert-loader"></a>
+<a id="huolihuoli-typert-loader"></a>
 
 ## `@huoli/huoli-typert-loader`
 
@@ -4501,7 +4671,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-typert-loader -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-user-approval -->
-<a id="huolidsh-user-approval"></a>
+<a id="huolihuoli-user-approval"></a>
 
 ## `@huoli/huoli-user-approval`
 
@@ -4535,7 +4705,7 @@ export type ApprovalPolicy = 'ask' | 'never'
 <!-- END GENERATED config-catalog:@huoli/huoli-user-approval -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-web -->
-<a id="huolidsh-web"></a>
+<a id="huolihuoli-web"></a>
 
 ## `@huoli/huoli-web`
 
@@ -4561,7 +4731,7 @@ export interface WebRuntimeConfig {
 <!-- END GENERATED config-catalog:@huoli/huoli-web -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-web-app -->
-<a id="huolidsh-web-app"></a>
+<a id="huolihuoli-web-app"></a>
 
 ## `@huoli/huoli-web-app`
 
@@ -4593,7 +4763,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-web-app -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-web-deepseek-api -->
-<a id="huolidsh-web-deepseek-api"></a>
+<a id="huolihuoli-web-deepseek-api"></a>
 
 ## `@huoli/huoli-web-deepseek-api`
 
@@ -4619,7 +4789,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-web-deepseek-api -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-web-fetch-http -->
-<a id="huolidsh-web-fetch-http"></a>
+<a id="huolihuoli-web-fetch-http"></a>
 
 ## `@huoli/huoli-web-fetch-http`
 
@@ -4644,7 +4814,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-web-fetch-http -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-web-search-deepseek -->
-<a id="huolidsh-web-search-deepseek"></a>
+<a id="huolihuoli-web-search-deepseek"></a>
 
 ## `@huoli/huoli-web-search-deepseek`
 
@@ -4674,7 +4844,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-web-search-deepseek -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-web-search-exa -->
-<a id="huolidsh-web-search-exa"></a>
+<a id="huolihuoli-web-search-exa"></a>
 
 ## `@huoli/huoli-web-search-exa`
 
@@ -4699,7 +4869,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-web-search-exa -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-web-search-perplexity -->
-<a id="huolidsh-web-search-perplexity"></a>
+<a id="huolihuoli-web-search-perplexity"></a>
 
 ## `@huoli/huoli-web-search-perplexity`
 
@@ -4724,7 +4894,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-web-search-perplexity -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-webhook-github -->
-<a id="huolidsh-webhook-github"></a>
+<a id="huolihuoli-webhook-github"></a>
 
 ## `@huoli/huoli-webhook-github`
 
@@ -4747,7 +4917,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-webhook-github -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-workflow-ptc -->
-<a id="huolidsh-workflow-ptc"></a>
+<a id="huolihuoli-workflow-ptc"></a>
 
 ## `@huoli/huoli-workflow-ptc`
 
@@ -4772,7 +4942,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-workflow-ptc -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-working-directory -->
-<a id="huolidsh-working-directory"></a>
+<a id="huolihuoli-working-directory"></a>
 
 ## `@huoli/huoli-working-directory`
 
@@ -4789,7 +4959,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@huoli/huoli-working-directory -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-workspace-changes -->
-<a id="huolidsh-workspace-changes"></a>
+<a id="huolihuoli-workspace-changes"></a>
 
 ## `@huoli/huoli-workspace-changes`
 
@@ -5025,6 +5195,7 @@ export interface Config {
 | `@huoli/huoli-personalized-recommendations` | — | [`packages/experimental/personalized-recommendations/src/index.ts`](../packages/experimental/personalized-recommendations/src/index.ts) |
 | `@huoli/huoli-plugin-detail` | — | [`packages/util/plugin-detail/src/index.ts`](../packages/util/plugin-detail/src/index.ts) |
 | `@huoli/huoli-plugin-market-index` | — | [`packages/util/plugin-market-index/src/index.ts`](../packages/util/plugin-market-index/src/index.ts) |
+| `@huoli/huoli-qq-policy` | — | [`packages/qq/qq-policy/src/index.ts`](../packages/qq/qq-policy/src/index.ts) |
 | `@huoli/huoli-remote-mock` | — | [`packages/test-support/remote-mock/src/index.ts`](../packages/test-support/remote-mock/src/index.ts) |
 | `@huoli/huoli-sandbox-windows-acl` | — | [`packages/sandbox/sandbox-windows-acl/src/index.ts`](../packages/sandbox/sandbox-windows-acl/src/index.ts) |
 | `@huoli/huoli-scope` | — | [`packages/core/scope/src/index.ts`](../packages/core/scope/src/index.ts) |

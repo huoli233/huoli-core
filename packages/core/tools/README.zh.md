@@ -146,7 +146,7 @@ Agent 步骤的并发上限使用 [agent-loop 配置](../agent-loop/README.zh.md
 包级约定对大多数消费方已经足够；需要周边领域时再阅读以下页面。
 
 - [工具子系统](../../../docs/subsystems/tools.zh.md)——完整流水线类型、schema DSL 与生成的服务 API。
-- [生成工具目录](../../../docs/tool-catalog.zh.md#huolidsh-tool-executor-ptc)——模型收到的已交付工具 schema。
+- [生成工具目录](../../../docs/tool-catalog.zh.md#huolihuoli-tool-executor-ptc)——模型收到的已交付工具 schema。
 - [工具执行流水线](../../../docs/tool-execution-pipeline.zh.md)——可视化流水线。
 - [添加工具实操手册](../../../docs/cookbook/adding-a-tool.zh.md)——分步骤的工具编写指南。
 - [工具测试工具包](../../test-support/tool-testkit/README.zh.md)——测试和基准测试使用的工具定义与执行 fixture。
@@ -162,7 +162,7 @@ Agent 步骤的并发上限使用 [agent-loop 配置](../agent-loop/README.zh.md
 
 #### 模型看到什么
 
-在普通模式下，模型会看到每个可见定义的确切名称、描述与 JSON Schema；已交付定义记录在生成的[工具目录](../../../docs/tool-catalog.zh.md#huolidsh-tool-executor-ptc)中。agent 作用域的限制、遮蔽与扩展注册会改变该 agent 的最终工具集合。
+在普通模式下，模型会看到每个可见定义的确切名称、描述与 JSON Schema；已交付定义记录在生成的[工具目录](../../../docs/tool-catalog.zh.md#huolihuoli-tool-executor-ptc)中。agent 作用域的限制、遮蔽与扩展注册会改变该 agent 的最终工具集合。
 
 #### Token 影响
 

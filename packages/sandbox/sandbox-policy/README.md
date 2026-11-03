@@ -50,7 +50,7 @@ Load the package with a default mode; the fail-safe default is `read-only`, and 
 
 For a linked Git worktree, the caller can grant its shared Git directory with `additionalWritableRoots`. The caller selects that directory explicitly; the policy does not inspect Git files or grant a parent checkout. These grants are deployment configuration shared by the composition's sessions, rather than saved Session permissions. Granting the entire Git directory also permits changes to hooks and configuration that a later host Git invocation can execute outside the sandbox; use that grant only for trusted tasks. Use physical absolute directory paths. The enforcing host rejects missing paths, files, and symlinked roots, including a directory replaced by a symlink between calls. Remote grants are validated on the remote host.
 
-The generated [configuration catalog](../../../docs/config-catalog.md#huolidsh-sandbox-policy) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#huolihuoli-sandbox-policy) is the exhaustive source for every accepted field and its JSDoc.
 
 ### Switching a session's mode
 

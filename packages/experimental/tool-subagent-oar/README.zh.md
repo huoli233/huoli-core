@@ -48,7 +48,7 @@ kind: "package-reference"
 | `providers` | 必填 | 从模型可见运行时别名映射到已注册提供方名称的非空映射 |
 | `toolName` | `subagent_oar` | 工具名称；每个挂载实例需要不同名称 |
 
-[配置目录](../../../docs/config-catalog.zh.md#huolidsh-experimental-tool-subagent-oar)定义接受的字段和校验规则。调用要求提供 `runtime`、`description` 和 `prompt`；可选的 `cwd` 选择子任务目录，相对路径从父智能体的当前目录解析。提示必须包含子任务需要的上下文。原生安装、认证、模型设置和权限由所选提供方负责。
+[配置目录](../../../docs/config-catalog.zh.md#huolihuoli-experimental-tool-subagent-oar)定义接受的字段和校验规则。调用要求提供 `runtime`、`description` 和 `prompt`；可选的 `cwd` 选择子任务目录，相对路径从父智能体的当前目录解析。提示必须包含子任务需要的上下文。原生安装、认证、模型设置和权限由所选提供方负责。
 
 -----
 
@@ -80,7 +80,7 @@ kind: "package-reference"
 
 #### 模型看到什么
 
-[工具目录](../../../docs/tool-catalog.zh.md#huolidsh-experimental-tool-subagent-oar)定义描述和参数 schema。`runtime` 枚举包含配置的别名。接受任务后，工具返回 `started subagent <id>`，其中 `<id>` 标识子任务。共享子智能体服务稍后提供子任务的答复或失败通知。
+[工具目录](../../../docs/tool-catalog.zh.md#huolihuoli-experimental-tool-subagent-oar)定义描述和参数 schema。`runtime` 枚举包含配置的别名。接受任务后，工具返回 `started subagent <id>`，其中 `<id>` 标识子任务。共享子智能体服务稍后提供子任务的答复或失败通知。
 
 #### Token 影响
 
