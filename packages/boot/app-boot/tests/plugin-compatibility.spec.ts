@@ -167,6 +167,20 @@ describe('engines.huoli', () => {
     expect(evaluatePluginCompatibility(Object.create({ engines: { huoli: '^0.2.0' } }) as object, {}, runtime)).toBeUndefined()
   })
 
+  it('checks legacy peer requirements when neither engine is declared', () => {
+    expect(evaluatePluginCompatibility({ ...identity, peerDependencies: { '@deepseek-ai/dsh': '^0.2.0' } }, {}, runtime)?.requirements)
+      .toEqual({ '@deepseek-ai/dsh': '^0.2.0' })
+  })
+
+  it('checks the legacy engine only when the new engine is absent', () => {
+    expect(evaluatePluginCompatibility({ ...identity, engines: { dsh: '^0.2.0' }, peerDependencies: passingPeers }, {}, runtime)?.requirements)
+      .toEqual({ 'engines.dsh': '^0.2.0' })
+    expect(evaluatePluginCompatibility({ ...identity, engines: { dsh: '*' } }, {}, runtime)).toBeUndefined()
+    expect(evaluatePluginCompatibility({ ...identity, engines: { huoli: '^0.2.0', dsh: '*' } }, {}, runtime)?.requirements)
+      .toEqual({ 'engines.huoli': '^0.2.0' })
+    expect(() => evaluatePluginCompatibility({ ...identity, engines: { dsh: null } }, {}, runtime)).toThrow('engines.dsh must be a string')
+  })
+
   it('applies exact-version exemptions to an engines mismatch', () => {
     const manifest = { ...identity, engines: { huoli: '^0.2.0' } }
     expect(evaluatePluginCompatibility(manifest, { '@example/plugin@2.0.0': [runtime] }, runtime)).toMatchObject({

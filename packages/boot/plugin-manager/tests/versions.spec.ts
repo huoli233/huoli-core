@@ -9,6 +9,8 @@ it('reads one version\'s manifest, keeping the asked identity when the answer om
   })
   expect(versionFacts({ huoli: { bundle: 'no' }, deprecated: '' }, 'y', '2.0.0')).toEqual({ manifest: { name: 'y', version: '2.0.0' }, bundle: false })
   expect(versionFacts('scalar', 'y', '2.0.0')).toEqual({ manifest: { name: 'y', version: '2.0.0' }, bundle: false })
+  expect(versionFacts({ dsh: bundle, engines: { dsh: '>=999' } }, 'y', '2.0.0')).toEqual({ manifest: { name: 'y', version: '2.0.0', engines: { dsh: '>=999' } }, bundle: true })
+  expect(versionFacts({ huoli: { bundle: 'invalid' }, dsh: bundle }, 'y', '2.0.0').bundle).toBe(false)
 })
 
 it('orders newer semver versions newest first and ignores time and tags that are not objects', () => {

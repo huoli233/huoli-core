@@ -54,10 +54,11 @@ function satisfies(runtimeVersion: string, range: string): boolean {
 
 function unmetRequirements(fields: Record<string, unknown>, runtimeVersion: string): Record<string, string> {
   const engines = Object.hasOwn(fields, 'engines') ? objectOf(fields.engines, 'Plugin manifest engines') : {}
-  if (Object.hasOwn(engines, 'huoli')) {
-    const range = engines.huoli
-    if (typeof range !== 'string') throw new Error('Plugin manifest engines.huoli must be a string')
-    return satisfies(runtimeVersion, range) ? {} : { 'engines.huoli': range }
+  const engine = Object.hasOwn(engines, 'huoli') ? 'huoli' : Object.hasOwn(engines, 'dsh') ? 'dsh' : undefined
+  if (engine !== undefined) {
+    const range = engines[engine]
+    if (typeof range !== 'string') throw new Error(`Plugin manifest engines.${engine} must be a string`)
+    return satisfies(runtimeVersion, range) ? {} : { [`engines.${engine}`]: range }
   }
   if (!Object.hasOwn(fields, 'peerDependencies')) return {}
   const dependencies = objectOf(fields.peerDependencies, 'Plugin manifest peerDependencies')
@@ -66,7 +67,8 @@ function unmetRequirements(fields: Record<string, unknown>, runtimeVersion: stri
     if (typeof range !== 'string') {
       throw new Error(`Plugin manifest peerDependencies[${JSON.stringify(name)}] must be a string`)
     }
-    if (name !== '@huoli/huoli' && !name.startsWith('@huoli/huoli-')) continue
+    if (name !== '@huoli/huoli' && !name.startsWith('@huoli/huoli-')
+      && name !== '@deepseek-ai/dsh' && !name.startsWith('@deepseek-ai/dsh-')) continue
     const requirement = ['workspace:^', 'workspace:~', 'workspace:*'].includes(range) ? runtimeVersion : range
     if (!satisfies(runtimeVersion, requirement)) unmet[name] = range
   }
@@ -75,7 +77,7 @@ function unmetRequirements(fields: Record<string, unknown>, runtimeVersion: stri
 
 /**
  * Check the plugin's huoli requirements against the runtime. An own `engines.huoli` range decides alone and
- * peerDependencies are ignored; otherwise every @huoli/huoli or @huoli/huoli-* peer must match.
+ * peerDependencies are ignored; otherwise `engines.dsh` decides when present, or runtime package peers must match.
  * Prereleases participate in ranges. For peers only, workspace:^, workspace:~, and workspace:* refer to
  * the current runtime; other empty or invalid ranges, including any workspace: `engines.huoli`, are unmet.
  * @param manifest - parsed plugin package.json; inherited fields are ignored.

@@ -323,6 +323,22 @@ describe('loadProfile', () => {
     expect(bare.layers).toEqual([])
   })
 
+  it('loads legacy bundle metadata while rejecting incompatible legacy engines', () => {
+    const anchor = stageInstallation({ legacy: { patch: '[]\n' }, blocked: { patch: '[]\n' } })
+    for (const name of ['legacy', 'blocked']) {
+      writeFileSync(join(anchor, '..', 'node_modules', name, 'package.json'), JSON.stringify({
+        name, version: '1.0.0', dsh: { bundle: { patch: './cordis.patch.yml' } },
+        engines: { dsh: name === 'blocked' ? '>=999.0.0' : '*' },
+      }))
+    }
+    const dir = join(tmp(), 'profile')
+    initProfile(dir, ['legacy', 'blocked'])
+    const profile = loadProfileDirectory('test', dir, anchor)
+    expect(profile.layers.map(layer => layer.packageName)).toEqual(['legacy'])
+    expect(profile.skippedBundles.map(bundle => bundle.packageName)).toEqual(['blocked'])
+    expect(profile.skippedBundles[0]?.reason).toContain('engines.dsh')
+  })
+
   it('applies a huoli.bundle.patch list in order, anchoring inserted paths beside each file', () => {
     const anchor = stageInstallation({ 'multi': { patch: '[]\n' }, 'broken': { patch: '[]\n' } })
     const bundleDir = join(anchor, '..', 'node_modules', 'multi')

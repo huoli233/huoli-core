@@ -19,7 +19,7 @@ import { readBundleDocument, readBundleImage, type BundleDetailOptions } from '.
 import { pluginEntryId, readPluginInventory } from '@huoli/huoli-host-plugin-inventory'
 import {
   readPluginMeta, readProfileManifest, resolveBundleDir, loadOverlayPatches, composeEntries,
-  readProfilePatches, bundlePatchPaths,
+  readProfilePatches, bundlePatchPaths, bundleDeclaration,
   evaluatePluginCompatibility, readProfileCompatibility, readProfileVersionExemptions,
   setProfileVersionExemption, validatePluginVersionExemption, PROFILE_COMPATIBILITY_FILENAME,
   getHuoliRuntimeVersion, ResolutionRestartRequired,
@@ -98,7 +98,7 @@ const REGISTRY_URL = /^https?:\/\/\S+$/
 const RESTORED_FILES = ['package.json', 'pnpm-lock.yaml'] as const
 
 /** The manifest fields an inspection reads for a registry spec. */
-const INSPECT_FIELDS = ['name', 'version', 'description', 'huoli'] as const
+const INSPECT_FIELDS = ['name', 'version', 'description', 'huoli', 'dsh'] as const
 
 /** pnpm's colour escapes, which a JSON answer may be wrapped in. */
 const ANSI_SEQUENCE = /\x1b\[[0-9;]*m/g
@@ -143,9 +143,8 @@ interface InstallationManifest {
 
 /** What a package manifest says about the package: identity, one-liner, and whether it is a bundle. */
 function inspectionOf(kind: 'registry' | 'path', manifest: object, registry: Registry): Extract<PluginSpecInspection, { status: 'accepted' }> {
-  const huoli = (manifest as { huoli?: unknown }).huoli
-  const declared = typeof huoli === 'object' && huoli !== null ? huoli as { bundle?: unknown } : undefined
-  const bundle = declared !== undefined && typeof declared.bundle === 'object' && declared.bundle !== null
+  const declared = bundleDeclaration(manifest)
+  const bundle = typeof declared === 'object' && declared !== null && !Array.isArray(declared)
   const name = stringField(manifest, 'name')
   const version = stringField(manifest, 'version')
   const description = stringField(manifest, 'description')
@@ -547,7 +546,7 @@ export class PluginManager extends TypertRemoteService {
           continue
         }
         version = info.version
-        const listedByDefault = info.huoli?.bundle?.listedByDefault
+        const listedByDefault = bundleDeclaration(info)?.listedByDefault
         if (listedByDefault !== undefined) {
           if (typeof listedByDefault !== 'boolean') throw new Error('huoli.bundle.listedByDefault must be a boolean')
           listing = { listedByDefault }
@@ -557,7 +556,7 @@ export class PluginManager extends TypertRemoteService {
         const dir = resolveBundleDir('huoli', name, this.profile.installAnchor, this.profile.dir)
         const meta = offered?.meta ?? readPluginMeta(info.name ?? name, pathToFileURL(join(dir, 'package.json')).href)
         let platformError: ManagementError | undefined
-        try { assertBundlePlatform(info.huoli?.bundle?.platforms, process.platform) }
+        try { assertBundlePlatform(bundleDeclaration(info)?.platforms, process.platform) }
         catch (error) { platformError = managementError(error) }
         if (platformError?.code === 'unsupported-platform') listing = { listedByDefault: false }
         const error = platformError ?? targetError
@@ -981,10 +980,12 @@ export class PluginManager extends TypertRemoteService {
         name = target
         const dir = resolveBundleDir('huoli', name, this.profile.installAnchor, this.profile.dir)
         const manifest = bundleManifest(name, this.profile.dir, this.profile.installAnchor)
-        if (manifest?.huoli?.bundle === undefined) throw new ManagementFailure('not-bundle')
+        if (manifest === undefined) throw new ManagementFailure('not-bundle')
+        const bundle = bundleDeclaration(manifest)
+        if (bundle === undefined) throw new ManagementFailure('not-bundle')
         const compatibility = evaluatePluginCompatibility(manifest, readProfileVersionExemptions(this.profile.dir))
         if (compatibility !== undefined && !compatibility.exempted) throw new ManagementFailure('incompatible-version', [incompatiblePlugin(compatibility)])
-        for (const file of bundlePatchPaths(dir, manifest.huoli.bundle)) loadOverlayPatches('huoli', file)
+        for (const file of bundlePatchPaths(dir, bundle)) loadOverlayPatches('huoli', file)
         version = manifest.version
         this.installedFrom.set(name, used)
       } catch (error) {
@@ -1080,7 +1081,7 @@ export class PluginManager extends TypertRemoteService {
 
   /** The rows a bundle's patch inserts and the existing rows it changes; an unreadable patch throws. */
   private declaredRows(name: string, info: ProfileManifest): Pick<BundleInfo, 'rows' | 'overrides'> {
-    const bundle = info.huoli?.bundle
+    const bundle = bundleDeclaration(info)
     /* v8 ignore next -- bundleManifest answers only manifests that declare a patch */
     if (bundle === undefined) return { rows: [], overrides: [] }
     const dir = resolveBundleDir('huoli', name, this.profile.installAnchor, this.profile.dir)
@@ -1173,7 +1174,7 @@ export class PluginManager extends TypertRemoteService {
       const metadata = bundleManifest(name, this.profile.dir, this.profile.installAnchor)
       if (metadata === undefined) throw new ManagementFailure('not-bundle')
       if (enabled) {
-        assertBundlePlatform(metadata.huoli?.bundle?.platforms, process.platform)
+        assertBundlePlatform(bundleDeclaration(metadata)?.platforms, process.platform)
         const compatibility = evaluatePluginCompatibility(metadata, readProfileVersionExemptions(this.profile.dir))
         if (compatibility !== undefined && !compatibility.exempted) throw new ManagementFailure('incompatible-version', [incompatiblePlugin(compatibility)])
         this.bundleRows(name)
@@ -1191,9 +1192,11 @@ export class PluginManager extends TypertRemoteService {
 
   private bundleRows(name: string): EntryOptions[] {
     const info = bundleManifest(name, this.profile.dir, this.profile.installAnchor)
-    if (info?.huoli?.bundle === undefined) return []
+    if (info === undefined) return []
+    const bundle = bundleDeclaration(info)
+    if (bundle === undefined) return []
     const dir = resolveBundleDir('huoli', name, this.profile.installAnchor, this.profile.dir)
-    return flatten(composeEntries([bundlePatchPaths(dir, info.huoli.bundle).flatMap(file => loadOverlayPatches('huoli', file))]))
+    return flatten(composeEntries([bundlePatchPaths(dir, bundle).flatMap(file => loadOverlayPatches('huoli', file))]))
   }
 
   private protectsManager(name: string): boolean {

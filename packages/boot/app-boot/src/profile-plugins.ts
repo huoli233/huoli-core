@@ -2,7 +2,7 @@
 
 import { join } from 'node:path'
 import { assertBundlePlatform } from './bundle-platform.ts'
-import { readProfileManifest, resolveBundleDir, writeProfileManifest, type ProfileManifest } from './profile.ts'
+import { bundleDeclaration, readProfileManifest, resolveBundleDir, writeProfileManifest, type ProfileManifest } from './profile.ts'
 
 /** Profile directory and installation used by the shared bundle resolver. */
 export interface ProfilePluginLocation {
@@ -70,7 +70,7 @@ export function readProfilePlugins(location: ProfilePluginLocation): ProfilePlug
     return {
       name,
       version: typeof installed?.version === 'string' ? installed.version : spec,
-      bundle: bundleManifest(location, name)?.huoli?.bundle?.patch !== undefined,
+      bundle: bundleDeclaration(bundleManifest(location, name) ?? {})?.patch !== undefined,
       enabled: bundles.includes(name),
     }
   })
@@ -116,7 +116,7 @@ export function reconcileProfilePlugins(options: ProfilePluginLocation & {
   const bundles = previous.filter(name => !(beforeNames.has(name) || afterNames.has(name)) || bundleNames.has(name))
   for (const dependency of after.dependencies) {
     if (dependency.bundle && !disabled.has(dependency.name) && !bundles.includes(dependency.name)) {
-      assertBundlePlatform(bundleManifest(options, dependency.name)?.huoli?.bundle?.platforms, process.platform)
+      assertBundlePlatform(bundleDeclaration(bundleManifest(options, dependency.name) ?? {})?.platforms, process.platform)
       bundles.push(dependency.name)
     }
   }

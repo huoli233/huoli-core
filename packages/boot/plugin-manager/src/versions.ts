@@ -5,7 +5,7 @@ import semver from 'semver'
 export const VERSION_LIST_FIELDS = ['versions', 'time', 'dist-tags'] as const
 
 /** The fields read for one version: what decides whether it can replace an installed bundle. */
-export const VERSION_FIELDS = ['name', 'version', 'engines', 'peerDependencies', 'deprecated', 'huoli'] as const
+export const VERSION_FIELDS = ['name', 'version', 'engines', 'peerDependencies', 'deprecated', 'huoli', 'dsh'] as const
 
 /** One published version newer than the installed one, before its own manifest is read. */
 export interface PublishedVersion {
@@ -57,7 +57,7 @@ export function newerVersions(answer: unknown, installed: string): PublishedVers
 }
 
 /**
- * What one exact version's manifest says, from `pnpm view <name>@<version> name version engines peerDependencies deprecated huoli --json`.
+ * What one exact version's manifest says, from `pnpm view <name>@<version> name version engines peerDependencies deprecated huoli dsh --json`.
  * @param answer - the parsed output.
  * @param name - the package name, used when the answer omits it.
  * @param version - the version asked for, used when the answer omits it.
@@ -66,6 +66,7 @@ export function newerVersions(answer: unknown, installed: string): PublishedVers
 export function versionFacts(answer: unknown, name: string, version: string): VersionFacts {
   const fields = recordOf(answer) ?? {}
   const huoli = recordOf(fields.huoli)
+  const legacy = recordOf(fields.dsh)
   const deprecated = fields.deprecated
   return {
     manifest: {
@@ -74,7 +75,7 @@ export function versionFacts(answer: unknown, name: string, version: string): Ve
       ...Object.hasOwn(fields, 'engines') ? { engines: fields.engines } : {},
       ...Object.hasOwn(fields, 'peerDependencies') ? { peerDependencies: fields.peerDependencies } : {},
     },
-    bundle: recordOf(huoli?.bundle) !== undefined,
+    bundle: recordOf(huoli?.bundle !== undefined ? huoli.bundle : legacy?.bundle) !== undefined,
     ...typeof deprecated === 'string' && deprecated !== '' ? { deprecated } : {},
   }
 }

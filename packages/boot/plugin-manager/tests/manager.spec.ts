@@ -1298,11 +1298,11 @@ it('reads what a spec names before installing it', async () => {
   expect(await manager.inspect('huoli-x')).toEqual({
     status: 'accepted', kind: 'registry', name: 'huoli-x', version: '1.4.2', description: 'A sidebar.', bundle: true, registry: null,
   })
-  expect(view).toHaveBeenCalledWith(dir, 'huoli-x', { command: 'pnpm-test', fields: ['name', 'version', 'description', 'huoli'], timeoutMs: 1000, registry: null })
+  expect(view).toHaveBeenCalledWith(dir, 'huoli-x', { command: 'pnpm-test', fields: ['name', 'version', 'description', 'huoli', 'dsh'], timeoutMs: 1000, registry: null })
   const signal = AbortSignal.abort()
   answers(JSON.stringify([{ name: 'huoli-lib', version: '1.0.0', huoli: { bundle: {} } }, { name: 'huoli-lib', version: '1.1.0', huoli: null }]))
   expect(await manager.inspect('huoli-lib@^1', undefined, signal)).toEqual({ status: 'refused', problem: 'not-a-bundle', reason: 'huoli-lib declares no huoli.bundle', registries: [null] })
-  expect(view).toHaveBeenLastCalledWith(dir, 'huoli-lib@^1', { command: 'pnpm-test', fields: ['name', 'version', 'description', 'huoli'], timeoutMs: 1000, signal, registry: null })
+  expect(view).toHaveBeenLastCalledWith(dir, 'huoli-lib@^1', { command: 'pnpm-test', fields: ['name', 'version', 'description', 'huoli', 'dsh'], timeoutMs: 1000, signal, registry: null })
   // An answer that names no package keeps the name the spec gave; colour escapes around the JSON are dropped.
   answers('\x1b[36m' + JSON.stringify({ version: '0.0.1', description: '', huoli: { bundle: { patch: './p.yml' } } }) + '\x1b[39m\n')
   expect(await manager.inspect('huoli-bare')).toEqual({ status: 'accepted', kind: 'registry', name: 'huoli-bare', version: '0.0.1', bundle: true, registry: null })
@@ -1349,6 +1349,8 @@ it('reads what a spec names before installing it', async () => {
   expect(await manager.inspect(local)).toEqual({ status: 'refused', problem: 'not-a-bundle', reason: 'huoli-local declares no huoli.bundle' })
   writeFileSync(join(local, 'package.json'), JSON.stringify({ name: 'huoli-local', version: '0.1.0', description: 'Local.', huoli: { bundle: { patch: './p.yml' } } }))
   expect(await manager.inspect(`file:${local}`)).toEqual({ status: 'accepted', kind: 'path', name: 'huoli-local', version: '0.1.0', description: 'Local.', bundle: true, registry: null })
+  writeFileSync(join(local, 'package.json'), JSON.stringify({ name: 'huoli-local', dsh: { bundle: { patch: './p.yml' } } }))
+  expect(await manager.inspect(local)).toMatchObject({ status: 'accepted', kind: 'path', bundle: true })
   writeFileSync(join(local, 'package.json'), JSON.stringify({ name: 'core', huoli: { bundle: { patch: './p.yml' } } }))
   expect(await manager.inspect(local)).toEqual({ status: 'refused', problem: 'already-installed', reason: 'core is already installed' })
   // A profile and an installation that list nothing know nothing.
@@ -1538,7 +1540,7 @@ it('asks the registries in turn while one is unreachable or stale, and names the
   expect(await manager.inspect('huoli-x')).toEqual({ status: 'accepted', kind: 'registry', name: 'huoli-x', version: '1.0.0', bundle: true, registry: MIRROR })
   expect(asked(0)).toEqual([null, MIRROR])
   expect(read).toHaveBeenCalledWith(dir, { command: 'pnpm', timeoutMs: 1000 })
-  expect(view).toHaveBeenLastCalledWith(expect.any(String), 'huoli-x', { command: 'pnpm', fields: ['name', 'version', 'description', 'huoli'], timeoutMs: 1000, registry: MIRROR })
+  expect(view).toHaveBeenLastCalledWith(expect.any(String), 'huoli-x', { command: 'pnpm', fields: ['name', 'version', 'description', 'huoli', 'dsh'], timeoutMs: 1000, registry: MIRROR })
   // pnpm prints a refusal as JSON on stdout with nothing on stderr: it is read the same way, and the reason is its message.
   view.mockResolvedValueOnce({ exitCode: 1, stdout: '{\n  "error": {\n    "code": "ERR_PNPM_META_FETCH_FAIL",\n    "message": "GET https://registry.npmjs.org/huoli-x: fetch failed"\n  }\n}\n', stderr: '', timedOut: false })
   answers(manifest)
@@ -2053,7 +2055,7 @@ it('lists newer registry versions with tags, times, deprecation, bundle declarat
   expect(view.mock.calls.map(call => call[1])).toEqual(expect.arrayContaining(['extra', 'extra@2.0.0', 'extra@1.2.0', 'extra@1.2.0-beta.1']))
   expect(view).toHaveBeenCalledTimes(4)
   expect(view).toHaveBeenCalledWith(dir, 'extra', expect.objectContaining({ fields: ['versions', 'time', 'dist-tags'], timeoutMs: 1000 }))
-  expect(view).toHaveBeenCalledWith(dir, 'extra@1.2.0', expect.objectContaining({ fields: ['name', 'version', 'engines', 'peerDependencies', 'deprecated', 'huoli'], registry: null }))
+  expect(view).toHaveBeenCalledWith(dir, 'extra@1.2.0', expect.objectContaining({ fields: ['name', 'version', 'engines', 'peerDependencies', 'deprecated', 'huoli', 'dsh'], registry: null }))
 })
 
 it('lists versions from the next registry while one is unreachable, and refuses what no registry answered', async () => {

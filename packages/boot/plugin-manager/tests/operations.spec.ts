@@ -285,6 +285,14 @@ it('rejects a registry spec whose engines.huoli the pre-install lookup denies, i
   expect(command.run).toHaveBeenCalledTimes(1)
 })
 
+it('rejects an incompatible legacy engine before installation', async () => {
+  const { context, pnpm } = fixture()
+  pnpm.view = () => ({ exitCode: 0, stdout: JSON.stringify({ name: 'plugin', version: '1.0.0', engines: { dsh: '999.0.0' } }) })
+  const outcome = await runProfilePnpm(context, ['add', 'plugin@1.0.0'], { execution: 'service', outputBytes: 8192 })
+  expect(outcome.incompatible).toMatchObject([{ requirements: { 'engines.dsh': '999.0.0' } }])
+  expect(command.run).toHaveBeenCalledTimes(1)
+})
+
 it('reads the last match when the registry lookup answers with several versions', async () => {
   const { context, pnpm } = fixture()
   pnpm.view = () => ({

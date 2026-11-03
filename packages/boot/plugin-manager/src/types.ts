@@ -30,7 +30,7 @@ export interface IncompatiblePlugin {
   name: string
   version: string
   runtimeVersion: string
-  /** Only the requirements the running version does not satisfy, keyed `engines.huoli` or by HUOLI peer package name. */
+  /** Only the requirements the running version does not satisfy, keyed `engines.huoli`, `engines.dsh`, or by runtime peer package name. */
   requirements: Record<string, string>
 }
 

@@ -44,6 +44,15 @@ export const PROFILE_PATCH_FILENAME = 'cordis.patch.yml'
 /** Package metadata accepted by the profile reader; local profiles need no published identity. */
 export type ProfileManifest = Partial<HuoliPackageManifest>
 
+/** 读取组合包声明，新字段存在时不回退旧字段。
+ * @param manifest - 软件包清单。
+ * @returns 组合包声明或 undefined。
+ */
+export function bundleDeclaration(manifest: object): HuoliBundleManifest | undefined {
+  const fields = manifest as { huoli?: { bundle?: HuoliBundleManifest }; dsh?: { bundle?: HuoliBundleManifest } }
+  return fields.huoli?.bundle !== undefined ? fields.huoli.bundle : fields.dsh?.bundle
+}
+
 /**
  * The patch files a bundle declares, as written: one file for a string
  * `patch`, the listed files in order for an array.
@@ -690,7 +699,7 @@ export function loadProfileDirectory(
     try {
       const packageDir = resolveBundleDir(binName, packageName, installAnchor, dir)
       const bundleManifest = readProfileManifest(binName, packageDir)
-      const bundle = bundleManifest.huoli?.bundle
+      const bundle = bundleDeclaration(bundleManifest)
       if (bundle === undefined) {
         throw new Error(`${binName}: profile bundle ${JSON.stringify(packageName)} declares no huoli.bundle in its package.json`)
       }

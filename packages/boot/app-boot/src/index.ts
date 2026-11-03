@@ -63,6 +63,7 @@ export {
   ProfileRuntimeResolution,
   bundlePatchFiles,
   bundlePatchPaths,
+  bundleDeclaration,
   initProfile,
   removeLinkProjections,
   loadProfile,
