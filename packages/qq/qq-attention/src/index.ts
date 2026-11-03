@@ -1,27 +1,42 @@
 /**
- * Attention state machine for one chat, exposed as five model-facing tools:
- * look, wait, mark read, close, and set the wake behaviour.
- *
- * The channel bridge pushes inbound messages through the seam returned by
- * {@link qqAttentionOf}; the tools only read and advance state.
+ * Attention state machine for one chat. Five model-facing tools read facts and
+ * append events; the channel bridge pushes inbound messages and the prompt
+ * layer renders the state. Nothing here decides whether to speak.
  *
  * @module @huoli/huoli-qq-attention
  */
 
+import path from 'node:path'
 import type { Context } from '@huoli/cordis'
-import { defineTool } from '@huoli/huoli-tools'
 import { createInbox, type QqInbox } from './inbox.ts'
-import { createAttentionStore, NOTE_MAX_CHARS, type AttentionStore, type WakeTriggers } from './state.ts'
+import { createAttentionStore, type AttentionStore } from './store.ts'
+import { collectSignals, type AttentionSignals, type SignalMessage } from './select.ts'
+import { registerAttentionTools } from './tools.ts'
 
 export type { InboxPush, InboxRead, InboxWait, QqInbox, QqMessage } from './inbox.ts'
-export type { AttentionState, AttentionStore, WakeTriggers } from './state.ts'
+export type { AttentionState, AttentionEvent, WakeTriggers } from './types.ts'
+export { NOTE_MAX_CHARS } from './types.ts'
+export type { AttentionStore, AttentionStoreOptions } from './store.ts'
+export type { AttentionSignals, Candidate, CollectInput, SignalMessage } from './select.ts'
+export { collectSignals } from './select.ts'
+export { WAIT_MAX_MS, DEFAULT_READ_LIMIT, DEFAULT_QUIET_MS } from './tools.ts'
 
-/** Both seams created for one application context. */
+/** Runtime seams created for one application context. */
 export interface QqAttentionSeam {
-  /** Inbound message inbox fed by the channel bridge. */
+  /** Live inbound buffer the channel bridge pushes into. */
   readonly inbox: QqInbox
-  /** Attention state store. */
-  readonly attention: AttentionStore
+  /** Durable attention state. */
+  readonly store: AttentionStore
+  /** Collect attention facts for one chat. */
+  signals(chatKey: string, overrides?: { fatigueLevel?: number; fatigueReason?: string }): AttentionSignals
+}
+
+/** Config accepted by this row. */
+export interface Config {
+  /** Absolute path of the state file; defaults under the working directory. */
+  file?: string
+  /** Bot display names and learned aliases used for name detection. */
+  selfNames?: readonly string[]
 }
 
 const seams = new WeakMap<Context, QqAttentionSeam>()
@@ -37,158 +52,51 @@ export const name = 'qq-attention'
 /** Services this row needs. */
 export const inject = ['tools']
 
-/** Messages returned by one look, at most this many. */
-const DEFAULT_READ_LIMIT = 20
+/** Messages the signal collector looks at. */
+const SIGNAL_WINDOW = 40
 
-/** Longest wait a single call may request. */
-const WAIT_MAX_MS = 300_000
+/** Register the attention seam and its five tools. */
+export function apply(ctx: Context, config: Config = {}): void {
+  const file = config.file ?? path.join(process.cwd(), 'data', 'qq-attention.json')
+  const inbox = createInbox()
+  const store = createAttentionStore({ file })
+  const selfNames = config.selfNames ?? []
 
-/** Quiet window used when the caller asks for no specific one. */
-const DEFAULT_QUIET_MS = 5_000
+  const toSignal = (message: { seq: number; senderId: string; senderName?: string; text: string; at: number }): SignalMessage => ({
+    seq: message.seq,
+    senderId: message.senderId,
+    ...message.senderName !== undefined ? { senderName: message.senderName } : {},
+    text: message.text,
+    at: message.at,
+  })
 
-/** Chat key for the current call, derived from the session the tool runs in. */
-function chatKeyOf(exec: { agent?: { id: string } }): string {
-  return exec.agent?.id ?? 'chat:unknown'
-}
-
-/** Render a refusal as readable model text. */
-function refusal(code: string, error: string, hint: string): { content: { type: 'text'; text: string }[]; isError: true } {
-  return { content: [{ type: 'text', text: `${code}: ${error}｜下一步: ${hint}` }], isError: true }
-}
-
-/** Register the five attention tools and their state seam. */
-export function apply(ctx: Context): void {
-  const seam: QqAttentionSeam = { inbox: createInbox(), attention: createAttentionStore() }
+  const seam: QqAttentionSeam = {
+    inbox,
+    store,
+    signals(chatKey, overrides = {}) {
+      const messages = inbox.recent(chatKey, SIGNAL_WINDOW).map(toSignal)
+      return collectSignals({
+        chatKey,
+        messages,
+        selfNames,
+        ...overrides.fatigueLevel !== undefined ? { fatigueLevel: overrides.fatigueLevel } : {},
+        ...overrides.fatigueReason !== undefined ? { fatigueReason: overrides.fatigueReason } : {},
+      })
+    },
+  }
   seams.set(ctx, seam)
 
-  ctx.tools.register(defineTool({
-    name: 'read_messages',
-    description: 'Look at what the chat said. Returns the newest messages plus the read watermark; pass nothing to continue from where you stopped.',
-    parameters: {
-      afterSeq: { type: 'number', description: 'Read messages after this sequence; omit to continue from the current watermark.' },
-      limit: { type: 'number', description: 'How many messages to return at most; defaults to 20.' },
-    },
-    output: {
-      schema: { type: 'object', additionalProperties: true },
-      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-    },
-    async execute(args, exec) {
-      const chatKey = chatKeyOf(exec)
-      const watermark = seam.attention.of(chatKey).readSeq
-      const limit = Number.isInteger(args.limit) && args.limit !== undefined ? args.limit : DEFAULT_READ_LIMIT
-      const result = seam.inbox.read(chatKey, Number.isInteger(args.afterSeq) && args.afterSeq !== undefined ? args.afterSeq : watermark, limit)
-      seam.attention.of(chatKey).lastSeenAt = Date.now()
-      return {
-        messages: result.messages.map(message => ({ seq: message.seq, senderId: message.senderId, text: message.text, at: message.at })),
-        readThroughSeq: result.nextSeq,
-        partial: result.partial,
-      }
-    },
-  }))
+  registerAttentionTools(ctx, {
+    inbox,
+    store,
+    recentOf: (chatKey) => inbox.recent(chatKey, SIGNAL_WINDOW).map(toSignal),
+    selfNames: () => selfNames,
+  })
 
-  ctx.tools.register(defineTool({
-    name: 'wait_for_messages',
-    description: 'Wait for the chat to keep talking. A timeout is an ordinary outcome, not a failure; use it to let people finish before deciding whether to speak.',
-    parameters: {
-      purpose: { type: 'string', description: 'reply to let them finish before answering, messages to observe before sleeping.' },
-      timeoutMs: { type: 'number', description: `Total wait in milliseconds, capped at ${WAIT_MAX_MS}.` },
-      quietMs: { type: 'number', description: `How long the chat must stay silent to count as finished; defaults to ${DEFAULT_QUIET_MS}.` },
-    },
-    output: {
-      schema: { type: 'object', additionalProperties: true },
-      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-    },
-    async execute(args, exec) {
-      const chatKey = chatKeyOf(exec)
-      const wanted = Number.isInteger(args.timeoutMs) && args.timeoutMs !== undefined ? args.timeoutMs : WAIT_MAX_MS
-      const timeoutMs = Math.min(Math.max(wanted, 1), WAIT_MAX_MS)
-      const quietMs = Number.isInteger(args.quietMs) && args.quietMs !== undefined ? Math.max(args.quietMs, 0) : DEFAULT_QUIET_MS
-      const waited = await seam.inbox.wait(chatKey, { timeoutMs, quietMs, signal: exec.signal })
-      const watermark = seam.attention.of(chatKey).readSeq
-      return {
-        newMessages: waited.messages.filter(message => message.seq > watermark).map(message => ({ seq: message.seq, senderId: message.senderId, text: message.text })),
-        readThroughSeq: seam.inbox.count(chatKey),
-        quietReached: waited.quietReached,
-        timedOut: waited.timedOut,
-      }
-    },
-  }))
-
-  ctx.tools.register(defineTool({
-    name: 'mark_read',
-    description: 'Move the read watermark forward without saying anything. It never moves backwards and does not close the conversation.',
-    parameters: {
-      throughSeq: { type: 'number', description: 'Advance the watermark to this sequence; omit to mark everything read.' },
-    },
-    output: {
-      schema: { type: 'object', additionalProperties: true },
-      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-    },
-    async execute(args, exec) {
-      const chatKey = chatKeyOf(exec)
-      const target = Number.isInteger(args.throughSeq) && args.throughSeq !== undefined ? args.throughSeq : seam.inbox.count(chatKey)
-      const marked = seam.attention.markRead(chatKey, target)
-      if (!marked.ok) return refusal(marked.code, marked.error, marked.hint)
-      return { readThroughSeq: marked.readSeq }
-    },
-  }))
-
-  ctx.tools.register(defineTool({
-    name: 'close_conversation',
-    description: 'Mark this stretch of conversation as finished and leave a note for next time. This is not going silent: a later mention still wakes you.',
-    parameters: {
-      summary: { type: 'string', description: `Where the conversation ended, at most ${NOTE_MAX_CHARS} characters.` },
-      nextOpening: { type: 'string', description: `How to pick it up next time, at most ${NOTE_MAX_CHARS} characters.` },
-      throughSeq: { type: 'number', description: 'Also advance the read watermark to this sequence.' },
-    },
-    output: {
-      schema: { type: 'object', additionalProperties: true },
-      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-    },
-    async execute(args, exec) {
-      const chatKey = chatKeyOf(exec)
-      const closed = seam.attention.close(chatKey, {
-        summary: String(args.summary ?? ''),
-        nextOpening: String(args.nextOpening ?? ''),
-        ...Number.isInteger(args.throughSeq) && args.throughSeq !== undefined ? { throughSeq: args.throughSeq } : {},
-        at: Date.now(),
-      })
-      if (!closed.ok) return refusal(closed.code, closed.error, closed.hint)
-      return { closedAt: closed.state.closedAt, closeSummary: closed.state.closeSummary, nextOpening: closed.state.nextOpening }
-    },
-  }))
-
-  ctx.tools.register(defineTool({
-    name: 'set_wake_config',
-    description: 'Decide when to wake again: every message, after a sleep, or only when specific things happen.',
-    parameters: {
-      infinite: { type: 'boolean', description: 'Wake on every message.' },
-      sleepMs: { type: 'number', description: 'Sleep this long, then wake, when infinite is not set.' },
-      triggers: {
-        type: 'object',
-        description: 'Wake conditions such as at, mention, name, question, poke, prob, and speakerIds.',
-        additionalProperties: true,
-      },
-      throughSeq: { type: 'number', description: 'Also advance the read watermark to this sequence.' },
-    },
-    output: {
-      schema: { type: 'object', additionalProperties: true },
-      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-    },
-    async execute(args, exec) {
-      const chatKey = chatKeyOf(exec)
-      const set = seam.attention.setWake(chatKey, {
-        ...args.infinite !== undefined ? { infinite: args.infinite } : {},
-        ...Number.isInteger(args.sleepMs) && args.sleepMs !== undefined ? { sleepMs: args.sleepMs } : {},
-        ...args.triggers !== undefined ? { triggers: args.triggers as WakeTriggers } : {},
-        at: Date.now(),
-      })
-      if (!set.ok) return refusal(set.code, set.error, set.hint)
-      if (Number.isInteger(args.throughSeq) && args.throughSeq !== undefined) {
-        const marked = seam.attention.markRead(chatKey, args.throughSeq)
-        if (!marked.ok) return refusal(marked.code, marked.error, marked.hint)
-      }
-      return { wakeMode: set.state.wakeMode, wakeUntil: set.state.wakeUntil, triggers: JSON.parse(JSON.stringify(set.state.triggers)) }
-    },
-  }))
+  // Flush the state file when this row unloads, so a graceful shutdown keeps
+  // whatever the model last set.
+  ctx.effect(() => () => {
+    store.flush()
+    seams.delete(ctx)
+  })
 }

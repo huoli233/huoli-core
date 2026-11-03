@@ -1,11 +1,14 @@
 /**
- * Per-session message inbox for one chat. The channel bridge pushes inbound
- * messages; the attention tools read, wait, and advance the watermark.
+ * In-memory inbox for one chat. The channel bridge pushes inbound messages;
+ * the attention tools read above a watermark and wait for the chat to settle.
+ *
+ * Messages themselves live in the session log; this buffer only serves the
+ * live window the tools look at.
  *
  * @module @huoli/huoli-qq-attention
  */
 
-/** One inbound message as stored in the inbox. */
+/** One inbound message held in the live buffer. */
 export interface QqMessage {
   /** Monotonic sequence inside one chat, starting at 1. */
   readonly seq: number
@@ -33,43 +36,47 @@ export interface InboxPush {
   at?: number
 }
 
-/** Read result carrying the watermark the model should echo back. */
+/** Read result; the watermark is the last returned message, not the buffer size. */
 export interface InboxRead {
   readonly messages: readonly QqMessage[]
-  /** Sequence of the newest message in this chat, zero when empty. */
-  readonly nextSeq: number
-  /** Whether the limit cut the result short. */
+  /** Sequence of the last message returned, or the input watermark when nothing matched. */
+  readonly readThroughSeq: number
+  /** Whether more messages wait above the returned window. */
   readonly partial: boolean
+  /** Highest sequence currently stored in this chat. */
+  readonly latestSeq: number
 }
 
-/** Wait result; a timeout is an ordinary outcome, not an error. */
+/** Wait result; a timeout and a cancellation are different outcomes. */
 export interface InboxWait {
   readonly messages: readonly QqMessage[]
-  /** True when the chat stayed quiet long enough to count as finished. */
+  /** The chat stayed quiet long enough to count as finished. */
   readonly quietReached: boolean
-  /** True when the total wait expired before any message arrived. */
+  /** The total wait expired. */
   readonly timedOut: boolean
+  /** The caller aborted the wait. */
+  readonly cancelled: boolean
 }
 
-/** Inbox seam consumed by the attention tools and fed by the channel bridge. */
+/** Live inbox seam. */
 export interface QqInbox {
   /** Append one message and wake every waiter of that chat. */
   push(chatKey: string, message: InboxPush): QqMessage
-  /** Read messages above the watermark. */
+  /** Read messages strictly above the watermark, up to the limit. */
   read(chatKey: string, afterSeq: number, limit: number): InboxRead
-  /** Wait for messages, settling on a quiet period or the total timeout. */
+  /** Wait for messages that arrive after this call, settling on quiet or timeout. */
   wait(chatKey: string, options: { timeoutMs: number; quietMs: number; signal?: AbortSignal }): Promise<InboxWait>
-  /** Number of stored messages in one chat. */
-  count(chatKey: string): number
+  /** Highest sequence stored for a chat, zero when empty. */
+  latestSeq(chatKey: string): number
+  /** Newest messages of a chat, oldest first. */
+  recent(chatKey: string, limit: number): readonly QqMessage[]
 }
 
 interface Waiter {
   readonly afterSeq: number
   readonly quietMs: number
-  readonly totalTimer: ReturnType<typeof setTimeout>
-  quietTimer: ReturnType<typeof setTimeout> | undefined
   readonly collected: QqMessage[]
-  readonly finish: (result: InboxWait) => void
+  readonly settle: (result: InboxWait) => void
 }
 
 /** Create an inbox holding messages in memory. */
@@ -85,24 +92,18 @@ export function createInbox(now: () => number = () => Date.now()): QqInbox {
     return created
   }
 
-  const settle = (waiter: Waiter, result: InboxWait): void => {
-    clearTimeout(waiter.totalTimer)
-    if (waiter.quietTimer !== undefined) clearTimeout(waiter.quietTimer)
-    waiter.finish(result)
-  }
-
   const notify = (chatKey: string, message: QqMessage): void => {
     const set = waiters.get(chatKey)
     if (set === undefined) return
     for (const waiter of [...set]) {
       if (message.seq <= waiter.afterSeq) continue
       waiter.collected.push(message)
-      if (waiter.quietMs > 0) {
-        if (waiter.quietTimer !== undefined) clearTimeout(waiter.quietTimer)
-        waiter.quietTimer = setTimeout(() => settle(waiter, { messages: [...waiter.collected], quietReached: true, timedOut: false }), waiter.quietMs)
-        continue
-      }
-      settle(waiter, { messages: [...waiter.collected], quietReached: false, timedOut: false })
+      waiter.settle({
+        messages: [...waiter.collected],
+        quietReached: false,
+        timedOut: false,
+        cancelled: false,
+      })
     }
   }
 
@@ -123,33 +124,89 @@ export function createInbox(now: () => number = () => Date.now()): QqInbox {
     },
     read(chatKey, afterSeq, limit) {
       const list = listOf(chatKey)
-      const selected = list.filter(message => message.seq > afterSeq).slice(0, limit)
+      const above = list.filter(message => message.seq > afterSeq)
+      const selected = above.slice(0, limit)
+      const last = selected[selected.length - 1]
       return {
         messages: selected,
-        nextSeq: list.length,
-        partial: list.filter(message => message.seq > afterSeq).length > selected.length,
+        readThroughSeq: last !== undefined ? last.seq : afterSeq,
+        partial: above.length > selected.length,
+        latestSeq: list.length,
       }
     },
     wait(chatKey, options) {
       const list = listOf(chatKey)
-      const afterSeq = list.length
+      // The starting cursor is the newest message at call time, so anything that
+      // arrives later is collected and nothing before this call can be missed.
+      const startSeq = list.length
       return new Promise<InboxWait>((resolve) => {
         const set = waiters.get(chatKey) ?? new Set<Waiter>()
         waiters.set(chatKey, set)
+        const collected: QqMessage[] = []
+        let settled = false
+        let quietTimer: ReturnType<typeof setTimeout> | undefined
+
+        const cleanup = (): void => {
+          clearTimeout(totalTimer)
+          if (quietTimer !== undefined) clearTimeout(quietTimer)
+          set.delete(waiter)
+          options.signal?.removeEventListener('abort', onAbort)
+          if (set.size === 0) waiters.delete(chatKey)
+        }
+
+        const finish = (result: InboxWait): void => {
+          if (settled) return
+          settled = true
+          cleanup()
+          resolve(result)
+        }
+
+        const onAbort = (): void => {
+          finish({ messages: [...collected], quietReached: false, timedOut: false, cancelled: true })
+        }
+
+        const totalTimer = setTimeout(() => {
+          finish({ messages: [...collected], quietReached: false, timedOut: true, cancelled: false })
+        }, Math.max(1, options.timeoutMs))
+
         const waiter: Waiter = {
-          afterSeq,
+          afterSeq: startSeq,
           quietMs: options.quietMs,
-          totalTimer: setTimeout(() => settle(waiter, { messages: [...waiter.collected], quietReached: false, timedOut: true }), options.timeoutMs),
-          quietTimer: undefined,
-          collected: [],
-          finish: (result) => { set.delete(waiter); resolve(result) },
+          collected,
+          settle: (result) => {
+            if (settled) return
+            if (options.quietMs > 0) {
+              if (quietTimer !== undefined) clearTimeout(quietTimer)
+              quietTimer = setTimeout(() => {
+                finish({ messages: [...collected], quietReached: true, timedOut: false, cancelled: false })
+              }, options.quietMs)
+              return
+            }
+            finish(result)
+          },
         }
         set.add(waiter)
-        options.signal?.addEventListener('abort', () => settle(waiter, { messages: [...waiter.collected], quietReached: false, timedOut: true }), { once: true })
+
+        if (options.signal?.aborted === true) {
+          onAbort()
+          return
+        }
+        options.signal?.addEventListener('abort', onAbort, { once: true })
+
+        if (options.quietMs > 0) {
+          quietTimer = setTimeout(() => {
+            finish({ messages: [...collected], quietReached: true, timedOut: false, cancelled: false })
+          }, options.quietMs)
+        }
       })
     },
-    count(chatKey) {
+    latestSeq(chatKey) {
       return listOf(chatKey).length
+    },
+    recent(chatKey, limit) {
+      const list = listOf(chatKey)
+      const size = Math.max(0, Math.min(limit, list.length))
+      return list.slice(list.length - size)
     },
   }
 }

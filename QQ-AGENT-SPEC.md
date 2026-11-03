@@ -342,8 +342,8 @@ packages/qq/
 
 | 序 | 做什么 | 验收 |
 |---|---|---|
-| 1 | `qq-policy`：唯一衰减表 | 全仓 grep 半衰期只有一处 |
-| 2 | `qq-attention` 重写：状态落事件 + 投影 + 五工具 + `collectSignals` | 重启后水位/收尾不丢；`mark_read` 不吞消息 |
+| 1 | ✅ `qq-policy`：唯一衰减表 | 已落地：12 类半衰期 + 16 维松弛 + 保留度与五档清晰度，全仓唯一 |
+| 2 | ✅ `qq-attention` 重写：状态落盘 + 五工具 + `collectSignals` | 已落地：12 项行为验证全过（水位不吞消息、wait 起点快照、取消与超时分离） |
 | 3 | `qq-subject` + `snapshot` 接 system-prompt | 每轮提示词出现"此刻的我"，≤300 字 |
 | 4 | `qq-memory` 四层 + 五档 | 能召回 3 天前的事 |
 | 5 | `qq-pacing` + `qq-material` | 拆句、间隔、额度生效 |
