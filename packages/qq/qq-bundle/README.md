@@ -21,7 +21,7 @@ kind: "package-bundle"
 
 #### What the model sees
 
-提示词末尾多一段说话规矩；每轮走多少步由 `maxSteps` 管，超了就停。规矩前面还有一段 `qq:reply-budget`（`order` 350），写的是这一轮最多说几条：数字由 `qq-pacing` 的 `replyBudget` 按身体那份状态算出来，只说上限，不说该不该回。
+提示词末尾多一段说话规矩；每轮走多少步由 `maxSteps` 管，超了就停。规矩前面还有一段 `qq:reply-budget`（`order` 350），写的是这一轮最多说几条：数字由 `qq-pacing` 的 `replyBudget` 按身体那份状态算出来，只说上限，不说该不该回；这一段末尾还有一句「想发动态时把这条交给发布入口」，只指路，不改人设也不新增段落。
 
 #### Token effect
 
@@ -46,6 +46,7 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 - 每个包的数据文件各自一个，还没统一到一处。
 - 自己发出去的消息（`message_sent`）也会当入站算一次，装配层这边没有自己的号可以判。
 - 步数用满被拒时那一轮的 `blocked.retryAt` 是空的：下一轮由下一次唤醒开，这里给不出时刻。
+- 提示词里那句「把这条交给发布入口」还指不到工具：发布入口目前只有 seam 方法，模型手上没有能调它的工具。
 - 决策痕迹只在轮次边界落盘，进程被强杀时手上那一轮会丢。
 - 工具白名单只按工具名判，不看参数。
 - 主动开口的候选只来自心里惦记着的事，去重靠素材仓自己删，还没拿已经说过的话再筛一遍。
@@ -59,6 +60,8 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 每天那一步也顺带镜像：装配时把 `qq-memory` 接给 `qq-self` 的 `useMemory(port)` 端口，整点检查落在整理那一小时时，先 `promote()`、再 `sweep()`，然后 `mirror()` 把自我层没镜过的三类记录写进记忆库，写入条数大于零就立刻 `ledger('sync')` 入账，免得下一次核对把镜像当成正文被改；自我层默认关着，关着时 `mirror()` 自己回 `disabled`，一条都不写。这一步里任何一处抛错都只记一行告警，不让定时器把进程带走。
 
 条数那一段的接线：`replyFactsOf` 把累（`adenosine`）、烦（`irritability`）、精力、黏、孤独照抄成 `ReplyFacts`，交给 `replyBudget` 取上限；身体没装上时用一份中性事实，上限照样是一个数。发送链路没有改动。
+
+停手那一路的接线：装配时把 `qq-self` 的 `isPaused()` 接到 `qq-channel` 的 `usePause(check)` 端口，摆着停手开关时发布入口只回 `post.paused`，一条动态都不发；自我层没装上也接，接到的是一个恒为假的判断。
 
 决策痕迹在 `src/decisions.ts`：`createDecisionLog` 只追加，写入走同目录临时文件再改名，一行一条；读回来逐行校验，坏行跳过。`apply` 在 `agent/pre-step` 的第 1 步开一轮，把 `qq-channel` 送来的入站记成唤醒事实；`agent/turn-stopping` 收一轮并追加；`qq-channel` 的 `onOutbound` 只报事实（调没调、发了几条、被哪条闸门拦下），正文不落盘。排查入口是 `qqBundleOf(ctx).decisions(sinceAt, limit)`，没有注册成工具，也没挂进提示词。
 

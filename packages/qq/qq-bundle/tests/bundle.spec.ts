@@ -5,8 +5,10 @@ import { Context } from '@huoli/cordis'
 import type { Agent, PreStepDecision } from '@huoli/huoli-agent'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import { apply as applyAttention, qqAttentionOf } from '@huoli/huoli-qq-attention'
+import { apply as applyChannel, qqChannelOf } from '@huoli/huoli-qq-channel'
 import { apply as applyMemory, qqMemoryOf } from '@huoli/huoli-qq-memory'
 import { apply as applyPacing } from '@huoli/huoli-qq-pacing'
+import { apply as applySelf } from '@huoli/huoli-qq-self'
 import { apply as applySubject, qqSubjectOf } from '@huoli/huoli-qq-subject'
 import {
   apply as applyVitals,
@@ -15,7 +17,7 @@ import {
   resolveTuning,
   type VitalsState,
 } from '@huoli/huoli-qq-vitals'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle } from '../src/index.ts'
 
 interface Mounted {
@@ -85,6 +87,48 @@ async function mountWithBody(dir: string, body: Partial<VitalsState> = {}): Prom
 async function budgetText(ctx: Context): Promise<string> {
   const assembly = await ctx.systemPrompt.assemble()
   return assembly.sections.find(section => section.name === 'qq:reply-budget')?.text ?? ''
+}
+
+// 发出去就当场结算的假连接，动态那一路不真连网
+class FakeSocket {
+  static readonly opened: FakeSocket[] = []
+  readyState = 0
+  private readonly handlers = new Map<string, Array<() => void>>()
+
+  addEventListener(type: string, handler: () => void): void {
+    const list = this.handlers.get(type)
+    if (list === undefined) this.handlers.set(type, [handler])
+    else list.push(handler)
+  }
+
+  send(): void {}
+
+  close(): void {
+    this.readyState = 3
+  }
+
+  open(): void {
+    this.readyState = 1
+    for (const handler of this.handlers.get('open') ?? []) handler()
+  }
+}
+
+// 通道与自我层都挂上，停手开关才接得到发布入口
+async function mountWithChannel(dir: string): Promise<Context> {
+  const ctx = new Context()
+  ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
+  await ctx.plugin(SystemPrompt, {})
+  applyChannel(ctx, {
+    url: 'ws://127.0.0.1:6700',
+    selfId: '999',
+    quietStart: '00:00',
+    quietEnd: '00:00',
+    postsFile: path.join(dir, 'posts.json'),
+  })
+  FakeSocket.opened.at(-1)?.open()
+  applySelf(ctx, { dir: path.join(dir, 'self'), enabled: false })
+  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4 })
+  return ctx
 }
 
 afterEach(() => {
@@ -186,5 +230,34 @@ describe('这一轮最多说几句', () => {
 
     expect(names.indexOf('qq:reply-budget')).toBeGreaterThan(names.indexOf('qq:vitals'))
     expect(names.indexOf('qq:reply-budget')).toBeLessThan(names.indexOf('qq:rules'))
+  })
+})
+
+describe('动态的发布入口', () => {
+  beforeEach(() => {
+    FakeSocket.opened.length = 0
+    vi.stubGlobal('WebSocket', FakeSocket)
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('条数那一段里写了把动态交给发布入口，人设没动', async () => {
+    const text = await budgetText(await mountWithBody(tempDir()))
+
+    expect(text).toContain('发布入口')
+    expect(text).toContain('最多说')
+  })
+
+  it('停手开关开着时发布入口一条都不发', async () => {
+    const dir = tempDir()
+    fs.mkdirSync(path.join(dir, 'self'), { recursive: true })
+    fs.writeFileSync(path.join(dir, 'self', 'PAUSE'), '')
+    const ctx = await mountWithChannel(dir)
+
+    const result = await qqChannelOf(ctx)?.publishPost('今天吃了面', { chatKey: 'group:1', level: 'routine', topic: '吃喝' })
+
+    expect(result?.code).toBe('post.paused')
   })
 })

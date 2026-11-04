@@ -33,6 +33,7 @@ import type {
 
 export { CLAUSES, renderConstitution } from './constitution.ts'
 export { DEFAULTS, DIR_NAME, resolveSettings } from './defaults.ts'
+export { judgePostLevel, POST_LEVELS } from './grade.ts'
 export { requireKeys } from './keys.ts'
 export { createLedger } from './ledger.ts'
 export type { LedgerOptions, SelfLedger } from './ledger.ts'
@@ -54,6 +55,7 @@ export type {
   DriveDetail,
   DriveEntry,
   DriveNeed,
+  GradeDecision,
   KeysDecision,
   KeysOutcome,
   LedgerEntry,
@@ -62,6 +64,7 @@ export type {
   MirrorResult,
   PanelInput,
   PanelLabels,
+  PostLevelFacts,
   ProjectInput,
   ProjectOutcome,
   ProjectRow,

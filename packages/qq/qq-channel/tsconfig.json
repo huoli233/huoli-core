@@ -19,10 +19,16 @@
       "path": "../../core/tools"
     },
     {
+      "path": "../../util/home-paths"
+    },
+    {
       "path": "../qq-pacing"
     },
     {
       "path": "../qq-proactive"
+    },
+    {
+      "path": "../qq-self"
     }
   ]
 }

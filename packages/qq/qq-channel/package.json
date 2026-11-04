@@ -28,7 +28,9 @@
     "@huoli/huoli-tools": "workspace:*"
   },
   "dependencies": {
+    "@huoli/huoli-home-paths": "workspace:*",
     "@huoli/huoli-qq-pacing": "workspace:*",
-    "@huoli/huoli-qq-proactive": "workspace:*"
+    "@huoli/huoli-qq-proactive": "workspace:*",
+    "@huoli/huoli-qq-self": "workspace:*"
   }
 }

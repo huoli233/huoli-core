@@ -2876,7 +2876,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:30`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:42`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2907,6 +2907,18 @@ export interface Config {
   banned?: readonly string[]
   /** 白名单、长度、敏感词这三类拒绝给出的下次时间 */
   retryMs?: number
+  /** 两条动态之间至少隔多久 */
+  postCoolDownMs?: number
+  /** 同一段正文隔多久才许再发 */
+  postRepeatWindowMs?: number
+  /** 一天最多发几条动态 */
+  postDailyMax?: number
+  /** 指纹表最多留几条 */
+  postFingerprintMax?: number
+  /** 预授权的话题类别，命中才算例行 */
+  routineTopics?: readonly string[]
+  /** 动态状态文件放哪，不填就落在数据根目录下的 data */
+  postsFile?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-channel -->
@@ -3068,7 +3080,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:110`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:113`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */

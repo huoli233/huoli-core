@@ -174,6 +174,28 @@ export interface KeysDecision {
   reason?: 'unknown_action' | 'user_key' | 'self_key'
 }
 
+/** 一条动态报上来的分级事实 */
+export interface PostLevelFacts {
+  /** 她自己说的级别：none、routine、public */
+  level: string
+  /** 用户那把钥匙 */
+  userOk: boolean
+  /** 她自己那把钥匙 */
+  selfOk: boolean
+  /** 身份级动作清单，不给就用默认值表 */
+  actions?: readonly string[]
+}
+
+/** 一次分级判定 */
+export interface GradeDecision {
+  /** 放行了没有 */
+  ok: boolean
+  /** 没放行的码，形如 post.needs_keys */
+  code?: string
+  /** 一句可读原因 */
+  reason?: string
+}
+
 /** 判级加留痕之后的结果 */
 export interface KeysOutcome extends KeysDecision {
   /** 是不是只提议，PAUSE 下为真 */

@@ -112,10 +112,10 @@ function replyFactsOf(state: VitalsState): ReplyFacts {
 // 身体没接上时按中性的身体算，上限照样是一个数
 const NEUTRAL_FACTS: ReplyFacts = { tired: 0.5, annoyed: 0.5, energy: 0.5, clingy: 0.5, lonely: 0.5 }
 
-// 这一段只说这一轮最多几句，不说该不该回
+// 这一段只说这一轮最多几句，不说该不该回；动态那一路也照这条走
 function budgetLine(vitals: QqVitalsSeam | undefined): string {
   const facts = vitals === undefined ? NEUTRAL_FACTS : replyFactsOf(vitals.read())
-  return `【这一轮的条数】这一轮最多说 ${replyBudget(facts)} 条，说完就停，不追问，也不凑满。`
+  return `【这一轮的条数】这一轮最多说 ${replyBudget(facts)} 条，说完就停，不追问，也不凑满。想发动态时把这条交给发布入口。`
 }
 
 /**
@@ -380,6 +380,9 @@ export function apply(ctx: Context, config: Config = {}): void {
   ctx.effect(() => () => {
     clearInterval(idle)
   })
+
+  // 停手时动态一条都不发：发布入口只认这一句
+  channel?.usePause(() => self?.isPaused() ?? false)
 
   // 卸载时把手上这一轮也落下去，别丢
   ctx.effect(() => () => {

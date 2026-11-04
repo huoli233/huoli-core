@@ -14031,12 +14031,18 @@ importers:
 
   packages/qq/qq-channel:
     dependencies:
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
       '@huoli/huoli-qq-pacing':
         specifier: workspace:*
         version: link:../qq-pacing
       '@huoli/huoli-qq-proactive':
         specifier: workspace:*
         version: link:../qq-proactive
+      '@huoli/huoli-qq-self':
+        specifier: workspace:*
+        version: link:../qq-self
     devDependencies:
       '@huoli/cordis':
         specifier: workspace:~
