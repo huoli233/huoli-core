@@ -34,10 +34,10 @@ kind: "package-reference"
 ## Known Limitations and Deferred Work
 
 - 十二套子系统只落了递质回归、HPA 轴、交感副交感、奖赏、依恋、昼夜、饥饿、水循环、血糖、睡眠压力这几条，愤怒、恐惧、月经、死亡威胁没做。
-- 互动只认喝水、被夸、被凶三条；这三条的写回现在是纯函数 `react`，接聊天入口留给下一刀。
+- 互动只认喝水、被夸、被凶三条；这三条由装配层的 `QqVitalsSeam.react` 收消息时写回。
 - 时段判断只用本地小时，没处理跨时区与夏令时。
 
 <a id="dev-note"></a>
 ### Dev Note
 
-默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移在 `src/drift.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，提示词在 `src/render.ts`，原子写盘与备份在 `src/store.ts`，时段判断在 `src/clock.ts`，词表在 `src/words.ts`。
+默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移在 `src/drift.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，提示词在 `src/render.ts`，原子写盘与备份在 `src/store.ts`，时段判断在 `src/clock.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs` 管，同一条消息重放不会重复扣。

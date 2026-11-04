@@ -88,6 +88,15 @@ export function textOf(segments: unknown): string {
 }
 
 /**
+ * 这句话里有没有真正的字，只由图片表情占位拼出来的算没有
+ * @param text - 翻好的话
+ * @returns 有没有正文
+ */
+export function hasWords(text: string): boolean {
+  return text.replace(/\[[^\]]*\]/gu, '').trim() !== ''
+}
+
+/**
  * 这条消息有没有点到自己
  * @param segments - 消息段
  * @param selfId - 自己的号

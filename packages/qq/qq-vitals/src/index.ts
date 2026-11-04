@@ -7,6 +7,7 @@ import '@huoli/huoli-system-prompt'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { derive } from './derive.ts'
 import { drift } from './drift.ts'
+import { react as reactToText } from './react.ts'
 import { renderPrompt } from './render.ts'
 import { createVitalsStore } from './store.ts'
 import type { VitalsState } from './types.ts'
@@ -28,6 +29,8 @@ export interface QqVitalsSeam {
   read(): VitalsState
   /** 渲染一段话：这一轮的语气提示，最多三百字 */
   render(): string
+  /** 记一句话：写回身体并落盘，冷却窗口内的重复写法不再计入 */
+  react(text: string, at?: number): void
 }
 
 /** 这一行接受的配置 */
@@ -91,6 +94,16 @@ export function apply(ctx: Context, config: Config = {}): void {
       const text = renderPrompt(current(), tuning, variant)
       variant += 1
       return text
+    },
+    react(text, at) {
+      // 时间戳只往前走，秒级的消息时间不会把上一次记录顶回去
+      const raw = store.read()
+      const moment = Math.max(at ?? Date.now(), raw.last_update)
+      try {
+        store.write(derive(reactToText(drift(raw, moment, tuning), text, moment, tuning), tuning))
+      } catch (error) {
+        ctx.logger('qq-vitals').warn('消息写盘失败：%s', String(error))
+      }
     },
   }
   seams.set(ctx, seam)

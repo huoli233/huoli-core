@@ -30,6 +30,9 @@
         selfId: !!js process.env.QQ_SELF_ID ?? ''
         accessToken: !!js process.env.QQ_ACCESS_TOKEN ?? ''
 
+    - id: qq-vitals
+      name: '@huoli/huoli-qq-vitals'
+
     - id: qq-bundle
       name: '@huoli/huoli-qq-bundle'
       config:

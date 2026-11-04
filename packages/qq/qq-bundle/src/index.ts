@@ -8,8 +8,9 @@ import '@huoli/huoli-system-prompt'
 import '@huoli/huoli-agent'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
 import { qqMemoryOf } from '@huoli/huoli-qq-memory'
-import { qqChannelOf } from '@huoli/huoli-qq-channel'
+import { hasWords, qqChannelOf, type IncomingMessage } from '@huoli/huoli-qq-channel'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
+import { qqVitalsOf } from '@huoli/huoli-qq-vitals'
 
 /** 这一行接受的配置 */
 export interface Config {
@@ -26,6 +27,9 @@ export const name = 'qq-bundle'
 
 /** 要用的内核接口 */
 export const inject = ['systemPrompt']
+
+// 去重表只留最近这么多条，跑久了也不会一直涨
+const SEEN_MAX = 256
 
 // 规则文件的位置
 function defaultRulesPath(): string {
@@ -68,13 +72,32 @@ export function apply(ctx: Context, config: Config = {}): void {
     return next()
   })
 
-  // 收消息：放进注意力收件箱，顺便把当前会话记成活跃的那个
+  // 收消息：先记进身体，再放进注意力收件箱，顺便把当前会话记成活跃的那个
   const attention = qqAttentionOf(ctx)
   const subject = qqSubjectOf(ctx)
+  const vitals = qqVitalsOf(ctx)
   const channel = qqChannelOf(ctx)
-  if (channel !== undefined && attention !== undefined) {
-    channel.onIncoming((message) => {
-      attention.inbox.push(message.chatKey, {
+  if (channel !== undefined) {
+    // 同一条消息只认一次：按会话加编号留住最近这一段
+    const seen: string[] = []
+    const seenKeys = new Set<string>()
+    const firstTime = (message: IncomingMessage): boolean => {
+      if (message.messageId === '') return true
+      const key = `${message.chatKey}:${message.messageId}`
+      if (seenKeys.has(key)) return false
+      seenKeys.add(key)
+      seen.push(key)
+      if (seen.length > SEEN_MAX) {
+        const oldest = seen.shift()
+        if (oldest !== undefined) seenKeys.delete(oldest)
+      }
+      return true
+    }
+
+    const offIncoming = channel.onIncoming((message) => {
+      if (!firstTime(message)) return
+      if (hasWords(message.text)) vitals?.react(message.text, message.at)
+      attention?.inbox.push(message.chatKey, {
         senderId: message.senderId,
         senderName: message.senderName,
         text: message.text,
@@ -82,14 +105,18 @@ export function apply(ctx: Context, config: Config = {}): void {
       })
       subject?.store.setActive(message.chatKey)
     })
-    channel.onPoke((poke) => {
-      attention.inbox.push(poke.chatKey, {
+    const offPoke = channel.onPoke((poke) => {
+      attention?.inbox.push(poke.chatKey, {
         senderId: poke.userId,
         senderName: poke.userId,
         text: '戳了戳我',
         at: poke.at,
       })
       subject?.store.setActive(poke.chatKey)
+    })
+    ctx.effect(() => () => {
+      offIncoming()
+      offPoke()
     })
   }
 

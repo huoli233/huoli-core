@@ -188,6 +188,86 @@ describe('派生量与标签', () => {
   })
 })
 
+// 先落一份已经跑了一分钟的状态，消息时间才追得上它
+function seeded(file: string, overrides: Partial<VitalsState> = {}): void {
+  createVitalsStore({ file, tuning }).write({ ...emptyState(tuning, Date.now() - 60_000), ...overrides })
+}
+
+describe('消息接进身体', () => {
+  it('一条消息写进去，喝水让口渴掉下去', async () => {
+    const file = tempFile()
+    seeded(file, { thirst: 0.6 })
+    const { seam } = await mount(file)
+    const before = seam.read()
+    const at = Date.now() - 20_000
+
+    seam.react('喝水了', at)
+    const after = seam.read()
+
+    expect(after.last_msg).toBe(at)
+    expect(after.thirst).toBeLessThan(before.thirst)
+    expect(after.thirst).toBeCloseTo(0.05, 6)
+    expect(after.last_drink).toBe(at)
+    expect(after.last_drink_at).toBe(at)
+    expect(after.last_drink_name).toBe('水')
+  })
+
+  it('同一条消息传两次只扣一次', async () => {
+    const file = tempFile()
+    seeded(file, { thirst: 0.6 })
+    const { seam } = await mount(file)
+    const at = Date.now() - 20_000
+
+    seam.react('喝水了', at)
+    const once = seam.read()
+    seam.react('喝水了', at)
+    const twice = seam.read()
+
+    expect(twice.thirst).toBeCloseTo(once.thirst, 10)
+    expect(twice.last_drink_at).toBe(at)
+    expect(twice.fluid_applied_at).toBe(at)
+  })
+
+  it('同一条夸奖传两次只涨一次', async () => {
+    const file = tempFile()
+    seeded(file)
+    const { seam } = await mount(file)
+    const at = Date.now() - 20_000
+
+    seam.react('你最好了，抱抱', at)
+    const once = seam.read()
+    seam.react('你最好了，抱抱', at)
+    const twice = seam.read()
+
+    expect(once.praise_applied_at).toBe(at)
+    expect(twice.praise_applied_at).toBe(at)
+    expect(twice.dopamine).toBeCloseTo(once.dopamine, 10)
+  })
+
+  it('不给时间就用现在', async () => {
+    const file = tempFile()
+    seeded(file, { thirst: 0.6 })
+    const { seam } = await mount(file)
+    const before = seam.read()
+
+    seam.react('喝水了')
+    const after = seam.read()
+
+    expect(after.last_msg).toBeGreaterThan(before.last_msg)
+    expect(after.thirst).toBeLessThan(0.1)
+  })
+
+  it('状态落了盘，重开还在', async () => {
+    const file = tempFile()
+    seeded(file, { thirst: 0.6 })
+    const { seam } = await mount(file)
+
+    seam.react('喝水了', Date.now() - 20_000)
+
+    expect(createVitalsStore({ file, tuning }).read().last_drink_name).toBe('水')
+  })
+})
+
 describe('重启后接着走', () => {
   it('状态从文件恢复', () => {
     const file = tempFile()

@@ -14006,6 +14006,9 @@ importers:
       '@huoli/huoli-qq-subject':
         specifier: workspace:*
         version: link:../qq-subject
+      '@huoli/huoli-qq-vitals':
+        specifier: workspace:*
+        version: link:../qq-vitals
     devDependencies:
       '@huoli/cordis':
         specifier: workspace:~

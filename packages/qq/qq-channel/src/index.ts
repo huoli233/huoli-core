@@ -7,7 +7,7 @@ import { toIncoming, toPoke, type ChannelStatus, type IncomingMessage, type Inco
 import { registerChannelTools } from './tools.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, SentResult } from './events.ts'
-export { chatKeyOf, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
+export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
 export type { WsChannel, WsHandlers, WsOptions } from './ws.ts'
 export { createWsChannel } from './ws.ts'
 
@@ -15,8 +15,10 @@ export { createWsChannel } from './ws.ts'
 export interface QqChannelSeam {
   channel: WsChannel
   status(): ChannelStatus
-  onIncoming(handler: (message: IncomingMessage) => void): void
-  onPoke(handler: (poke: IncomingPoke) => void): void
+  /** 收一条消息，返回注销函数 */
+  onIncoming(handler: (message: IncomingMessage) => void): () => void
+  /** 收一次戳一戳，返回注销函数 */
+  onPoke(handler: (poke: IncomingPoke) => void): () => void
 }
 
 /** 这一行接受的配置 */
@@ -57,6 +59,15 @@ export function apply(ctx: Context, config: Config): void {
   const incoming: Array<(message: IncomingMessage) => void> = []
   const pokes: Array<(poke: IncomingPoke) => void> = []
 
+  // 注销就是把这一条从表里拿掉，卸载之后再来消息不会再找到它
+  const listen = <T>(list: Array<(value: T) => void>, handler: (value: T) => void): (() => void) => {
+    list.push(handler)
+    return () => {
+      const at = list.indexOf(handler)
+      if (at >= 0) list.splice(at, 1)
+    }
+  }
+
   const channel = createWsChannel(
     {
       url: config.url,
@@ -90,10 +101,10 @@ export function apply(ctx: Context, config: Config): void {
       return channel.status()
     },
     onIncoming(handler) {
-      incoming.push(handler)
+      return listen(incoming, handler)
     },
     onPoke(handler) {
-      pokes.push(handler)
+      return listen(pokes, handler)
     },
   }
   seams.set(ctx, seam)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chatKeyOf, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from '../src/events.ts'
+import { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from '../src/events.ts'
 
 const NOW = Date.now()
 
@@ -24,6 +24,15 @@ describe('从消息段里挤出文字', () => {
 
   it('本来就是一句话的原样返回', () => {
     expect(textOf('就是一句话')).toBe('就是一句话')
+  })
+})
+
+describe('是不是一句话', () => {
+  it('有字才算，只由占位拼出来的不算', () => {
+    expect(hasWords('喝了水')).toBe(true)
+    expect(hasWords('@小岸 你看这个[图片]')).toBe(true)
+    expect(hasWords('[表情]')).toBe(false)
+    expect(hasWords('[图片][表情]')).toBe(false)
   })
 })
 

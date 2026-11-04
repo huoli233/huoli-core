@@ -25,6 +25,9 @@
     },
     {
       "path": "../qq-subject"
+    },
+    {
+      "path": "../qq-vitals"
     }
   ]
 }
