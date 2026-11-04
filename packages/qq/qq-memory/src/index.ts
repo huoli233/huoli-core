@@ -12,7 +12,6 @@ import { resolveTuning, type Tuning } from './defaults.ts'
 import { defaultLedgerFile, runLedger, type LedgerAction, type LedgerRunResult } from './ledger.ts'
 import { appendHealthLine, defaultHealthLogFile, healthLine, localDay } from './health.ts'
 import { clampImportance, metadataOr, sourceOr } from './guard.ts'
-import { mirroredBy, mirroredSelfIds } from './mirror.ts'
 import {
   createWriteQueue,
   defaultQueueFile,
@@ -44,7 +43,6 @@ export type {
   RememberSelfResult,
 } from './types.ts'
 export { CLARITY_LABEL, LAYER_LABEL, LAYER_ORDER, MEMORY_SOURCES } from './types.ts'
-export { mirroredBy, mirroredSelfIds, selfIdOf } from './mirror.ts'
 export type { MemoryStore, MemoryStoreOptions, MemoryStoreState } from './store.ts'
 export type { RecallHit, RecallInput, RecallReasons } from './recall.ts'
 export { cosineSimilarity, encodeVector, keyGrams, recall, renderRecall } from './recall.ts'
@@ -172,6 +170,41 @@ export const name = 'qq-memory'
 
 /** 要用的内核接口 */
 export const inject = ['tools']
+
+/**
+ * 一条记忆的镜像来源键
+ * @param item - 一条记忆
+ * @returns 不是镜像条目时是空串
+ */
+export function selfIdOf(item: MemoryItem): string {
+  const value = item.metadata?.self_id
+  return typeof value === 'string' ? value : ''
+}
+
+/**
+ * 已经镜像过的来源键，按写入顺序排
+ * @param store - 存放的地方
+ * @returns 来源键，镜像条目以外的都不算
+ */
+export function mirroredSelfIds(store: MemoryStore): string[] {
+  const ids: string[] = []
+  for (const item of store.all()) {
+    if (item.source !== 'self') continue
+    const selfId = selfIdOf(item)
+    if (selfId !== '') ids.push(selfId)
+  }
+  return ids
+}
+
+/**
+ * 某个来源键已经写成的那一条
+ * @param store - 存放的地方
+ * @param selfId - 来源键
+ * @returns 没镜过时为 undefined
+ */
+export function mirroredBy(store: MemoryStore, selfId: string): MemoryItem | undefined {
+  return store.all().find(item => item.source === 'self' && selfIdOf(item) === selfId)
+}
 
 // 私下聊的记在私下，群里说的记在群里
 function sceneOf(layer: MemoryLayer, chatKey: string): ImportanceInput['scene'] {

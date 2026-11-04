@@ -368,7 +368,8 @@ export function createWriteQueue(options: WriteQueueOptions): WriteQueue {
     advanceTurn(now) {
       turns += 1
       const due = (every: number): boolean => every > 0 && turns % every === 0
-      const written = due(tuning.flushEveryTurns) ? flush(now).written : 0
+      // 队列空着就是刚排过：每日整理里已经排空，这一轮不再走一遍排空
+      const written = due(tuning.flushEveryTurns) && entries.length > 0 ? flush(now).written : 0
       const reflected = due(tuning.reflectEveryTurns) ? reflect(now).id : ''
       persist()
       return { turns, written, reflected }

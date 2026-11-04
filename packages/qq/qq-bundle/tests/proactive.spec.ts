@@ -5,13 +5,13 @@ import { Context } from '@huoli/cordis'
 import type { Agent } from '@huoli/huoli-agent'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import { apply as applyAttention } from '@huoli/huoli-qq-attention'
-import { apply as applyChannel } from '@huoli/huoli-qq-channel'
+import { apply as applyChannel, qqChannelOf } from '@huoli/huoli-qq-channel'
 import { apply as applyMaterial, qqMaterialOf } from '@huoli/huoli-qq-material'
-import { apply as applyProactive, PROACTIVE_DEFAULTS, qqProactiveOf, type QqProactiveSeam } from '@huoli/huoli-qq-proactive'
-import { apply as applySubject } from '@huoli/huoli-qq-subject'
+import { apply as applyProactive, PROACTIVE_DEFAULTS, qqProactiveOf, type PendingItem, type QqProactiveSeam } from '@huoli/huoli-qq-proactive'
+import { apply as applySubject, qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { apply as applyVitals, createVitalsStore, DEFAULTS, emptyState, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { apply as applyBundle, qqBundleOf, type DecisionRecord } from '../src/index.ts'
+import { apply as applyBundle, BUNDLE_DEFAULTS, qqBundleOf, type Config as BundleConfig, type DecisionRecord } from '../src/index.ts'
 
 type SocketHandler = (event: { data?: string }) => void
 
@@ -89,7 +89,14 @@ function wakingBody(): Partial<VitalsState> {
   return { sleep_state: 'waking', woken_at: Date.now(), groggy_until: Date.now() + 10 * 60_000, adenosine: 0.9 }
 }
 
-async function mount(options: { enabled: boolean; throttleMs?: number; body?: Partial<VitalsState> }): Promise<Mounted> {
+interface MountOptions {
+  enabled: boolean
+  throttleMs?: number
+  body?: Partial<VitalsState>
+  bundle?: Partial<BundleConfig>
+}
+
+async function mount(options: MountOptions): Promise<Mounted> {
   const dir = tempDir()
   const ctx = new Context()
   contexts.push(ctx)
@@ -106,6 +113,7 @@ async function mount(options: { enabled: boolean; throttleMs?: number; body?: Pa
     dailySweepHour: 4,
     decisionsFile: path.join(dir, 'qq-decisions.jsonl'),
     ...options.throttleMs !== undefined ? { proactiveThrottleMs: options.throttleMs } : {},
+    ...(options.bundle ?? {}),
   })
   const socket = FakeSocket.opened.at(-1)
   const proactive = qqProactiveOf(ctx)
@@ -326,5 +334,130 @@ describe('睡着的时候', () => {
 
     expect(asking).not.toHaveBeenCalled()
     expect(proactiveRecords(ctx)).toHaveLength(0)
+  })
+})
+
+// 孤独高过线以后，想发动态的劲会涨到平常那一档以上
+const SHARE_BODY: Partial<VitalsState> = { oxytocin: 1, endorphin: 0.45 }
+
+function shareWants(proactive: QqProactiveSeam): PendingItem[] {
+  return proactive.preview('group:1').filter(item => item.facts.postWant !== undefined)
+}
+
+describe('想发动态的劲', () => {
+  it('高过阈值就攒一条候选，带着理由与读数', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: SHARE_BODY })
+
+    await endTurn(ctx)
+    const kept = shareWants(proactive)
+
+    expect(kept).toHaveLength(1)
+    expect(kept[0]?.facts.kind).toBe('share')
+    expect(kept[0]?.facts.source).toBe('post_want')
+    expect(kept[0]?.facts.postWant).toBeGreaterThan(BUNDLE_DEFAULTS.addPostWantFrom)
+    expect(kept[0]?.why).toContain('想发一条动态')
+  })
+
+  it('读数没到阈值就一条都不攒', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: { sleep_state: 'awake' } })
+
+    await endTurn(ctx)
+
+    expect(shareWants(proactive)).toHaveLength(0)
+  })
+
+  it('阈值能从配置改，调低以后平常的身体也攒一条', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: { sleep_state: 'awake' }, bundle: { addPostWantFrom: 0 } })
+
+    await endTurn(ctx)
+
+    expect(shareWants(proactive)).toHaveLength(1)
+  })
+
+  it('同一天只攒一次', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: SHARE_BODY })
+
+    await endTurn(ctx)
+    await endTurn(ctx)
+
+    expect(shareWants(proactive)).toHaveLength(1)
+  })
+
+  it('攒过以后投递时走发布入口的 post 那一路，只给类别与正文', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: SHARE_BODY })
+    const channel = qqChannelOf(ctx)
+    if (channel === undefined) throw new Error('通道没装上')
+    const publish = vi.spyOn(channel, 'publish').mockResolvedValue({ ok: true, at: Date.now() })
+    await endTurn(ctx)
+    const kept = shareWants(proactive)[0]
+    if (kept === undefined) throw new Error('没有攒住动态候选')
+
+    const delivered = await qqBundleOf(ctx)?.deliver('group:1', kept.id, '今天风大，在河边站了一会儿')
+
+    expect(publish).toHaveBeenCalledWith('post', '今天风大，在河边站了一会儿', { chatKey: 'group:1' })
+    expect(delivered?.ok).toBe(true)
+  })
+
+  it('还没写出正文就不投，也不惊动发布入口', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: SHARE_BODY })
+    const channel = qqChannelOf(ctx)
+    if (channel === undefined) throw new Error('通道没装上')
+    const publish = vi.spyOn(channel, 'publish').mockResolvedValue({ ok: true, at: Date.now() })
+    await endTurn(ctx)
+    const kept = shareWants(proactive)[0]
+    if (kept === undefined) throw new Error('没有攒住动态候选')
+
+    const delivered = await qqBundleOf(ctx)?.deliver('group:1', kept.id)
+
+    expect(delivered?.code).toBe('bundle.no_body')
+    expect(delivered?.reason).not.toBe('')
+    expect(delivered?.hint).not.toBe('')
+    expect(publish).not.toHaveBeenCalled()
+  })
+
+  it('发布入口拒了就把它的码与理由原样带回来', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: SHARE_BODY })
+    const channel = qqChannelOf(ctx)
+    if (channel === undefined) throw new Error('通道没装上')
+    vi.spyOn(channel, 'publish').mockResolvedValue({ ok: false, code: 'post.level', reason: '这一条还不到能公开的级别', hint: '等攒到能公开的时候再说' })
+    await endTurn(ctx)
+    const kept = shareWants(proactive)[0]
+    if (kept === undefined) throw new Error('没有攒住动态候选')
+
+    const delivered = await qqBundleOf(ctx)?.deliver('group:1', kept.id, '今天风大')
+
+    expect(delivered?.ok).toBe(false)
+    expect(delivered?.code).toBe('post.level')
+    expect(delivered?.reason).toBe('这一条还不到能公开的级别')
+  })
+
+  it('关着的时候零调用，也不往盘上写', async () => {
+    const { ctx, proactive, dir } = await mount({ enabled: false, body: SHARE_BODY })
+    const asking = vi.spyOn(proactive, 'consider')
+
+    await endTurn(ctx)
+
+    expect(asking).not.toHaveBeenCalled()
+    expect(proactive.pending.all()).toHaveLength(0)
+    expect(fs.existsSync(path.join(dir, 'proactive.json'))).toBe(false)
+  })
+
+  it('每天整理那一拍也读一次，攒出来的还是同一条事实', async () => {
+    vi.useFakeTimers()
+    try {
+      // 整理那一小时是四点到五点，先退到三点半，再让定时器走过那一拍
+      vi.setSystemTime(new Date(2026, 10, 4, 3, 30))
+      const { ctx, proactive } = await mount({ enabled: true, body: SHARE_BODY, bundle: { addPostWantFrom: 0 } })
+      qqSubjectOf(ctx)?.store.setActive('group:1')
+
+      vi.advanceTimersByTime(60 * 60_000)
+
+      const kept = shareWants(proactive)
+      expect(kept).toHaveLength(1)
+      expect(kept[0]?.facts.source).toBe('post_want')
+      expect(proactiveRecords(ctx).at(-1)?.reason).toBe('proactive:preview_ready')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

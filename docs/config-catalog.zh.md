@@ -2874,6 +2874,10 @@ export interface Config {
   memoryInjectMaxItems?: number
   /** 同一段在最近多少轮内不重复注入 */
   memoryInjectRepeatTurns?: number
+  /** 想发动态的读数高过这条线就攒一条动态候选 */
+  addPostWantFrom?: number
+  /** 同一个会话一天最多攒几条动态候选 */
+  postCandidateDailyMax?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
@@ -2996,7 +3000,7 @@ export interface Config {
 
 - `inject`: `tools`
 - `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
-- `source`: [`packages/qq/qq-memory/src/index.ts:144`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:142`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3102,7 +3106,7 @@ export interface Config {
 
 ## `@huoli/huoli-qq-proactive`
 
-- `source`: [`packages/qq/qq-proactive/src/index.ts:86`](../packages/qq/qq-proactive/src/index.ts)
+- `source`: [`packages/qq/qq-proactive/src/index.ts:88`](../packages/qq/qq-proactive/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */

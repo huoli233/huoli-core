@@ -711,3 +711,77 @@ describe('睡着与刚被吵醒', () => {
     expect(off.pending).toHaveLength(0)
   })
 })
+
+// 外面递来的那条：想发动态时由身体那边攒出来，正文还没有
+const SHARE_WANT: Candidate = {
+  id: 'post-want:2026-11-4',
+  kind: 'share',
+  why: '想发一条动态的劲压不住了',
+  text: '',
+  postWant: 0.62,
+  source: 'post_want',
+  at: BASE + 120_000,
+}
+
+function considerWith(seam: QqProactiveSeam, chatKey: string, external: Candidate[]) {
+  return seam.consider({
+    chatKey,
+    candidates: CANDIDATES,
+    external,
+    history: [],
+    humanActive: false,
+    botBusy: false,
+    hasChannel: true,
+  })
+}
+
+describe('外面递来的候选', () => {
+  it('并进候选表，带的事实原样留着', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    const decision = considerWith(seam, 'group:share', [SHARE_WANT])
+
+    expect(decision.considered.map(candidate => candidate.id)).toEqual(['a', 'b', SHARE_WANT.id])
+    const kept = decision.pending.find(item => item.facts.postWant !== undefined)
+    expect(kept?.why).toBe(SHARE_WANT.why)
+    expect(kept?.facts.postWant).toBe(0.62)
+    expect(kept?.facts.kind).toBe('share')
+    expect(kept?.facts.source).toBe('post_want')
+    expect(seam.preview('group:share')).toHaveLength(3)
+  })
+
+  it('不给外部候选时行为与原来一模一样', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    const decision = consider(seam, 'group:none')
+
+    expect(decision.considered.map(candidate => candidate.id)).toEqual(['a', 'b'])
+    for (const item of decision.pending) expect(Object.hasOwn(item.facts, 'postWant')).toBe(false)
+  })
+
+  it('外部候选照样先过闸门：关着就一条都不攒', () => {
+    const seam = mount({ file: tempFile(), enabled: false, ...NO_QUIET })
+
+    const decision = considerWith(seam, 'group:share', [SHARE_WANT])
+
+    expect(decision.verdict.code).toBe('proactive.off')
+    expect(decision.pending).toHaveLength(0)
+  })
+
+  it('外部候选也先给人看，才许投递', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+    considerWith(seam, 'group:share', [SHARE_WANT])
+    const kept = seam.pending.live('group:share').find(item => item.facts.postWant !== undefined)
+    if (kept === undefined) throw new Error('外部候选没攒住')
+
+    const early = seam.deliver('group:share', kept.id)
+    const shown = seam.preview('group:share')
+    const delivered = seam.deliver('group:share', kept.id)
+
+    expect(early.ok).toBe(false)
+    expect(early.code).toBe('proactive.not_previewed')
+    expect(shown).toHaveLength(3)
+    expect(delivered.ok).toBe(true)
+    expect(delivered.item?.facts.postWant).toBe(0.62)
+  })
+})

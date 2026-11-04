@@ -16,6 +16,8 @@ export interface Candidate {
   source: string
   /** 到达时刻，只用来排先后 */
   at: number
+  /** 想发动态的读数，外部候选带上来时才有，这里不重算也不比较 */
+  postWant?: number
 }
 
 /** 候选带上来的原始事实，原样存着给模型看 */
@@ -27,6 +29,8 @@ export interface CandidateFacts {
   value?: number
   /** 候选没声明风险时这一项为空 */
   risk?: number
+  /** 候选没带想发动态的读数时这一项为空 */
+  postWant?: number
   source: string
   at: number
 }

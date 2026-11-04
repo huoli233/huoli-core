@@ -67,6 +67,8 @@ export interface QqProactiveSeam {
 export interface ConsiderInput {
   chatKey: string
   candidates: readonly Candidate[]
+  /** 别处攒出来的候选（比如想发一条动态），只并进候选表，不评分、不排序、不决定发不发 */
+  external?: readonly Candidate[]
   history: readonly string[]
   humanActive: boolean
   botBusy: boolean
@@ -109,6 +111,12 @@ export interface Config {
 }
 
 const seams = new WeakMap<Context, QqProactiveSeam>()
+
+// 自己攒的与别处递来的候选并成一张表，先后只看到达时刻，不看值钱程度
+function gatheredCandidates(input: ConsiderInput): Candidate[] {
+  if (input.external === undefined) return [...input.candidates]
+  return [...input.candidates, ...input.external]
+}
 
 /**
  * 取主动开口，未装配时为 undefined
@@ -170,7 +178,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       const gate = runGates(gateInput)
       if (!gate.ok) return { verdict: gate, pending: [], considered: [], facts }
 
-      const considered = dropRepeats(orderByArrival(input.candidates), input.history)
+      const considered = dropRepeats(orderByArrival(gatheredCandidates(input)), input.history)
       if (considered.length === 0) {
         const nothing: GateVerdict = { ok: false, code: 'proactive.no_candidate', reason: '没攒到能说的事' }
         return { verdict: nothing, pending: [], considered: [], facts }
@@ -186,6 +194,7 @@ export function apply(ctx: Context, config: Config = {}): void {
           ...candidate.confidence !== undefined ? { confidence: candidate.confidence } : {},
           ...candidate.value !== undefined ? { value: candidate.value } : {},
           ...candidate.risk !== undefined ? { risk: candidate.risk } : {},
+          ...candidate.postWant !== undefined ? { postWant: candidate.postWant } : {},
           source: candidate.source,
           at: candidate.at,
         },

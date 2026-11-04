@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-这一行不注册工具；候选用 `preview` 先看：每条带一句 `text`、自己的 `why`，以及原样的 `facts`（种类、把握、有用程度、风险、来源、到达时刻），不做任何合成。`preview` 同时把这批待发记成"看过"，`deliver(chatKey, id)` 只投递看过的那一条。`consider` 的结果里还带一项 `facts.proactive_bias`，是身体那边算好的想开口的劲，零到一；这个数只影响冷却与每天额度，不进候选、不参与排序，攒住哪几条、先看哪一条都与它无关；没接上身体时是 `null`，不会自己编一个数。
+这一行不注册工具；候选用 `preview` 先看：每条带一句 `text`、自己的 `why`，以及原样的 `facts`（种类、把握、有用程度、风险、想发动态的读数、来源、到达时刻），不做任何合成。`preview` 同时把这批待发记成"看过"，`deliver(chatKey, id)` 只投递看过的那一条。`consider` 的结果里还带一项 `facts.proactive_bias`，是身体那边算好的想开口的劲，零到一；这个数只影响冷却与每天额度，不进候选、不参与排序，攒住哪几条、先看哪一条都与它无关；没接上身体时是 `null`，不会自己编一个数。别处攒出来的候选从 `consider` 的可选入参 `external` 递进来，比如身体那边"想发一条动态"：它跟自己攒的并成一张表，先后只看到达时刻，不评分、不重排、也不决定发不发；带 `postWant` 的那条把读数原样留在 `facts` 里，不传 `external` 时行为与从前一模一样。这类候选可以没有正文（想发动态那条只有由头与读数），`deliver` 照样只判它有没有先摆出来看过。
 
 #### Token effect
 
@@ -39,6 +39,7 @@ kind: "package-reference"
 - 每天额度按劲头缩到下限 `dailyFloor` 为止，劲头很低时一天仍然留一次。
 - 先看再投是硬状态：没 `preview` 过的编号 `deliver` 一律拒，返回 `proactive.not_previewed`。
 - 「刚被吵醒」只认睡眠三态里的 `waking` 那一态：被消息吵醒但还没醒透的时候仍按睡着算，走 `proactive.asleep`。
+- 外部候选与本地候选共用同一份冷却与每天额度：想发动态那条投出去也算一次开口，额度用掉一次。
 - 还没接真 QQ 试过。
 
 <a id="dev-note"></a>
@@ -49,3 +50,5 @@ kind: "package-reference"
 睡眠那三项事实由调用方在 `ConsiderInput` 里给：`asleep` 是现在睡着，`wakeAfter` 是身体排的醒点，`waking` 是刚被吵醒还没缓过来；三项都可以缺，缺了按醒着处理。`runGates` 先看 `asleep`：为真就回 `proactive.asleep`，`retryAt` 直接取 `wakeAfter`，没排醒点就不给时刻；再看 `waking`：为真就回 `proactive.waking`，`retryAt` 取 `now + wakingDelayMs`（默认十分钟）。这两条都走闸门失败的同一条路，一条候选都不攒，待发文件一个字节都不写。
 
 先看再投的状态在 `src/store.ts`：待发文件版本 2，`previewed` 记着看过哪些编号，投递或过期就一起删掉；`put` 重复放同一条是覆盖，看过的记录保留。`deliver` 的三条路是 `proactive.unknown_item`（这个会话里没有这一条）、`proactive.not_previewed`（还没摆出来看过）、成功时返回那一条并把说话时刻记进账。
+
+`external` 与自己攒的候选在 `src/index.ts` 的 `gatheredCandidates` 里并成一张表，后面统一走 `orderByArrival` 与 `dropRepeats`，因此外部候选过的闸门、去的重与本地候选完全同一套；带 `postWant` 的读数是候选自己带上来的事实，只在 `facts` 里原样存住，本包不做阈值判断，也不把它折成分数。

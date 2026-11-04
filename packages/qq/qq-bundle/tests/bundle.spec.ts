@@ -18,7 +18,7 @@ import {
   type VitalsState,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { apply as applyBundle } from '../src/index.ts'
+import { apply as applyBundle, qqBundleOf } from '../src/index.ts'
 
 interface Mounted {
   ctx: Context
@@ -70,6 +70,11 @@ function stepPayload(step: number) {
 }
 
 const next = async (): Promise<PreStepDecision> => ({ kind: 'enter', messages: [] })
+
+// 一轮收尾，组合包在这一步落一行记录并给队列推一拍
+async function stopTurn(ctx: Context, turn: number): Promise<void> {
+  await ctx.serial('agent/turn-stopping', { agent: STEP_AGENT, turn, signal: new AbortController().signal })
+}
 
 // 先把一份身体写好，再按正式顺序装配：身体在前，组合包在后
 async function mountWithBody(dir: string, body: Partial<VitalsState> = {}): Promise<Context> {
@@ -259,5 +264,33 @@ describe('动态的发布入口', () => {
     const result = await qqChannelOf(ctx)?.publish('post', '今天吃了面', { chatKey: 'group:1', level: 'routine', topic: '吃喝' })
 
     expect(result?.code).toBe('post.paused')
+  })
+})
+
+describe('队列节拍', () => {
+  it('每轮收尾走一拍', async () => {
+    const { ctx } = await mount(tempDir())
+    const memory = qqMemoryOf(ctx)
+    if (memory === undefined) throw new Error('记忆没装上')
+    const ticking = vi.spyOn(memory, 'tick')
+
+    for (const turn of [1, 2, 3]) await stopTurn(ctx, turn)
+
+    expect(ticking).toHaveBeenCalledTimes(3)
+  })
+
+  it('记忆那一头失手只记一行日志，不拦这一轮', async () => {
+    const { ctx } = await mount(tempDir())
+    const memory = qqMemoryOf(ctx)
+    if (memory === undefined) throw new Error('记忆没装上')
+    const failing = vi.spyOn(memory, 'tick').mockImplementation(() => {
+      throw new Error('队列坏了')
+    })
+    await ctx.waterfall('agent/pre-step', stepPayload(1), next)
+
+    await expect(stopTurn(ctx, 1)).resolves.toBeUndefined()
+
+    expect(failing).toHaveBeenCalledTimes(1)
+    expect(qqBundleOf(ctx)?.decisions(0, 10)).toHaveLength(1)
   })
 })

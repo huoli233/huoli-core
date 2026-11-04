@@ -22,4 +22,8 @@ export const BUNDLE_DEFAULTS = {
   memoryInjectMaxItems: MEMORY_DEFAULTS.injectMaxItems,
   /** 同一段在最近多少轮内不重复注入，与记忆包同一份默认值 */
   memoryInjectRepeatTurns: MEMORY_DEFAULTS.injectRepeatTurns,
+  /** 想发动态的读数高过这条线就攒一条动态候选，0~1 标度，取平常那一档，只有涨上去才攒 */
+  addPostWantFrom: 0.30,
+  /** 同一个会话一天最多攒几条动态候选，攒到就不再看读数 */
+  postCandidateDailyMax: 1,
 }

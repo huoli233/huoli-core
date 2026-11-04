@@ -9,10 +9,10 @@ import '@huoli/huoli-agent'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
 import { qqMaterialOf } from '@huoli/huoli-qq-material'
-import { buildInjectBlock, injectIntoUserText, qqMemoryOf, shouldInject } from '@huoli/huoli-qq-memory'
-import { hasWords, qqChannelOf, type IncomingMessage } from '@huoli/huoli-qq-channel'
+import { buildInjectBlock, injectIntoUserText, localDay, qqMemoryOf, shouldInject } from '@huoli/huoli-qq-memory'
+import { hasWords, qqChannelOf, type ActionResult, type IncomingMessage } from '@huoli/huoli-qq-channel'
 import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
-import { qqProactiveOf, type Candidate, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
+import { qqProactiveOf, type Candidate, type DeliverResult, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { qqSelfOf } from '@huoli/huoli-qq-self'
 import { qqVitalsOf, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
@@ -51,12 +51,24 @@ export interface Config {
   memoryInjectMaxItems?: number
   /** 同一段在最近多少轮内不重复注入 */
   memoryInjectRepeatTurns?: number
+  /** 想发动态的读数高过这条线就攒一条动态候选 */
+  addPostWantFrom?: number
+  /** 同一个会话一天最多攒几条动态候选 */
+  postCandidateDailyMax?: number
+}
+
+/** 一次投递的结论：没投出去的码与发布入口回来的那一段都摆在这里 */
+export interface BundleDelivery extends DeliverResult {
+  /** 走发布入口的结果，只有想发动态的那一条才有 */
+  published?: ActionResult
 }
 
 /** 排查用的接口，不进模型可见上下文 */
 export interface QqBundleSeam {
   /** 从某一时刻起的轮次记录 */
   decisions(sinceAt: number, limit: number): DecisionRecord[]
+  /** 把待发里的一条投出去：先预览再投递由主动性把着，动态那一路再交发布入口 */
+  deliver(chatKey: string, id: string, body?: string): Promise<BundleDelivery>
 }
 
 /** 插件的行名 */
@@ -172,6 +184,33 @@ export function apply(ctx: Context, config: Config = {}): void {
     decisions(sinceAt, limit) {
       return decisions.read(sinceAt, limit)
     },
+    async deliver(chatKey, id, body) {
+      if (proactive === undefined) {
+        return { ok: false, code: 'bundle.proactive_off', reason: '主动开口没装上', hint: '先把那一行挂起来再投' }
+      }
+      // 先预览再投递这条规矩由主动性把着，这里不另判一遍
+      const delivered = proactive.deliver(chatKey, id)
+      if (!delivered.ok || delivered.item === undefined) return delivered
+      // 不是想发动态的那一条就到此为止：投递这一步本身已经完成
+      if (delivered.item.facts.postWant === undefined) return delivered
+      const text = (body ?? delivered.item.text).trim()
+      if (text === '') {
+        return { ok: false, code: 'bundle.no_body', reason: '这一条还没有正文', hint: '先把想发的那段写出来再投' }
+      }
+      if (channel === undefined) {
+        return { ok: false, code: 'bundle.no_channel', reason: '没有能发出去的通道', hint: '装上通道那一行再来' }
+      }
+      // 分级与放行都归发布入口，这里只给类别与正文
+      const published = await channel.publish('post', text, { chatKey })
+      if (published.ok) return { ...delivered, published }
+      return {
+        ok: false,
+        ...published.code === undefined ? {} : { code: published.code },
+        ...published.reason === undefined ? {} : { reason: published.reason },
+        ...published.hint === undefined ? {} : { hint: published.hint },
+        published,
+      }
+    },
   }
   seams.set(ctx, seam)
 
@@ -232,9 +271,22 @@ export function apply(ctx: Context, config: Config = {}): void {
     return next()
   })
 
-  // 一轮结束就把这一轮的事实落成一行
+  // 记忆那头要用的东西先拿到手：每轮收尾与每天整理都要用
+  const memory = qqMemoryOf(ctx)
+
+  // 队列每轮走一拍：到点排空、到点反思；失手只记一行，不拦这一轮
+  const tickQueue = (): void => {
+    try {
+      memory?.tick(Date.now())
+    } catch (error) {
+      ctx.logger('qq-bundle').warn('队列节拍没走完：%s', String(error))
+    }
+  }
+
+  // 一轮结束就把这一轮的事实落成一行，队列节拍也在同一个收尾点上走一拍
   ctx.on('agent/turn-stopping', ({ agent }) => {
     flush(agent.id)
+    tickQueue()
   })
 
   // 收消息：先记进身体，再放进注意力收件箱，顺便把当前会话记成活跃的那个
@@ -301,6 +353,30 @@ export function apply(ctx: Context, config: Config = {}): void {
   const material = qqMaterialOf(ctx)
   const throttleMs = Math.max(0, config.proactiveThrottleMs ?? BUNDLE_DEFAULTS.proactiveThrottleMs)
   const lastConsidered = new Map<string, number>()
+  const addPostWantFrom = config.addPostWantFrom ?? BUNDLE_DEFAULTS.addPostWantFrom
+  const postCandidateDailyMax = Math.max(0, config.postCandidateDailyMax ?? BUNDLE_DEFAULTS.postCandidateDailyMax)
+  const postCandidateDays = new Map<string, { day: string; count: number }>()
+
+  // 今天这个会话已经攒过几条动态候选：读数一直在变，同一天不因此反复攒
+  const postGathered = (chatKey: string, day: string): number => {
+    const kept = postCandidateDays.get(chatKey)
+    return kept?.day === day ? kept.count : 0
+  }
+
+  // 想发动态的劲高过阈值才攒一条：正文还没有，发不发、发什么由模型定
+  const postWantCandidateOf = (chatKey: string, at: number, body: VitalsState): Candidate | undefined => {
+    if (!(body.post_want > addPostWantFrom)) return undefined
+    if (postGathered(chatKey, localDay(at)) >= postCandidateDailyMax) return undefined
+    return {
+      id: `post-want:${localDay(at)}`,
+      kind: 'share',
+      why: `想发一条动态的劲压不住了，眼下${body.emotion_level}`,
+      text: '',
+      postWant: body.post_want,
+      source: 'post_want',
+      at,
+    }
+  }
 
   // 心里惦记着的事就是她想开口的由头，攒候选时只带原话与来源，不添任何分数
   const candidatesOf = (chatKey: string): Candidate[] => {
@@ -345,15 +421,22 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (throttled && at - last < throttleMs) return
     lastConsidered.set(chatKey, at)
     const body = vitals?.read()
+    const postWant = body === undefined ? undefined : postWantCandidateOf(chatKey, at, body)
     const decision = proactive.consider({
       chatKey,
       candidates: candidatesOf(chatKey),
+      ...postWant === undefined ? {} : { external: [postWant] },
       history: [],
       humanActive: false,
       botBusy: busy,
       hasChannel: channel !== undefined,
       ...body !== undefined ? { proactiveBias: body.proactive_bias, ...sleepFactsOf(body) } : {},
     })
+    // 攒成了才记一笔「今天攒过」：被闸门拦下时不算，同一天还有机会
+    if (postWant !== undefined && decision.verdict.ok) {
+      const day = localDay(at)
+      postCandidateDays.set(chatKey, { day, count: postGathered(chatKey, day) + 1 })
+    }
     // 攒住的当场摆出来，投递只认摆过的那几条
     if (decision.pending.length > 0) proactive.preview(chatKey)
     noteConsidered(chatKey, at, decision)
@@ -375,7 +458,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
 
   // 每天一次：先掉重要度，再按保留度定清晰度，淡到底的清正文，最后补账；自我层没镜过的记录一并镜像
-  const memory = qqMemoryOf(ctx)
   const self = qqSelfOf(ctx)
   // 镜像只往记忆库写，接上以后每日整理才会带上它
   if (self !== undefined) self.useMemory(memory)
@@ -392,6 +474,9 @@ export function apply(ctx: Context, config: Config = {}): void {
       // 每天这一步失手就记一行，别让定时器把整个进程带走
       ctx.logger('qq-bundle').warn('每天整理没做完：%s', String(error))
     }
+    // 每天这一次也是例行时刻：想发动态的劲攒够了就在这里交给她
+    const active = subject?.store.read().lastActive ?? ''
+    if (active !== '') considerProactive(active, Date.now(), false, false)
   }, 60 * 60_000)
   idle.unref()
   ctx.effect(() => () => {
