@@ -9,8 +9,9 @@ import '@huoli/huoli-agent'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
 import { qqMemoryOf } from '@huoli/huoli-qq-memory'
 import { hasWords, qqChannelOf, type IncomingMessage } from '@huoli/huoli-qq-channel'
+import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
-import { qqVitalsOf } from '@huoli/huoli-qq-vitals'
+import { qqVitalsOf, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
 
 /** 这一行接受的配置 */
 export interface Config {
@@ -50,6 +51,26 @@ function readRules(file: string): string {
   }
 }
 
+// 条数上限看的事实：都从身体那唯一一份状态里取，不在这里另算
+function replyFactsOf(state: VitalsState): ReplyFacts {
+  return {
+    tired: state.adenosine,
+    annoyed: state.irritability,
+    energy: state.energy,
+    clingy: state.clinginess,
+    lonely: state.loneliness,
+  }
+}
+
+// 身体没接上时按中性的身体算，上限照样是一个数
+const NEUTRAL_FACTS: ReplyFacts = { tired: 0.5, annoyed: 0.5, energy: 0.5, clingy: 0.5, lonely: 0.5 }
+
+// 这一段只说这一轮最多几句，不说该不该回
+function budgetLine(vitals: QqVitalsSeam | undefined): string {
+  const facts = vitals === undefined ? NEUTRAL_FACTS : replyFactsOf(vitals.read())
+  return `【这一轮的条数】这一轮最多说 ${replyBudget(facts)} 条，说完就停，不追问，也不凑满。`
+}
+
 /**
  * 把零件装到一起
  * @param ctx - 运行环境
@@ -65,6 +86,14 @@ export function apply(ctx: Context, config: Config = {}): void {
     text: rules,
   })
 
+  // 身体先说话，条数紧跟着：这一轮最多几句排在身体之后、规矩之前
+  const vitals = qqVitalsOf(ctx)
+  ctx.systemPrompt.section({
+    name: 'qq:reply-budget',
+    order: 350,
+    text: () => budgetLine(vitals),
+  })
+
   // 每轮最多走几步：走太多就是在空转，停掉比继续烧钱好
   const maxSteps = Math.max(1, config.maxSteps ?? 40)
   ctx.on('agent/pre-step', async (payload, next) => {
@@ -75,7 +104,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 收消息：先记进身体，再放进注意力收件箱，顺便把当前会话记成活跃的那个
   const attention = qqAttentionOf(ctx)
   const subject = qqSubjectOf(ctx)
-  const vitals = qqVitalsOf(ctx)
   const channel = qqChannelOf(ctx)
   if (channel !== undefined) {
     // 同一条消息只认一次：按会话加编号留住最近这一段

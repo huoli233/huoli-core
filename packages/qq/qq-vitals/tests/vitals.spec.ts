@@ -6,10 +6,12 @@ import SystemPrompt from '@huoli/huoli-system-prompt'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   apply,
+  biasUnit,
   createVitalsStore,
   derive,
   drift,
   emptyState,
+  postLevel,
   qqVitalsOf,
   react,
   renderPrompt,
@@ -318,5 +320,93 @@ describe('接到提示词上', () => {
     const { seam } = await mount(tempFile())
 
     expect(seam.render()).not.toBe(seam.render())
+  })
+})
+
+describe('想开口与想发动态', () => {
+  it('两者都落在零到一之间，初值也是', () => {
+    const states = [settled(), settled({ adenosine: 1, melatonin: 1, pain: 1 }), settled({ thirst: 1, oxytocin: 1 })]
+    states.push(emptyState(tuning, START))
+
+    for (const state of states) {
+      for (const value of [state.proactive_bias, state.post_want]) {
+        expect(value).toBeGreaterThanOrEqual(0)
+        expect(value).toBeLessThanOrEqual(1)
+      }
+    }
+    expect(emptyState(tuning, START).proactive_bias).toBeCloseTo(biasUnit(tuning.proactiveBiasStart, tuning), 10)
+    expect(emptyState(tuning, START).post_want).toBeCloseTo(tuning.postStart, 10)
+  })
+
+  it('越累越想开口', () => {
+    expect(settled({ adenosine: 0.9 }).proactive_bias).toBeGreaterThan(settled().proactive_bias)
+  })
+
+  it('犯困时更想开口', () => {
+    expect(settled({ melatonin: 0.8 }).proactive_bias).toBeGreaterThan(settled().proactive_bias)
+  })
+
+  it('没力气时更想开口', () => {
+    expect(settled({ pain: 1 }).energy).toBeLessThan(0.35)
+    expect(settled({ pain: 1 }).proactive_bias).toBeGreaterThan(settled().proactive_bias)
+  })
+
+  it('想黏人时反而收着点', () => {
+    expect(settled({ oxytocin: 0.9 }).proactive_bias).toBeLessThan(settled().proactive_bias)
+  })
+
+  it('心里有火、缺水时都更不想开口', () => {
+    const base = settled().proactive_bias
+
+    expect(settled({ cortisol: 0.9 }).proactive_bias).toBeLessThan(base)
+    expect(settled({ thirst: 0.9 }).proactive_bias).toBeLessThan(base)
+  })
+
+  it('生病时更想开口', () => {
+    expect(settled({ cytokines: 0.6 }).proactive_bias).toBeGreaterThan(settled().proactive_bias)
+  })
+
+  it('孤独时更想发动态', () => {
+    expect(settled({ oxytocin: 1 }).post_want).toBeGreaterThan(settled().post_want)
+  })
+
+  it('心里有火时更不想发动态', () => {
+    expect(settled({ cortisol: 0.9 }).post_want).toBeLessThan(settled().post_want)
+  })
+})
+
+describe('社交动态分级', () => {
+  const NONE = { routine: false, peak: false, consent: false, requested: false }
+
+  it('什么都没成立时不发', () => {
+    expect(postLevel(NONE).level).toBe('none')
+  })
+
+  it('只有例行不够', () => {
+    expect(postLevel({ ...NONE, routine: true }).level).toBe('none')
+  })
+
+  it('只有高峰不够', () => {
+    expect(postLevel({ ...NONE, peak: true }).level).toBe('none')
+  })
+
+  it('例行与高峰同时成立才给例行，并带一句理由', () => {
+    const decision = postLevel({ ...NONE, routine: true, peak: true })
+
+    expect(decision.level).toBe('routine')
+    expect(decision.reason.length).toBeGreaterThan(0)
+  })
+
+  it('没有两把钥匙时公开不出现', () => {
+    expect(postLevel({ ...NONE, routine: true, peak: true }).level).not.toBe('public')
+    expect(postLevel({ ...NONE, routine: true, peak: true, consent: true }).level).not.toBe('public')
+    expect(postLevel({ ...NONE, routine: true, peak: true, requested: true }).level).not.toBe('public')
+  })
+
+  it('两把钥匙都在且到了高峰才给公开', () => {
+    const decision = postLevel({ ...NONE, peak: true, consent: true, requested: true })
+
+    expect(decision.level).toBe('public')
+    expect(decision.reason.length).toBeGreaterThan(0)
   })
 })

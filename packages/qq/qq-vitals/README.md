@@ -36,8 +36,12 @@ kind: "package-reference"
 - 十二套子系统只落了递质回归、HPA 轴、交感副交感、奖赏、依恋、昼夜、饥饿、水循环、血糖、睡眠压力这几条，愤怒、恐惧、月经、死亡威胁没做。
 - 互动只认喝水、被夸、被凶三条；这三条由装配层的 `QqVitalsSeam.react` 收消息时写回。
 - 时段判断只用本地小时，没处理跨时区与夏令时。
+- 想开口的倍率只接了没力气、犯困、想有人陪、有火、缺水、生病、睡不够这七条；幸福峰值、害怕、担心、存在恐惧、冷战、记恨、余额见底要等对应状态字段落地。
+- 想发动态只接了有火往下压、孤独往上抬两条；害怕、担心两条同理等字段。
 
 <a id="dev-note"></a>
 ### Dev Note
 
-默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移在 `src/drift.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，提示词在 `src/render.ts`，原子写盘与备份在 `src/store.ts`，时段判断在 `src/clock.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs` 管，同一条消息重放不会重复扣。
+默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移在 `src/drift.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，提示词在 `src/render.ts`，社交动态分级在 `src/post.ts`，原子写盘与备份在 `src/store.ts`，时段判断在 `src/clock.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs` 管，同一条消息重放不会重复扣。
+
+派生量里的 `proactive_bias` 与 `post_want` 都是零到一的事实：前者从 `proactiveBiasStart` 起逐条乘系数，夹到 `biasMin` 与 `biasMax` 之间，再由 `biasUnit` 折算成零到一，所以状态文件里存的是读数而不是原始倍率；后者从 `postStart` 起乘系数后直接夹到零到一。两个数都不产出“发不发”的结论。`postLevel(facts)` 是纯函数，默认 `none`，例行与高峰同时成立给 `routine`，`public` 还要两把钥匙同时在；这一包不发任何内容。

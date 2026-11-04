@@ -24,6 +24,9 @@
       "path": "../qq-memory"
     },
     {
+      "path": "../qq-pacing"
+    },
+    {
       "path": "../qq-subject"
     },
     {

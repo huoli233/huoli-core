@@ -1,6 +1,7 @@
 // 所有默认参数只在这里出现一次，别处一律从 Tuning 里取
 
 import type { Baseline, VitalsState } from './types.ts'
+import { clamp, clampRange } from './math.ts'
 
 /** 可被 Config 覆盖的参数集合 */
 export interface Tuning {
@@ -56,6 +57,52 @@ export interface Tuning {
   angerSerotoninDrop: number
   /** 被凶一次加多少血管加压素，0~1 标度，默认 0.06，对应更强的占有与黏人 */
   angerVasopressinGain: number
+  /** 想开口这一项的起步倍率，默认 1.0 表示不加不减，命中各档再逐条相乘 */
+  proactiveBiasStart: number
+  /** 想开口倍率的下限，默认 0.2，夹住之后再折成零到一的读数 */
+  biasMin: number
+  /** 想开口倍率的上限，默认 2.5 */
+  biasMax: number
+  /** 没力气时想开口的倍率，默认 1.8，越没劲越想找人说句话 */
+  biasLowEnergy: number
+  /** 精力低于这条线算没力气，0~1 标度，默认 0.35 */
+  biasLowEnergyBelow: number
+  /** 犯困时想开口的倍率，默认 1.7 */
+  biasSleepy: number
+  /** 褪黑素高于这条线算犯困，0~1 标度，默认 0.55 */
+  biasSleepyAbove: number
+  /** 想有人陪着时想开口的倍率，默认 0.62 */
+  biasWantsCompany: number
+  /** 孤独高于这条线算想有人陪，0~1 标度，默认 0.55 */
+  biasLonelyAbove: number
+  /** 黏人高于这条线也算想有人陪，0~1 标度，默认 0.62 */
+  biasClingyAbove: number
+  /** 心里有火时想开口的倍率，默认 0.88 */
+  biasIrritable: number
+  /** 易怒高于这条线算心里有火，0~1 标度，默认 0.60 */
+  biasIrritableAbove: number
+  /** 口渴时想开口的倍率，默认 0.80，先去找水而不是找人 */
+  biasThirsty: number
+  /** 口渴高于这条线算缺水，0~1 标度，默认 0.65 */
+  biasThirstyAbove: number
+  /** 生病时想开口的倍率，默认 1.50 */
+  biasSick: number
+  /** 细胞因子高于这条线算生病，0~1 标度，默认 0.40 */
+  biasSickAbove: number
+  /** 睡不够时想开口的倍率，默认 1.40 */
+  biasExhausted: number
+  /** 睡眠压力高于这条线算睡不够，0~1 标度，默认 0.70 */
+  biasExhaustedAbove: number
+  /** 想发动态的起步值，0~1 标度，默认 0.30 */
+  postStart: number
+  /** 心里有火时想发动态的倍率，默认 0.35，不想营业 */
+  postDown: number
+  /** 易怒高于这条线算不想营业，0~1 标度，默认 0.60 */
+  postDownAbove: number
+  /** 孤独时想发动态的倍率，默认 1.08，想让人看见 */
+  postWants: number
+  /** 孤独高于这条线算想让人看见，0~1 标度，默认 0.55 */
+  postWantsAbove: number
   /** 每轮身体提示词的字数上限，默认 300，超出就截断且至少保留 60 字 */
   promptMaxChars: number
   /** 情绪标签入选的分数阈值，0~1 标度，默认 0.40，低于它的候选不写进提示词 */
@@ -137,6 +184,30 @@ export const DEFAULTS: Tuning = {
   angerNoradrenalineGain: 0.15,
   angerSerotoninDrop: 0.10,
   angerVasopressinGain: 0.06,
+  // 想开口与想发动态：起步值与逐条相乘的系数
+  proactiveBiasStart: 1.0,
+  biasMin: 0.2,
+  biasMax: 2.5,
+  biasLowEnergy: 1.8,
+  biasLowEnergyBelow: 0.35,
+  biasSleepy: 1.7,
+  biasSleepyAbove: 0.55,
+  biasWantsCompany: 0.62,
+  biasLonelyAbove: 0.55,
+  biasClingyAbove: 0.62,
+  biasIrritable: 0.88,
+  biasIrritableAbove: 0.60,
+  biasThirsty: 0.80,
+  biasThirstyAbove: 0.65,
+  biasSick: 1.50,
+  biasSickAbove: 0.40,
+  biasExhausted: 1.40,
+  biasExhaustedAbove: 0.70,
+  postStart: 0.30,
+  postDown: 0.35,
+  postDownAbove: 0.60,
+  postWants: 1.08,
+  postWantsAbove: 0.55,
   // 提示词与标签
   promptMaxChars: 300,
   labelThreshold: 0.40,
@@ -160,7 +231,10 @@ export const NUMERIC_FIELDS: readonly (keyof Baseline)[] = [
 ]
 
 /** 派生上也要落盘的数值字段 */
-export const DERIVED_FIELDS = ['energy', 'valence', 'irritability', 'clinginess', 'loneliness', 'dominance'] as const
+export const DERIVED_FIELDS = [
+  'energy', 'valence', 'irritability', 'clinginess', 'loneliness', 'dominance',
+  'proactive_bias', 'post_want',
+] as const
 
 /** 落盘时按时间戳读回来的字段 */
 export const STAMP_FIELDS = [
@@ -178,6 +252,16 @@ export function resolveTuning(override?: Partial<Tuning>): Tuning {
 }
 
 /**
+ * 把倍率折算成零到一的读数：下限对零、上限对一
+ * @param bias - 倍率
+ * @param tuning - 参数
+ * @returns 零到一的读数
+ */
+export function biasUnit(bias: number, tuning: Tuning): number {
+  return clampRange((bias - tuning.biasMin) / (tuning.biasMax - tuning.biasMin), 0, 1)
+}
+
+/**
  * 按默认值造一份初始状态
  * @param tuning - 参数
  * @param at - 当前毫秒时间戳
@@ -192,6 +276,8 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     clinginess: 0.0,
     loneliness: 0.0,
     dominance: 0.5,
+    proactive_bias: biasUnit(tuning.proactiveBiasStart, tuning),
+    post_want: clamp(tuning.postStart),
     emotion_level: '平静',
     emotion_candidates: [],
     last_update: at,

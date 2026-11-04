@@ -2843,7 +2843,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:16`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:17`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2925,7 +2925,7 @@ export interface Config {
 ## `@huoli/huoli-qq-memory`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-memory/src/index.ts:71`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:72`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2944,8 +2944,30 @@ export interface Config {
 export interface Tuning {
   /** 重要度到这条线以上算受保护 */
   protectLine: number
-  /** 每次召回注入的正文上限 */
-  injectCap: number
+  /** 注入整串的字数上限，模板与条目一起算 */
+  injectMaxChars: number
+  /** 一次注入最多几条 */
+  injectMaxItems: number
+  /** 同一条记忆在最近多少轮内不重复注入 */
+  injectRepeatTurns: number
+  /** 召回默认取几条 */
+  recallLimit: number
+  /** 关键词切成几个字一段 */
+  gramSize: number
+  /** 查询短到几个字以内按短查询判 */
+  shortQueryChars: number
+  /** 短查询命中几个片段算相关 */
+  shortQueryMinHits: number
+  /** 长查询命中几个片段算相关 */
+  longQueryMinHits: number
+  /** 相似度在总分里占多少 */
+  weightSim: number
+  /** 重要度在总分里占多少 */
+  weightImportance: number
+  /** 新鲜度在总分里占多少 */
+  weightFreshness: number
+  /** 新鲜度按几天摊完 */
+  freshnessDays: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-memory -->
@@ -2955,7 +2977,7 @@ export interface Tuning {
 
 ## `@huoli/huoli-qq-pacing`
 
-- `source`: [`packages/qq/qq-pacing/src/index.ts:25`](../packages/qq/qq-pacing/src/index.ts)
+- `source`: [`packages/qq/qq-pacing/src/index.ts:27`](../packages/qq/qq-pacing/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2977,7 +2999,7 @@ export interface Config {
 
 ## `@huoli/huoli-qq-proactive`
 
-- `source`: [`packages/qq/qq-proactive/src/index.ts:53`](../packages/qq/qq-proactive/src/index.ts)
+- `source`: [`packages/qq/qq-proactive/src/index.ts:63`](../packages/qq/qq-proactive/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3119,7 +3141,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:37`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:39`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3186,6 +3208,52 @@ export interface Tuning {
   angerSerotoninDrop: number
   /** 被凶一次加多少血管加压素，0~1 标度，默认 0.06，对应更强的占有与黏人 */
   angerVasopressinGain: number
+  /** 想开口这一项的起步倍率，默认 1.0 表示不加不减，命中各档再逐条相乘 */
+  proactiveBiasStart: number
+  /** 想开口倍率的下限，默认 0.2，夹住之后再折成零到一的读数 */
+  biasMin: number
+  /** 想开口倍率的上限，默认 2.5 */
+  biasMax: number
+  /** 没力气时想开口的倍率，默认 1.8，越没劲越想找人说句话 */
+  biasLowEnergy: number
+  /** 精力低于这条线算没力气，0~1 标度，默认 0.35 */
+  biasLowEnergyBelow: number
+  /** 犯困时想开口的倍率，默认 1.7 */
+  biasSleepy: number
+  /** 褪黑素高于这条线算犯困，0~1 标度，默认 0.55 */
+  biasSleepyAbove: number
+  /** 想有人陪着时想开口的倍率，默认 0.62 */
+  biasWantsCompany: number
+  /** 孤独高于这条线算想有人陪，0~1 标度，默认 0.55 */
+  biasLonelyAbove: number
+  /** 黏人高于这条线也算想有人陪，0~1 标度，默认 0.62 */
+  biasClingyAbove: number
+  /** 心里有火时想开口的倍率，默认 0.88 */
+  biasIrritable: number
+  /** 易怒高于这条线算心里有火，0~1 标度，默认 0.60 */
+  biasIrritableAbove: number
+  /** 口渴时想开口的倍率，默认 0.80，先去找水而不是找人 */
+  biasThirsty: number
+  /** 口渴高于这条线算缺水，0~1 标度，默认 0.65 */
+  biasThirstyAbove: number
+  /** 生病时想开口的倍率，默认 1.50 */
+  biasSick: number
+  /** 细胞因子高于这条线算生病，0~1 标度，默认 0.40 */
+  biasSickAbove: number
+  /** 睡不够时想开口的倍率，默认 1.40 */
+  biasExhausted: number
+  /** 睡眠压力高于这条线算睡不够，0~1 标度，默认 0.70 */
+  biasExhaustedAbove: number
+  /** 想发动态的起步值，0~1 标度，默认 0.30 */
+  postStart: number
+  /** 心里有火时想发动态的倍率，默认 0.35，不想营业 */
+  postDown: number
+  /** 易怒高于这条线算不想营业，0~1 标度，默认 0.60 */
+  postDownAbove: number
+  /** 孤独时想发动态的倍率，默认 1.08，想让人看见 */
+  postWants: number
+  /** 孤独高于这条线算想让人看见，0~1 标度，默认 0.55 */
+  postWantsAbove: number
   /** 每轮身体提示词的字数上限，默认 300，超出就截断且至少保留 60 字 */
   promptMaxChars: number
   /** 情绪标签入选的分数阈值，0~1 标度，默认 0.40，低于它的候选不写进提示词 */

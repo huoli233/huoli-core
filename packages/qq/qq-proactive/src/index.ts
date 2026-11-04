@@ -27,6 +27,14 @@ export interface ProactiveDecision {
   pending: PendingItem[]
   /** 过了去重之后剩下的候选 */
   considered: Candidate[]
+  /** 只给模型参考的事实，不参与打分，也不参与排序 */
+  facts: ProactiveFacts
+}
+
+/** 攒理由时一并摆出来的事实 */
+export interface ProactiveFacts {
+  /** 想开口的劲，零到一，身体没接上时为空 */
+  proactive_bias: number | null
 }
 
 /** 一个应用里的主动开口 */
@@ -46,6 +54,8 @@ export interface ConsiderInput {
   humanActive: boolean
   botBusy: boolean
   hasChannel: boolean
+  /** 身体那边给的想开口的劲，零到一，只带出去给模型参考 */
+  proactiveBias?: number
   config?: Partial<GateConfig>
 }
 
@@ -109,6 +119,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     timing,
     consider(input) {
       const now = Date.now()
+      const facts: ProactiveFacts = { proactive_bias: input.proactiveBias ?? null }
       const gateInput: GateInput = {
         now,
         config: { ...gateConfig, ...(input.config ?? {}) },
@@ -119,12 +130,12 @@ export function apply(ctx: Context, config: Config = {}): void {
         hasChannel: input.hasChannel,
       }
       const verdict = runGates(gateInput)
-      if (!verdict.ok) return { verdict, pending: [], considered: [] }
+      if (!verdict.ok) return { verdict, pending: [], considered: [], facts }
 
       const considered = dropRepeats(orderByArrival(input.candidates), input.history)
       if (considered.length === 0) {
         const nothing: GateVerdict = { ok: false, code: 'proactive.nothing', reason: '没攒到能说的事' }
-        return { verdict: nothing, pending: [], considered: [] }
+        return { verdict: nothing, pending: [], considered: [], facts }
       }
 
       const items: PendingItem[] = considered.map(candidate => ({
@@ -144,7 +155,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         expiresAt: candidate.at + PENDING_TTL_MS,
       }))
       for (const item of items) pending.put(item)
-      return { verdict, pending: items, considered }
+      return { verdict, pending: items, considered, facts }
     },
     preview(chatKey) {
       return pending.live(chatKey)

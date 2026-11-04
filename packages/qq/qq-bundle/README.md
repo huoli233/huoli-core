@@ -21,15 +21,15 @@ kind: "package-bundle"
 
 #### What the model sees
 
-提示词末尾多一段说话规矩；每轮走多少步由 `maxSteps` 管，超了就停。
+提示词末尾多一段说话规矩；每轮走多少步由 `maxSteps` 管，超了就停。规矩前面还有一段 `qq:reply-budget`（`order` 350），写的是这一轮最多说几条：数字由 `qq-pacing` 的 `replyBudget` 按身体那份状态算出来，只说上限，不说该不该回。
 
 #### Token effect
 
-规矩那段是固定的，几百字；步数上限防止一路空转。
+规矩那段是固定的，几百字；条数那一段只有一句；步数上限防止一路空转。
 
 #### KV Cache effect
 
-规矩那段固定在末尾，不影响前面的缓存。
+规矩那段固定在末尾，不影响前面的缓存；条数那一段随身体每轮可能变。
 
 ## Known Limitations and Deferred Work
 
@@ -42,3 +42,5 @@ kind: "package-bundle"
 ### Dev Note
 
 配置项在 `src/index.ts` 的 `Config`：规矩文件位置、每天整理的小时、每轮步数上限；规矩正文放在 `prompts/rules.md`，组合行写在 `qq.patch.yml`。收消息这条链在 `apply` 里接：通道每送来一条入站，先按编号去重，有正文的交给 `qq-vitals` 的 `react` 改身体，再塞进注意力收件箱、把当前会话记成活跃的那个；卸载时把这两个处理函数注销。
+
+条数那一段的接线：`replyFactsOf` 把累（`adenosine`）、烦（`irritability`）、精力、黏、孤独照抄成 `ReplyFacts`，交给 `replyBudget` 取上限；身体没装上时用一份中性事实，上限照样是一个数。发送链路没有改动。

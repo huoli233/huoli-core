@@ -9,6 +9,8 @@ import { splitSpeech, PACING_DEFAULTS, type PacingVerdict, type PlannedSpeech, t
 
 export type { PacingVerdict, PlannedSpeech, QuotaUse } from './plan.ts'
 export { splitSpeech, dayKey, hourKey, PACING_DEFAULTS } from './plan.ts'
+export { replyBudget, REPLY_DEFAULTS, REPLY_TIERS } from './reply.ts'
+export type { ReplyFacts, ReplyTier, ReplyTuning } from './reply.ts'
 export type { PacingStore, PacingStoreOptions } from './store.ts'
 
 /** 一个应用里的记账仓 */

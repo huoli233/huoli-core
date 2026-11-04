@@ -4,6 +4,7 @@ import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqPacingOf, type Config, type QqPacingSeam } from '../src/index.ts'
+import { REPLY_DEFAULTS, replyBudget, type ReplyFacts } from '../src/reply.ts'
 
 const tempDirs: string[] = []
 
@@ -122,5 +123,62 @@ describe('关掉再开', () => {
     const used = before.used()
 
     expect(mount(file).used().dayCount).toBe(used.dayCount)
+  })
+})
+
+// 一份中性的身体，各条用例只在它上面改被考察的那一项
+const CALM: ReplyFacts = { tired: 0.2, annoyed: 0.1, energy: 0.5, clingy: 0.2, lonely: 0.2 }
+
+describe('一轮最多说几条', () => {
+  it('累的时候不超过两条', () => {
+    expect(replyBudget({ ...CALM, tired: 0.9 })).toBeLessThanOrEqual(2)
+  })
+
+  it('烦的时候不超过两条', () => {
+    expect(replyBudget({ ...CALM, annoyed: 0.9 })).toBeLessThanOrEqual(2)
+  })
+
+  it('又累又烦只给一条', () => {
+    expect(replyBudget({ ...CALM, tired: 0.9, annoyed: 0.9 })).toBe(1)
+  })
+
+  it('精力高又想黏时不小于两条', () => {
+    expect(replyBudget({ ...CALM, energy: 0.9, clingy: 0.7 })).toBeGreaterThanOrEqual(2)
+  })
+
+  it('特别黏又孤独时不小于三条', () => {
+    expect(replyBudget({ ...CALM, clingy: 0.9, lonely: 0.9 })).toBeGreaterThanOrEqual(3)
+  })
+
+  it('上限永远落在一到四之间，且是整数', () => {
+    const scale = [0, 0.35, 0.62, 0.7, 0.8, 1]
+    for (const tired of scale) {
+      for (const annoyed of scale) {
+        for (const energy of scale) {
+          for (const clingy of scale) {
+            for (const lonely of scale) {
+              const cap = replyBudget({ tired, annoyed, energy, clingy, lonely })
+              expect(Number.isInteger(cap)).toBe(true)
+              expect(cap).toBeGreaterThanOrEqual(1)
+              expect(cap).toBeLessThanOrEqual(4)
+            }
+          }
+        }
+      }
+    }
+  })
+
+  it('上下限能从参数改', () => {
+    const tight = { ...REPLY_DEFAULTS, maxCap: 3, minCap: 2 }
+
+    expect(replyBudget({ ...CALM, clingy: 0.9, lonely: 0.9 }, tight)).toBe(3)
+    expect(replyBudget({ ...CALM, tired: 0.9, annoyed: 0.9 }, tight)).toBe(2)
+  })
+
+  it('给的是上限，没有回不回这种结论', () => {
+    const cap = replyBudget({ ...CALM, tired: 1, annoyed: 1, energy: 0, clingy: 0, lonely: 1 })
+
+    expect(cap).toBeGreaterThanOrEqual(1)
+    expect(Object.keys(CALM).sort()).toEqual(['annoyed', 'clingy', 'energy', 'lonely', 'tired'])
   })
 })

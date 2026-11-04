@@ -78,6 +78,10 @@ export interface VitalsState extends Baseline {
   clinginess: number
   loneliness: number
   dominance: number
+  /** 想开口的劲，零到一，只给模型参考，不替它决定要不要开口 */
+  proactive_bias: number
+  /** 想发动态的劲，零到一，只给分级判定用 */
+  post_want: number
   emotion_level: string
   emotion_candidates: string[]
   last_update: number

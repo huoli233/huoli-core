@@ -8,6 +8,13 @@ import { apply as applyAttention, qqAttentionOf } from '@huoli/huoli-qq-attentio
 import { apply as applyMemory, qqMemoryOf } from '@huoli/huoli-qq-memory'
 import { apply as applyPacing } from '@huoli/huoli-qq-pacing'
 import { apply as applySubject, qqSubjectOf } from '@huoli/huoli-qq-subject'
+import {
+  apply as applyVitals,
+  createVitalsStore,
+  emptyState,
+  resolveTuning,
+  type VitalsState,
+} from '@huoli/huoli-qq-vitals'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply as applyBundle } from '../src/index.ts'
 
@@ -15,6 +22,8 @@ interface Mounted {
   ctx: Context
   tools: number
 }
+
+const tuning = resolveTuning()
 
 const tempDirs: string[] = []
 
@@ -59,6 +68,24 @@ function stepPayload(step: number) {
 }
 
 const next = async (): Promise<PreStepDecision> => ({ kind: 'enter', messages: [] })
+
+// 先把一份身体写好，再按正式顺序装配：身体在前，组合包在后
+async function mountWithBody(dir: string, body: Partial<VitalsState> = {}): Promise<Context> {
+  const file = path.join(dir, 'vitals.json')
+  createVitalsStore({ file, tuning }).write({ ...emptyState(tuning, Date.now() - 60_000), ...body })
+  const ctx = new Context()
+  await ctx.plugin(SystemPrompt, {})
+  applyPacing(ctx, { file: path.join(dir, 'pacing.json') })
+  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4 })
+  return ctx
+}
+
+// 取提示词里条数那一段
+async function budgetText(ctx: Context): Promise<string> {
+  const assembly = await ctx.systemPrompt.assemble()
+  return assembly.sections.find(section => section.name === 'qq:reply-budget')?.text ?? ''
+}
 
 afterEach(() => {
   for (const dir of tempDirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true })
@@ -125,5 +152,39 @@ describe('零件都装上了', () => {
     const { tools } = await mount(tempDir())
 
     expect(tools).toBeGreaterThanOrEqual(5)
+  })
+})
+
+describe('这一轮最多说几句', () => {
+  it('装配一轮后提示词里能看到条数上限', async () => {
+    const ctx = await mountWithBody(tempDir())
+
+    expect(await budgetText(ctx)).toContain('最多说')
+  })
+
+  it('特别黏又孤独的身体给到四条', async () => {
+    const ctx = await mountWithBody(tempDir(), { oxytocin: 1, endorphin: 1 })
+
+    expect(await budgetText(ctx)).toContain('最多说 4 条')
+  })
+
+  it('身体没装上时按中性算，上限照样给', async () => {
+    const { ctx } = await mount(tempDir())
+
+    expect(await budgetText(ctx)).toContain('最多说 2 条')
+  })
+
+  it('只说上限，不说该不该回', async () => {
+    const text = await budgetText(await mountWithBody(tempDir()))
+
+    for (const word of ['该不该', '要不要回', '回不回', '必须回', '不该']) expect(text).not.toContain(word)
+  })
+
+  it('条数那段排在身体之后、规矩之前', async () => {
+    const ctx = await mountWithBody(tempDir())
+    const names = (await ctx.systemPrompt.assemble()).sections.map(section => section.name)
+
+    expect(names.indexOf('qq:reply-budget')).toBeGreaterThan(names.indexOf('qq:vitals'))
+    expect(names.indexOf('qq:reply-budget')).toBeLessThan(names.indexOf('qq:rules'))
   })
 })

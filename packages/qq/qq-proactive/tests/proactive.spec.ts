@@ -347,3 +347,74 @@ describe('关掉再开', () => {
     expect(again.preview('group:keep')).toHaveLength(2)
   })
 })
+
+describe('想开口的劲只给模型参考', () => {
+  it('把身体给的数原样带出去', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    const decision = seam.consider({
+      chatKey: 'group:1',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      proactiveBias: 0.8,
+    })
+
+    expect(decision.facts.proactive_bias).toBe(0.8)
+  })
+
+  it('没给就留空，不自己编一个数', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    expect(consider(seam, 'group:1').facts.proactive_bias).toBeNull()
+  })
+
+  it('拦下来的时候也一样带出去', () => {
+    const seam = mount({ file: tempFile(), enabled: false, ...NO_QUIET })
+
+    const off = seam.consider({
+      chatKey: 'group:1',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      proactiveBias: 0.4,
+    })
+
+    expect(off.verdict.code).toBe('proactive.off')
+    expect(off.facts.proactive_bias).toBe(0.4)
+  })
+
+  it('数大数小都不改攒住的顺序与条数', () => {
+    const low = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+    const high = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+    const withLow = low.consider({
+      chatKey: 'group:1',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      proactiveBias: 0.05,
+    })
+    const withHigh = high.consider({
+      chatKey: 'group:1',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      proactiveBias: 0.95,
+    })
+
+    expect(withLow.considered.map(candidate => candidate.id)).toEqual(withHigh.considered.map(candidate => candidate.id))
+    expect(withLow.pending.map(item => item.id)).toEqual(withHigh.pending.map(item => item.id))
+    for (const item of [...withLow.pending, ...withHigh.pending]) {
+      expect(Object.hasOwn(item, 'proactive_bias')).toBe(false)
+      expect(Object.hasOwn(item, 'score')).toBe(false)
+    }
+  })
+})

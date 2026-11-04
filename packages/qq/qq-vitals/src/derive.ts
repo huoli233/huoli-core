@@ -1,6 +1,6 @@
-// 六个派生量加常用标签：派生量只算一次，别处只读
+// 八个派生量加常用标签：派生量只算一次，别处只读
 
-import type { Tuning } from './defaults.ts'
+import { biasUnit, type Tuning } from './defaults.ts'
 import { above, clamp, clampRange } from './math.ts'
 import type { VitalsState } from './types.ts'
 
@@ -56,6 +56,33 @@ function lonelinessOf(s: VitalsState): number {
 // 掌控：想要多、稳定多就高，压力往下压，可以到负数
 function dominanceOf(s: VitalsState): number {
   return clampRange(0.5 + 0.35 * (s.dopamine - 0.5) - 0.3 * (s.cortisol - 0.2) + 0.2 * (s.serotonin - 0.65), -1, 1)
+}
+
+// 想开口：没力气、犯困、想有人陪、口渴、生病、睡不够各乘一条，命中就乘，不命中的算一
+function biasFactors(s: VitalsState, tuning: Tuning): number[] {
+  const wantsCompany = s.loneliness > tuning.biasLonelyAbove || s.clinginess > tuning.biasClingyAbove
+  return [
+    s.energy < tuning.biasLowEnergyBelow ? tuning.biasLowEnergy : 1,
+    s.melatonin > tuning.biasSleepyAbove ? tuning.biasSleepy : 1,
+    wantsCompany ? tuning.biasWantsCompany : 1,
+    s.irritability > tuning.biasIrritableAbove ? tuning.biasIrritable : 1,
+    s.thirst > tuning.biasThirstyAbove ? tuning.biasThirsty : 1,
+    s.cytokines > tuning.biasSickAbove ? tuning.biasSick : 1,
+    s.adenosine > tuning.biasExhaustedAbove ? tuning.biasExhausted : 1,
+  ]
+}
+
+// 想开口的劲：倍率夹到上下限之间，再折成零到一的读数
+function proactiveBiasOf(s: VitalsState, tuning: Tuning): number {
+  const bias = biasFactors(s, tuning).reduce((product, factor) => product * factor, tuning.proactiveBiasStart)
+  return biasUnit(clampRange(bias, tuning.biasMin, tuning.biasMax), tuning)
+}
+
+// 想发动态的劲：心里有火就缩，孤独就涨一点，最后夹到零到一
+function postWantOf(s: VitalsState, tuning: Tuning): number {
+  const down = s.irritability > tuning.postDownAbove ? tuning.postDown : 1
+  const up = s.loneliness > tuning.postWantsAbove ? tuning.postWants : 1
+  return clamp(tuning.postStart * down * up)
 }
 
 // 前十二个常用标签，每个都是多系统加权
@@ -116,6 +143,8 @@ export function derive(state: VitalsState, tuning: Tuning): VitalsState {
   next.clinginess = clinginessOf(state)
   next.loneliness = lonelinessOf(state)
   next.dominance = dominanceOf(state)
+  next.proactive_bias = proactiveBiasOf(next, tuning)
+  next.post_want = postWantOf(next, tuning)
   const ranked = [...labelScores(next)]
     .filter(entry => entry[1] > tuning.labelThreshold)
     .sort((left, right) => right[1] - left[1])
