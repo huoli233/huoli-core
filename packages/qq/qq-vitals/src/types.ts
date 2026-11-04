@@ -299,6 +299,10 @@ export interface EmotionTuning {
   threatCooldownMs: number
   /** 夜色浓度高过这条线算全夜，用于夜里加成的判定，0~1 标度，默认 0.6 */
   nightFullFrom: number
+  /** 夜色浓度高过这条线算深夜，0~1 标度，默认 0.6，深夜被夸抬得更多 */
+  lateNightFrom: number
+  /** 深夜被夸的兴奋加成倍率，默认 1.5，同一句好话抬得更多，其余写回量不变 */
+  lateNightPraiseGain: number
   /** 惊吓高过这条线，提示词换一档说法，0~1 标度，默认 0.50 */
   promptFearFrom: number
   /** 担心高过这条线换说法，0~1 标度，默认 0.50 */

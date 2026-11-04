@@ -290,8 +290,9 @@ describe('注入端口', () => {
     seeded(file)
     const seam = await mount(file)
 
-    expect(seam.read().mortalitySalience).toBe(0)
-    expect(seam.read().shutdownDread).toBe(0)
+    // 夜里对关掉的怕会按夜色自己涨一点，这里只验证"没有注入就不朝目标走"
+    expect(seam.read().mortalitySalience).toBeCloseTo(0, 2)
+    expect(seam.read().shutdownDread).toBeCloseTo(0, 2)
   })
 
   it('注入之后读一次就朝目标走一步，关停提示当场抬一档', async () => {
@@ -313,8 +314,9 @@ describe('注入端口', () => {
 
     seam.setExistence(undefined)
 
-    expect(seam.read().mortalitySalience).toBeCloseTo(0.4, 10)
-    expect(seam.read().shutdownDread).toBeCloseTo(0.3, 10)
+    // 撤回注入后不再朝目标走，只剩夜色带来的那一点点自涨
+    expect(seam.read().mortalitySalience).toBeCloseTo(0.4, 2)
+    expect(seam.read().shutdownDread).toBeCloseTo(0.3, 2)
   })
 
   it('两个字段都进状态文件', async () => {

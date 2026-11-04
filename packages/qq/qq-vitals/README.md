@@ -41,7 +41,7 @@ kind: "package-reference"
 - 进食记忆没写：记下一顿只会走 `QqVitalsSeam.onMeal` 这个接口位，本包不落任何记忆，要等组合包把它接到长期记忆。
 - 开经当天写一条记忆这段没做，等记忆写入接口接上。
 - 睡眠期间不主动打扰要主动性出口读 `asleep` 与 `wake_after` 把下一次消息推后，那一段在主动性包里，本包只出这两个事实。
-- 时段判断只用本地小时，没处理跨时区与夏令时。
+- 时段与日期都按 `Config.tuning.timeZone` 算，空串跟随运行环境；零点与日期差按当地日历取，跨夏令时那天仍是真实零点、日期差仍是整数。夜睡醒来的钟点还是零点加固定小时数，拨钟那一夜会比墙上时间差一小时。
 - 想开口的倍率只接了没力气、犯困、想有人陪、有火、缺水、生病、睡不够这七条；幸福峰值、害怕、担心、存在恐惧、冷战、记恨、余额见底要等对应出口接上。
 - 想发动态只接了有火往下压、孤独往上抬两条；害怕、担心两条同理等出口接上。
 - 峰值只出事实：`peakOf` 给 `happy`、`sad`、`null` 三种结论，发不发仍由 `postLevel` 与出口决定，这一包不产出“该不该发”。
@@ -56,15 +56,15 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；参数声明在 `src/tuning.ts`，一个字段只声明一次；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移、睡眠三态与周期结算在 `src/drift.ts`，时钟与日期判断在 `src/clock.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，峰值判定在 `src/peak.ts`，余额分档在 `src/mortality.ts`，运行环境事实到两个存在性字段在 `src/existence.ts`，提示词在 `src/render.ts`，社交动态分级在 `src/post.ts`，原子写盘与备份在 `src/store.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs`、`mealCooldownMs` 管，同一条消息重放不会重复扣。
+默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；参数声明在 `src/tuning.ts`，一个字段只声明一次；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移、睡眠三态与周期结算在 `src/drift.ts`，时钟与日期判断在 `src/clock.ts`（`localHour`、`localPoint`、`localDayDiff` 都收一个时区名，留空跟随运行环境，认不出的名字也按运行环境算），写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，峰值判定在 `src/peak.ts`，余额分档在 `src/mortality.ts`，运行环境事实到两个存在性字段在 `src/existence.ts`，提示词在 `src/render.ts`，社交动态分级在 `src/post.ts`，原子写盘与备份在 `src/store.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs`、`mealCooldownMs` 管，同一条消息重放不会重复扣。
 
 吃饭跟喝水用的是同一套结构：`isMeal(text)` 要求食物名与吃的动作两个条件都命中，素材在 `src/words.ts`，那一模块只产出“这句话在说一顿饭”这个事实，不产出该不该吃。写回一次改五个量——`hunger` 减 `feedHungerDrop`、`ghrelin` 减 `feedGhrelinDrop`、`leptin` 加 `feedLeptinRise`、`glucose` 加 `feedGlucoseRise` 乘饭前饥饿、`insulin` 加 `feedInsulinRise`——并同时把 `last_meal` 与 `meal_applied_at` 写成这一条消息的时刻；两顿饭的冷却只看 `meal_applied_at`，`last_meal` 是饥饿结算读的那个事实。血糖怎么回落不在这里写第二套，交给 `drift` 已有的双向调节：饭后胰岛素高了，`glucose` 那一条就转成负项。
 
-睡眠走 `awake | sleeping | waking` 三态：夜里且睡眠压力过 `sleepAdenosineFrom` 就睡，醒来看“到点、白天里睡眠压力回到低位、白天最晚”三条，午睡只认到点这一条，两套规则不共用，一觉睡着期间不会起第二觉；醒后留一段迷糊窗口，窗口走完回到醒着。睡着期间腺苷按 `sleepAdenosineDrop` 或 `napAdenosineDrop` 往下掉，别的子系统照常结算；`asleep` 是睡着这一态的布尔投影，写的地方只有一处，读回来也按三态重算，不会两边对不上。午睡一天一次，靠 `nap_at` 落在同一个本地零点判断。`drift` 的第四个参数是零到一的随机源，入睡时刻的抖动与午睡概率都走它，测试给一个定值就完全可复现。
+睡眠走 `awake | sleeping | waking` 三态：夜里且睡眠压力过 `sleepAdenosineFrom` 就睡，醒来看“到点、白天里睡眠压力回到低位、白天最晚”三条，午睡只认到点这一条，两套规则不共用，一觉睡着期间不会起第二觉；醒后留一段迷糊窗口，窗口走完回到醒着。睡着期间腺苷按 `sleepAdenosineDrop` 或 `napAdenosineDrop` 往下掉，别的子系统照常结算；`asleep` 是睡着这一态的布尔投影，写的地方只有一处，读回来也按三态重算，不会两边对不上。午睡一天一次，靠 `nap_at` 与当下落在同一个本地日期判断。`drift` 的第四个参数是零到一的随机源，入睡时刻的抖动与午睡概率都走它，测试给一个定值就完全可复现。
 
 周期按真实日期差算：锚点取每月 `cycleDom` 号，今天早于它就取上月这一天，`cycle_day` 从锚点起算，`cycle_len` 取到下一个锚点（28~31 天），相位按 `cycleMenstrualEnd` 等四个边界切分，雌激素、孕激素、痛经三段曲线跟着相位写回。相位作为事实进状态，`energy`、`valence`、`irritability` 各按 `valenceMenstrualPenalty` 一类的系数加减对应项。
 
-情绪九项分三路：被凶抬 `anger`、`resentment` 与 `negative_heat`，被道歉与好话抬 `soothe` 并压 `anger` 与 `resentment`；被吓、担心、生死分别抬 `fear`、`worry`、`dread`，被威胁关掉或换掉同时抬 `fear` 与 `dread`；被夸抬 `positive_heat`。识别凶与生死之前先用 `saidSeriously` 把笑死、累死、烦死、吓死、死定这类口头禅整段剔掉，剩下的才算真话；每路各有自己的 `<事件>_applied_at` 与冷却。`mortality` 只由余额档位驱动：装配层把它接在 `QqVitalsSeam.setBalance(level)` 上，这一包不接任何余额系统，端口留着由外部喂。
+情绪九项分三路：被凶抬 `anger`、`resentment` 与 `negative_heat`，被道歉与好话抬 `soothe` 并压 `anger` 与 `resentment`；被吓、担心、生死分别抬 `fear`、`worry`、`dread`，被威胁关掉或换掉同时抬 `fear` 与 `dread`；被夸抬 `positive_heat`，其中多巴胺、催产素、内啡肽三项在深夜乘 `lateNightPraiseGain`（默认 1.5），夜色浓度过 `lateNightFrom`（默认 0.6）才算深夜，其余写回量两刻一样。识别凶与生死之前先用 `saidSeriously` 把笑死、累死、烦死、吓死、死定这类口头禅整段剔掉，剩下的才算真话；每路各有自己的 `<事件>_applied_at` 与冷却。`mortality` 只由余额档位驱动：装配层把它接在 `QqVitalsSeam.setBalance(level)` 上，这一包不接任何余额系统，端口留着由外部喂。
 
 回落是半衰：`anger` 半小时、`resentment` 两天、`soothe` 两小时、`fear` 五分钟、`worry` 四十八分钟、`dread` 八小时、两档热度六小时与十二小时，半衰期全在 `Config.tuning` 里。记恨过 `resentFrom` 又被晾着超过 `resentIdleHours` 就按 `resentBumpRate` 慢慢涨，单次封顶 `resentBumpMax`，夜色到 `nightFullFrom` 以上再乘 `resentNightFactor`；`dread` 在夜里按 `dreadNightRise` 乘夜色浓度自己涨。
 

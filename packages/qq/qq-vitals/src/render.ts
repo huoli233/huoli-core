@@ -114,7 +114,7 @@ function recentlyWoken(state: VitalsState, tuning: Tuning): boolean {
 
 // 快到饭点：只看这一拍落在饭点前多久，不看她现在饿不饿
 function mealSoon(state: VitalsState, tuning: Tuning): boolean {
-  const hour = localHour(state.last_update)
+  const hour = localHour(state.last_update, tuning.timeZone)
   return !isMealHour(hour) && isMealHour(hour + tuning.promptMealSoonMinutes / 60)
 }
 

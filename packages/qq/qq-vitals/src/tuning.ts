@@ -128,6 +128,8 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   nightDarkFrom: number
   /** 夜色算全黑的结束钟点，本地小时 0~24，默认 7 点 */
   nightDarkUntil: number
+  /** 算时段与日期用的时区名，IANA 名如 Asia/Shanghai，空串表示跟随运行环境，认不出的名字也按运行环境算 */
+  timeZone: string
   /** 全黑与白天之间爬上爬下的过渡时长，小时，默认 2 小时，夜色浓度按它线性过渡 */
   nightRamp: number
   /** 褪黑素跟随夜色的时间窗起始钟点，本地小时 0~24，默认 21 点 */

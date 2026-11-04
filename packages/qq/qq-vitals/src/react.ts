@@ -1,6 +1,7 @@
 // 一句话进来，身体改一点：喝水、吃饭、被夸、被凶、被吓、被威胁、被哄
 
 import type { Tuning } from './defaults.ts'
+import { localHour, nightness } from './clock.ts'
 import { clamp } from './math.ts'
 import { raiseScar } from './scar.ts'
 import type { VitalsState } from './types.ts'
@@ -51,14 +52,20 @@ function applyMeal(next: VitalsState, text: string, at: number, tuning: Tuning):
   next.insulin = clamp(next.insulin + tuning.feedInsulinRise)
 }
 
-// 被夸：想要与亲近都涨一点，火气随之落一点，正面热度也抬
+// 夜色浓度过线算深夜：同一句好话在深夜抬得更多，白天按一倍算
+function praiseBoost(at: number, tuning: Tuning): number {
+  return nightness(localHour(at, tuning.timeZone), tuning) > tuning.lateNightFrom ? tuning.lateNightPraiseGain : 1
+}
+
+// 被夸：想要与亲近都涨一点，火气随之落一点，正面热度也抬；兴奋那三项在深夜乘加成
 function applyPraise(next: VitalsState, text: string, at: number, tuning: Tuning): void {
   if (!mentionsAny(text, PRAISE)) return
   if (at - next.praise_applied_at < tuning.reactCooldownMs) return
+  const boost = praiseBoost(at, tuning)
   next.praise_applied_at = at
-  next.dopamine = clamp(next.dopamine + tuning.praiseDopamineGain)
-  next.oxytocin = clamp(next.oxytocin + tuning.praiseOxytocinGain)
-  next.endorphin = clamp(next.endorphin + tuning.praiseEndorphinGain)
+  next.dopamine = clamp(next.dopamine + tuning.praiseDopamineGain * boost)
+  next.oxytocin = clamp(next.oxytocin + tuning.praiseOxytocinGain * boost)
+  next.endorphin = clamp(next.endorphin + tuning.praiseEndorphinGain * boost)
   next.cortisol = clamp(next.cortisol - tuning.praiseCortisolDrop)
   next.soothe = clamp(next.soothe + tuning.soothePraiseGain)
   next.anger = clamp(next.anger - (tuning.praiseAngerDrop + tuning.praiseAngerScale * next.soothe))

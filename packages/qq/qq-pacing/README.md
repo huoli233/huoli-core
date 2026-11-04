@@ -42,18 +42,18 @@ kind: "package-reference"
 
 配置项在 `src/index.ts` 的 `Config`：记账文件、主目录覆盖、一段最多拆几条、每条最多几个字；计数默认落在主目录的 data 下（`data/qq-pacing.json`），每轮第一步把本轮已说的条数清零。
 
-回几条的入口是纯函数 `replyBudget(facts)`：输入累、烦、精力、黏、孤独五项事实，输出一到四之间的上限，只给上限，不做该不该回的判断。分档表在 `src/reply.ts` 的 `REPLY_TIERS`，从上往下取第一条命中的：
+回几条的入口是纯函数 `replyRange(facts)`：输入累、烦、精力、黏、孤独五项事实，输出 `{ min, max }` 这一轮最少与最多几条，只给范围，不做该不该回的判断；只要上限时用兼容入口 `replyBudget(facts)`，它给的就是 `replyRange` 的 `max`。分档表在 `src/reply.ts` 的 `REPLY_TIERS`，从上往下取第一条命中的，下限与上限取自同一档，所以 `min` 永不超过 `max`：
 
-| 命中条件 | 上限 |
-|---|---|
-| 累与烦都过线 | 1 |
-| 烦过线 | 2 |
-| 累过线 | 2 |
-| 特别黏且孤独 | 4 |
-| 有劲又想黏 | 3 |
-| 其余 | 2 |
+| 命中条件 | 最少几条 | 最多几条 |
+|---|---|---|
+| 累与烦都过线 | 1 | 1 |
+| 烦过线 | 1 | 2 |
+| 累过线 | 1 | 2 |
+| 特别黏且孤独 | 3 | 4 |
+| 有劲又想黏 | 2 | 3 |
+| 其余 | 1 | 2 |
 
-阈值全在 `REPLY_DEFAULTS`：`annoyedFrom` 0.62、`tiredFrom` 0.70、`energyEagerFrom` 0.60、`clingyFrom` 0.62、`clingyStrongFrom` 0.78、`lonelyFrom` 0.50，上下限是 `minCap` 1 与 `maxCap` 4。
+阈值全在 `REPLY_DEFAULTS`：`annoyedFrom` 0.62、`tiredFrom` 0.70、`energyEagerFrom` 0.60、`clingyFrom` 0.62、`clingyStrongFrom` 0.78、`lonelyFrom` 0.50，上下限是 `minCap` 1 与 `maxCap` 4，两个数一起夹住 `max`，`min` 也被夹在 `minCap` 与 `max` 之间。
 
 切分是纯函数 `splitByBudget(text, budget)`：`budget` 是这一轮的条数上限与单条字数上限两项，先按句末标点与换行断句，一句长过单条上限再退到逗号与换行，都没有才按字数硬切；断出来的条数超过上限时把相邻几段并按字数平分进前几条，顺序不动、一个字不丢。同样的输入与同样的上限得到同一份切分，没有随机与时间依赖。条与条之间的间隔由 `speechGaps(parts)` 给，`splitSpeech` 是两者合起来的入口。
 

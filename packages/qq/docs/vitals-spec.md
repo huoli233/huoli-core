@@ -129,6 +129,9 @@
 | `metabolicRate` | 1.0 | 倍率 | 水损失系数，先夹到 0.75~1.7 |
 | `nightDarkFrom` | 22 | 小时 | 夜色升到全黑的起点 |
 | `nightDarkUntil` | 7 | 小时 | 夜色结束的时刻 |
+| `timeZone` | 空串 | IANA 时区名 | 算时段与日期用的时区，空串跟随运行环境 |
+| `lateNightFrom` | 0.6 | 浓度 | 夜色浓度过这条线算深夜 |
+| `lateNightPraiseGain` | 1.5 | 倍率 | 深夜被夸时兴奋那三项的加成 |
 | `nightRamp` | 2 | 小时 | 两端斜坡宽度 |
 | `melatoninFrom` | 21 | 小时 | 褪黑素开始上升的时刻 |
 | `melatoninUntil` | 7 | 小时 | 褪黑素回落到零的时刻 |
@@ -387,7 +390,7 @@
 | 出口 | 读哪些字段 | 默认值 | 状态 |
 |---|---|---|---|
 | 提示词 | `emotion_candidates`、`emotion_level`、`energy`、`irritability`、`clinginess`、`hunger`、`thirst`、`adenosine`、`adrenaline`、`acetylcholine`、`cortisol` | 段名 `qq:vitals`、`order` 340、`promptMaxChars` 300、变体池 6 句 | 已实现 |
-| 回复条数 | `adenosine`、`irritability`、`energy`、`clinginess`、`loneliness` | 分档表，下限 1、上限 4 | 部分实现 |
+| 回复条数 | `adenosine`、`irritability`、`energy`、`clinginess`、`loneliness` | 分档表给下限与上限：累或烦时上限不超 2，有劲又想黏时下限 2，特别黏又孤独时下限 3，两个数一起夹在 `minCap` 1 与 `maxCap` 4 之间 | 已实现 |
 | 主动性 | `energy`、`melatonin`、`loneliness`、`clinginess`、`irritability`、`thirst`、`cytokines`、`adenosine` | `proactive_bias` 1.0、`post_want` 0.3 | 部分实现 |
 
 ### 提示词
@@ -451,7 +454,7 @@
 - 原子写：先写同目录临时文件 `<file>.<pid>.tmp`，内容为两空格缩进的 JSON 并以换行结尾，然后 rename 覆盖正式文件；写前若正式文件存在，先把它复制为 `<file>.bak`；文件权限 0600。
 - 读坏回退：先读 `<file>`，解析失败再读 `<file>.bak`，两份都不可用则回默认状态；读到的对象逐字段校验，缺字段、类型不对、非有限数一律回退到该字段默认值；`last_taste` 任一必需字段缺失时整体当空；文件头 BOM 先剔除。
 - 卸载写一次：清理时写最后一次盘再注销对外接口，保证进程退出前状态是最新的。
-- 时间基准：时段判断用本地小时（含分钟小数）；跨时区与夏令时未处理，见未实现清单。
+- 时间基准：时段判断按 `timeZone`（默认空串跟随运行环境）取当地小时（含分钟小数）与当天零点；零点与日期差按当地日历算，跨夏令时那天仍是真实零点、日期差仍是整数。
 - 定时器不得单独撑住事件循环：心跳定时器只在有其它活动时运行，进程无活可做时允许退出。
 
 ## 禁止事项
@@ -482,6 +485,8 @@
 |---|---|---|---|
 | 基础注入 | 发一句普通消息 | system prompt 里存在 `qq:vitals` 段，且变量被换成一整段形容词，不含数字与激素名 | 已实现 |
 | 夸奖 | 说“乖”“抱抱” | 多巴胺、催产素、内啡肽上升，皮质醇下降 | 已实现 |
+| 深夜夸奖 | 同一句夸奖分别落在白天与深夜 | 深夜那一次这三项抬得更多，其余写回量一样 | 已实现 |
+| 时区换算 | 同一时刻按两个时区各算一次 | 小时与零点不同，跨夏令时的两天日期差仍是 1，认不出的时区名按运行环境算 | 已实现 |
 | 凶 | 说“讨厌”“闭嘴” | 皮质醇、肾上腺素、去甲肾上腺素上升，血清素下降 | 已实现 |
 | 饿 | 8 小时不喂 | 饥饿单调上升，易怒随之上升 | 已实现 |
 | 投喂 | 说“给你点了饭” | 饥饿下降 `feedHungerDrop`，并写一条进食记忆 | 已实现 |
@@ -538,8 +543,8 @@
 | 补喝水流程 | 停心跳、备份、按参数补写、重启的操作与脚本 | 心跳可暂停的接口 |
 | 体检脚本 | “体检”一节的判据没有独立脚本 | 状态仓读取接口与时间基准 |
 | 参数化缺口 | 九套子系统的系数、峰值八项阈值、死亡威胁八项、压制阈值与系数全部进了 `Tuning`（共 118 个字段），默认值等于提取前的字面量，并有逐状态对拍证明行为不变；仍未提参的只有昼夜褪黑素半衰、去甲时段七档基线与体温取整 | 这三处依赖时钟模块改造 |
-| 时区与夏令时 | 时段判断只用本地小时 | 可注入时钟，跨时区与夏令时的日界判断 |
-| 深夜加成 | 深夜同一句夸奖的兴奋度衰减 | 昼夜函数与反应写回的耦合 |
+| 时区与夏令时 | 已实现：时段与日期都按 `Tuning.timeZone` 算（空串跟随运行环境、认不出的名字退回运行环境），零点与日期差走当地日历，跨夏令时那天仍是真实零点与整数天 | — |
+| 深夜加成 | 已实现：夜色浓度过 `lateNightFrom`（默认 0.6）时，被夸的多巴胺、催产素、内啡肽三项乘 `lateNightPraiseGain`（默认 1.5），其余写回量不变 | — |
 
 ## 证据索引
 
@@ -550,7 +555,8 @@
 | 五组生理字段与初值 | `packages/qq/qq-vitals/src/types.ts:Baseline`、`packages/qq/qq-vitals/src/defaults.ts:DEFAULTS` |
 | 睡眠三态与睡着投影 | `packages/qq/qq-vitals/src/types.ts:SleepState`、`packages/qq/qq-vitals/src/drift.ts:drift` |
 | 午睡与当天一次 | `packages/qq/qq-vitals/src/defaults.ts:DEFAULTS`、`packages/qq/qq-vitals/src/drift.ts:drift` |
-| 周期相位与日期差 | `packages/qq/qq-vitals/src/clock.ts:cycleOf`、`packages/qq/qq-vitals/src/types.ts:CyclePhase` |
+| 周期相位与日期差 | `packages/qq/qq-vitals/src/clock.ts:cycleOf`、`packages/qq/qq-vitals/src/clock.ts:localDayDiff`、`packages/qq/qq-vitals/src/types.ts:CyclePhase` |
+| 时区与当地零点 | `packages/qq/qq-vitals/src/clock.ts:localPoint`、`packages/qq/qq-vitals/src/clock.ts:localHour` |
 | 单次结算 | `packages/qq/qq-vitals/src/drift.ts:drift` |
 | 派生量 | `packages/qq/qq-vitals/src/derive.ts:derive` |
 | 想开口的读数 | `packages/qq/qq-vitals/src/derive.ts:derive`、`packages/qq/qq-vitals/src/defaults.ts:biasUnit` |
@@ -561,5 +567,6 @@
 | 喝水识别 | `packages/qq/qq-vitals/src/words.ts:isDrink` |
 | 原子写盘与坏读回退 | `packages/qq/qq-vitals/src/store.ts:createVitalsStore` |
 | 心跳与段落接线 | `packages/qq/qq-vitals/src/index.ts:apply`、`packages/qq/qq-vitals/src/index.ts:qqVitalsOf` |
-| 回复条数上限 | `packages/qq/qq-pacing/src/reply.ts:replyBudget`、`packages/qq/qq-bundle/src/index.ts:apply` |
+| 深夜被夸的加成 | `packages/qq/qq-vitals/src/react.ts:react`、`packages/qq/qq-vitals/src/clock.ts:nightness` |
+| 回复条数的范围 | `packages/qq/qq-pacing/src/reply.ts:replyRange`、`packages/qq/qq-pacing/src/reply.ts:replyBudget`、`packages/qq/qq-bundle/src/index.ts:apply` |
 | 主动性读劲头 | `packages/qq/qq-proactive/src/gates.ts:runGates`、`packages/qq/qq-proactive/src/gates.ts:cooldownMs` |

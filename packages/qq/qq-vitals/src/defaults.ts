@@ -158,6 +158,8 @@ export const DEFAULTS: Tuning = {
   // 昼夜与时段
   nightDarkFrom: 22,
   nightDarkUntil: 7,
+  // 时段默认跟着运行环境走，要固定时区就在配置里写 IANA 名
+  timeZone: '',
   nightRamp: 2,
   melatoninFrom: 21,
   melatoninUntil: 7,
@@ -257,6 +259,8 @@ export const DEFAULTS: Tuning = {
   threatDreadGain: 0.55,
   threatCooldownMs: 1_800_000,
   nightFullFrom: 0.6,
+  lateNightFrom: 0.6,
+  lateNightPraiseGain: 1.5,
   promptFearFrom: 0.50,
   promptWorryFrom: 0.50,
   promptDreadFrom: 0.50,

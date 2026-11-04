@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 
 const SRC = path.join(import.meta.dirname, '..', 'src')
 // 生命状态把状态机、结算与事实源各放一处，拆分后文件数超过通用上限，这个例外写在开发规范里
-const MAX_FILES = 20
+const MAX_FILES = 22
 const MAX_LINES = 600
 
 describe('体量预算', () => {

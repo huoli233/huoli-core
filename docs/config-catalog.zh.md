@@ -2845,7 +2845,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:43`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:47`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2888,6 +2888,12 @@ export interface Config {
   farewellMemory?: boolean
   /** 遗书写成一条记忆时的重要度 */
   farewellMemoryImportance?: number
+  /** 一场梦写不写进记忆 */
+  dreamMemory?: boolean
+  /** 美梦与噩梦发不发出去，平淡梦一律不发 */
+  dreamPublish?: boolean
+  /** 疤写不写进记忆 */
+  scarMemory?: boolean
   /** 调用方给的模型文本，模型自己没写过时遗书正文用它，再没有就写一句中性的话 */
   farewellText?: string
   /** 遗书正文的暂存槽放哪，要与通道那一份是同一个文件 */
@@ -3171,7 +3177,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:224`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:265`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3316,7 +3322,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:86`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:87`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3452,6 +3458,8 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   nightDarkFrom: number
   /** 夜色算全黑的结束钟点，本地小时 0~24，默认 7 点 */
   nightDarkUntil: number
+  /** 算时段与日期用的时区名，IANA 名如 Asia/Shanghai，空串表示跟随运行环境，认不出的名字也按运行环境算 */
+  timeZone: string
   /** 全黑与白天之间爬上爬下的过渡时长，小时，默认 2 小时，夜色浓度按它线性过渡 */
   nightRamp: number
   /** 褪黑素跟随夜色的时间窗起始钟点，本地小时 0~24，默认 21 点 */
@@ -3900,6 +3908,10 @@ export interface EmotionTuning {
   threatCooldownMs: number
   /** 夜色浓度高过这条线算全夜，用于夜里加成的判定，0~1 标度，默认 0.6 */
   nightFullFrom: number
+  /** 夜色浓度高过这条线算深夜，0~1 标度，默认 0.6，深夜被夸抬得更多 */
+  lateNightFrom: number
+  /** 深夜被夸的兴奋加成倍率，默认 1.5，同一句好话抬得更多，其余写回量不变 */
+  lateNightPraiseGain: number
   /** 惊吓高过这条线，提示词换一档说法，0~1 标度，默认 0.50 */
   promptFearFrom: number
   /** 担心高过这条线换说法，0~1 标度，默认 0.50 */

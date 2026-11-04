@@ -2,8 +2,8 @@
 
 import type { Tuning } from './defaults.ts'
 import {
-  cycleAnchorDay, cycleOf, inNapWindow, inSleepWindow, isDaytime, isMealHour, isQuietHour, localHour,
-  localPoint, melatoninTarget, nightness, nightWakeAt, noradrenalineBaseline,
+  cycleAnchorDay, cycleOf, inNapWindow, inSleepWindow, isDaytime, isMealHour, isQuietHour, localDayDiff,
+  localHour, melatoninTarget, nightness, nightWakeAt, noradrenalineBaseline,
 } from './clock.ts'
 import { applyShutdownNotice, settleExistence, type ExistenceFacts } from './existence.ts'
 import { startDream } from './dream.ts'
@@ -171,10 +171,10 @@ function adenosineStep(next: VitalsState, hours: number, hour: number, tuning: T
   return (isQuietHour(hour) ? tuning.adenosineQuietRate : tuning.adenosineAwakeRate) * hours
 }
 
-// 午睡一天只睡一次：上一次午睡和现在是同一个本地零点
-function nappedToday(next: VitalsState, at: number): boolean {
+// 午睡一天只睡一次：上一次午睡和现在是同一个本地日期
+function nappedToday(next: VitalsState, at: number, tuning: Tuning): boolean {
   if (next.nap_at <= 0) return false
-  return localPoint(next.nap_at).midnight === localPoint(at).midnight
+  return localDayDiff(next.nap_at, at, tuning.timeZone) === 0
 }
 
 // 入睡：夜里睡眠压力够了就睡，午后按每分钟的概率眯一会；每一次入睡都算入一次梦
@@ -187,7 +187,7 @@ function startSleep(next: VitalsState, at: number, hour: number, hours: number, 
     return
   }
   if (!inNapWindow(hour, tuning)) return
-  if (next.adenosine <= tuning.napAdenosineAbove || nappedToday(next, at)) return
+  if (next.adenosine <= tuning.napAdenosineAbove || nappedToday(next, at, tuning)) return
   const chance = clampRange(1 - (1 - tuning.napChancePerMinute) ** (hours * 60), 0, 1)
   if (random() >= chance) return
   const span = tuning.napMaxMinutes - tuning.napMinMinutes
@@ -361,7 +361,7 @@ export function drift(
   // 关停提示是事件不是速率：提示到了就记一档，与结算间隔够不够不用管
   applyShutdownNotice(next, existence, at, tuning)
   if (hours < tuning.minDriftHours) return next
-  const hour = localHour(at)
+  const hour = localHour(at, tuning.timeZone)
   const night = nightness(hour, tuning)
   settleSleep(next, at, hour, hours, tuning, random)
   settleTransmitters(next, hours, night, hour, tuning)

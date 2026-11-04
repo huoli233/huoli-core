@@ -7,14 +7,95 @@ import type { CyclePhase } from './types.ts'
 // 一天固定的毫秒数，日历换算用，不随配置改
 const DAY_MS = 86_400_000
 
+// 读 Intl 读数用的语言，只要拉丁数字，与展示无关
+const PARSE_LOCALE = 'en-US'
+
+// 读数要的字段：年月日时分秒都要数字，钟点按零到二十三算
+const ZONE_PARTS: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  hourCycle: 'h23',
+}
+
+/** 某一时区在某一刻的墙上读数 */
+interface WallClock {
+  /** 公历年 */
+  year: number
+  /** 月，一到十二 */
+  month: number
+  /** 当月第几天 */
+  day: number
+  /** 小时，零到二十三 */
+  hour: number
+  /** 分 */
+  minute: number
+  /** 秒 */
+  second: number
+}
+
+// 取该时区的读数格式化器：留空按运行环境时区，名字认不出时 Intl 只抛 RangeError，认掉它退回运行环境
+function formatterOf(timeZone: string): Intl.DateTimeFormat {
+  if (timeZone === '') return new Intl.DateTimeFormat(PARSE_LOCALE, ZONE_PARTS)
+  try {
+    return new Intl.DateTimeFormat(PARSE_LOCALE, { ...ZONE_PARTS, timeZone })
+  } catch (error) {
+    if (!(error instanceof RangeError)) throw error
+    return new Intl.DateTimeFormat(PARSE_LOCALE, ZONE_PARTS)
+  }
+}
+
+// 缺项说明 Intl 的字段表变了，照着剩下的读数猜会把时段算错，所以直接报错
+function readPart(parts: Intl.DateTimeFormatPart[], type: string): number {
+  const found = parts.find(part => part.type === type)
+  if (found === undefined) throw new Error(`时区读数缺少 ${type}`)
+  return Number(found.value)
+}
+
+// 该时区在这一刻的墙上读数
+function wallClock(at: number, timeZone: string): WallClock {
+  const parts = formatterOf(timeZone).formatToParts(new Date(at))
+  return {
+    year: readPart(parts, 'year'),
+    month: readPart(parts, 'month'),
+    day: readPart(parts, 'day'),
+    hour: readPart(parts, 'hour'),
+    minute: readPart(parts, 'minute'),
+    second: readPart(parts, 'second'),
+  }
+}
+
+// 该时区在这一刻相对 UTC 的偏移：把墙上读数当成 UTC 再减掉真实时刻
+function offsetMs(at: number, timeZone: string): number {
+  const wall = wallClock(at, timeZone)
+  const asUtc = Date.UTC(wall.year, wall.month - 1, wall.day, wall.hour, wall.minute, wall.second)
+  return asUtc - Math.floor(at / 1000) * 1000
+}
+
+// 当地某天零点折成毫秒时间戳：先估一次偏移，再用估出来的时刻校正一次，跨夏令时也落在真实零点上
+function midnightMs(wall: WallClock, timeZone: string): number {
+  const asUtc = Date.UTC(wall.year, wall.month - 1, wall.day)
+  const guess = asUtc - offsetMs(asUtc, timeZone)
+  return asUtc - offsetMs(guess, timeZone)
+}
+
+// 当地日历上的第几天：按年月日折算，与那一天实际有几个小时无关
+function dayNumber(wall: WallClock): number {
+  return Math.round(Date.UTC(wall.year, wall.month - 1, wall.day) / DAY_MS)
+}
+
 /**
  * 本地小时数（带小数）
  * @param at - 毫秒时间戳
+ * @param timeZone - 时区名，留空跟随运行环境，认不出的名字也按运行环境算
  * @returns 0~24 的小时
  */
-export function localHour(at: number): number {
-  const date = new Date(at)
-  return date.getHours() + date.getMinutes() / 60
+export function localHour(at: number, timeZone = ''): number {
+  const wall = wallClock(at, timeZone)
+  return wall.hour + wall.minute / 60
 }
 
 /** 某个时刻在本地日历上的位置 */
@@ -28,12 +109,23 @@ export interface LocalPoint {
 /**
  * 取某个时刻的本地零点与小时
  * @param at - 毫秒时间戳
+ * @param timeZone - 时区名，留空跟随运行环境，认不出的名字也按运行环境算
  * @returns 零点与小时
  */
-export function localPoint(at: number): LocalPoint {
-  const date = new Date(at)
-  date.setHours(0, 0, 0, 0)
-  return { midnight: date.getTime(), hour: localHour(at) }
+export function localPoint(at: number, timeZone = ''): LocalPoint {
+  const wall = wallClock(at, timeZone)
+  return { midnight: midnightMs(wall, timeZone), hour: wall.hour + wall.minute / 60 }
+}
+
+/**
+ * 两个时刻在指定时区里隔了几个日历日
+ * @param from - 起始毫秒时间戳
+ * @param to - 结束毫秒时间戳
+ * @param timeZone - 时区名，留空跟随运行环境，认不出的名字也按运行环境算
+ * @returns 日历日之差，一整天的长短随夏令时变，这里仍是整数
+ */
+export function localDayDiff(from: number, to: number, timeZone = ''): number {
+  return dayNumber(wallClock(to, timeZone)) - dayNumber(wallClock(from, timeZone))
 }
 
 /**
@@ -135,7 +227,7 @@ export function isDaytime(hour: number, tuning: Tuning): boolean {
  * @returns 醒来时刻的毫秒时间戳
  */
 export function nightWakeAt(at: number, tuning: Tuning, random: () => number): number {
-  const point = localPoint(at)
+  const point = localPoint(at, tuning.timeZone)
   const dayOffset = point.hour >= tuning.sleepFrom ? DAY_MS : 0
   const base = point.midnight + dayOffset + tuning.wakeAt * 3_600_000
   const jitter = (random() * 2 - 1) * tuning.wakeJitterMinutes * 60_000
@@ -177,14 +269,13 @@ export function cycleAnchorDay(tuning: Tuning): number {
  * @returns 第几天、本月多长、相位
  */
 export function cycleOf(at: number, tuning: Tuning): CycleFacts {
-  const today = localPoint(at)
-  const date = new Date(today.midnight)
+  const wall = wallClock(at, tuning.timeZone)
   const dom = cycleAnchorDay(tuning)
-  const anchorOf = (monthOffset: number): Date =>
-    new Date(date.getFullYear(), date.getMonth() + monthOffset, dom)
-  const anchor = date.getDate() < dom ? anchorOf(-1) : anchorOf(0)
-  const next = new Date(anchor.getFullYear(), anchor.getMonth() + 1, dom)
-  const day = Math.round((today.midnight - anchor.getTime()) / DAY_MS) + 1
-  const len = Math.round((next.getTime() - anchor.getTime()) / DAY_MS)
+  // 早于锚点日就取上个月那一天，月份越界由 Date.UTC 折到上一年
+  const anchorMonth = wall.day < dom ? wall.month - 2 : wall.month - 1
+  const anchor = Date.UTC(wall.year, anchorMonth, dom)
+  const next = Date.UTC(wall.year, anchorMonth + 1, dom)
+  const day = Math.round((Date.UTC(wall.year, wall.month - 1, wall.day) - anchor) / DAY_MS) + 1
+  const len = Math.round((next - anchor) / DAY_MS)
   return { day, len, phase: phaseOf(day, tuning) }
 }
