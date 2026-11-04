@@ -4,7 +4,7 @@
 
 记什么：只记一条能独立读懂的事实句——谁做了什么、什么时候、跟谁有关。一条记忆带四个坐标：放在哪一层、有多重要、现在多清楚、从哪条路径写进来。四个坐标决定它以后能不能被找回来，也决定它什么时候消失；不记标题、不记命令回显、不记当轮对话里已经说清楚、离开上下文就没有意义的过渡话。
 
-怎么忘：遗忘是每天一步的数值动作，不是删除动作。重要度每天最多降一格（封顶 3 分）、最低落到 5 分、达到保护线的永不衰减；清晰度一次只降一档；正文只有在落到「已遗忘」时才清空，并且必须在账本里留下一条可解释的退役记录。
+怎么忘：遗忘是每天一步的数值动作，不是删除动作。重要度每天最多降一格（封顶 3 分）、最低落到 5 分、达到保护线的永不衰减，被召回一次回升一点并封在保护线之下；清晰度一次只降一档；正文只有在落到「已遗忘」时才清空，并且必须在账本里留下一条可解释的退役记录。
 
 怎么证明没丢：每条记忆正文有一个 SHA-256 指纹和一个字符长度，写进只追加的账本。账本用「只补新 id」的同步操作吸收新记忆，用「逐条核对指纹」的校验操作证明旧记忆没被改动、没被删除、没被顶替；校验不过就退出非零，不降级、不跳过、不自动修补。
 
@@ -41,7 +41,7 @@
 
 召回加分：`min(recallBonusMax 默认 12, recallCount × recallBonusPer 默认 2)`；近期加分：`at` 距今不超过 `recentDays` 默认 7 天时加 `recentBonus` 默认 18；被提起加分：`lastSeenAt` 距今不超过 `seenDays` 默认 2 天时加 `seenBonus` 默认 8。
 
-年龄扣分：`min(agePenaltyMax 默认 80, max(0, ageDays − ageGraceDays 默认 7) × rate)`，其中 `rate` 在重要度 ≥ `anchorImportance` 默认 60 时取 `rateAnchor` 默认 0.12，否则取 `rateNormal` 默认 0.35。
+年龄扣分：`min(agePenaltyMax 默认 80, max(0, ageDays − ageGraceDays 默认 7) × rate)`，其中 `rate` 在重要度 ≥ `anchorImportance` 默认 70 时取 `rateAnchor` 默认 0.12，否则取 `rateNormal` 默认 0.35；这条分档线与保护线是同一条。
 
 判据：保留度只由 `importance`、`at`、`lastSeenAt`、`recallCount` 与当前时刻算出，输入缺一即按字段表默认值补齐；上面十一个数值的默认值集中在 `qq-policy` 的 `RETENTION` 一处，覆盖只改那张表不改公式，它们还没提成 `Config` 字段。
 
@@ -49,13 +49,13 @@
 
 ### 重要度与保护线
 
-重要度是 1 到 100 的整数，写入时由场景、是否指向自己、情绪强度、是否首次见面、是否有约定或冲突、平台权重等输入一次算出（`initialImportance`），之后只被每日跌幅与召回回升修改。
+重要度是 1 到 100 的数，写入时由场景、是否指向自己、情绪强度、是否首次见面、是否有约定或冲突、平台权重等输入一次算出（`initialImportance`），之后只被每日跌幅与召回回升修改；写入时是整数，之后每天按跌幅往下减，记到一位小数（`quantizeImportance`），这样一天掉的分不会因为取整丢掉。
 
-保护线 `protectImportance` 默认 60（取保留度表里的锚点线 `anchorImportance`）：重要度达到或超过这条线的记忆不参与每日跌幅，明确「这件事必须记住」正是它唯一的入口。
+保护线 `protectImportance` 默认 70（取保留度表里的锚点线 `anchorImportance`）：重要度达到或超过这条线的记忆不参与每日跌幅，明确「这件事必须记住」正是它唯一的入口。
 
 地板 `importanceFloor` 默认 5：任何衰减结果不得低于它，避免一夜之间归零；地板之上仍有清晰度档位负责把「只剩印象」和「已遗忘」区分开。
 
-状态：写入时的重要度评估已实现（`initialImportance()`）；每日跌幅与召回回升都还没实现，保护线目前只用在健康一行里数 `pinned`，地板没有代码。
+状态：三条都已实现——`initialImportance()` 算写入值，`decayAll()` 每天减一次，`importanceAfterRecall()` 负责回升；保护线与地板都是 `qq-memory` 默认值表里的字段，装配时覆盖即可生效。
 
 ### 字段表
 
@@ -65,12 +65,14 @@
 |---|---|---|---|---|
 | `id` | string | 写入时生成，`<基数 36 时间>-<6 位随机>` | 全库唯一，写入后不可变，遗忘后仍保留 | 已实现 |
 | `text` | string | 无默认，必填 | 4～`maxTextChars` 默认 500 字；遗忘后为空串 | 已实现，工具层按 2 字与 500 字卡 |
-| `importance` | number | 由 `initialImportance` 算出 | 1～100 整数；≥ `protectImportance` 默认 60 进入保护线 | 已实现 |
+| `importance` | number | 由 `initialImportance` 算出 | 1～100，记到一位小数；≥ `protectImportance` 默认 70 进入保护线 | 已实现 |
 | `layer` | `ephemeral` \| `episodic` \| `semantic` \| `private` | `episodic` | 只按晋升顺序上移 | 已实现 |
 | `clarity` | `vivid` \| `clear` \| `fuzzy` \| `trace` \| `forgotten` | `vivid` | 由保留度推得，一次只降一档 | 已实现 |
 | `at` | number | 写入时刻（毫秒时间戳） | 不可变；召回排序与日期渲染只用它 | 已实现 |
 | `lastSeenAt` | number | 等于 `at` | 每次被召回改为当前时刻 | 已实现 |
 | `recallCount` | number | 0 | 每次被召回加 1，只增不减 | 已实现 |
+| `recoverDay` | number | 0 | 最近一次回升所在日期的本地零点，没回升过就是 0 | 已实现 |
+| `recoverTimes` | number | 0 | 那天已经回升过几次，到 `recoverPerDay` 当天不再回升 | 已实现 |
 | `source` | `chat` \| `tool` \| `proactive` \| `manual` \| `self` | `chat` | 由写入路径决定，写入后不改；五档之外抛 `memory.source_unknown` | 已实现 |
 | `metadata` | object | `{}` | 话题、地点、人物等附加事实；不参与打分 | 已实现 |
 | `scope` | string | 当前会话键 | 召回、注入、账本一律按它过滤 | 已实现 |
@@ -156,39 +158,41 @@
 
 副作用边界：召回对记忆集只允许三种改动——`recallCount` 加 1、`lastSeenAt` 改为当前时刻、按回升规则抬升 `importance`；不新增条目、不改 `text`、不改 `layer`、不改 `at`。
 
-状态：`RecallHit` 六个字段与 `reasons` 四项已实现；副作用只有前两种，`touch()` 不动 `importance`，第三种还没实现。
+状态：`RecallHit` 六个字段与 `reasons` 四项已实现；三种副作用都已实现，第三种走 `touch()` 里的回升额度。
 
 ## 遗忘
 
-遗忘每天跑一次，作用对象是重要度与清晰度，不是文件；跑完必须留下可核对的计数（降了几档、清了几条正文）。
+遗忘每天跑一次，顺序是先掉重要度、再按新的重要度算清晰度、最后清正文；作用对象是重要度与清晰度，不是文件；跑完必须留下可核对的计数（掉了几条分、降了几档、清了几条正文）。
 
 ### 每日跌幅
 
-先算当天速率（单位：分／天）：`rate = decayBase × salience × review × emotion`，其中 `decayBase` 默认 0.8，`salience` 取 `salienceHigh` 默认 1.6（重要度 ≥ 70）、`salienceMid` 默认 1.25（重要度 ≥ 40）、否则 `salienceLow` 默认 1.0；`review = 1 - reviewStep × min(recallCount, reviewCap)`，`reviewStep` 默认 0.15、`reviewCap` 默认 4；`emotion = 1 + emotionGain × emotional`，`emotionGain` 默认 0.4。
+先算当天速率（单位：分／天）：`rate = decayBase × salience × review × emotion`，其中 `decayBase` 默认 0.8，`salience` 取 `salienceHigh` 默认 1.6（重要度 ≥ `salienceHighAt` 默认 70）、`salienceMid` 默认 1.25（重要度 ≥ `salienceMidAt` 默认 40）、否则 `salienceLow` 默认 1.0；`review = 1 - reviewStep × min(recallCount, reviewCap)`，`reviewStep` 默认 0.15、`reviewCap` 默认 4；`emotion = 1 + emotionGain × emotional`，`emotionGain` 默认 0.4。
 
 再算当天跌幅：`drop = min(rate, decayDailyCap)`，`decayDailyCap` 默认 3。封顶的判据是：无论速率算出多少，单日降幅都不得超过 3 分，一条记忆不可能在一天内被抹掉。
 
 新重要度：`next = max(importanceFloor, importance - drop)`，`importanceFloor` 默认 5。
 
-状态：未实现——没有按天算的跌幅、没有单日封顶、也没有地板；清晰度由保留度重算后按档推进，重要度写入之后不再变。
+判据：显著度按重要度分档，档越高跌幅倍数越大；但档高的起始重要度更高、离地板更远，所以按还剩多少与到底天数看，高显著度的掉得慢，低显著度的掉得快。
+
+状态：已实现——`importanceDecayRate()`、`importanceDailyDrop()`、`importanceAfterDrop()` 三个纯函数在 `qq-policy`，默认值集中在同一包的 `IMPORTANCE_DECAY`，十四个数值都是 `qq-memory` 默认值表里的字段，装配时覆盖即可生效。
 
 ### 保护线与地板
 
-重要度 ≥ `protectImportance` 默认 60 的条目当天 `drop` 取 0，既不下降也不参与「是否该遗忘」的判断；保护线只能由写入时的评估结果决定，不能由衰减过程反向抬高。
+重要度 ≥ `protectImportance` 默认 70 的条目当天 `drop` 取 0，既不下降也不参与「是否该遗忘」的判断；保护线只能由写入时的评估结果决定，不能由衰减过程反向抬高。
 
 地板不可越过：任何计算路径（含连续多日高速率）算出的重要度都不得低于 `importanceFloor`；清空正文只发生在清晰度落到 `forgotten` 时，与地板无关。
 
-状态：保护线只用在健康一行里数 `pinned`，没有衰减可停；地板没有代码。
+状态：都已实现——`importanceDailyDrop()` 先看保护线再算速率，`importanceAfterDrop()` 把结果夹在地板上；保护线同时用于健康一行的 `pinned`。
 
 ### 被召回时的回升
 
-未遗忘条目被召回时 `importance = min(recoverCeiling, importance + recallRecover)`，`recallRecover` 默认 2、`recoverCeiling` 默认 68；上限设在保护线之下，保证召回不能把一条记忆直接抬成保护对象。
+未遗忘条目被召回时 `importance = min(recoverCeiling, protectImportance - 1, importance + recallRecover)`，`recallRecover` 默认 2、`recoverCeiling` 默认 68；上限设在保护线之下，保证召回不能把一条记忆直接抬成保护对象。回升只抬不压：现值已经高过表顶时留在原处。
 
-回升每天最多生效 `recoverPerDay` 默认 1 次；多次召回当天只加一次，避免高频话题把记忆顶上保护线。
+回升每天最多生效 `recoverPerDay` 默认 1 次；多次召回当天只加一次，避免高频话题把记忆顶上保护线。当天算没算过由条目自己的 `recoverDay` 与 `recoverTimes` 记着，跨天自动重新计数。
 
 `trace` 与 `forgotten` 条目不参与回升：只剩印象的事可以因为再被提起而重新变清楚，但那是新建一条带日期的记忆，不是复活旧条。
 
-状态：未实现——`touch()` 只把 `recallCount` 加一、`lastSeenAt` 改成现在，重要度不动；被提起的条目靠保留度里的召回加分与近期加分维持清晰度。
+状态：已实现——`touch()` 每次召回把 `recallCount` 加一、`lastSeenAt` 改成现在，再按当天额度调一次 `importanceAfterRecall()`；清晰度不因回升改变。
 
 ### 一次只降一档
 
@@ -401,8 +405,6 @@
 
 | 项目 | 缺什么 | 依赖 |
 |---|---|---|
-| 重要度衰减 | 每日跌幅、单日封顶、地板 | 先定衰减与保护线的口径，再把五个参数提成 `Config` 字段 |
-| 召回回升 | `recallRecover`、`recoverCeiling`、每天一次的限额 | 同上 |
 | 账本退役态 | `state`、`retiredAt`、退役判据与复活负例 | 账本格式升一版，并把清空正文的顺序改成先退役 |
 | 账本命令行 | `--init`、`--sync`、`--verify` 三个标记与退出码 | 包内 bin 入口 |
 | 近似重复合并 | 相似度计算、并入旧条、`lastSeenAt` 与重要度取大 | 归一化与相似度两件先落地 |
@@ -428,6 +430,9 @@
 | 两个工具 | `packages/qq/qq-memory/src/tools.ts:registerMemoryTools` |
 | 往上挪一层 | `packages/qq/qq-memory/src/sweep.ts:promoteAll` |
 | 变淡与清空正文 | `packages/qq/qq-memory/src/sweep.ts:sweepOnce` |
+| 每日跌幅 | `packages/qq/qq-policy/src/importance.ts:importanceDecayRate`、`packages/qq/qq-policy/src/importance.ts:importanceDailyDrop`、`packages/qq/qq-memory/src/sweep.ts:decayAll` |
+| 地板与保护线 | `packages/qq/qq-policy/src/importance.ts:importanceAfterDrop`、`packages/qq/qq-policy/src/retention.ts:RETENTION` |
+| 召回回升 | `packages/qq/qq-policy/src/importance.ts:importanceAfterRecall`、`packages/qq/qq-memory/src/sweep.ts:touch` |
 | 被提起一次 | `packages/qq/qq-memory/src/sweep.ts:touch` |
 | 保留度 | `packages/qq/qq-policy/src/retention.ts:retention` |
 | 清晰度五档 | `packages/qq/qq-policy/src/retention.ts:clarityFor`、`packages/qq/qq-policy/src/retention.ts:stepClarity` |

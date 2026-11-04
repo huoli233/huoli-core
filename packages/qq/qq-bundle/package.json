@@ -29,6 +29,7 @@
   "devDependencies": {
     "@huoli/cordis": "workspace:~",
     "@huoli/huoli-agent": "workspace:*",
+    "@huoli/huoli-llm": "workspace:*",
     "@huoli/huoli-system-prompt": "workspace:*",
     "@huoli/huoli-tools": "workspace:*"
   },

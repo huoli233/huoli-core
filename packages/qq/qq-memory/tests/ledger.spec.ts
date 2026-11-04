@@ -25,6 +25,8 @@ function make(text: string, overrides: Partial<MemoryItem> = {}): MemoryItem {
     emotional: 0,
     clarity: 'vivid',
     recallCount: 0,
+    recoverDay: 0,
+    recoverTimes: 0,
     at: NOW,
     lastSeenAt: NOW,
     forgotten: false,

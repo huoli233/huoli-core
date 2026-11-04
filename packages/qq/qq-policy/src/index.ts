@@ -22,3 +22,15 @@ export {
   type MemoryRecord,
   type ImportanceInput,
 } from './retention.ts'
+
+export {
+  IMPORTANCE_DECAY,
+  importanceAfterDrop,
+  importanceAfterRecall,
+  importanceDailyDrop,
+  importanceDecayRate,
+  quantizeImportance,
+  type DecayInput,
+  type DecayParams,
+  type RecoverParams,
+} from './importance.ts'

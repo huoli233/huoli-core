@@ -3,7 +3,7 @@
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
 import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
-import { DEFAULTS } from './defaults.ts'
+import { DEFAULTS, type Tuning } from './defaults.ts'
 import type { MemoryStore } from './store.ts'
 import { newId, type MemoryItem, type MemoryLayer } from './types.ts'
 import { recall, renderRecall } from './recall.ts'
@@ -14,6 +14,8 @@ export interface MemoryToolDeps {
   store: MemoryStore
   scopeOf: (chatKey: string) => string
   sceneOf: (layer: MemoryLayer, chatKey: string) => ImportanceInput['scene']
+  /** 召回回升与保护线从配置读 */
+  tuning: Tuning
 }
 
 // 拒绝时抛错，交给内核当工具失败
@@ -82,6 +84,8 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
         emotional,
         clarity: 'vivid',
         recallCount: 0,
+        recoverDay: 0,
+        recoverTimes: 0,
         at: now,
         lastSeenAt: now,
         forgotten: false,
@@ -114,7 +118,7 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
       const query = typeof args.query === 'string' ? args.query : ''
       const hits = recall(store, { query, scope, limit, now })
       // 被找出来的记忆算被提起一次，可能重新变清楚
-      for (const hit of hits) touch(store, hit.id, now)
+      for (const hit of hits) touch(store, hit.id, now, deps.tuning)
       return Promise.resolve({
         count: hits.length,
         text: renderRecall(hits),

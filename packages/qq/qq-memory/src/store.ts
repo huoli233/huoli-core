@@ -6,6 +6,7 @@ import {
   CLARITY_ORDER,
   clarityFor,
   initialImportance,
+  quantizeImportance,
   retention,
   type Clarity,
 } from '@huoli/huoli-qq-policy'
@@ -66,8 +67,9 @@ function normalizeItem(raw: Record<string, unknown>, now: number): MemoryItem {
   const lastSeenAt = numberOr(raw.lastSeenAt, at)
   const recallCount = Math.max(0, Math.round(numberOr(raw.recallCount, 0)))
   const importanceRaw = numberOr(raw.importance, 0)
+  // 重要度每天按小数往下掉，读回来只补到一位小数，不能取整抹掉掉落进度
   const importance = importanceRaw > 0
-    ? Math.min(100, Math.max(1, Math.round(importanceRaw)))
+    ? Math.min(100, Math.max(1, quantizeImportance(importanceRaw)))
     : initialImportance({ scene: 'group' })
   const computed = clarityFor(retention({ importance, at, lastSeenAt, recallCount }, now))
   const clarity = pick<Clarity>(raw.clarity, CLARITY_ORDER, computed)
@@ -82,6 +84,8 @@ function normalizeItem(raw: Record<string, unknown>, now: number): MemoryItem {
     emotional: emotionalOr(raw.emotional),
     clarity,
     recallCount,
+    recoverDay: Math.max(0, numberOr(raw.recoverDay, 0)),
+    recoverTimes: Math.max(0, Math.round(numberOr(raw.recoverTimes, 0))),
     at,
     lastSeenAt,
     forgotten: raw.forgotten === true || clarity === 'forgotten',

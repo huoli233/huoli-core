@@ -1,9 +1,11 @@
-// 两个发送工具：说一句、给个表情回应
+// 三个发送工具：说一句、给个表情回应、发一条动态
 
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
+import { POST_LEVELS } from '@huoli/huoli-qq-self'
 import type { ChannelStatus, OutboundEvent } from './events.ts'
 import type { OutboundVerdict } from './outbound.ts'
+import type { PostFacts, PostResult } from './post.ts'
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
@@ -19,6 +21,8 @@ export interface ChannelToolDeps {
   account: (at: number) => void
   /** 把这一路发生的事报给外面，只报事实 */
   report: (event: OutboundEvent) => void
+  /** 发一条动态，级别、体检、冷却与额度全由发布入口那边判 */
+  publish: (text: string, facts: PostFacts) => Promise<PostResult>
 }
 
 // 拒绝时抛错
@@ -131,6 +135,27 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       const result = await deps.react(messageId, emoji)
       if (!result.ok) refuse(result.code ?? 'channel.react_failed', result.reason ?? '回应失败', '当作没看到，继续聊别的')
       return { ok: true, messageId }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_publish_post',
+    description: '发一条动态，群里的人都看得见，比在这个会话里说一句更公开。既定话题的日常、吃喝这类用 routine；新话题、想公开讲的用 public。级别、体检、冷却与当天额度都由发布入口判，被拒就照它给的码与下一步办，别换个说法重发同一条。只想回一句，或者拿不准该不该公开，就别用它。',
+    parameters: {
+      text: { type: 'string', description: '要发出去的正文，空的不发。' },
+      kind: { type: 'string', enum: POST_LEVELS, description: 'routine 是既定话题的日常动态，public 是要公开讲的新内容。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const text = typeof args.text === 'string' ? args.text : ''
+      const kind = typeof args.kind === 'string' ? args.kind : ''
+      const result = await deps.publish(text, { chatKey, level: kind })
+      if (!result.ok) refuse(result.code ?? 'post.blocked', result.reason ?? '这条动态没发出去', nextStep(result))
+      return { ok: true, at: result.at ?? 0, messageId: result.delivery?.messageId ?? '' }
     },
   }))
 }

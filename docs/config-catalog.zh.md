@@ -2866,6 +2866,14 @@ export interface Config {
   home?: string
   /** 允许调用的工具名，空表示不限制 */
   allowedTools?: readonly string[]
+  /** 每轮是否把召回到的记忆接在用户原话之后，关掉就一次都不召回 */
+  memoryInject?: boolean
+  /** 注入整串的字数上限 */
+  memoryInjectMaxChars?: number
+  /** 一次注入最多几条 */
+  memoryInjectMaxItems?: number
+  /** 同一段在最近多少轮内不重复注入 */
+  memoryInjectRepeatTurns?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
@@ -2967,7 +2975,8 @@ export interface Config {
 ## `@huoli/huoli-qq-memory`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-memory/src/index.ts:96`](../packages/qq/qq-memory/src/index.ts)
+- `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:98`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2983,8 +2992,8 @@ export interface Config {
 }
 
 /** 可被 Config 覆盖的参数集合 */
-export interface Tuning {
-  /** 重要度到这条线以上算受保护 */
+export interface Tuning extends DecayParams, RecoverParams {
+  /** 重要度到这条线以上算受保护，当天不再衰减 */
   protectLine: number
   /** 注入整串的字数上限，模板与条目一起算 */
   injectMaxChars: number

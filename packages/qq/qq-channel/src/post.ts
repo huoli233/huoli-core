@@ -32,7 +32,7 @@ export interface PostFacts {
   chatKey: string
   /** 她自己说的级别：none、routine、public */
   level: string
-  /** 话题类别，例行那一级要用 */
+  /** 话题类别，报了才查预授权清单 */
   topic?: string
   /** 用户那把钥匙 */
   userOk?: boolean
@@ -136,7 +136,8 @@ export function createPostGate(options: PostGateOptions): PostGate {
       if (body === '') return refuse('post.empty', '没有要发的正文', '想发就写点东西', at)
       const graded = judgePostLevel({ level: facts.level, userOk: facts.userOk === true, selfOk: facts.selfOk === true })
       if (!graded.ok) return refuse(graded.code ?? 'post.level', graded.reason ?? '这一条不能发', '换个级别，或者先拿到该有的许可', at)
-      if (facts.level === 'routine' && !tuning.routineTopics.includes(facts.topic ?? '')) {
+      // 话题清单只约束自报了话题的调用方，只报级别的入口按级别本身判
+      if (facts.level === 'routine' && facts.topic !== undefined && !tuning.routineTopics.includes(facts.topic)) {
         return refuse('post.not_routine', '这个话题不在预授权清单里', '先问一句，或者换个话题再发', at)
       }
       if (paused()) return refuse('post.paused', '现在停着手', '等人把停手开关拿掉再说', at)

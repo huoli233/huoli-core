@@ -5,7 +5,7 @@ import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
 import { createMemoryStore, type MemoryStore } from './store.ts'
-import { promoteAll, sweepOnce } from './sweep.ts'
+import { decayAll, promoteAll, sweepOnce } from './sweep.ts'
 import { recall, type RecallHit } from './recall.ts'
 import { registerMemoryTools } from './tools.ts'
 import { resolveTuning, type Tuning } from './defaults.ts'
@@ -39,7 +39,7 @@ export type { MemoryStore, MemoryStoreOptions } from './store.ts'
 export type { RecallHit, RecallInput, RecallReasons } from './recall.ts'
 export { cosineSimilarity, encodeVector, keyGrams, recall, renderRecall } from './recall.ts'
 export { buildInjectBlock, injectIntoUserText, shouldInject } from './inject.ts'
-export { promoteAll, sweepOnce, touch } from './sweep.ts'
+export { decayAll, promoteAll, sweepOnce, touch } from './sweep.ts'
 export { DEFAULTS, resolveTuning } from './defaults.ts'
 export type { Tuning } from './defaults.ts'
 export {
@@ -66,6 +66,8 @@ export type { HealthCounts, HealthInput } from './health.ts'
 
 /** 每天跑完一遍之后的交代 */
 export interface MaintainResult {
+  /** 这次掉了分的条数 */
+  decayed: number
   /** 这次降了一档的条数 */
   stepped: number
   /** 这次淡到底的条数 */
@@ -160,6 +162,8 @@ export function apply(ctx: Context, config: Config = {}): void {
         emotional,
         clarity: 'vivid',
         recallCount: 0,
+        recoverDay: 0,
+        recoverTimes: 0,
         at,
         lastSeenAt: at,
         forgotten: false,
@@ -187,6 +191,8 @@ export function apply(ctx: Context, config: Config = {}): void {
         emotional: 0,
         clarity: 'vivid',
         recallCount: 0,
+        recoverDay: 0,
+        recoverTimes: 0,
         at,
         lastSeenAt: at,
         forgotten: false,
@@ -219,6 +225,8 @@ export function apply(ctx: Context, config: Config = {}): void {
       return sweepOnce(store, Date.now())
     },
     maintain(now) {
+      // 先掉重要度，再按新的重要度算清晰度，最后才清正文
+      const decayed = decayAll(store, tuning)
       const swept = sweepOnce(store, now)
       const synced = run('sync')
       const line = healthLine({
@@ -228,7 +236,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         protectLine: tuning.protectLine,
         ledger: synced.report,
       })
-      return { stepped: swept.stepped, forgotten: swept.forgotten, added: synced.added.length, line }
+      return { decayed, stepped: swept.stepped, forgotten: swept.forgotten, added: synced.added.length, line }
     },
     ledger(action) {
       return run(action)
@@ -247,7 +255,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
   seams.set(ctx, seam)
 
-  registerMemoryTools(ctx, { store, scopeOf, sceneOf })
+  registerMemoryTools(ctx, { store, scopeOf, sceneOf, tuning })
 
   // 卸载时落一次盘
   ctx.effect(() => () => {

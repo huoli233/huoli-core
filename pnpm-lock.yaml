@@ -14022,6 +14022,9 @@ importers:
       '@huoli/huoli-agent':
         specifier: workspace:*
         version: link:../../core/agent
+      '@huoli/huoli-llm':
+        specifier: workspace:*
+        version: link:../../llm/llm
       '@huoli/huoli-system-prompt':
         specifier: workspace:*
         version: link:../../core/system-prompt

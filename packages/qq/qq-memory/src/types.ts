@@ -24,6 +24,10 @@ export interface MemoryItem {
   emotional: number
   clarity: Clarity
   recallCount: number
+  /** 最近一次召回回升落在哪一天的本地零点，没回升过就是 0 */
+  recoverDay: number
+  /** 那一天已经回升过几次 */
+  recoverTimes: number
   at: number
   lastSeenAt: number
   forgotten: boolean

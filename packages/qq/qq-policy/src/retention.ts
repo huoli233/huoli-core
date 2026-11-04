@@ -14,7 +14,8 @@ export const RETENTION = {
   agePenaltyMax: 80,
   rateAnchor: 0.12,
   rateNormal: 0.35,
-  anchorImportance: 60,
+  // 年龄扣分的分档线与记忆的保护线是同一条，两边一起改
+  anchorImportance: 70,
 } as const
 
 /** 清晰度五档，只许一档一档降 */

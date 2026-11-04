@@ -1,10 +1,16 @@
 // 这一包可调的参数只在这里出现一次，别处一律从 Tuning 里取
 
-import { RETENTION, type Clarity } from '@huoli/huoli-qq-policy'
+import {
+  IMPORTANCE_DECAY,
+  RETENTION,
+  type Clarity,
+  type DecayParams,
+  type RecoverParams,
+} from '@huoli/huoli-qq-policy'
 
 /** 可被 Config 覆盖的参数集合 */
-export interface Tuning {
-  /** 重要度到这条线以上算受保护 */
+export interface Tuning extends DecayParams, RecoverParams {
+  /** 重要度到这条线以上算受保护，当天不再衰减 */
   protectLine: number
   /** 注入整串的字数上限，模板与条目一起算 */
   injectMaxChars: number
@@ -38,6 +44,8 @@ export interface Tuning {
 
 /** 全包唯一的默认值表 */
 export const DEFAULTS: Tuning = {
+  // 每天掉多少、被召回回到哪，与 qq-policy 的公式共用一张表
+  ...IMPORTANCE_DECAY,
   // 保护线跟保留度表里那条锚点线是同一条
   protectLine: RETENTION.anchorImportance,
   injectMaxChars: 1200,

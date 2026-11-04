@@ -16,6 +16,8 @@ function make(id: string, text: string, importance: number, overrides: Partial<M
     emotional: 0,
     clarity: 'vivid',
     recallCount: 0,
+    recoverDay: 0,
+    recoverTimes: 0,
     at: NOW,
     lastSeenAt: NOW,
     forgotten: false,
@@ -35,7 +37,7 @@ function lineOf(ledger: LedgerReport, extra: { injectMaxChars?: number; protectL
     items: KEPT,
     now: NOW,
     injectMaxChars: extra.injectMaxChars ?? 1200,
-    protectLine: extra.protectLine ?? 60,
+    protectLine: extra.protectLine ?? 70,
     ledger,
   })
 }
@@ -67,7 +69,7 @@ describe('每天一行', () => {
   })
 
   it('数出来的四个数跟这一行对得上', () => {
-    expect(healthCounts(KEPT, 60, PASSED)).toEqual({ total: 3, pinned: 1, cold: 1, pending: 0 })
+    expect(healthCounts(KEPT, 70, PASSED)).toEqual({ total: 3, pinned: 1, cold: 1, pending: 0 })
   })
 })
 

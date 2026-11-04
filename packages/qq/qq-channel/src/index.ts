@@ -239,6 +239,7 @@ export function apply(ctx: Context, config: Config): void {
     report: (event) => {
       for (const handler of outboundEvents) handler(event)
     },
+    publish: (text, facts) => seam.publishPost(text, facts),
   })
 
   channel.start()

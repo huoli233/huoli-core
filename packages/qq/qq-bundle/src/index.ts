@@ -9,7 +9,7 @@ import '@huoli/huoli-agent'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
 import { qqMaterialOf } from '@huoli/huoli-qq-material'
-import { qqMemoryOf } from '@huoli/huoli-qq-memory'
+import { buildInjectBlock, injectIntoUserText, qqMemoryOf, shouldInject } from '@huoli/huoli-qq-memory'
 import { hasWords, qqChannelOf, type IncomingMessage } from '@huoli/huoli-qq-channel'
 import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
 import { qqProactiveOf, type Candidate, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
@@ -43,6 +43,14 @@ export interface Config {
   home?: string
   /** 允许调用的工具名，空表示不限制 */
   allowedTools?: readonly string[]
+  /** 每轮是否把召回到的记忆接在用户原话之后，关掉就一次都不召回 */
+  memoryInject?: boolean
+  /** 注入整串的字数上限 */
+  memoryInjectMaxChars?: number
+  /** 一次注入最多几条 */
+  memoryInjectMaxItems?: number
+  /** 同一段在最近多少轮内不重复注入 */
+  memoryInjectRepeatTurns?: number
 }
 
 /** 排查用的接口，不进模型可见上下文 */
@@ -383,6 +391,41 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 停手时动态一条都不发：发布入口只认这一句
   channel?.usePause(() => self?.isPaused() ?? false)
+
+  // 记忆注入：每轮带原话的那一步召回一次，命中就接在用户原话之后，系统提示词一个字不动
+  if (config.memoryInject ?? BUNDLE_DEFAULTS.memoryInject) {
+    const maxChars = Math.max(0, config.memoryInjectMaxChars ?? BUNDLE_DEFAULTS.memoryInjectMaxChars)
+    const maxItems = Math.max(1, config.memoryInjectMaxItems ?? BUNDLE_DEFAULTS.memoryInjectMaxItems)
+    const repeatTurns = Math.max(1, config.memoryInjectRepeatTurns ?? BUNDLE_DEFAULTS.memoryInjectRepeatTurns)
+    const lastInjected = new Map<string, number>()
+
+    ctx.on('agent/pre-step', async (payload, next) => {
+      const decision = await next()
+      if (memory === undefined || decision.kind !== 'enter') return decision
+      const chatKey = payload.agent.id
+      if (!shouldInject(payload.turn, lastInjected.get(chatKey), repeatTurns)) return decision
+      // 运行环境那一段也挂在 user 上，但不是用户问的话，注入只接在用户自己说的那条后面
+      const asked = decision.messages.filter(message => message.source.kind === 'user')
+      const query = asked
+        .flatMap(message => message.content.flatMap(part => part.type === 'text' ? [part.text] : []))
+        .join('\n')
+        .trim()
+      if (query === '') return decision
+      const block = buildInjectBlock(memory.find(query, chatKey, maxItems), maxChars, maxItems)
+      if (block === '') return decision
+      const tail = asked.at(-1)
+      if (tail === undefined) return decision
+      const content = [...tail.content]
+      for (let at = content.length - 1; at >= 0; at -= 1) {
+        const part = content.at(at)
+        if (part?.type !== 'text') continue
+        content[at] = { ...part, text: injectIntoUserText(part.text, block) }
+        break
+      }
+      lastInjected.set(chatKey, payload.turn)
+      return { ...decision, messages: decision.messages.map(message => message === tail ? { ...message, content } : message) }
+    })
+  }
 
   // 卸载时把手上这一轮也落下去，别丢
   ctx.effect(() => () => {
