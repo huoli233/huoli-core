@@ -51,7 +51,13 @@ async function mount(dir: string): Promise<Mounted> {
   applyPacing(ctx, { file: path.join(dir, 'pacing.json') })
   applyAttention(ctx, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyMemory(ctx, { file: path.join(dir, 'memory.json'), healthLogFile: path.join(dir, 'health.log') })
+  // 记忆的三个文件都落在临时目录里，队列与账本不去碰主目录那份
+  applyMemory(ctx, {
+    file: path.join(dir, 'memory.json'),
+    ledgerFile: path.join(dir, 'ledger.json'),
+    healthLogFile: path.join(dir, 'health.log'),
+    queueFile: path.join(dir, 'queue.json'),
+  })
   applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return { ctx, tools }
 }
