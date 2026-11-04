@@ -8,6 +8,8 @@ export const FILES = {
   panel: 'panel.md',
   /** 叙事五章 */
   narrative: 'narrative.md',
+  /** 叙事的那本时间账：上次更新与上次月更提醒 */
+  narrativeState: 'narrative.json',
   /** 停手开关 */
   pause: 'PAUSE',
   /** 想弄明白的事 */

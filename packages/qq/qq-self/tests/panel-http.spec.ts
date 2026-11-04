@@ -14,7 +14,7 @@ import { panelPage, startPanelHttp, type PanelHttp } from '../src/panel-http.ts'
 import { panelFile } from '../src/panel.ts'
 import { panelStateOf } from '../src/panel-state.ts'
 import { createSelfStore } from '../src/store.ts'
-import type { PanelState } from '../src/types.ts'
+import type { PanelState, PanelVitals } from '../src/types.ts'
 
 const AT = Date.parse('2026-11-04T03:33:13.000Z')
 const BODY = '【自我】\n此刻：嗓子发干。\n我可以说不，也可以说不知道。'
@@ -43,6 +43,28 @@ const STATE: PanelState = {
   ledger: { drive: 2, agency: 1, recentAgency: 1 },
   days: [{ at: AT, lines: ['把出口接上了', '没睡好', '想早点收工'], skipped: false }],
   health: '健康：近七天写了 1 天、跳过 0 天、缺 6 天，错处 0 条，账本 drive 2 条 / agency 1 条',
+}
+
+const VITALS: PanelVitals = {
+  thirst: 0.8,
+  energy: 0.6,
+  mood: 0.35,
+  boredom: 0.2,
+  socialHunger: 0.9,
+  emotion: [
+    { why: '她刚说了晚安', weight: 0.5 },
+    { why: '有点累', weight: 0.3 },
+    { why: '还没睡醒', weight: 0.2 },
+  ],
+}
+
+// 数一数画了几条：整段类名拆开逐个比，前缀相近的不算进来
+function countOf(page: string, className: string): number {
+  let count = 0
+  for (const match of page.matchAll(/class="([^"]*)"/g)) {
+    if ((match[1] ?? '').split(' ').includes(className)) count += 1
+  }
+  return count
 }
 
 // 起一个临时出口，端口交给系统定
@@ -249,6 +271,75 @@ describe('页面', () => {
 
     expect(page).toContain('还没有写过')
     expect(page).toContain('近七天还没有记录')
+  })
+
+  it('身体概览就是精力、心情、无聊、想说话四条细横条', () => {
+    const page = panelPage({ ...STATE, vitals: VITALS })
+
+    expect(countOf(page, 'body-bar')).toBe(4)
+    for (const name of ['精力', '心情', '无聊', '想说话']) expect(page).toContain(`>${name}<`)
+    expect(page).toContain('width:60%')
+    expect(page).toContain('width:35%')
+    expect(page).toContain('width:20%')
+    expect(page).toContain('width:90%')
+    expect(page).not.toContain('身体没接上')
+  })
+
+  it('情绪条一条对混合层一层，只标来由不标权重', () => {
+    const page = panelPage({ ...STATE, vitals: VITALS })
+
+    expect(countOf(page, 'emotion-bar')).toBe(VITALS.emotion?.length)
+    for (const bar of VITALS.emotion ?? []) expect(page).toContain(`>${bar.why}<`)
+    // 一条只写来由与条宽，权重那几个数一个都不许落到字上
+    expect(page).toContain('<li class="bar-row emotion-bar"><span class="bar-name">她刚说了晚安</span>'
+      + '<span class="bar-track"><span class="bar-fill" style="width:50%"></span></span></li>')
+    expect(page).toMatch(/<h3>情绪来由<\/h3>/)
+  })
+
+  it('水罐水位按渴的反面画，档位词跟着分三档', () => {
+    const very = panelPage({ ...STATE, vitals: { thirst: 0.8 } })
+    const some = panelPage({ ...STATE, vitals: { thirst: 0.5 } })
+    const none = panelPage({ ...STATE, vitals: { thirst: 0.1 } })
+
+    expect(countOf(very, 'tank')).toBe(1)
+    expect(very).toContain('height:20%')
+    expect(very).toContain('>很渴<')
+    expect(very).toContain('water-low')
+
+    expect(some).toContain('height:50%')
+    expect(some).toContain('>有点渴<')
+    expect(some).toContain('water-half')
+
+    expect(none).toContain('height:90%')
+    expect(none).toContain('>不渴<')
+    expect(none).toContain('water-full')
+  })
+
+  it('没有身体读数时这几块整块省掉，只说身体没接上', () => {
+    const page = panelPage(STATE)
+
+    expect(page).toContain('身体没接上')
+    expect(countOf(page, 'tank')).toBe(0)
+    expect(countOf(page, 'emotion-bar')).toBe(0)
+    expect(countOf(page, 'body-bar')).toBe(0)
+  })
+
+  it('画了条也还是内联一页，不拉外部资源，照旧十秒刷一次', () => {
+    const page = panelPage({ ...STATE, vitals: VITALS })
+
+    expect(page).toContain('<meta http-equiv="refresh" content="10">')
+    expect(page).not.toContain('<link')
+    expect(page).not.toContain('<script')
+    expect(page).not.toMatch(/<(img|iframe|object|embed)\b/)
+    expect(page).not.toMatch(/url\(/)
+  })
+
+  it('情绪来由里的尖括号一样转义', () => {
+    const vitals: PanelVitals = { emotion: [{ why: '<b>不是标签</b>', weight: 1 }] }
+    const page = panelPage({ ...STATE, vitals })
+
+    expect(page).toContain('&lt;b&gt;不是标签&lt;/b&gt;')
+    expect(page).not.toContain('<b>不是标签')
   })
 })
 

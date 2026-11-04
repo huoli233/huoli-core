@@ -55,13 +55,16 @@ export interface MomentOptions {
  * 给面板接上身体的只读入口，每次取都现压一句
  * @param port - 身体那一面
  * @param options - 压句参数
- * @returns 返回一句的端口，面板照旧原样用
+ * @returns 返回一句的端口；身体给得出展示读数时照样原样转出去
  */
 export function momentPort(port: VitalsPort, options: MomentOptions = {}): VitalsPort {
   const max = options.max ?? DEFAULTS.momentMaxChars
-  return {
+  const read = port.read?.bind(port)
+  const kept: VitalsPort = {
     render() {
       return compressMoment(port.render(), max)
     },
   }
+  if (read !== undefined) kept.read = () => read()
+  return kept
 }

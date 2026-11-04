@@ -65,6 +65,7 @@ describe('按顺序推进', () => {
 
     const first = seam.advanceStage('P1', '基线访谈做完了', 1_000)
     const second = seam.advanceStage('P2', '面板连着三天没变', 2_000)
+    seam.approveStageAdvance(true, true, 2_500)
     const third = seam.advanceStage('P3', '面板报错计数为 0', 3_000)
 
     expect(first).toMatchObject({ ok: true, stage: 'P1', at: 1_000 })
@@ -134,6 +135,7 @@ describe('按顺序推进', () => {
 
   it('最后一档再往前推就没有下一档，跳级同样拒', async () => {
     const { seam } = await mount()
+    seam.approveStageAdvance(true, true, 900)
     for (const stage of ['P1', 'P2', 'P3', 'P4', 'P5a']) seam.advanceStage(stage, '一档一档推', 1_000)
 
     const decision = seam.advanceStage('P5c', '想直接到最后一档', 2_000)
@@ -161,6 +163,7 @@ describe('推进之后同一个动作从拒变可', () => {
     expect(judgePostLevel(routine).code).toBe('post.stage_blocked')
     expect(judgeComment({ topic: '吃喝', topics: TOPICS, userOk: true, selfOk: true, stage: seam.stage() }).code).toBe('comment.stage_blocked')
 
+    seam.approveStageAdvance(true, true, 900)
     for (const stage of ['P1', 'P2', 'P3']) seam.advanceStage(stage, '照退出条件往前推', 1_000)
 
     expect(judgePostLevel({ ...routine, stage: seam.stage() }).ok).toBe(true)

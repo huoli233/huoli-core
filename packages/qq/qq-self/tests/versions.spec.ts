@@ -90,9 +90,9 @@ describe('版本存档', () => {
     const settings = resolveSettings()
     const store = openStore(dir)
 
-    seedNarrative(store)
+    seedNarrative(store, 1_000)
     const skeleton = read(dir, 'narrative.md')
-    updateNarrative(store, settings, '我是谁', '我叫她别硬撑')
+    updateNarrative(store, settings, '我是谁', '我叫她别硬撑', 2_000)
 
     const entries = store.listVersions('narrative')
     expect(entries).toHaveLength(1)
@@ -199,10 +199,10 @@ describe('改坏再回滚演练', () => {
 
     paintPanel(store, settings, AT)
     const panel = read(dir, 'panel.md')
-    seedNarrative(store)
-    updateNarrative(store, settings, '我是谁', '我叫她别硬撑')
+    seedNarrative(store, 1_000)
+    updateNarrative(store, settings, '我是谁', '我叫她别硬撑', 2_000)
     const narrative = read(dir, 'narrative.md')
-    updateNarrative(store, settings, '我在意什么', '我在意她有没有睡够')
+    updateNarrative(store, settings, '我在意什么', '我在意她有没有睡够', 3_000)
     const entries = store.listVersions('narrative')
     expect(entries).toHaveLength(2)
     const target = entries[0]?.name ?? ''
@@ -244,8 +244,8 @@ describe('回滚的拒绝与接线', () => {
     const settings = resolveSettings()
     const store = openStore(dir)
 
-    seedNarrative(store)
-    updateNarrative(store, settings, '我是谁', '我叫她别硬撑')
+    seedNarrative(store, AT - MINUTE)
+    updateNarrative(store, settings, '我是谁', '我叫她别硬撑', AT - MINUTE / 2)
     paintPanel(store, settings, AT)
     paintPanel(store, settings, AT + MINUTE)
     const current = read(dir, 'panel.md')
@@ -268,8 +268,8 @@ describe('回滚的拒绝与接线', () => {
     const settings = resolveSettings()
     const store = openStore(dir)
 
-    seedNarrative(store)
-    updateNarrative(store, settings, '我是谁', '我叫她别硬撑')
+    seedNarrative(store, AT - MINUTE)
+    updateNarrative(store, settings, '我是谁', '我叫她别硬撑', AT - MINUTE / 2)
     const name = store.listVersions('narrative')[0]?.name ?? ''
     const current = read(dir, 'narrative.md')
     const seam = await mount(dir, undefined, false)

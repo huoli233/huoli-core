@@ -1,9 +1,35 @@
 // 自我层对外的类型：面板输入、两档账、钥匙判定、目录里的行
 
+/** 混合层露给面板的一条，只留来由与权重 */
+export interface VitalsBlendLine {
+  /** 一句中文来由，页面拿它当标注 */
+  why: string
+  /** 归一后的权重，零到一 */
+  weight: number
+}
+
+/** 身体露给面板的展示读数，字段名与身体那边逐字相同，缺哪个就不给哪个 */
+export interface VitalsReadout {
+  /** 口渴，零到一 */
+  thirst?: number
+  /** 精力，零到一 */
+  energy?: number
+  /** 好坏偏向，零到一 */
+  valence?: number
+  /** 孤独，零到一 */
+  loneliness?: number
+  /** 想开口的劲，零到一 */
+  proactive_bias?: number
+  /** 混合层的几条，按分数从高到低 */
+  emotion_blend?: readonly VitalsBlendLine[]
+}
+
 /** 身体露给面板的那一面，只读 */
 export interface VitalsPort {
   /** 身体给的那一句，面板原样用，不再加工 */
   render(): string
+  /** 画条要用的那几个数，身体给不出读数时不给这一面 */
+  read?(): VitalsReadout
 }
 
 /** 面板的四个来源，缺哪个就省哪一行 */
@@ -324,6 +350,31 @@ export interface GradeDecision {
   hint?: string
 }
 
+/** 叙事那本时间账，只放两格时刻 */
+export interface NarrativeState {
+  /** 正文上次改动的时刻，从没写过为 0 */
+  lastUpdateAt: number
+  /** 上次月更提醒的时刻，从没提醒过为 0 */
+  lastDueAt: number
+}
+
+/** 一次月更提醒没给出信号的原因 */
+export type NarrativeTickReason = 'not_due' | 'already_reminded' | 'disabled' | 'paused'
+
+/** 一次月更判断 */
+export interface NarrativeTick {
+  /** 正文是不是已经跟不上这一个月 */
+  due: boolean
+  /** 这一次要不要把「该写叙事」的信号交出去，同一个月只交一次 */
+  remind: boolean
+  /** 这次判断的时刻 */
+  at: number
+  /** 正文上次改动的时刻，从没写过为 0 */
+  lastUpdateAt: number
+  /** 没给信号时的原因 */
+  reason?: NarrativeTickReason
+}
+
 /** 一次阶段推进的结果 */
 export interface StageOutcome {
   /** 推成了没有 */
@@ -477,10 +528,36 @@ export interface PanelDayRow {
   skipped: boolean
 }
 
+/** 情绪条的一条：标注只用中文来由，权重只进条宽 */
+export interface PanelEmotionBar {
+  /** 一句中文来由 */
+  why: string
+  /** 画条用的权重，零到一 */
+  weight: number
+}
+
+/** 面板画条要用的那几个数，缺哪一块就整块省掉 */
+export interface PanelVitals {
+  /** 口渴，零到一，水罐按一减它算水位 */
+  thirst?: number
+  /** 精力，零到一 */
+  energy?: number
+  /** 心情，零到一，取身体的好坏偏向 */
+  mood?: number
+  /** 无聊，零到一，取身体的孤独 */
+  boredom?: number
+  /** 想说话，零到一，取身体的想开口的劲 */
+  socialHunger?: number
+  /** 混合层的每条，按分数从高到低 */
+  emotion?: readonly PanelEmotionBar[]
+}
+
 /** 只读出口露出去的全部内容：只有她自己的话与计数，没有用户原文、记忆正文与钥匙记录 */
 export interface PanelState {
   /** 面板正文与首行记的生成时间，还没生成时两个都是空串 */
   panel: { body: string; generatedAt: string }
+  /** 画条要用的那几个数与情绪来由，没接上身体时整个字段省掉 */
+  vitals?: PanelVitals
   /** 当前身份主张，一条都没写过时不给 */
   identity?: { claim: IdentityClaim; why: string; at: number }
   /** 两档账汇总，两档从不相加 */

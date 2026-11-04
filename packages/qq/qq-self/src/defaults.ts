@@ -26,6 +26,8 @@ const IDENTITY_ACTIONS: readonly string[] = [
   'public.say',
   'public.comment',
   'public.direct',
+  // 抬到公开级要的那一条，与 keys.ts 里 stage.advance 逐字相同
+  'stage.advance',
 ]
 
 // 阶段的先后：比高低只看这张表的次序，认不出的写法按不到下限算

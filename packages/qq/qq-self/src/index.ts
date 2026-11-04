@@ -8,11 +8,19 @@ import { resolveSelfDir, resolveSettings } from './defaults.ts'
 import { errorsSince, recordError as writeError } from './errors.ts'
 import { FILES } from './files.ts'
 import { panelFromStore } from './generate.ts'
+import { stageAllows } from './grade.ts'
 import { identityOf as currentIdentity, recordIdentity as writeIdentity } from './identity.ts'
-import { requireKeys as decideKeys } from './keys.ts'
+import { requireKeys as decideKeys, STAGE_ACTION, stageAdvanceApproved } from './keys.ts'
 import { createLedger } from './ledger.ts'
 import { mirrorEntries } from './mirror.ts'
-import { readNarrative as narrativeText, seedNarrative as seedNarrativeFile, updateNarrative as writeNarrative } from './narrative.ts'
+import {
+  monthlyTick as tickNarrative,
+  narrativeDue as narrativeIsDue,
+  narrativeStateOf,
+  readNarrative as narrativeText,
+  seedNarrative as seedNarrativeFile,
+  updateNarrative as writeNarrative,
+} from './narrative.ts'
 import { startPanelHttp, type PanelHttp } from './panel-http.ts'
 import { panelStateOf } from './panel-state.ts'
 import { panelBody, panelStamp } from './panel.ts'
@@ -32,6 +40,7 @@ import type {
   LedgerSummary,
   LedgerViolation,
   MirrorResult,
+  NarrativeTick,
   PanelState,
   ProjectInput,
   RollbackCheck,
@@ -52,14 +61,23 @@ export { DEFAULTS, DIR_NAME, resolveSelfDir, resolveSettings } from './defaults.
 export { ACTION_KINDS, judgeComment, judgePostLevel, judgePrivate, POST_LEVELS, stageAllows } from './grade.ts'
 export { generatePanelFile, panelFromStore } from './generate.ts'
 export { IDENTITY_CLAIMS, identityHistory, identityOf, isIdentityClaim, recordIdentity, toIdentity } from './identity.ts'
-export { requireKeys } from './keys.ts'
+export { requireKeys, STAGE_ACTION, stageAdvanceApproved } from './keys.ts'
 export { auditLedger, createLedger } from './ledger.ts'
 export type { LedgerOptions, SelfLedger } from './ledger.ts'
 export { MIRROR_FILES, mirrorEntries } from './mirror.ts'
 export type { MirrorInput } from './mirror.ts'
 export { compressMoment, momentPort } from './moment.ts'
 export type { MomentOptions } from './moment.ts'
-export { NARRATIVE_CHAPTERS, narrativeSkeleton, readNarrative, seedNarrative, updateNarrative } from './narrative.ts'
+export {
+  NARRATIVE_CHAPTERS,
+  monthlyTick,
+  narrativeDue,
+  narrativeSkeleton,
+  narrativeStateOf,
+  readNarrative,
+  seedNarrative,
+  updateNarrative,
+} from './narrative.ts'
 export { panelPage, startPanelHttp } from './panel-http.ts'
 export type { PanelHttp, PanelHttpOptions } from './panel-http.ts'
 export { panelStateOf } from './panel-state.ts'
@@ -97,6 +115,9 @@ export type {
   LedgerViolation,
   MirrorKind,
   MirrorResult,
+  NarrativeState,
+  NarrativeTick,
+  NarrativeTickReason,
   PanelDayRow,
   PanelInput,
   PanelLabels,
@@ -151,6 +172,14 @@ export interface QqSelfSeam {
   audit(now: number): readonly LedgerViolation[]
   /** 判级并留痕 */
   requireKeys(action: string, userOk: boolean, selfOk: boolean, at?: number): KeysOutcome
+  /**
+   * 记一次抬级的放行：两把钥匙都在才往 keys.jsonl 写一条 stage.advance
+   * @param userOk - 用户那把钥匙
+   * @param selfOk - 她自己那把钥匙
+   * @param at - 放行的时刻，不给就取现在
+   * @returns 放行结果与是不是只提议
+   */
+  approveStageAdvance(userOk: boolean, selfOk: boolean, at?: number): KeysOutcome
   /** 停手开关在不在 */
   isPaused(): boolean
   /** 现在处在哪个阶段，公共动作按它判能不能发 */
@@ -160,7 +189,7 @@ export interface QqSelfSeam {
    * @param to - 想推到的阶段，只能是紧挨着的下一档
    * @param reason - 为什么推这一档，留痕里要用
    * @param at - 推进的时刻，不给就取现在
-   * @returns 推成了给推到的阶段，没推成给码与原因
+   * @returns 推成了给推到的阶段，没推成给码与原因；推到公开级起要求先有一条双钥匙放行的 stage.advance，没有就回 stage.needs_keys
    */
   advanceStage(to: string, reason: string, at?: number): StageOutcome
   /** 记一个项目，停手期间只写一条提议 */
@@ -188,6 +217,18 @@ export interface QqSelfSeam {
   seedNarrative(): WriteOutcome
   /** 换掉或续写叙事的一章 */
   updateNarrative(chapter: string, text: string, mode?: 'replace' | 'append'): WriteOutcome
+  /**
+   * 叙事该不该重写了：从上次更新起满一个日历月，从没写过也算到期
+   * @param now - 判断的时刻
+   * @returns 到期为真，这一层关着恒为假
+   */
+  narrativeDue(now: number): boolean
+  /**
+   * 月更提醒：到期时给出「该写叙事」的信号，只给信号不写正文
+   * @param now - 判断的时刻
+   * @returns 到期没有、这一次要不要提醒；同一个月只提醒一次，PAUSE 下不记提醒
+   */
+  monthlyTick(now: number): NarrativeTick
   /** 记当天的三行 */
   recordDay(lines: readonly string[], at: number): WriteOutcome
   /** 今天跳过，原因要写 */
@@ -308,6 +349,18 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 停手期间第二个写入一律只提议
   const held = (): WriteOutcome | undefined => store.paused() ? { written: false, proposed: true, reason: 'paused' } : undefined
 
+  // 判一次身份级动作，放行时把这一条写进钥匙账；关着或停手时只回结果不落盘
+  const allowKeys = (action: string, userOk: boolean, selfOk: boolean, at: number | undefined): KeysOutcome => {
+    const decision = decideKeys(action, userOk, selfOk, settings.identityActions)
+    if (!decision.allowed) return { ...decision, proposed: false }
+    const stop = off()
+    if (stop !== undefined) return { ...decision, proposed: stop.proposed }
+    if (store.paused()) return { ...decision, proposed: true }
+    const moment = at ?? Date.now()
+    store.append(FILES.keys, { at: moment, id: newId(moment), action, user_ok: userOk, self_ok: selfOk })
+    return { ...decision, proposed: false }
+  }
+
   // 只读出口每次现算一份：只读目录，不写盘，也不碰提示词那一段的缓存
   const panelStateNow = (now: number): PanelState => {
     const text = store.readText(FILES.panel)
@@ -391,14 +444,10 @@ export function apply(ctx: Context, config: Config = {}): void {
       return ledger.audit(now)
     },
     requireKeys(action, userOk, selfOk, at) {
-      const decision = decideKeys(action, userOk, selfOk, settings.identityActions)
-      if (!decision.allowed) return { ...decision, proposed: false }
-      const stop = off()
-      if (stop !== undefined) return { ...decision, proposed: stop.proposed }
-      if (store.paused()) return { ...decision, proposed: true }
-      const moment = at ?? Date.now()
-      store.append(FILES.keys, { at: moment, id: newId(moment), action, user_ok: userOk, self_ok: selfOk })
-      return { ...decision, proposed: false }
+      return allowKeys(action, userOk, selfOk, at)
+    },
+    approveStageAdvance(userOk, selfOk, at) {
+      return allowKeys(STAGE_ACTION, userOk, selfOk, at)
     },
     isPaused() {
       return store.paused()
@@ -422,6 +471,16 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (target > here + 1) return { ok: false, stage: from, code: 'stage.skip', reason: `阶段不许跳级：现在 ${from}，下一档是 ${next}，想直接到 ${to}`, hint: `先推到 ${next}` }
       const why = reason.trim()
       if (why === '') return { ok: false, stage: from, code: 'stage.reason_required', reason: '推进要说清为什么', hint: '写一句为什么推这一档' }
+      // 推到公开级这一档起要先有一条双钥匙放行，钥匙账里没有就停在这里
+      if (stageAllows(to, settings.publicMinStage, settings.stages) && !stageAdvanceApproved(store)) {
+        return {
+          ok: false,
+          stage: from,
+          code: 'stage.needs_keys',
+          reason: `推到 ${to} 就是公开级了，要先把两把钥匙都交上来`,
+          hint: '先调 approveStageAdvance(userOk, selfOk) 记一条 stage.advance，再来推这一档',
+        }
+      }
       const moment = at ?? Date.now()
       store.append(FILES.stage, { at: moment, id: newId(moment), from, to, reason: why })
       return { ok: true, stage: to, at: moment }
@@ -520,7 +579,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (stop !== undefined) return stop
       const blocked = held()
       if (blocked !== undefined) return blocked
-      return seedNarrativeFile(store)
+      return seedNarrativeFile(store, Date.now())
         ? { written: true, proposed: false }
         : { written: false, proposed: false, reason: 'duplicate' }
     },
@@ -529,7 +588,25 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (stop !== undefined) return stop
       const blocked = held()
       if (blocked !== undefined) return blocked
-      return writeNarrative(store, settings, chapter, text, mode ?? 'replace')
+      return writeNarrative(store, settings, chapter, text, Date.now(), mode ?? 'replace')
+    },
+    narrativeDue(now) {
+      return enabled ? narrativeIsDue(store, now) : false
+    },
+    monthlyTick(now) {
+      const stop = off()
+      if (stop !== undefined) return { due: false, remind: false, at: now, lastUpdateAt: 0, reason: 'disabled' }
+      // 停手期间照样算到期，但不记提醒：醒来之后还欠着这一篇
+      if (store.paused()) {
+        return {
+          due: narrativeIsDue(store, now),
+          remind: false,
+          at: now,
+          lastUpdateAt: narrativeStateOf(store).lastUpdateAt,
+          reason: 'paused',
+        }
+      }
+      return tickNarrative(store, now)
     },
     recordDay(lines, at) {
       const stop = off()

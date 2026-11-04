@@ -2,7 +2,7 @@
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import { localDay } from './day.ts'
-import type { PanelDayRow, PanelState } from './types.ts'
+import type { PanelDayRow, PanelState, PanelVitals } from './types.ts'
 
 // 出口只绑这个地址，别的网卡上连不进来
 const LOOPBACK = '127.0.0.1'
@@ -34,11 +34,94 @@ const STYLE = [
   'body{font:14px/1.7 system-ui,sans-serif;margin:24px;color:#222;background:#fafafa}',
   'h1{font-size:16px;margin:0 0 8px}',
   'h2{font-size:14px;margin:18px 0 4px}',
+  'h3{font-size:13px;font-weight:600;margin:12px 0 4px;color:#555}',
   'pre{white-space:pre-wrap;margin:0;padding:12px;background:#fff;border:1px solid #ddd;border-radius:6px}',
   'p{margin:4px 0}',
   'ul{margin:0;padding-left:20px}',
   '.muted{color:#666}',
+  '.bars{margin:0;padding:0;list-style:none;max-width:420px}',
+  '.tank{display:flex;align-items:flex-end;gap:10px}',
+  '.tank-well{display:flex;align-items:flex-end;width:28px;height:96px;background:#eef2f6;border:1px solid #c8d0d8;border-radius:4px;overflow:hidden}',
+  '.tank-water{width:100%}',
+  '.water-full{background:#1f6fb2}',
+  '.water-half{background:#5b9bd5}',
+  '.water-low{background:#a8cbe8}',
+  '.tank-word{color:#444}',
+  '.bar-row{display:grid;grid-template-columns:7em 1fr;align-items:center;gap:8px;margin:3px 0}',
+  '.bar-name{font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+  '.bar-track{display:block;height:6px;background:#e6eaee;border-radius:3px;overflow:hidden}',
+  '.bar-fill{display:block;height:100%;border-radius:3px}',
+  '.body-bar .bar-track{height:4px}',
+  '.body-bar .bar-fill{background:#7aa7c7}',
+  '.emotion-bar .bar-fill{background:#b0736a}',
 ].join('')
+
+// 条宽只认零到一：越界的值收回来，条不会画出格子外面去
+function percent(value: number): string {
+  return `${Math.round(Math.min(1, Math.max(0, value)) * 100)}%`
+}
+
+// 渴分三档，每档一个中文词与一档蓝色：水越多档位越深
+function thirstTier(thirst: number): { word: string; shade: string } {
+  if (thirst < 1 / 3) return { word: '不渴', shade: 'water-full' }
+  if (thirst < 2 / 3) return { word: '有点渴', shade: 'water-half' }
+  return { word: '很渴', shade: 'water-low' }
+}
+
+// 水罐：水位按渴的反面画，旁边的词只说在哪个档
+function waterTank(vitals: PanelVitals): string[] {
+  const thirst = vitals.thirst
+  if (thirst === undefined) return []
+  const tier = thirstTier(thirst)
+  return [
+    '<h3>水罐</h3>',
+    '<div class="tank">',
+    `<div class="tank-well"><div class="tank-water ${tier.shade}" style="height:${percent(1 - thirst)}"></div></div>`,
+    `<span class="tank-word">${tier.word}</span>`,
+    '</div>',
+  ]
+}
+
+// 情绪条：一层一条，条宽只由权重定，字只写来由
+function emotionBars(vitals: PanelVitals): string[] {
+  const bars = vitals.emotion
+  if (bars === undefined || bars.length === 0) return []
+  const rows = bars.map(bar => [
+    '<li class="bar-row emotion-bar">',
+    `<span class="bar-name">${escapeHtml(bar.why)}</span>`,
+    `<span class="bar-track"><span class="bar-fill" style="width:${percent(bar.weight)}"></span></span>`,
+    '</li>',
+  ].join(''))
+  return ['<h3>情绪来由</h3>', `<ul class="bars">${rows.join('')}</ul>`]
+}
+
+// 身体概览：四个读数一个一条细横条，缺哪条就不画哪条
+function bodyOverview(vitals: PanelVitals): string[] {
+  const figures: ReadonlyArray<readonly [string, number | undefined]> = [
+    ['精力', vitals.energy],
+    ['心情', vitals.mood],
+    ['无聊', vitals.boredom],
+    ['想说话', vitals.socialHunger],
+  ]
+  const rows = figures
+    .filter((row): row is readonly [string, number] => row[1] !== undefined)
+    .map(([name, value]) => [
+      '<li class="bar-row body-bar">',
+      `<span class="bar-name">${name}</span>`,
+      `<span class="bar-track"><span class="bar-fill" style="width:${percent(value)}"></span></span>`,
+      '</li>',
+    ].join(''))
+  if (rows.length === 0) return []
+  return ['<h3>身体概览</h3>', `<ul class="bars">${rows.join('')}</ul>`]
+}
+
+// 身体那一块：没有读数时整块换成一句没接上，不留空壳
+function bodyBlocks(vitals: PanelVitals | undefined): string[] {
+  const blocks = vitals === undefined
+    ? []
+    : [...waterTank(vitals), ...emotionBars(vitals), ...bodyOverview(vitals)]
+  return blocks.length === 0 ? ['<p class="muted">身体没接上</p>'] : blocks
+}
 
 /**
  * 那一页极简的 HTML
@@ -68,6 +151,8 @@ export function panelPage(state: PanelState): string {
     `<pre>${escapeHtml(state.panel.body)}</pre>`,
     '<h2>身份主张</h2>',
     `<p>${escapeHtml(identity)}</p>`,
+    '<h2>身体</h2>',
+    ...bodyBlocks(state.vitals),
     '<h2>最近七天</h2>',
     `<ul>${days}</ul>`,
     `<p class="muted">${escapeHtml(state.health)}</p>`,
