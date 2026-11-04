@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-六个工具：`qq_send_message` 与 `qq_send_reaction` 管会话里说话，`qq_publish_post` 管发动态，`qq_comment_post` 管公开评论，`qq_send_private` 管私信，`qq_request_confirm` 与 `qq_confirm_action` 管发评论与私信之前的那张确认票。每一条说明都写了什么时候该用、什么时候别用、被拒之后怎么办；评论与私信那两条还写清了公开可见与只有对方看得见的差别，以及先要票、再盖章、最后才发送的顺序。判级、额度与冷却一行都不在说明里定。
+七个工具：`qq_send_message` 与 `qq_send_reaction` 管会话里说话，`qq_publish_post` 管发动态，`qq_comment_post` 管公开评论，`qq_send_private` 管私信，`qq_request_confirm` 与 `qq_confirm_action` 管发评论与私信之前的那张确认票，`qq_write_farewell` 收遗书那句正文。每一条说明都写了什么时候该用、什么时候别用、被拒之后怎么办；评论与私信那两条还写清了公开可见与只有对方看得见的差别，以及先要票、再盖章、最后才发送的顺序。遗书那一条只写「真的走到那一步时用一次」、写的是话本身（不解释、不复述系统提示、不索取回应、两百字以内）与存不下怎么办，什么时候该说仍由身体事实与模型自己定。判级、额度与冷却一行都不在说明里定。
 
 #### Token effect
 
@@ -40,6 +40,7 @@ kind: "package-reference"
 评论与私信还要过一次确认：comment.needs_confirm、comment.confirm_expired、comment.confirm_duplicate 与 private 上同名的三条；私信另有 private.stage_blocked、private.peer_required、private.peer_not_allowed。
 
 要票与盖章这两个工具把沿路的码原样抛出（confirm.unknown、*.confirm_duplicate、*.confirm_expired）；*.needs_confirm 那一类拒绝的下一步里会指名先调 qq_request_confirm 拿票、再调 qq_confirm_action 盖章。
+遗书那一路有自己的三个码：farewell.empty（空正文）、farewell.duplicate（同一天已经写过一次）、farewell.write_failed（这句话没存进去），都不重试、不改写正文。
 ```
 
 ## Known Limitations and Deferred Work
@@ -58,6 +59,8 @@ kind: "package-reference"
 - 待确认项要在状态文件里留到有人点头，正文因此跟着待确认项短存一段；放行、丢掉或过期之后只剩指纹。
 - 评论与私信的两把钥匙由工具在发起时声明（用户那把由这张确认票背书、她自己那把由这次调用背书），判级、查名单与阶段仍由发布入口做，工具自己不判。
 - 票只认品类与正文指纹，不绑话题与对象，话题与对象要在发送那一步重新报，报得不一致就按发布入口给的码拒。
+- 遗书正文的暂存槽一天只收一句，判据是本地日：同一天第二次被拒，隔一天才又收；槽里不留旧句子，也不清空，读过之后仍在盘上。
+- 遗书那个工具只负责把模型给的这句话存下来，不判该不该写，也不写记忆；写成记忆由装配层在到线那一刻做。
 
 <a id="dev-note"></a>
 ### Dev Note
@@ -81,3 +84,7 @@ kind: "package-reference"
 评论、私信与确认票这三个工具也在 `src/tools.ts`：`qq_comment_post` 只把正文、话题与当前会话键交给 `publish('comment', …)`；`qq_send_private` 把对象拼成 `private:编号` 当会话键交给 `publish('private', …)`，没报对象就带一个空号，让发布入口按缺对象拒；`qq_request_confirm` 与 `qq_confirm_action` 分别调 `requestConfirm(kind, text, at)` 与 `confirm(confirmId, at)`。四个工具都不判该不该发，拒绝原样抛出，只把 `*.needs_confirm` 那一条的下一步改写为「先调 qq_request_confirm 再调 qq_confirm_action」；要票的品类清单 `CONFIRM_KINDS` 从 `ACTION_DEFAULTS` 里 `confirmRequired` 为真的那几项取，别处不写第二份。
 
 分条发在 `src/tools.ts` 里：体检与额度这两道先过，再用这一轮的条数上限调 `qq-pacing` 的 `splitByBudget`，条与条之间按 `speechGaps` 给的间隔停一下再发下一条。上限由装配层通过 `seam.useReplyCap(provide)` 接进来，读的是组合包每轮算出的那个数；没接上就按 `REPLY_DEFAULTS.minCap` 发一条。单条的字数口径与长度那道闸是同一个 `maxChars`，切出来的每条都过得了它。中途某条没发出去就停在那儿：已经发出去的不撤也不再重发，抛出的失败里写明已发几条、卡在第几条，发送这一路先报已发的条数再报 `blocked`。
+
+遗书那个工具在 `src/tools.ts` 的末尾，参数只有 `text`，`execute` 把正文交给装配时传进来的 `stageFarewell(text, Date.now())`，拒了就把码、原因与下一步原样抛出，不改写正文、不重试、不写记忆。它自己不判该不该写：什么时候该说仍由身体事实与模型自己定。
+
+暂存槽在 `src/farewell-slot.ts`：`data/qq-farewell.json` 里一个 `version`、写下时刻 `at`、那一刻的本地零点 `dayStart` 与正文 `text`，一天只留一句，同一天第二次回 `farewell.duplicate`，空正文回 `farewell.empty`，写不进去回 `farewell.write_failed`。同一天的判据只看 `dayStart`，不另记日期串；写盘复用 `action-store.ts` 的 `writeAtomic`（先临时文件再改名）。读的入口是 `readFarewellSlot(file)` 与 `farewellTextAt(slot, at)`：文件不在或内容对不上都算没写过，文件在却读不动时抛给调用方决定要不要记一行。槽的位置由 `farewellFile` 配置，默认 `defaultFarewellSlotFile()`（`<HUOLI_HOME>/data/qq-farewell.json`）；组合包读的是同一个文件，所以两边不填就落在同一处。

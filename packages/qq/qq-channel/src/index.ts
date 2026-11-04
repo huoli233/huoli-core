@@ -11,6 +11,7 @@ import { createOutboundCheck, OUTBOUND_DEFAULTS, type OutboundTuning } from './o
 import { ACTION_DEFAULTS, CONFIRM_DEFAULTS, POLICY_DEFAULTS, type ActionFacts, type ActionResult, type ActionTuning, type ActionTunings } from './actions.ts'
 import { createActionGate } from './action-gate.ts'
 import { createActionStore } from './action-store.ts'
+import { createFarewellSlotStore, defaultFarewellSlotFile } from './farewell-slot.ts'
 import { registerChannelTools } from './tools.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
@@ -23,6 +24,8 @@ export type { ActionGateOptions } from './action-gate.ts'
 export { createActionGate } from './action-gate.ts'
 export type { ActionFingerprint, ActionKindState, ActionState, ActionStore, ActionStoreOptions, PendingAction } from './action-store.ts'
 export { ACTION_STATE_VERSION, createActionStore, emptyActionState } from './action-store.ts'
+export type { FarewellSlot, FarewellSlotOptions, FarewellSlotStore, FarewellStage } from './farewell-slot.ts'
+export { createFarewellSlotStore, defaultFarewellSlotFile, FAREWELL_SLOT_VERSION, farewellTextAt, readFarewellSlot } from './farewell-slot.ts'
 export type { WsChannel, WsHandlers, WsOptions } from './ws.ts'
 export { createWsChannel } from './ws.ts'
 
@@ -116,6 +119,8 @@ export interface Config {
   privateMinStage?: string
   /** 三类动作的状态文件放哪，不填就落在数据根目录下的 data */
   actionsFile?: string
+  /** 遗书正文的暂存槽放哪，不填就落在数据根目录下的 data */
+  farewellFile?: string
 }
 
 const seams = new WeakMap<Context, QqChannelSeam>()
@@ -270,6 +275,9 @@ export function apply(ctx: Context, config: Config): void {
     stage: () => stageCheck?.(),
   })
 
+  // 遗书正文的暂存槽与三类动作的状态各一份文件，互不影响
+  const farewell = createFarewellSlotStore({ file: config.farewellFile ?? defaultFarewellSlotFile() })
+
   const seam: QqChannelSeam = {
     channel,
     status() {
@@ -349,6 +357,7 @@ export function apply(ctx: Context, config: Config): void {
     publish: (kind, text, facts) => seam.publish(kind, text, facts),
     requestConfirm: (kind, text, at) => seam.requestConfirm(kind, text, at),
     confirm: (confirmId, at) => seam.confirm(confirmId, at),
+    stageFarewell: (text, at) => farewell.stage(text, at),
   })
 
   channel.start()

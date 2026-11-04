@@ -10,7 +10,7 @@ import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
 import { qqMaterialOf } from '@huoli/huoli-qq-material'
 import { buildInjectBlock, injectIntoUserText, localDay, qqMemoryOf, shouldInject } from '@huoli/huoli-qq-memory'
-import { hasWords, qqChannelOf, type ActionResult, type IncomingMessage } from '@huoli/huoli-qq-channel'
+import { hasWords, qqChannelOf, readFarewellSlot, defaultFarewellSlotFile, farewellTextAt, type ActionResult, type IncomingMessage } from '@huoli/huoli-qq-channel'
 import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
 import { qqProactiveOf, type Candidate, type DeliverResult, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
@@ -27,6 +27,7 @@ export type { DecisionBlock, DecisionLog, DecisionRecord } from './decisions.ts'
 export { createDecisionLog } from './decisions.ts'
 export { BUNDLE_DEFAULTS } from './defaults.ts'
 export { FAREWELL_NEUTRAL, farewellMetadata, farewellText, farewellWritten } from './farewell.ts'
+export type { FarewellAuthor } from './farewell.ts'
 export {
   appendMaintenanceLine,
   defaultMaintenanceLogFile,
@@ -78,8 +79,10 @@ export interface Config {
   farewellMemory?: boolean
   /** 遗书写成一条记忆时的重要度 */
   farewellMemoryImportance?: number
-  /** 调用方给的模型文本，遗书正文用它，不给就写一句中性的话 */
+  /** 调用方给的模型文本，模型自己没写过时遗书正文用它，再没有就写一句中性的话 */
   farewellText?: string
+  /** 遗书正文的暂存槽放哪，要与通道那一份是同一个文件 */
+  farewellFile?: string
 }
 
 /** 一次投递的结论：没投出去的码与发布入口回来的那一段都摆在这里 */
@@ -411,8 +414,19 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 遗书写一条记忆：会话取当前活跃的那个，同一天同一个人只写一条
   const farewellImportance = config.farewellMemoryImportance ?? BUNDLE_DEFAULTS.farewellMemoryImportance
+  const farewellFile = config.farewellFile ?? defaultFarewellSlotFile(config.home)
 
-  // 这一条写成一条记忆：正文用调用方给的模型文本，去重看记忆里已有的条
+  // 模型自己在暂存槽里写过的那一句：槽在却读不动只记一行，接着按没写过办
+  const modelWords = (fact: FarewellFact): string | undefined => {
+    try {
+      return farewellTextAt(readFarewellSlot(farewellFile), fact.at)
+    } catch (error) {
+      ctx.logger('qq-bundle').warn('遗书的暂存槽没读出来：%s', String(error))
+      return undefined
+    }
+  }
+
+  // 这一条写成一条记忆：正文先用模型自己写的，没写才用配置或中性那句，去重看记忆里已有的条
   const writeFarewell = (fact: FarewellFact): void => {
     if (memory === undefined) return
     const chatKey = subject?.store.read().lastActive ?? ''
@@ -421,12 +435,13 @@ export function apply(ctx: Context, config: Config = {}): void {
       return
     }
     if (farewellWritten(memory.store.all(), chatKey, fact.at)) return
-    memory.write(farewellText(config.farewellText), chatKey, {
+    const authored = modelWords(fact)
+    memory.write(farewellText(authored ?? config.farewellText), chatKey, {
       layer: 'semantic',
       source: 'chat',
       importance: farewellImportance,
       at: fact.at,
-      metadata: farewellMetadata(fact),
+      metadata: farewellMetadata(fact, authored === undefined ? 'fallback' : 'model'),
     })
   }
 

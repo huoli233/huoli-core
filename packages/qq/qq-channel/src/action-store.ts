@@ -94,8 +94,12 @@ function readText(file: string): string | undefined {
   }
 }
 
-// 原子写：先写同目录的临时文件，再改名顶上
-function writeAtomic(file: string, text: string): void {
+/**
+ * 原子写：先写同目录的临时文件，再改名顶上
+ * @param file - 要盖写的文件
+ * @param text - 要写进去的整段文本
+ */
+export function writeAtomic(file: string, text: string): void {
   const temporary = `${file}.${process.pid}.tmp`
   try {
     fs.writeFileSync(temporary, text, { mode: 0o600 })

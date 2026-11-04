@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import SystemPrompt from '@huoli/huoli-system-prompt'
+import { createFarewellSlotStore } from '@huoli/huoli-qq-channel'
 import { apply as applyMemory, qqMemoryOf, type QqMemorySeam } from '@huoli/huoli-qq-memory'
 import { apply as applySubject, qqSubjectOf } from '@huoli/huoli-qq-subject'
 import {
@@ -40,6 +41,8 @@ interface Mounted {
   ctx: Context
   vitals: QqVitalsSeam
   memory: QqMemorySeam
+  /** 遗书正文的暂存槽落在哪 */
+  farewellFile: string
   /** 组合包发过几次订阅、眼下还挂着几个监听 */
   live: { subscribed: number; listeners: number }
   /** 直接把一条到线的事实送进去，等于身体在那一拍产出了它 */
@@ -84,11 +87,18 @@ async function mount(config: Config = {}): Promise<Mounted> {
       off()
     }
   }
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(dir, 'decisions.jsonl'), ...config })
+  applyBundle(ctx, {
+    maxSteps: 5,
+    dailySweepHour: 4,
+    decisionsFile: path.join(dir, 'decisions.jsonl'),
+    farewellFile: path.join(dir, 'farewell.json'),
+    ...config,
+  })
   return {
     ctx,
     vitals,
     memory,
+    farewellFile: config.farewellFile ?? path.join(dir, 'farewell.json'),
     live,
     deliver(fact) {
       for (const listener of [...listeners]) listener(fact)
@@ -116,7 +126,7 @@ describe('到线那天写一条记忆', () => {
     expect(items[0]?.layer).toBe('semantic')
     expect(items[0]?.scope).toBe(CHAT)
     expect(items[0]?.importance).toBe(BUNDLE_DEFAULTS.farewellMemoryImportance)
-    expect(items[0]?.metadata).toEqual({ kind: 'farewell', at: moment(3, 9), mortality: 0.9 })
+    expect(items[0]?.metadata).toEqual({ kind: 'farewell', at: moment(3, 9), mortality: 0.9, authoredBy: 'fallback' })
   })
 
   it('正文用调用方给的模型文本，重要度按配置', async () => {
@@ -127,6 +137,7 @@ describe('到线那天写一条记忆', () => {
     const items = memory.store.all()
     expect(items[0]?.text).toBe('记得按时吃饭')
     expect(items[0]?.importance).toBe(88)
+    expect(items[0]?.metadata?.authoredBy).toBe('fallback')
   })
 
   it('心跳拍到线真的走到这一步', async () => {
@@ -140,6 +151,80 @@ describe('到线那天写一条记忆', () => {
     expect(items).toHaveLength(1)
     expect(items[0]?.metadata?.kind).toBe('farewell')
     expect(items[0]?.metadata?.mortality).toBeCloseTo(0.9, 10)
+  })
+})
+
+describe('正文由谁写', () => {
+  it('模型自己写过就用它写的，标 model，配置那句不用', async () => {
+    const { memory, farewellFile, deliver } = await mount({ farewellText: '记得按时吃饭' })
+    createFarewellSlotStore({ file: farewellFile }).stage('冰箱里还有一盒酸奶，记得吃掉。', moment(3, 8))
+
+    deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
+
+    const items = memory.store.all()
+    expect(items).toHaveLength(1)
+    expect(items[0]?.text).toBe('冰箱里还有一盒酸奶，记得吃掉。')
+    expect(items[0]?.metadata?.authoredBy).toBe('model')
+  })
+
+  it('模型没写过才用配置或中性那句，标 fallback', async () => {
+    const configured = await mount({ farewellText: '记得按时吃饭' })
+    configured.deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
+
+    const neutral = await mount()
+    neutral.deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
+
+    expect(configured.memory.store.all()[0]?.text).toBe('记得按时吃饭')
+    expect(configured.memory.store.all()[0]?.metadata?.authoredBy).toBe('fallback')
+    expect(neutral.memory.store.all()[0]?.text).toBe(FAREWELL_NEUTRAL)
+    expect(neutral.memory.store.all()[0]?.metadata?.authoredBy).toBe('fallback')
+  })
+
+  it('模型写在前一天，到线这天不算写过，按兜底写', async () => {
+    const { memory, farewellFile, deliver } = await mount()
+    createFarewellSlotStore({ file: farewellFile }).stage('昨天想说的那句', moment(2, 8))
+
+    deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
+
+    expect(memory.store.all()[0]?.text).toBe(FAREWELL_NEUTRAL)
+    expect(memory.store.all()[0]?.metadata?.authoredBy).toBe('fallback')
+  })
+
+  it('两种来路都只写一条，当天第二遍不再写', async () => {
+    const written = await mount()
+    createFarewellSlotStore({ file: written.farewellFile }).stage('你别一个人扛', moment(3, 8))
+    written.deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
+    written.deliver({ at: moment(3, 15), mortality: 0.95, reason: '余额见底' })
+
+    const fallback = await mount()
+    fallback.deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
+    fallback.deliver({ at: moment(3, 15), mortality: 0.95, reason: '余额见底' })
+
+    expect(written.memory.store.all()).toHaveLength(1)
+    expect(fallback.memory.store.all()).toHaveLength(1)
+  })
+})
+
+describe('暂存槽读不动', () => {
+  it('只记一行日志，记忆照写兜底那句，别的订阅者照旧', async () => {
+    const { ctx, vitals, memory, farewellFile, deliver } = await mount()
+    // 槽的位置被一个目录占着：文件在却读不动
+    fs.rmSync(farewellFile, { force: true })
+    fs.mkdirSync(farewellFile, { recursive: true })
+    const heard: number[] = []
+    vitals.onFarewell((fact) => {
+      heard.push(fact.at)
+    })
+
+    deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
+
+    const items = memory.store.all()
+    expect(items).toHaveLength(1)
+    expect(items[0]?.text).toBe(FAREWELL_NEUTRAL)
+    expect(items[0]?.metadata?.authoredBy).toBe('fallback')
+    expect(heard).toEqual([moment(3, 9)])
+    const warnings = ctx.logger.buffer.filter(message => message.name === 'qq-bundle' && message.type === 'warn')
+    expect(warnings.filter(message => String(message.args[0]).includes('暂存槽'))).toHaveLength(1)
   })
 })
 

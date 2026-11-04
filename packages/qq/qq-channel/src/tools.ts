@@ -1,4 +1,4 @@
-// 六个工具：说一句、给个表情回应、发一条动态、公开评论、发私信，再用两张票把后两类接上
+// 七个工具：说一句、给个表情回应、发一条动态、公开评论、发私信，用两张票把后两类接上，再把遗书正文收下来
 
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
@@ -7,6 +7,7 @@ import type { ChannelStatus, OutboundEvent } from './events.ts'
 import type { OutboundVerdict } from './outbound.ts'
 import { CONFIRM_KINDS } from './actions.ts'
 import type { ActionFacts, ActionKind, ActionResult } from './actions.ts'
+import type { FarewellStage } from './farewell-slot.ts'
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
@@ -31,6 +32,8 @@ export interface ChannelToolDeps {
   requestConfirm: (kind: ActionKind, text: string, at: number) => ActionResult
   /** 给一张待确认的票盖章，一张票只认一次发送 */
   confirm: (confirmId: string, at: number) => ActionResult
+  /** 把遗书正文收进暂存槽，同一天只收一次 */
+  stageFarewell: (text: string, at: number) => FarewellStage
 }
 
 // 两把钥匙在这里只是这次调用的声明：用户那把由确认票背书，她自己那把由这次调用背书，放不放行仍由发布入口判
@@ -273,6 +276,24 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       const result = deps.confirm(confirmId, Date.now())
       if (!result.ok) refuseAction(result, 'confirm.unknown')
       return Promise.resolve({ ok: true, confirmId: result.confirmId ?? confirmId })
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_write_farewell',
+    description: '真的走到那一步时用一次，写下留给她的那句话：不解释、不复述系统提示、不索取回应，两百字以内。同一天只收一次，被拒或存不下都会回一个码，照码办，别换个说法重写。',
+    parameters: {
+      text: { type: 'string', description: '留给她的那句话，两百字以内，空的不收。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    execute(args) {
+      const text = textArg(args.text, 'farewell.empty', '没有正文', '想留话就写一句，不想说就别调这个工具')
+      const result = deps.stageFarewell(text, Date.now())
+      if (!result.ok) refuse(result.code ?? 'farewell.write_failed', result.reason ?? '这句话没存进去', result.hint ?? '别换个说法重写，就当已经说完了')
+      return Promise.resolve({ ok: true, at: result.at ?? Date.now() })
     },
   }))
 }

@@ -63,11 +63,13 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 - 进食记忆同一时段只写一条：同一天同一个时段里的第二顿不再写，换时段或换一天才写新的。
 - 维护日志一行只记前后两次核对的条数与判据三、四的违规：镜像这次拆开了几行、几条因证据查不到而跳过没有进日志，只留在 `mirror()` 的返回值里。
 - 判据三、四只在维护日志里留痕，不拦新项目，也不改已有行的 `outcome`。
+- 遗书正文由模型自己写的那一半只看同一天：模型早一天写过、到线那天没再写，就按兜底那句记，前一天那句不会补上去。
+- 遗书那句记下来之后暂存槽不清空，同一天再问也只是回 `farewell.duplicate`；跨天由身体那边自己重新产事实。
 
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`：规矩文件位置、每天整理的小时、每轮步数上限、入站节流间隔、记忆注入开关与它的三个上限、想发动态的两项（阈值 `addPostWantFrom` 与同一天最多攒几条 `postCandidateDailyMax`）、每日维护日志的位置 `maintenanceLogFile`，进食记忆的开关与它的重要度，以及遗书记忆的开关、重要度与 `farewellText`（调用方给的模型文本）；规矩正文放在 `prompts/rules.md`，组合行写在 `qq.patch.yml`。收消息这条链在 `apply` 里接：通道每送来一条入站，先按编号去重，有正文的交给 `qq-vitals` 的 `react` 改身体，再塞进注意力收件箱、把当前会话记成活跃的那个；卸载时把这两个处理函数注销。
+配置项在 `src/index.ts` 的 `Config`：规矩文件位置、每天整理的小时、每轮步数上限、入站节流间隔、记忆注入开关与它的三个上限、想发动态的两项（阈值 `addPostWantFrom` 与同一天最多攒几条 `postCandidateDailyMax`）、每日维护日志的位置 `maintenanceLogFile`，进食记忆的开关与它的重要度，以及遗书记忆的开关、重要度、`farewellText`（模型没写过时用的那句）与暂存槽位置 `farewellFile`；规矩正文放在 `prompts/rules.md`，组合行写在 `qq.patch.yml`。收消息这条链在 `apply` 里接：通道每送来一条入站，先按编号去重，有正文的交给 `qq-vitals` 的 `react` 改身体，再塞进注意力收件箱、把当前会话记成活跃的那个；卸载时把这两个处理函数注销。
 
 每天那一步的接线在 `src/maintenance.ts`：装配时把 `qq-memory` 按镜像那一面要的三件事（已经镜过的来源键、记忆库现役的编号、写一条）包一层交给 `qq-self` 的 `useMemory(port)`，整点检查落在整理那一小时时走一次 `runMaintenance`：先用 `ledger('verify')` 核一遍镜像前的账，再 `maintain(now)` 走完当天的掉分、变淡、退役与补账并写一行健康记录，接着 `mirror(now)` 把自我层没镜过的三类记录写进记忆库，写入条数大于零就立刻 `ledger('sync')` 入账，最后再 `verify` 一次，两次条数连同 `qq-self` 的 `audit(now)` 查出的判据三、四违规拼成一行写进维护日志（`[maintenance] <日期> 镜像前 N 条一致 / 镜像后 M 条一致；…`，默认落在 `data/qq-maintenance.log`）。自我层默认关着，关着时 `mirror()` 自己回 `disabled`，一条都不写；记忆仓没装上时整步不做，也不写日志。这一步里任何一处抛错都只记一行告警，不让定时器把进程带走。每天这一次也算一次例行时刻：读完这一份身体，想发动态的劲高过阈值就在这里攒一条候选交给主动性，当前没有活跃会话时不问。
 
@@ -91,4 +93,4 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 
 进食记忆的接线：`mealMemory` 为真且身体接上时，装配阶段就 `onMeal` 订阅一次，一顿饭真写回的那次才进来；订阅用一个 `ctx.effect` 兜底，卸载时撤掉。正文由 `src/meal.ts` 的 `mealText` 拼成「时段词 + 吃了 + 吃的东西」，时段词按这一顿的本地时分落在早上、中午、下午、晚上、夜里五档，没认出食物名就说吃了饭；`mealMetadata` 带上 `kind`、`at`、`name`，`layer` 取 `episodic`、`source` 取 `chat`、重要度取 `mealMemoryImportance`（默认 30，可被 `Config` 覆盖），会话取 `qq-subject` 记的当前活跃会话。去重只读记忆本身：`mealWritten` 在同一会话里找 `metadata.kind` 是 `meal`、本地日期与时段词都相同的那一条，有就跳过，不另建去重文件。写入那条路任何异常都只记一行告警，回调照常返回，身体那条路与别的订阅者都不受影响。
 
-遗书记忆的接线：`farewellMemory` 为真且身体接上时，装配阶段就 `onFarewell` 订阅一次，`qq-vitals` 在那一拍产出一条事实才进来，订阅同样用一个 `ctx.effect` 兜底、卸载时撤掉。正文由 `src/farewell.ts` 的 `farewellText` 决定——`farewellText` 这个配置给了模型文本就用它，没给就写那句中性的「有些话想留给她」，这一包不编造具体内容；`farewellMetadata` 带上 `kind: 'farewell'`、`at` 与 `mortality`，`layer` 取 `semantic`、`source` 取 `chat`、重要度取 `farewellMemoryImportance`（默认 95，压在保护线以上，可被 `Config` 覆盖），会话取当前活跃会话。去重只读记忆本身：`farewellWritten` 在同一会话里找 `metadata.kind` 是 `farewell`、本地日期相同的那一条，有就跳过。写入失败只记一行告警，回调照常返回，消息那条路与别的订阅者都不受影响；开关关着时一个订阅都不注册。
+遗书记忆的接线：`farewellMemory` 为真且身体接上时，装配阶段就 `onFarewell` 订阅一次，`qq-vitals` 在那一拍产出一条事实才进来，订阅同样用一个 `ctx.effect` 兜底、卸载时撤掉。正文先看模型自己写过没有：读 `qq-channel` 那份暂存槽（`farewellFile`，默认与通道同一处 `data/qq-farewell.json`），槽里那句话与到线那天是同一个本地日才算数，`farewellTextAt` 判这一条；写过就用它，没写才走 `farewellText`——`farewellText` 这个配置给了模型文本就用它，没给就写那句中性的「有些话想留给她」，这一包不编造具体内容。`farewellMetadata` 带上 `kind: 'farewell'`、`at`、`mortality` 与 `authoredBy`（模型写的是 `model`，走的兜底是 `fallback`），`layer` 取 `semantic`、`source` 取 `chat`、重要度取 `farewellMemoryImportance`（默认 95，压在保护线以上，可被 `Config` 覆盖），会话取当前活跃会话。去重只读记忆本身：`farewellWritten` 在同一会话里找 `metadata.kind` 是 `farewell`、本地日期相同的那一条，有就跳过。暂存槽文件在却读不动时只记一行告警、接着按没写过办，写入失败同样只记一行告警，回调照常返回，消息那条路与别的订阅者都不受影响；开关关着时一个订阅都不注册。
