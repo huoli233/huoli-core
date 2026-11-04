@@ -2,32 +2,42 @@
 
 import { biasUnit, type Tuning } from './defaults.ts'
 import { above, clamp, clampRange } from './math.ts'
-import type { VitalsState } from './types.ts'
+import type { CyclePhase, VitalsState } from './types.ts'
 
-// 精力：递质抬，皮质醇、褪黑素、口渴、睡眠压力、生病往下压
-function energyOf(s: VitalsState): number {
+// 相位命中其一就给一，其余给零
+function phaseHit(state: VitalsState, phases: readonly CyclePhase[]): number {
+  return phases.includes(state.cycle_phase) ? 1 : 0
+}
+
+// 精力：递质抬，皮质醇、褪黑素、口渴、睡眠压力、生病、痛经往下压
+function energyOf(s: VitalsState, tuning: Tuning): number {
   return clamp(
     0.20 + 0.50 * s.noradrenaline + 0.25 * s.adrenaline + 0.10 * s.dopamine + 0.08 * s.acetylcholine
     - 0.14 * s.cortisol - 0.45 * s.melatonin
     - 0.10 * above(s.thirst - 0.40) - 0.22 * above(s.adenosine - 0.45)
-    - 0.20 * s.fever - 0.16 * s.cytokines - 0.15 * s.pain,
+    - 0.20 * s.fever - 0.16 * s.cytokines - 0.15 * s.pain
+    - tuning.energyCrampsPenalty * s.cramps
+    - tuning.energyLutealPenalty * phaseHit(s, ['luteal', 'premenstrual']),
   )
 }
 
-// 好坏偏向：稳定、满足往上，压力与身体不适往下
-function valenceOf(s: VitalsState): number {
+// 好坏偏向：稳定、满足往上，压力、身体不适与经期前后往下
+function valenceOf(s: VitalsState, tuning: Tuning): number {
   return clamp(
     0.12 + 0.30 * (s.dopamine - 0.5) + 0.22 * (s.serotonin - 0.65)
     - 0.28 * (s.cortisol - 0.2) + 0.12 * (s.endorphin - 0.4)
     - 0.10 * above(s.adrenaline - 0.2) - 0.05 * above(s.crh - 0.3)
     + 0.04 * (s.acetylcholine - 0.45)
     - 0.06 * above(s.thirst - 0.60)
-    - 0.14 * s.fever - 0.10 * s.cytokines - 0.08 * s.pain,
+    - 0.14 * s.fever - 0.10 * s.cytokines - 0.08 * s.pain
+    - tuning.valenceMenstrualPenalty * phaseHit(s, ['menstrual'])
+    - tuning.valencePremenstrualPenalty * phaseHit(s, ['premenstrual'])
+    + tuning.valenceFollicularGain * phaseHit(s, ['follicular']),
   )
 }
 
-// 易怒：压力、低血糖、渴、睡不够、疼、体温高都往里加
-function irritabilityOf(s: VitalsState): number {
+// 易怒：压力、低血糖、渴、睡不够、疼、体温高、经期前后都往里加
+function irritabilityOf(s: VitalsState, tuning: Tuning): number {
   return clamp(
     0.08 + 0.9 * (s.cortisol - 0.2) - 0.2 * (s.serotonin - 0.65)
     + 0.30 * above((0.35 - s.glucose) / 0.35)
@@ -36,7 +46,10 @@ function irritabilityOf(s: VitalsState): number {
     + 0.30 * above(s.thirst - 0.55)
     + 0.32 * above(s.adenosine - 0.55)
     + 0.25 * s.pain
-    + 0.20 * above(s.core_temp - 37.2),
+    + 0.20 * above(s.core_temp - 37.2)
+    + tuning.irritabilityPremenstrualGain * phaseHit(s, ['premenstrual'])
+    + tuning.irritabilityMenstrualGain * phaseHit(s, ['menstrual'])
+    + tuning.irritabilityCrampsGain * s.cramps,
   )
 }
 
@@ -137,9 +150,9 @@ function suppress(scores: Map<string, number>, s: VitalsState): void {
  */
 export function derive(state: VitalsState, tuning: Tuning): VitalsState {
   const next: VitalsState = { ...state }
-  next.energy = energyOf(state)
-  next.valence = valenceOf(state)
-  next.irritability = irritabilityOf(state)
+  next.energy = energyOf(state, tuning)
+  next.valence = valenceOf(state, tuning)
+  next.irritability = irritabilityOf(state, tuning)
   next.clinginess = clinginessOf(state)
   next.loneliness = lonelinessOf(state)
   next.dominance = dominanceOf(state)

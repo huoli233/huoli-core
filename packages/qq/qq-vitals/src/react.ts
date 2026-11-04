@@ -66,6 +66,11 @@ function applyAnger(next: VitalsState, text: string, at: number, tuning: Tuning)
  */
 export function react(state: VitalsState, text: string, at: number, tuning: Tuning): VitalsState {
   const next: VitalsState = { ...state, last_msg: at, last_user_text: text }
+  // 睡着时只记一笔被吵醒，别的一概不动：这条路上不产生回不回的结论
+  if (next.sleep_state === 'sleeping') {
+    next.woken_at = at
+    return next
+  }
   applyDrink(next, text, at, tuning)
   applyPraise(next, text, at, tuning)
   applyAnger(next, text, at, tuning)

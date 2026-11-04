@@ -2,8 +2,10 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { DERIVED_FIELDS, emptyState, NUMERIC_FIELDS, STAMP_FIELDS, type Tuning } from './defaults.ts'
-import type { TasteRecord, VitalsState } from './types.ts'
+import {
+  CYCLE_FIELDS, DERIVED_FIELDS, emptyState, NUMERIC_FIELDS, STAMP_FIELDS, type Tuning,
+} from './defaults.ts'
+import type { CyclePhase, TasteRecord, VitalsState } from './types.ts'
 
 /** 存盘要用的选项 */
 export interface VitalsStoreOptions {
@@ -57,6 +59,13 @@ function toTaste(raw: unknown): TasteRecord | null {
   }
 }
 
+// 相位只认五个字面量，别的一律当没写过
+function toPhase(raw: unknown): CyclePhase | undefined {
+  if (raw === 'menstrual' || raw === 'follicular' || raw === 'ovulation') return raw
+  if (raw === 'luteal' || raw === 'premenstrual') return raw
+  return undefined
+}
+
 // 缺字段用默认值补，类型不对也退回默认值
 function sanitize(raw: unknown, fallback: VitalsState): VitalsState {
   if (raw === null || typeof raw !== 'object') return fallback
@@ -74,6 +83,18 @@ function sanitize(raw: unknown, fallback: VitalsState): VitalsState {
     const value = record[field]
     if (typeof value === 'number' && Number.isFinite(value)) state[field] = value
   }
+  for (const field of CYCLE_FIELDS) {
+    const value = record[field]
+    if (typeof value === 'number' && Number.isFinite(value)) state[field] = value
+  }
+  const sleepState = record.sleep_state
+  if (sleepState === 'awake' || sleepState === 'sleeping' || sleepState === 'waking') state.sleep_state = sleepState
+  // 睡着这一态只有一个来源，读回来之后按它重算投影，两边不会对不上
+  state.asleep = state.sleep_state === 'sleeping'
+  const sleepKind = record.sleep_kind
+  if (sleepKind === '' || sleepKind === 'night' || sleepKind === 'nap') state.sleep_kind = sleepKind
+  const phase = toPhase(record.cycle_phase)
+  if (phase !== undefined) state.cycle_phase = phase
   const level = record.emotion_level
   if (typeof level === 'string' && level.length > 0) state.emotion_level = level
   const candidates = record.emotion_candidates

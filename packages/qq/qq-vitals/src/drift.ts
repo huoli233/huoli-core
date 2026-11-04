@@ -1,9 +1,12 @@
 // 按小时漂移：递质往基线回，口渴这类存量直接累积
 
 import type { Tuning } from './defaults.ts'
-import { isMealHour, isQuietHour, localHour, melatoninTarget, nightness, noradrenalineBaseline } from './clock.ts'
+import {
+  cycleAnchorDay, cycleOf, inNapWindow, inSleepWindow, isDaytime, isMealHour, isQuietHour, localHour,
+  localPoint, melatoninTarget, nightness, nightWakeAt, noradrenalineBaseline,
+} from './clock.ts'
 import { above, clamp, clampRange, decay, follow } from './math.ts'
-import type { VitalsState } from './types.ts'
+import type { CyclePhase, VitalsState } from './types.ts'
 
 // 递质回基线：皮质醇不在这里，它只由 HPA 轴管
 function settleTransmitters(next: VitalsState, hours: number, night: number, hour: number): void {
@@ -85,12 +88,136 @@ function settleGlucose(next: VitalsState, hours: number): void {
 }
 
 // 睡眠压力、体温、免疫、疼痛
-function settleInner(next: VitalsState, hours: number, hour: number, night: number): void {
-  next.adenosine = clamp(next.adenosine + (isQuietHour(hour) ? 0.020 : 0.042) * hours)
+function settleInner(next: VitalsState, hours: number, hour: number, night: number, tuning: Tuning): void {
+  next.adenosine = clamp(next.adenosine + adenosineStep(next, hours, hour, tuning))
   next.cytokines = clamp(decay(next.cytokines, hours, 36))
   next.fever = clamp(follow(next.fever, clamp(next.cytokines * 0.85), 1.0, hours))
   next.core_temp = Math.round((36.55 - 0.30 * night + 1.60 * next.fever) * 100) / 100
   next.pain = clamp(decay(next.pain, Math.min(24, hours), 0.5))
+}
+
+// 醒着继续累积，睡着按睡的速率回血；午睡回得更快
+function adenosineStep(next: VitalsState, hours: number, hour: number, tuning: Tuning): number {
+  if (next.sleep_state === 'sleeping') {
+    const drop = next.sleep_kind === 'nap' ? tuning.napAdenosineDrop : tuning.sleepAdenosineDrop
+    return -drop * hours
+  }
+  return (isQuietHour(hour) ? 0.020 : 0.042) * hours
+}
+
+// 午睡一天只睡一次：上一次午睡和现在是同一个本地零点
+function nappedToday(next: VitalsState, at: number): boolean {
+  if (next.nap_at <= 0) return false
+  return localPoint(next.nap_at).midnight === localPoint(at).midnight
+}
+
+// 入睡：夜里睡眠压力够了就睡，午后按每分钟的概率眯一会
+function startSleep(next: VitalsState, at: number, hour: number, hours: number, tuning: Tuning, random: () => number): void {
+  if (inSleepWindow(hour, tuning) && next.adenosine > tuning.sleepAdenosineFrom) {
+    next.sleep_state = 'sleeping'
+    next.sleep_kind = 'night'
+    next.wake_after = nightWakeAt(at, tuning, random)
+    return
+  }
+  if (!inNapWindow(hour, tuning)) return
+  if (next.adenosine <= tuning.napAdenosineAbove || nappedToday(next, at)) return
+  const chance = clampRange(1 - (1 - tuning.napChancePerMinute) ** (hours * 60), 0, 1)
+  if (random() >= chance) return
+  const span = tuning.napMaxMinutes - tuning.napMinMinutes
+  next.sleep_state = 'sleeping'
+  next.sleep_kind = 'nap'
+  next.nap_at = at
+  next.wake_after = at + Math.round((tuning.napMinMinutes + random() * span) * 60_000)
+}
+
+// 醒来：留一段迷糊窗口，睡的是哪一种决定迷糊多久
+function wakeUp(next: VitalsState, at: number, tuning: Tuning): void {
+  const minutes = next.sleep_kind === 'nap' ? tuning.napGroggyMinutes : tuning.groggyMinutes
+  next.sleep_state = 'waking'
+  next.sleep_kind = ''
+  next.groggy_until = at + Math.round(minutes * 60_000)
+  next.woken_at = 0
+}
+
+// 醒来只看三条：到点、白天里睡眠压力回落到低位、白天最晚那一下
+function wakesNow(next: VitalsState, at: number, hour: number, tuning: Tuning): boolean {
+  if (next.wake_after > 0 && at >= next.wake_after) return true
+  // 午睡只认到点这一条：白天强制醒会把午睡立刻叫醒
+  if (next.sleep_kind === 'nap') return false
+  if (!isDaytime(hour, tuning)) return false
+  if (hour < tuning.wakeLatest) return next.adenosine < tuning.wakeAdenosineBelow
+  return true
+}
+
+// 睡眠三态：睡着时身体照常漂移，只是交互只剩被吵醒一种
+function settleSleep(next: VitalsState, at: number, hour: number, hours: number, tuning: Tuning, random: () => number): void {
+  if (next.sleep_state === 'sleeping') {
+    if (wakesNow(next, at, hour, tuning)) wakeUp(next, at, tuning)
+  } else if (next.sleep_state === 'waking') {
+    if (at >= next.groggy_until) next.sleep_state = 'awake'
+  } else {
+    startSleep(next, at, hour, hours, tuning, random)
+  }
+  next.asleep = next.sleep_state === 'sleeping'
+}
+
+// 落在某一段里的进度，零到一
+function span(day: number, from: number, to: number): number {
+  return clampRange((day - from) / Math.max(1, to - from), 0, 1)
+}
+
+// 雌激素按相位走，卵泡期一路爬升，经期与前经期压得最低
+function estrogenOf(day: number, phase: CyclePhase, tuning: Tuning): number {
+  switch (phase) {
+    case '': return tuning.baseline.estrogen
+    case 'menstrual': return tuning.cycleEstrogenMenstrual
+    case 'follicular': {
+      const start = tuning.cycleMenstrualEnd + 1
+      const t = span(day, start, tuning.cycleFollicularEnd)
+      return tuning.cycleEstrogenFollicularStart + (tuning.cycleEstrogenFollicularEnd - tuning.cycleEstrogenFollicularStart) * t
+    }
+    case 'ovulation': return tuning.cycleEstrogenOvulation
+    case 'luteal': return tuning.cycleEstrogenLuteal
+    case 'premenstrual': return tuning.cycleEstrogenPremenstrual
+  }
+}
+
+// 孕激素在黄体期爬升，经前期维持在高位
+function progesteroneOf(day: number, phase: CyclePhase, tuning: Tuning): number {
+  switch (phase) {
+    case '': return tuning.baseline.progesterone
+    case 'menstrual': return tuning.cycleProgesteroneMenstrual
+    case 'follicular': return tuning.cycleProgesteroneFollicular
+    case 'ovulation': return tuning.cycleProgesteroneOvulation
+    case 'luteal': {
+      const start = tuning.cycleOvulationEnd + 1
+      const t = span(day, start, tuning.cycleLutealEnd)
+      return tuning.cycleProgesteroneLutealStart + (tuning.cycleProgesteroneLutealEnd - tuning.cycleProgesteroneLutealStart) * t
+    }
+    case 'premenstrual': return tuning.cycleProgesteronePremenstrual
+  }
+}
+
+// 痛经只在经期头几天重，往后一天天松下来，经前期留一点
+function crampsOf(day: number, phase: CyclePhase, tuning: Tuning): number {
+  if (phase === 'menstrual') {
+    const t = span(day, 1, tuning.cycleMenstrualEnd)
+    return tuning.cycleCrampsStart + (tuning.cycleCrampsEnd - tuning.cycleCrampsStart) * t
+  }
+  if (phase === 'premenstrual') return tuning.cycleCrampsPremenstrual
+  return 0
+}
+
+// 周期：第几天与相位按真实日期差算，三个激素量跟着相位写回
+function settleCycle(next: VitalsState, at: number, tuning: Tuning): void {
+  const facts = cycleOf(at, tuning)
+  next.cycle_dom = cycleAnchorDay(tuning)
+  next.cycle_day = facts.day
+  next.cycle_len = facts.len
+  next.cycle_phase = facts.phase
+  next.estrogen = clamp(estrogenOf(facts.day, facts.phase, tuning))
+  next.progesterone = clamp(progesteroneOf(facts.day, facts.phase, tuning))
+  next.cramps = clamp(crampsOf(facts.day, facts.phase, tuning))
 }
 
 // 水队列一次性结算：一小时之后才成尿，结算过就记下时间
@@ -106,15 +233,18 @@ function drainFluid(next: VitalsState, at: number, tuning: Tuning): void {
  * @param state - 当前状态
  * @param at - 当前毫秒时间戳
  * @param tuning - 参数
+ * @param random - 取零到一的随机源，入睡时刻与抖动都走它，测试可以换成定值
  * @returns 漂移后的状态
  */
-export function drift(state: VitalsState, at: number, tuning: Tuning): VitalsState {
+export function drift(state: VitalsState, at: number, tuning: Tuning, random: () => number = Math.random): VitalsState {
   const hours = clampRange((at - state.last_update) / 3_600_000, 0, tuning.hoursCap)
   const next: VitalsState = { ...state, last_update: at }
   drainFluid(next, at, tuning)
+  settleCycle(next, at, tuning)
   if (hours < tuning.minDriftHours) return next
   const hour = localHour(at)
   const night = nightness(hour, tuning)
+  settleSleep(next, at, hour, hours, tuning, random)
   settleTransmitters(next, hours, night, hour)
   const load = settleHpa(next, hours)
   settleAutonomic(next, hours, night, load)
@@ -124,6 +254,6 @@ export function drift(state: VitalsState, at: number, tuning: Tuning): VitalsSta
   settleHunger(next, hours, hour, (at - next.last_meal) / 3_600_000)
   settleWater(next, hours, hour, tuning)
   settleGlucose(next, hours)
-  settleInner(next, hours, hour, night)
+  settleInner(next, hours, hour, night, tuning)
   return next
 }

@@ -1,5 +1,11 @@
 // 这一包管的那份身体状态：字段名给面板和提示词共用
 
+/** 睡眠三态：醒着、睡着、刚醒还没缓过来的迷糊窗口 */
+export type SleepState = 'awake' | 'sleeping' | 'waking'
+
+/** 周期相位，空串表示这一份状态还没算过日期 */
+export type CyclePhase = '' | 'menstrual' | 'follicular' | 'ovulation' | 'luteal' | 'premenstrual'
+
 /** 初始值与漂移都要用到的数值字段，除体温外都是 0~1 */
 export interface Baseline {
   /** 多巴胺，0~1，默认 0.50，给想要与动力定个中间起点 */
@@ -58,6 +64,12 @@ export interface Baseline {
   cytokines: number
   /** 疼痛，0~1，默认 0.0，不疼 */
   pain: number
+  /** 雌激素，0~1，默认 0.35，之后按周期相位重算 */
+  estrogen: number
+  /** 孕激素，0~1，默认 0.20，之后按周期相位重算 */
+  progesterone: number
+  /** 痛经，0~1，默认 0.0，只在经期与前经期抬起来 */
+  cramps: number
 }
 
 /** 最近一次尝到或喝到的东西 */
@@ -84,6 +96,28 @@ export interface VitalsState extends Baseline {
   post_want: number
   emotion_level: string
   emotion_candidates: string[]
+  /** 睡眠三态，睡着期间身体照常漂移，交互只剩被吵醒一种 */
+  sleep_state: SleepState
+  /** 睡着这一态的布尔投影，给只读这段状态的下游用，写的地方只有一处 */
+  asleep: boolean
+  /** 这一觉是夜睡还是午睡，醒着时为空串 */
+  sleep_kind: '' | 'night' | 'nap'
+  /** 预计醒来的毫秒时间戳，零表示没排期 */
+  wake_after: number
+  /** 迷糊窗口的截止毫秒时间戳，零表示不迷糊 */
+  groggy_until: number
+  /** 被消息吵醒的时刻，毫秒时间戳，零表示没被吵过 */
+  woken_at: number
+  /** 上次午睡开始的时刻，毫秒时间戳，用来判当天已经睡过 */
+  nap_at: number
+  /** 每月开经日，取自配置里的 cycleDom */
+  cycle_dom: number
+  /** 当前周期第几天，从开经日算起 */
+  cycle_day: number
+  /** 本月周期长度，随月份是 28~31 天 */
+  cycle_len: number
+  /** 当前相位，由开经日与今天的真实日期差算出 */
+  cycle_phase: CyclePhase
   last_update: number
   last_msg: number
   last_meal: number

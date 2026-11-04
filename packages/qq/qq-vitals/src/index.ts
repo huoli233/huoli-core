@@ -14,6 +14,7 @@ import type { VitalsState } from './types.ts'
 
 export type { Tuning } from './defaults.ts'
 export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
+export { cycleOf } from './clock.ts'
 export { derive } from './derive.ts'
 export { drift } from './drift.ts'
 export { postLevel } from './post.ts'
@@ -23,7 +24,7 @@ export { renderPrompt, thirstNote } from './render.ts'
 export { isDrink } from './words.ts'
 export { createVitalsStore } from './store.ts'
 export type { VitalsStoreOptions, VitalsStore } from './store.ts'
-export type { Baseline, TasteRecord, VitalsState } from './types.ts'
+export type { Baseline, CyclePhase, SleepState, TasteRecord, VitalsState } from './types.ts'
 
 /** 一个应用里的那份身体 */
 export interface QqVitalsSeam {

@@ -121,6 +121,106 @@ export interface Tuning {
   melatoninUntil: number
   /** 水分流失的代谢倍率，默认 1.0 为基准，参与计算时夹在 0.75 到 1.7 之间 */
   metabolicRate: number
+  /** 夜睡从几点开始，本地小时 0~24，默认 23 点 */
+  sleepFrom: number
+  /** 夜睡到几点算天亮，本地小时 0~24，默认 7 点 */
+  sleepUntil: number
+  /** 睡眠压力高过这条线才睡得着，0~1 标度，默认 0.50 */
+  sleepAdenosineFrom: number
+  /** 夜睡该醒的钟点，本地小时 0~24，默认 7.5 即七点半 */
+  wakeAt: number
+  /** 该醒时刻前后抖动的分钟数，默认 40，让每天不完全一样 */
+  wakeJitterMinutes: number
+  /** 白天里睡眠压力低于这条线就自然醒，0~1 标度，默认 0.30 */
+  wakeAdenosineBelow: number
+  /** 白天最晚这个钟点必须醒，本地小时 0~24，默认 11 点 */
+  wakeLatest: number
+  /** 夜睡一小时掉多少睡眠压力，0~1 标度，默认 0.22 */
+  sleepAdenosineDrop: number
+  /** 夜睡醒后迷糊多久，分钟，默认 15 */
+  groggyMinutes: number
+  /** 午睡时段的起点，本地小时 0~24，默认 12 点 */
+  napFrom: number
+  /** 午睡时段的终点，本地小时 0~24，默认 15 点 */
+  napUntil: number
+  /** 睡眠压力高过这条线才可能睡午觉，0~1 标度，默认 0.22 */
+  napAdenosineAbove: number
+  /** 午睡时段里每分钟睡着的概率，0~1 标度，默认 0.03 */
+  napChancePerMinute: number
+  /** 午睡最短时长，分钟，默认 20 */
+  napMinMinutes: number
+  /** 午睡最长时长，分钟，默认 50 */
+  napMaxMinutes: number
+  /** 午睡一小时掉多少睡眠压力，0~1 标度，默认 0.35，短睡效率更高 */
+  napAdenosineDrop: number
+  /** 午睡醒后迷糊多久，分钟，默认 5 */
+  napGroggyMinutes: number
+  /** 被消息吵醒后还算刚醒多久，分钟，默认 15 */
+  wokenWindowMinutes: number
+  /** 每月开经日，默认 5 号；今天早于它就取上月的这一天 */
+  cycleDom: number
+  /** 经期最后一天，默认第 5 天 */
+  cycleMenstrualEnd: number
+  /** 卵泡期最后一天，默认第 12 天 */
+  cycleFollicularEnd: number
+  /** 排卵期最后一天，默认第 15 天 */
+  cycleOvulationEnd: number
+  /** 黄体期最后一天，默认第 23 天，之后到周期结束都算经前期 */
+  cycleLutealEnd: number
+  /** 经期的雌激素，0~1 标度，默认 0.18 */
+  cycleEstrogenMenstrual: number
+  /** 卵泡期起点的雌激素，0~1 标度，默认 0.25 */
+  cycleEstrogenFollicularStart: number
+  /** 卵泡期终点的雌激素，0~1 标度，默认 0.75 */
+  cycleEstrogenFollicularEnd: number
+  /** 排卵期的雌激素，0~1 标度，默认 0.86 */
+  cycleEstrogenOvulation: number
+  /** 黄体期的雌激素，0~1 标度，默认 0.62 */
+  cycleEstrogenLuteal: number
+  /** 经前期的雌激素，0~1 标度，默认 0.38 */
+  cycleEstrogenPremenstrual: number
+  /** 经期的孕激素，0~1 标度，默认 0.10 */
+  cycleProgesteroneMenstrual: number
+  /** 卵泡期的孕激素，0~1 标度，默认 0.10 */
+  cycleProgesteroneFollicular: number
+  /** 排卵期的孕激素，0~1 标度，默认 0.26 */
+  cycleProgesteroneOvulation: number
+  /** 黄体期起点的孕激素，0~1 标度，默认 0.25 */
+  cycleProgesteroneLutealStart: number
+  /** 黄体期终点的孕激素，0~1 标度，默认 0.70 */
+  cycleProgesteroneLutealEnd: number
+  /** 经前期的孕激素，0~1 标度，默认 0.55 */
+  cycleProgesteronePremenstrual: number
+  /** 经期第一天的痛经，0~1 标度，默认 0.75 */
+  cycleCrampsStart: number
+  /** 经期最后一天的痛经，0~1 标度，默认 0.15 */
+  cycleCrampsEnd: number
+  /** 经前期的痛经，0~1 标度，默认 0.05 */
+  cycleCrampsPremenstrual: number
+  /** 痛经对精力的扣减，默认 0.35 */
+  energyCrampsPenalty: number
+  /** 黄体期与经前期对精力的扣减，默认 0.06 */
+  energyLutealPenalty: number
+  /** 经期对好坏的扣减，默认 0.12 */
+  valenceMenstrualPenalty: number
+  /** 经前期对好坏的扣减，默认 0.10 */
+  valencePremenstrualPenalty: number
+  /** 卵泡期对好坏的加成，默认 0.06 */
+  valenceFollicularGain: number
+  /** 经前期对易怒的加成，默认 0.28 */
+  irritabilityPremenstrualGain: number
+  /** 经期对易怒的加成，默认 0.14 */
+  irritabilityMenstrualGain: number
+  /** 痛经对易怒的加成，默认 0.30 */
+  irritabilityCrampsGain: number
+  /** 细胞因子高过这条线，提示词里要说生病，0~1 标度，默认 0.35 */
+  promptSickCytokinesFrom: number
+  /** 发烧高过这条线也要说生病，0~1 标度，默认 0.30 */
+  promptSickFeverFrom: number
+  /** 睡眠压力高过这条线要说太困，0~1 标度，默认 0.65 */
+  promptSleepyAdenosineFrom: number
+  /** 褪黑素高过这条线也要说太困，0~1 标度，默认 0.55 */
+  promptSleepyMelatoninFrom: number
 }
 
 /** 全仓唯一的默认值表 */
@@ -160,6 +260,9 @@ export const DEFAULTS: Tuning = {
     fever: 0.0,
     cytokines: 0.0,
     pain: 0.0,
+    estrogen: 0.35,
+    progesterone: 0.20,
+    cramps: 0.0,
   },
   // 喝一杯水的写回量
   intensity: 0.6,
@@ -219,6 +322,60 @@ export const DEFAULTS: Tuning = {
   melatoninFrom: 21,
   melatoninUntil: 7,
   metabolicRate: 1.0,
+  // 睡眠与午睡：夜睡一套醒法，午睡只看到点
+  sleepFrom: 23,
+  sleepUntil: 7,
+  sleepAdenosineFrom: 0.50,
+  wakeAt: 7.5,
+  wakeJitterMinutes: 40,
+  wakeAdenosineBelow: 0.30,
+  wakeLatest: 11,
+  sleepAdenosineDrop: 0.22,
+  groggyMinutes: 15,
+  napFrom: 12,
+  napUntil: 15,
+  napAdenosineAbove: 0.22,
+  napChancePerMinute: 0.03,
+  napMinMinutes: 20,
+  napMaxMinutes: 50,
+  napAdenosineDrop: 0.35,
+  napGroggyMinutes: 5,
+  wokenWindowMinutes: 15,
+  // 周期：每月固定日开经，相位按真实日期差算
+  cycleDom: 5,
+  cycleMenstrualEnd: 5,
+  cycleFollicularEnd: 12,
+  cycleOvulationEnd: 15,
+  cycleLutealEnd: 23,
+  cycleEstrogenMenstrual: 0.18,
+  cycleEstrogenFollicularStart: 0.25,
+  cycleEstrogenFollicularEnd: 0.75,
+  cycleEstrogenOvulation: 0.86,
+  cycleEstrogenLuteal: 0.62,
+  cycleEstrogenPremenstrual: 0.38,
+  cycleProgesteroneMenstrual: 0.10,
+  cycleProgesteroneFollicular: 0.10,
+  cycleProgesteroneOvulation: 0.26,
+  cycleProgesteroneLutealStart: 0.25,
+  cycleProgesteroneLutealEnd: 0.70,
+  cycleProgesteronePremenstrual: 0.55,
+  cycleCrampsStart: 0.75,
+  cycleCrampsEnd: 0.15,
+  cycleCrampsPremenstrual: 0.05,
+  // 派生量里的周期项
+  energyCrampsPenalty: 0.35,
+  energyLutealPenalty: 0.06,
+  valenceMenstrualPenalty: 0.12,
+  valencePremenstrualPenalty: 0.10,
+  valenceFollicularGain: 0.06,
+  irritabilityPremenstrualGain: 0.28,
+  irritabilityMenstrualGain: 0.14,
+  irritabilityCrampsGain: 0.30,
+  // 提示词里的可选段落
+  promptSickCytokinesFrom: 0.35,
+  promptSickFeverFrom: 0.30,
+  promptSleepyAdenosineFrom: 0.65,
+  promptSleepyMelatoninFrom: 0.55,
 }
 
 /** 落盘时按数值读回来的字段 */
@@ -228,6 +385,7 @@ export const NUMERIC_FIELDS: readonly (keyof Baseline)[] = [
   'ghrelin', 'leptin', 'glucose', 'insulin', 'glucagon', 'hunger', 'thirst',
   'osmolality', 'blood_volume', 'angiotensin', 'fluid_queue',
   'adenosine', 'core_temp', 'fever', 'cytokines', 'pain',
+  'estrogen', 'progesterone', 'cramps',
 ]
 
 /** 派生上也要落盘的数值字段 */
@@ -240,7 +398,11 @@ export const DERIVED_FIELDS = [
 export const STAMP_FIELDS = [
   'last_update', 'last_msg', 'last_meal', 'last_drink', 'last_drink_at', 'last_taste_at',
   'drink_mem_at', 'fluid_applied_at', 'praise_applied_at', 'anger_applied_at',
+  'wake_after', 'groggy_until', 'woken_at', 'nap_at',
 ] as const
+
+/** 周期里按数值读回来的字段 */
+export const CYCLE_FIELDS = ['cycle_dom', 'cycle_day', 'cycle_len'] as const
 
 /**
  * 把配置里的覆盖项合到默认值上
@@ -280,6 +442,17 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     post_want: clamp(tuning.postStart),
     emotion_level: '平静',
     emotion_candidates: [],
+    sleep_state: 'awake',
+    asleep: false,
+    sleep_kind: '',
+    wake_after: 0,
+    groggy_until: 0,
+    woken_at: 0,
+    nap_at: 0,
+    cycle_dom: tuning.cycleDom,
+    cycle_day: 0,
+    cycle_len: 0,
+    cycle_phase: '',
     last_update: at,
     last_msg: at,
     last_meal: at,

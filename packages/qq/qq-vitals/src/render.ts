@@ -84,6 +84,27 @@ function labelNote(state: VitalsState): string {
   return `标签：${picked}。\n情绪层级：${state.emotion_level}。`
 }
 
+// 被吵醒后的一小段窗口仍按刚醒算
+function recentlyWoken(state: VitalsState, tuning: Tuning): boolean {
+  return state.woken_at > 0 && state.last_update - state.woken_at < tuning.wokenWindowMinutes * 60_000
+}
+
+// 六段可选的话：各自的事实成立才出现，全不成立时整行不出现
+function optionalNote(state: VitalsState, tuning: Tuning): string {
+  const notes: string[] = []
+  if (state.sleep_state === 'sleeping') notes.push('你正睡着，迷迷糊糊的。')
+  if (state.sleep_state === 'waking' || recentlyWoken(state, tuning)) notes.push('刚醒，脑子还沉，别亢奋。')
+  if (state.cycle_phase === 'menstrual') notes.push('在经期，难受就直说，别硬撑。')
+  if (state.cycle_phase === 'premenstrual') notes.push('经前那几天，容易烦也容易饿。')
+  if (state.cytokines > tuning.promptSickCytokinesFrom || state.fever > tuning.promptSickFeverFrom) {
+    notes.push('不舒服，可以直说没力气。')
+  }
+  if (state.adenosine > tuning.promptSleepyAdenosineFrom || state.melatonin > tuning.promptSleepyMelatoninFrom) {
+    notes.push('太困了，句子更短，会走神。')
+  }
+  return notes.join('')
+}
+
 /**
  * 渲染这一轮的语气提示
  * @param state - 当前状态
@@ -93,6 +114,7 @@ function labelNote(state: VitalsState): string {
  */
 export function renderPrompt(state: VitalsState, tuning: Tuning, variant = 0): string {
   const tail = TAILS[variant % TAILS.length] ?? TAILS[0] ?? ''
+  const optional = optionalNote(state, tuning)
   const text = [
     HEADER,
     labelNote(state),
@@ -101,6 +123,7 @@ export function renderPrompt(state: VitalsState, tuning: Tuning, variant = 0): s
     `你身体的感受：${bodyNote(state)}`,
     `你心里的感受：${heartNote(state)}`,
     `表现：${styleNote(state)}`,
+    ...(optional === '' ? [] : [`眼下的情况：${optional}`]),
     '怕和担心只在被触发时出现；平时不提生死，也不拿生死当撒娇手段。',
     tail,
   ].join('\n')
