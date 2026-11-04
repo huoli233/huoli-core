@@ -66,6 +66,12 @@ export interface Tuning extends DecayParams, RecoverParams {
   pinnedAlert: number
   /** 已退役与只剩印象的条数占未退役条数的比例超过它就在健康一行末尾告警 */
   coldRatioAlert: number
+  /** 备份留几份，超出的按最旧先删 */
+  backupKeep: number
+  /** 性格不变快照拿来找记忆的那句，空串只按重要度与新鲜度挑 */
+  snapshotQuery: string
+  /** 性格不变快照拿来试注入的那句闲聊，固定问题集在调用方 */
+  snapshotSample: string
 }
 
 /** 健康一行末尾用的三个告警阈值 */
@@ -106,6 +112,10 @@ export const DEFAULTS: Tuning = {
   pendingAlert: 50,
   pinnedAlert: 30,
   coldRatioAlert: 0.5,
+  backupKeep: 7,
+  // 快照不在这里带问题集：调用方给哪句就试哪句，默认按重要度挑、拿一句闲聊试注入
+  snapshotQuery: '',
+  snapshotSample: '今天过得怎么样？',
 }
 
 /** 截断时清晰度的分量，越清楚越靠前 */

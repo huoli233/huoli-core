@@ -2,6 +2,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import {
   CLARITY_ORDER,
   clarityFor,
@@ -11,6 +12,9 @@ import {
   type Clarity,
 } from '@huoli/huoli-qq-policy'
 import { newId, MEMORY_SOURCES, MEMORY_STATES, type MemoryItem, type MemoryLayer, type MemoryState } from './types.ts'
+
+/** 记忆文件头的版本戳，只有结构变化才动它 */
+export const MEMORY_SCHEMA_VERSION = 1
 
 /** 存文件的选项 */
 export interface MemoryStoreOptions {
@@ -39,7 +43,7 @@ export interface MemoryStore {
 
 // 文件里的样子
 interface StoredMemory {
-  version: 1
+  version: typeof MEMORY_SCHEMA_VERSION
   lastMaintainedDay: string
   items: MemoryItem[]
 }
@@ -138,9 +142,18 @@ function load(file: string): { items: MemoryItem[]; state: MemoryStoreState } {
 function save(file: string, items: readonly MemoryItem[], state: MemoryStoreState): void {
   fs.mkdirSync(path.dirname(file), { recursive: true })
   const temporary = `${file}.${process.pid}.tmp`
-  const body: StoredMemory = { version: 1, lastMaintainedDay: state.lastMaintainedDay, items: [...items] }
+  const body: StoredMemory = { version: MEMORY_SCHEMA_VERSION, lastMaintainedDay: state.lastMaintainedDay, items: [...items] }
   fs.writeFileSync(temporary, `${JSON.stringify(body, null, 2)}\n`, { mode: 0o600 })
   fs.renameSync(temporary, file)
+}
+
+/**
+ * 记忆文件默认落在主目录的 data 下
+ * @param home - 覆盖主目录，不给按环境变量定
+ * @returns 记忆文件的位置
+ */
+export function defaultMemoryFile(home?: string): string {
+  return path.join(resolveHuoliHome(home), 'data', 'qq-memory.json')
 }
 
 /**

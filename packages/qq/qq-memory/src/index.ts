@@ -1,10 +1,8 @@
 // 记忆装配入口：两个工具 + 往上挪 + 每天变淡 + 每天的账与健康一行
 
-import path from 'node:path'
 import type { Context } from '@huoli/cordis'
-import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
-import { createMemoryStore, type MemoryStore } from './store.ts'
+import { createMemoryStore, defaultMemoryFile, type MemoryStore } from './store.ts'
 import { decayAll, promoteAll, sweepOnce } from './sweep.ts'
 import { recall, type RecallHit } from './recall.ts'
 import { registerMemoryTools } from './tools.ts'
@@ -45,6 +43,7 @@ export type {
 } from './types.ts'
 export { CLARITY_LABEL, LAYER_LABEL, LAYER_ORDER, MEMORY_SOURCES } from './types.ts'
 export type { MemoryStore, MemoryStoreOptions, MemoryStoreState } from './store.ts'
+export { defaultMemoryFile, MEMORY_SCHEMA_VERSION } from './store.ts'
 export type { RecallHit, RecallInput, RecallReasons } from './recall.ts'
 export { cosineSimilarity, encodeVector, keyGrams, recall, renderRecall } from './recall.ts'
 export { buildInjectBlock, injectIntoUserText, shouldInject } from './inject.ts'
@@ -76,7 +75,15 @@ export type {
 } from './ledger.ts'
 export { appendHealthLine, defaultHealthLogFile, healthAlerts, healthCounts, healthLine, ledgerLevel, localDay } from './health.ts'
 export type { HealthAlert, HealthCounts, HealthInput, LedgerLevel } from './health.ts'
-export { createWriteQueue, defaultQueueFile, importanceGate, LOW_IMPORTANCE, nearDuplicateOf, writeFact } from './write.ts'
+export {
+  createWriteQueue,
+  defaultQueueFile,
+  importanceGate,
+  LOW_IMPORTANCE,
+  nearDuplicateOf,
+  QUEUE_SCHEMA_VERSION,
+  writeFact,
+} from './write.ts'
 export type {
   EnqueueOutcome,
   FlushOutcome,
@@ -223,7 +230,7 @@ function sceneOf(layer: MemoryLayer, chatKey: string): ImportanceInput['scene'] 
  */
 export function apply(ctx: Context, config: Config = {}): void {
   const tuning = resolveTuning(config.tuning)
-  const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-memory.json')
+  const file = config.file ?? defaultMemoryFile(config.home)
   const ledgerFile = config.ledgerFile ?? defaultLedgerFile(config.home)
   const healthLogFile = config.healthLogFile ?? defaultHealthLogFile(config.home)
   const queueFile = config.queueFile ?? defaultQueueFile(config.home)

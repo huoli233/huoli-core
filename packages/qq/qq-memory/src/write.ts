@@ -10,7 +10,7 @@ import type { MemoryStore } from './store.ts'
 import { MEMORY_SOURCES, newId, type MemoryItem, type MemorySource, type RememberOptions } from './types.ts'
 
 // 队列文件的结构版本，只随结构变化递增，调参不动它；第二版只多了一个丢弃计数，旧文件读回来按 0 起
-const QUEUE_VERSION = 2
+export const QUEUE_SCHEMA_VERSION = 2
 
 /** 重要度不到门槛的失败码，装配层按它数被丢掉的条数 */
 export const LOW_IMPORTANCE = 'memory.low_importance'
@@ -146,7 +146,7 @@ interface QueueFile {
 
 // 一条都没排空过、也没反思过，两个丢弃计数都从零起
 const EMPTY_QUEUE: QueueFile = {
-  version: QUEUE_VERSION,
+  version: QUEUE_SCHEMA_VERSION,
   dropped: 0,
   droppedLow: 0,
   turns: 0,
@@ -209,7 +209,7 @@ function loadQueue(file: string): QueueFile {
       if (fact !== undefined) entries.push(fact)
     }
     return {
-      version: numberOr(parsed.version, QUEUE_VERSION),
+      version: numberOr(parsed.version, QUEUE_SCHEMA_VERSION),
       dropped: Math.max(0, Math.round(numberOr(parsed.dropped, 0))),
       droppedLow: Math.max(0, Math.round(numberOr(parsed.droppedLow, 0))),
       turns: Math.max(0, Math.round(numberOr(parsed.turns, 0))),
@@ -334,7 +334,7 @@ export function createWriteQueue(options: WriteQueueOptions): WriteQueue {
   let lastReflectedAt = loaded.lastReflectedAt
 
   const persist = (): void => {
-    saveQueue(options.file, { version: QUEUE_VERSION, dropped, droppedLow, turns, lastFlushedAt, lastReflectedAt, entries })
+    saveQueue(options.file, { version: QUEUE_SCHEMA_VERSION, dropped, droppedLow, turns, lastFlushedAt, lastReflectedAt, entries })
   }
 
   // 攒下的条目里挑一组同 scope 的，够条数才值得合成
