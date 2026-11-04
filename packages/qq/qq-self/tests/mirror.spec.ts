@@ -20,14 +20,15 @@ interface Handed {
   at: number
 }
 
-// 记忆库那一面的替身：只认来源键，别的照收
-function fakePort(): { port: SelfMirrorPort; handed: Handed[] } {
+// 记忆库那一面的替身：认来源键与现役编号，别的照收
+function fakePort(known: readonly string[] = ['m1', 'm2']): { port: SelfMirrorPort; handed: Handed[] } {
   const handed: Handed[] = []
   const mirrored = new Set<string>()
   return {
     handed,
     port: {
       mirroredSelfIds: () => [...mirrored],
+      memoryIds: () => known,
       rememberSelf: (entry, at) => {
         if (mirrored.has(entry.selfId)) return { id: entry.selfId, created: false }
         mirrored.add(entry.selfId)
@@ -76,7 +77,7 @@ describe('镜像三类', () => {
 
     const kept = seam.mirror(AT)
 
-    expect(kept).toEqual({ written: 3, skipped: 0, overlong: 0 })
+    expect(kept).toEqual({ written: 3, skipped: 0, split: 0, unverified: 0 })
     expect(handed.map(item => item.entry.selfKind)).toEqual(['claim', 'project', 'commitment'])
     expect(handed.map(item => item.entry.selfId)).toEqual(['claims.jsonl#1', 'projects.jsonl#1', 'commitments.jsonl#1'])
     expect(handed.map(item => item.entry.importance)).toEqual([80, 80, 80])
@@ -99,20 +100,43 @@ describe('镜像三类', () => {
     const again = seam.mirror(AT + 60_000)
 
     expect(handed).toHaveLength(1)
-    expect(again).toEqual({ written: 0, skipped: 1, overlong: 0 })
+    expect(again).toEqual({ written: 0, skipped: 1, split: 0, unverified: 0 })
   })
 
-  it('超长的一条不写，只记一笔', async () => {
+  it('超长的一条拆成几条，序号接在来源键后面', async () => {
     const dir = tempDir()
     const seam = await mount(dir)
     const { port, handed } = fakePort()
     seam.useMemory(port)
-    writeRows(dir, 'claims.jsonl', [{ at: AT, id: 'c1', text: '长'.repeat(520) }])
+    const long = '长'.repeat(520)
+    writeRows(dir, 'claims.jsonl', [{ at: AT, id: 'c1', text: long }])
 
     const kept = seam.mirror(AT)
 
-    expect(kept).toEqual({ written: 0, skipped: 0, overlong: 1 })
-    expect(handed).toHaveLength(0)
+    expect(kept).toEqual({ written: 2, skipped: 0, split: 1, unverified: 0 })
+    expect(handed.map(item => item.entry.selfId)).toEqual(['claims.jsonl#1-1', 'claims.jsonl#1-2'])
+    expect(handed.map(item => item.entry.text)).toEqual(['长'.repeat(500), '长'.repeat(20)])
+    // 拆开的两条拼回原文，证据与重要度一条不落
+    expect(handed.map(item => item.entry.text).join('')).toBe(long)
+    expect(handed.every(item => item.entry.evidence.length === 1)).toBe(true)
+    // 再镜一次：基础键已经镜过，拆开的几条也不会再多
+    expect(seam.mirror(AT + 60_000)).toEqual({ written: 0, skipped: 1, split: 0, unverified: 0 })
+  })
+
+  it('证据里的编号查不到就跳过并计数，不写假证据', async () => {
+    const dir = tempDir()
+    const seam = await mount(dir)
+    const { port, handed } = fakePort()
+    seam.useMemory(port)
+    writeRows(dir, 'claims.jsonl', [
+      { at: AT, id: 'c1', text: '夜里那句话是她说给自己听的', evidence: ['m9'] },
+      { at: AT, id: 'c2', text: '这条挂着日期', evidence: ['2026-11-02'] },
+    ])
+
+    const kept = seam.mirror(AT)
+
+    expect(kept).toEqual({ written: 1, skipped: 0, split: 0, unverified: 1 })
+    expect(handed.map(item => item.entry.selfId)).toEqual(['claims.jsonl#2'])
   })
 })
 
@@ -150,7 +174,7 @@ describe('镜像的边界', () => {
 
     const kept = seam.mirror(AT)
 
-    expect(kept).toEqual({ written: 0, skipped: 0, overlong: 0, reason: 'disabled' })
+    expect(kept).toEqual({ written: 0, skipped: 0, split: 0, unverified: 0, reason: 'disabled' })
     expect(handed).toHaveLength(0)
   })
 
@@ -161,7 +185,7 @@ describe('镜像的边界', () => {
 
     const kept = seam.mirror(AT)
 
-    expect(kept).toEqual({ written: 0, skipped: 0, overlong: 0, reason: 'no_memory' })
+    expect(kept).toEqual({ written: 0, skipped: 0, split: 0, unverified: 0, reason: 'no_memory' })
     expect(fs.existsSync(path.join(dir, 'claims.jsonl'))).toBe(true)
   })
 })

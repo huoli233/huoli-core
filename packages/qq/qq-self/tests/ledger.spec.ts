@@ -129,17 +129,20 @@ describe('停手开关', () => {
     expect(ledgerLines(dir)).toHaveLength(1)
   })
 
-  it('PAUSE 时项目与问句也只提议', async () => {
+  it('PAUSE 时项目只留一条提议，问句仍然不落盘', async () => {
     const dir = tempDir()
     const seam = await mount(dir)
     fs.mkdirSync(dir, { recursive: true })
     fs.writeFileSync(path.join(dir, 'PAUSE'), '')
 
     expect(seam.recordProject({ title: '把周报写成一句', next: '先列三条', failIf: '两周没动' }, Date.now()))
-      .toEqual({ written: false, proposed: true, reason: 'paused' })
+      .toEqual({ written: true, proposed: true })
     expect(seam.recordQuestion('为什么夜里更想说话', Date.now()))
       .toEqual({ written: false, proposed: true, reason: 'paused' })
-    expect(fs.existsSync(path.join(dir, 'projects.jsonl'))).toBe(false)
+    const proposals = readRows(dir, 'projects.jsonl')
+    expect(proposals).toHaveLength(1)
+    expect(proposals[0]?.proposed).toBe(true)
+    expect(proposals[0]?.outcome).toBe('dropped')
     expect(fs.existsSync(path.join(dir, 'questions.jsonl'))).toBe(false)
     expect(seam.recordClaim({ text: '夜里她更想说话', confidence: 0.7, evidence: ['m1'] }, Date.now()))
       .toEqual({ written: false, proposed: true, reason: 'paused' })

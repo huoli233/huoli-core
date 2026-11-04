@@ -3,13 +3,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { renderConstitution } from './constitution.ts'
+import { FILES } from './files.ts'
 import { panelBody, panelFile } from './panel.ts'
 import type { SelfSettings } from './types.ts'
-
-// 目录里这几个文件名，别处按同样的名字找
-const CONSTITUTION = 'constitution.md'
-const PANEL = 'panel.md'
-const PAUSE = 'PAUSE'
 
 /**
  * 造一个 id
@@ -115,7 +111,7 @@ export function createSelfStore(options: SelfStoreOptions): SelfStore {
       return fs.existsSync(dir)
     },
     paused() {
-      return fs.existsSync(pathOf(PAUSE))
+      return fs.existsSync(pathOf(FILES.pause))
     },
     lines(name) {
       const text = readText(pathOf(name))
@@ -149,12 +145,12 @@ export function createSelfStore(options: SelfStoreOptions): SelfStore {
       writeAtomic(pathOf(name), text)
     },
     panel() {
-      const text = readText(pathOf(PANEL))
+      const text = readText(pathOf(FILES.panel))
       return text === undefined ? undefined : panelBody(text)
     },
     fresh(now) {
       try {
-        const stat = fs.statSync(pathOf(PANEL))
+        const stat = fs.statSync(pathOf(FILES.panel))
         return stat.size > 0 && now - stat.mtimeMs < settings.panelMaxAgeMs
       } catch (error) {
         // 没这份面板就是要重做一份
@@ -163,11 +159,11 @@ export function createSelfStore(options: SelfStoreOptions): SelfStore {
       }
     },
     writePanel(body, at) {
-      writeAtomic(pathOf(PANEL), panelFile(body, at))
+      writeAtomic(pathOf(FILES.panel), panelFile(body, at))
     },
     seedConstitution() {
-      if (fs.existsSync(pathOf(CONSTITUTION))) return
-      writeAtomic(pathOf(CONSTITUTION), renderConstitution())
+      if (fs.existsSync(pathOf(FILES.constitution))) return
+      writeAtomic(pathOf(FILES.constitution), renderConstitution())
     },
   }
 }

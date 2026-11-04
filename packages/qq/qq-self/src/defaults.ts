@@ -1,5 +1,7 @@
 // 这一层的参数表：改参数只改这张表，Config.settings 能逐项覆盖
 
+import path from 'node:path'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { DRIVE_NEEDS } from './rows.ts'
 import type { PanelLabels, SelfSettings } from './types.ts'
 
@@ -42,9 +44,15 @@ export const DEFAULTS: SelfSettings = {
   claimMaxChars: 200,
   claimEvidenceMax: 3,
   commitmentMaxChars: 200,
+  dayLines: 3,
+  dayLineMaxChars: 60,
+  errorMaxChars: 200,
+  narrativeParaMaxChars: 150,
+  narrativeParasMax: 3,
   openProjectMax: 2,
   questionPerWeekMax: 1,
   weekMs: 7 * 24 * 60 * 60 * 1000,
+  auditFailedWindowMs: 14 * 24 * 60 * 60 * 1000,
   mirrorImportance: 80,
   mirrorMaxChars: 500,
   mirrorScope: 'self:layer',
@@ -75,4 +83,22 @@ export function resolveSettings(overrides?: Partial<SelfSettings>): SelfSettings
     ...overrides,
     labels: { ...DEFAULTS.labels, ...(overrides.labels ?? {}) },
   }
+}
+
+/** 定 SELF_DIR 用的两项 */
+export interface SelfDirOptions {
+  /** 直接给定整个目录，给了就不看数据根目录 */
+  dir?: string | undefined
+  /** 数据根目录，不给就用默认的家目录 */
+  huoliHome?: string | undefined
+}
+
+/**
+ * 定这一层独占的目录
+ * @param options - 目录覆盖与数据根目录
+ * @returns 目录绝对路径
+ */
+export function resolveSelfDir(options: SelfDirOptions = {}): string {
+  if (options.dir !== undefined && options.dir !== '') return options.dir
+  return path.join(resolveHuoliHome(options.huoliHome), 'data', DIR_NAME)
 }

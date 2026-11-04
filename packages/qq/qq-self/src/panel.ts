@@ -2,6 +2,9 @@
 
 import type { PanelInput, SelfSettings } from './types.ts'
 
+// 首行生成时间的写法，读与写共用同一处
+const STAMP_PREFIX = '<!-- generated_at: '
+
 // 压成一行，超过上限就整行不要
 function oneLine(text: string | undefined, max: number): string {
   if (text === undefined) return ''
@@ -70,5 +73,20 @@ export function panelBody(text: string): string {
  * @returns 首行生成时间加正文
  */
 export function panelFile(body: string, at: number): string {
-  return `<!-- generated_at: ${new Date(at).toISOString()} -->\n${body}\n`
+  return `${STAMP_PREFIX}${new Date(at).toISOString()} -->\n${body}\n`
+}
+
+/**
+ * 面板文件首行记的生成时间
+ * @param text - 面板文件全文
+ * @returns ISO 时间，首行没记时为空串
+ */
+export function panelStamp(text: string): string {
+  const cut = text.indexOf('\n')
+  const head = cut < 0 ? text : text.slice(0, cut)
+  const mark = head.indexOf(STAMP_PREFIX)
+  if (mark < 0) return ''
+  const rest = head.slice(mark + STAMP_PREFIX.length)
+  const end = rest.indexOf(' -->')
+  return (end < 0 ? rest : rest.slice(0, end)).trim()
 }

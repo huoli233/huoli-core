@@ -79,14 +79,41 @@ export interface LedgerSummary {
   recentAgency: number
 }
 
+/** 账本判据查出来的一条违规 */
+export interface LedgerViolation {
+  /** 哪条判据：三是有产出才算做成，四是隔一两周要有一次失败 */
+  rule: 'done_without_artifact' | 'no_recent_failed'
+  /** 一句可读的说明 */
+  text: string
+  /** 牵扯的条数 */
+  count: number
+}
+
+/** 查判据三与判据四的口径 */
+export interface AuditOptions {
+  /** 判据四看的窗口，最长两周 */
+  failedWindowMs: number
+}
+
+/** 一次写入没落盘或只提议的原因 */
+export type WriteReason =
+  | 'paused'
+  | 'disabled'
+  | 'unknown_need'
+  | 'duplicate'
+  | 'capped'
+  | 'no_evidence'
+  | 'bad_lines'
+  | 'unknown_chapter'
+
 /** 一次写入的结果 */
 export interface WriteOutcome {
-  /** 落盘了没有 */
+  /** 落盘了没有，提议那条也算落盘 */
   written: boolean
-  /** 是不是只提议，PAUSE 下为真 */
+  /** 落的是不是只提议，PAUSE 下为真 */
   proposed: boolean
   /** 没落盘的原因 */
-  reason?: 'paused' | 'disabled' | 'unknown_need' | 'duplicate' | 'capped' | 'no_evidence'
+  reason?: WriteReason
 }
 
 /** 一个新项目的写法 */
@@ -150,6 +177,8 @@ export interface SelfMirrorWrite {
 export interface SelfMirrorPort {
   /** 已经镜过的来源键 */
   mirroredSelfIds(): readonly string[]
+  /** 记忆库现役的编号，证据回查拿它比对 */
+  memoryIds(): readonly string[]
   /** 写一条镜像，同一个来源键只写一次 */
   rememberSelf(entry: SelfMirrorEntry, at: number): SelfMirrorWrite
 }
@@ -160,8 +189,10 @@ export interface MirrorResult {
   written: number
   /** 已经镜过而跳过的条数 */
   skipped: number
-  /** 超过一条上限没写的条数 */
-  overlong: number
+  /** 超过一条上限、拆成几条写的行数 */
+  split: number
+  /** 证据一条都查不到而跳过的条数 */
+  unverified: number
   /** 一条都没写时为什么 */
   reason?: 'disabled' | 'no_memory'
 }
@@ -328,6 +359,58 @@ export interface CommitmentRow {
   due_at: number
 }
 
+/** 每天三行那一条，跳过的那天也有一条 */
+export interface DayRow {
+  at: number
+  id: string
+  /** 正好三条正文，跳过的那天是三条空串 */
+  lines: readonly string[]
+  /** 今天跳过了没有 */
+  skipped: boolean
+  /** 为什么跳过，没跳过时是空串 */
+  why: string
+}
+
+/** 错题那一条 */
+export interface ErrorRow {
+  at: number
+  id: string
+  /** 判断错在哪 */
+  text: string
+  /** 下一次怎么改 */
+  fix: string
+}
+
+/** 项目状态计数，提议单独一档，算提议不算做成 */
+export interface ProjectTally {
+  /** 没结束的 */
+  open: number
+  /** 做成了的 */
+  done: number
+  /** 判成失败的 */
+  failed: number
+  /** 放弃或还没收尾的 */
+  dropped: number
+  /** PAUSE 期间写下的提议 */
+  proposed: number
+}
+
+/** 一周一次的汇总 */
+export interface WeeklyReview {
+  /** 统计从哪个时刻起算 */
+  since: number
+  /** 近七天的三行，按时间先后 */
+  days: readonly DayRow[]
+  /** 近七天的错处 */
+  errors: readonly ErrorRow[]
+  /** 近七天的两档账，drive 与 agency 从不相加 */
+  ledger: LedgerSummary
+  /** 项目按收尾状态分开计数 */
+  projects: ProjectTally
+  /** 近七天里没有写三行的天数，跳过的不算缺 */
+  missingDays: number
+}
+
 /** 宪法一条 */
 export interface ConstitutionClause {
   /** 第几条 */
@@ -362,12 +445,24 @@ export interface SelfSettings {
   claimEvidenceMax: number
   /** 答应的事最多几个字 */
   commitmentMaxChars: number
+  /** 每天固定几行 */
+  dayLines: number
+  /** 每天那三行每行最多几个字，跳过原因也按它截 */
+  dayLineMaxChars: number
+  /** 错处与改法最多几个字 */
+  errorMaxChars: number
+  /** 叙事每段最多几个字 */
+  narrativeParaMaxChars: number
+  /** 叙事每章最多几段 */
+  narrativeParasMax: number
   /** 同时最多几个没结束的项目 */
   openProjectMax: number
   /** 一周最多问几条 */
   questionPerWeekMax: number
   /** 一周多长 */
   weekMs: number
+  /** 判据四看的窗口，超过这么久没有一条失败就算违规 */
+  auditFailedWindowMs: number
   /** 镜像进记忆时给多少重要度 */
   mirrorImportance: number
   /** 一条镜像正文最多几个字 */
