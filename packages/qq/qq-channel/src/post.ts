@@ -136,9 +136,14 @@ export function createPostGate(options: PostGateOptions): PostGate {
       if (body === '') return refuse('post.empty', '没有要发的正文', '想发就写点东西', at)
       const graded = judgePostLevel({ level: facts.level, userOk: facts.userOk === true, selfOk: facts.selfOk === true })
       if (!graded.ok) return refuse(graded.code ?? 'post.level', graded.reason ?? '这一条不能发', '换个级别，或者先拿到该有的许可', at)
-      // 话题清单只约束自报了话题的调用方，只报级别的入口按级别本身判
-      if (facts.level === 'routine' && facts.topic !== undefined && !tuning.routineTopics.includes(facts.topic)) {
-        return refuse('post.not_routine', '这个话题不在预授权清单里', '先问一句，或者换个话题再发', at)
+      // 例行动态必须报话题，话题不在预授权清单里就不发
+      if (facts.level === 'routine') {
+        if (facts.topic === undefined || facts.topic === '') {
+          return refuse('post.topic_required', '例行动态要说清是哪一类话题', '带上话题名再调一次', at)
+        }
+        if (!tuning.routineTopics.includes(facts.topic)) {
+          return refuse('post.not_routine', '这个话题不在预授权清单里', '先问一句，或者换个话题再发', at)
+        }
       }
       if (paused()) return refuse('post.paused', '现在停着手', '等人把停手开关拿掉再说', at)
 

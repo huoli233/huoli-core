@@ -144,6 +144,7 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
     parameters: {
       text: { type: 'string', description: '要发出去的正文，空的不发。' },
       kind: { type: 'string', enum: POST_LEVELS, description: 'routine 是既定话题的日常动态，public 是要公开讲的新内容。' },
+      topic: { type: 'string', description: '例行动态要说清属于哪一类话题，比如日常、吃喝；公开的新内容可以不填。' },
     },
     output: {
       schema: { type: 'object', additionalProperties: true },
@@ -153,7 +154,10 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       const chatKey = chatKeyOf(exec)
       const text = typeof args.text === 'string' ? args.text : ''
       const kind = typeof args.kind === 'string' ? args.kind : ''
-      const result = await deps.publish(text, { chatKey, level: kind })
+      const topic = typeof args.topic === 'string' && args.topic !== '' ? args.topic : undefined
+      // 话题没报就不带这个字段，让发布入口按"缺话题"拒
+      const facts = topic === undefined ? { chatKey, level: kind } : { chatKey, level: kind, topic }
+      const result = await deps.publish(text, facts)
       if (!result.ok) refuse(result.code ?? 'post.blocked', result.reason ?? '这条动态没发出去', nextStep(result))
       return { ok: true, at: result.at ?? 0, messageId: result.delivery?.messageId ?? '' }
     },

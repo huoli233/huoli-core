@@ -154,7 +154,7 @@ describe('追加位置', () => {
 describe('最近几轮不重复插', () => {
   it('同一轮不重复', () => {
     expect(shouldInject(5, 5)).toBe(false)
-    expect(shouldInject(6, 5)).toBe(true)
+    expect(shouldInject(8, 5)).toBe(true)
   })
 
   it('没插过就插', () => {

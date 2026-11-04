@@ -50,7 +50,7 @@ export const DEFAULTS: Tuning = {
   protectLine: RETENTION.anchorImportance,
   injectMaxChars: 1200,
   injectMaxItems: 3,
-  injectRepeatTurns: 1,
+  injectRepeatTurns: 3,
   recallLimit: 3,
   gramSize: 2,
   shortQueryChars: 8,

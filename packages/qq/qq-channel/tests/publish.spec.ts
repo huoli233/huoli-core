@@ -143,7 +143,7 @@ describe('两条级别走发布入口', () => {
   it('routine 走通，回发出时刻与消息编号', async () => {
     const { tool } = mount()
 
-    const result = await tool('qq_publish_post').execute({ text: '今天吃了面', kind: 'routine' }, execOf('group:123')) as { ok: boolean; at: number; messageId: string }
+    const result = await tool('qq_publish_post').execute({ text: '今天吃了面', kind: 'routine', topic: '吃喝' }, execOf('group:123')) as { ok: boolean; at: number; messageId: string }
 
     expect(result.ok).toBe(true)
     expect(result.at).toBe(NOON)
@@ -177,17 +177,17 @@ describe('闸门都交给发布入口', () => {
 
   it('冷却里再发同一段被拒，工具自己不放行', async () => {
     const { tool } = mount()
-    await tool('qq_publish_post').execute({ text: '今天吃了面', kind: 'routine' }, execOf('group:123'))
+    await tool('qq_publish_post').execute({ text: '今天吃了面', kind: 'routine', topic: '吃喝' }, execOf('group:123'))
     vi.setSystemTime(NOON + 60_000)
 
-    await expect(tool('qq_publish_post').execute({ text: '今天吃了面', kind: 'routine' }, execOf('group:123')))
+    await expect(tool('qq_publish_post').execute({ text: '今天吃了面', kind: 'routine', topic: '吃喝' }, execOf('group:123')))
       .rejects.toThrow(/post\.duplicate/u)
   })
 
   it('超出长度上限时按出站体检的码拒', async () => {
     const { tool } = mount({ maxChars: 3 })
 
-    await expect(tool('qq_publish_post').execute({ text: '一二三四', kind: 'routine' }, execOf('group:123')))
+    await expect(tool('qq_publish_post').execute({ text: '一二三四', kind: 'routine', topic: '吃喝' }, execOf('group:123')))
       .rejects.toThrow(/outbound\.too_long/u)
   })
 })
