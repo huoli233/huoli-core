@@ -43,6 +43,8 @@ export const DEFAULTS: SelfSettings = {
   verbatimMaxChars: 60,
   claimMaxChars: 200,
   claimEvidenceMax: 3,
+  identityWhyMaxChars: 200,
+  identityEvidenceMax: 3,
   commitmentMaxChars: 200,
   dayLines: 3,
   dayLineMaxChars: 60,

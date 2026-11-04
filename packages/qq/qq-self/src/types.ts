@@ -100,6 +100,7 @@ export type WriteReason =
   | 'paused'
   | 'disabled'
   | 'unknown_need'
+  | 'unknown_claim'
   | 'duplicate'
   | 'capped'
   | 'no_evidence'
@@ -400,6 +401,18 @@ export interface CommitmentRow {
   due_at: number
 }
 
+/** 她认为自己算什么，只有三档，由模型自己写，这一层只存 */
+export type IdentityClaim = 'alive' | 'not_sure' | 'not_alive'
+
+/** 身份主张那一条：三档之一加一句理由与一到几条证据 */
+export interface IdentityRow {
+  at: number
+  id: string
+  claim: IdentityClaim
+  why: string
+  evidence: readonly string[]
+}
+
 /** 每天三行那一条，跳过的那天也有一条 */
 export interface DayRow {
   at: number
@@ -450,6 +463,8 @@ export interface WeeklyReview {
   projects: ProjectTally
   /** 近七天里没有写三行的天数，跳过的不算缺 */
   missingDays: number
+  /** 当前主张，取 identity.jsonl 的最后一条；没写过时为 undefined */
+  identity: IdentityRow | undefined
 }
 
 /** 宪法一条 */
@@ -484,6 +499,10 @@ export interface SelfSettings {
   claimMaxChars: number
   /** 一条相信的事最多挂几个证据 */
   claimEvidenceMax: number
+  /** 身份主张的理由最多几个字 */
+  identityWhyMaxChars: number
+  /** 一条身份主张最多挂几个证据 */
+  identityEvidenceMax: number
   /** 答应的事最多几个字 */
   commitmentMaxChars: number
   /** 每天固定几行 */

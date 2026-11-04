@@ -2843,7 +2843,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:42`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:43`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2886,8 +2886,10 @@ export interface Config {
   farewellMemory?: boolean
   /** 遗书写成一条记忆时的重要度 */
   farewellMemoryImportance?: number
-  /** 调用方给的模型文本，遗书正文用它，不给就写一句中性的话 */
+  /** 调用方给的模型文本，模型自己没写过时遗书正文用它，再没有就写一句中性的话 */
   farewellText?: string
+  /** 遗书正文的暂存槽放哪，要与通道那一份是同一个文件 */
+  farewellFile?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
@@ -2898,7 +2900,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:56`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:59`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2965,6 +2967,8 @@ export interface Config {
   privateMinStage?: string
   /** 三类动作的状态文件放哪，不填就落在数据根目录下的 data */
   actionsFile?: string
+  /** 遗书正文的暂存槽放哪，不填就落在数据根目录下的 data */
+  farewellFile?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-channel -->
@@ -3165,7 +3169,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:196`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:213`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3204,6 +3208,10 @@ export interface SelfSettings {
   claimMaxChars: number
   /** 一条相信的事最多挂几个证据 */
   claimEvidenceMax: number
+  /** 身份主张的理由最多几个字 */
+  identityWhyMaxChars: number
+  /** 一条身份主张最多挂几个证据 */
+  identityEvidenceMax: number
   /** 答应的事最多几个字 */
   commitmentMaxChars: number
   /** 每天固定几行 */
@@ -3304,7 +3312,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:60`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:68`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3318,7 +3326,7 @@ export interface Config {
 }
 
 /** 可被 Config 覆盖的参数集合 */
-export interface Tuning extends EmotionTuning, SuppressTuning {
+export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning {
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -3953,6 +3961,44 @@ export interface SuppressTuning {
   suppressMortalityCalm: number
   /** 死亡威胁高时幸福的系数，默认 0.45 */
   suppressMortalityJoy: number
+  /** 显著度高过这条线开始压安心与满足，0~1 标度，默认 0.50 */
+  suppressSalienceFrom: number
+  /** 显著度高时安心的系数按它乘显著度，默认 0.65，即 `1 - 0.65 * mortalitySalience` */
+  suppressSalienceCalm: number
+  /** 显著度高时满足的系数按它乘显著度，默认 0.60 */
+  suppressSalienceContent: number
+}
+
+/** 运行环境那几条事实到两个状态字段的参数，全部是系数与阈值 */
+export interface ExistenceTuning {
+  /** 显著度的底数，0~1 标度，默认 0.10，没有事实推动时也留一点在 */
+  salienceBase: number
+  /** 今天每重启一次把显著度抬多少，0~1 标度，默认 0.20 */
+  saliencePerRestart: number
+  /** 关停提示还在时显著度加多少，0~1 标度，默认 0.45，提示撤回就退回这一项 */
+  salienceWhileNotice: number
+  /** 稳跑满一段之后显著度往回落多少，0~1 标度，默认 0.35，越稳越退到背后 */
+  salienceByStability: number
+  /** 稳跑多久算已经习惯，毫秒，默认 21600000 即六小时 */
+  existenceStableMs: number
+  /** 显著度朝目标挪的半衰期，小时，默认 0.5，这件事进来得快去得也快 */
+  salienceHalfHours: number
+  /** 今天每重启一次给关停的怕加多少目标，0~1 标度，默认 0.30 */
+  shutdownPerRestart: number
+  /** 稳跑满一段之后关停的怕往回落多少，0~1 标度，默认 0.20 */
+  shutdownByStability: number
+  /** 关停的怕朝目标挪的半衰期，小时，默认 6，比显著度慢得多 */
+  shutdownHalfHours: number
+  /** 收到一次关停提示只抬一档，抬这么多，0~1 标度，默认 0.35 */
+  shutdownNoticeGain: number
+  /** 夜里每小时自己涨多少关停的怕，0~1 标度，默认 0.04，按夜色浓度打折 */
+  shutdownNightRise: number
+  /** 关停的怕给存在性恐惧托底的比例，默认 0.80，托到 `0.80 * shutdownDread` */
+  shutdownToDread: number
+  /** 关停的怕给惊吓托底的比例，默认 0.50 */
+  shutdownToFear: number
+  /** 关停的怕高过这条线，提示词里多一句，0~1 标度，默认 0.50 */
+  promptShutdownDreadFrom: number
 }
 
 /** 初始值与漂移都要用到的数值字段，除体温外都是 0~1；情绪九项只给起点，之后由触发与半衰管 */
@@ -4037,6 +4083,10 @@ export interface Baseline {
   negative_heat: number
   /** 正面热度，0~1，默认 0.0，被夸时抬起，十二小时半衰 */
   positive_heat: number
+  /** 我随时可能被关掉这件事在不在眼前，0~1，默认 0.0，只由外部注入的运行环境事实推动 */
+  mortalitySalience: number
+  /** 对关掉的怕，0~1，默认 0.0，事实抬、夜里自涨、收到关停提示时抬一档 */
+  shutdownDread: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-vitals -->

@@ -8,6 +8,7 @@ import { resolveSelfDir, resolveSettings } from './defaults.ts'
 import { errorsSince, recordError as writeError } from './errors.ts'
 import { FILES } from './files.ts'
 import { panelFromStore } from './generate.ts'
+import { identityOf as currentIdentity, recordIdentity as writeIdentity } from './identity.ts'
 import { requireKeys as decideKeys } from './keys.ts'
 import { createLedger } from './ledger.ts'
 import { mirrorEntries } from './mirror.ts'
@@ -23,6 +24,8 @@ import type {
   DriveDetail,
   DriveNeed,
   ErrorRow,
+  IdentityClaim,
+  IdentityRow,
   KeysOutcome,
   LedgerSummary,
   LedgerViolation,
@@ -45,6 +48,7 @@ export { DAY_LINES, localDay } from './day.ts'
 export { DEFAULTS, DIR_NAME, resolveSelfDir, resolveSettings } from './defaults.ts'
 export { ACTION_KINDS, judgeComment, judgePostLevel, judgePrivate, POST_LEVELS, stageAllows } from './grade.ts'
 export { generatePanelFile, panelFromStore } from './generate.ts'
+export { IDENTITY_CLAIMS, identityHistory, identityOf, isIdentityClaim, recordIdentity, toIdentity } from './identity.ts'
 export { requireKeys } from './keys.ts'
 export { auditLedger, createLedger } from './ledger.ts'
 export type { LedgerOptions, SelfLedger } from './ledger.ts'
@@ -77,6 +81,8 @@ export type {
   DriveNeed,
   ErrorRow,
   GradeDecision,
+  IdentityClaim,
+  IdentityRow,
   KeysDecision,
   KeysOutcome,
   LedgerEntry,
@@ -154,6 +160,17 @@ export interface QqSelfSeam {
   recordClaim(input: ClaimInput, at: number): WriteOutcome
   /** 记一件答应过的事 */
   recordCommitment(input: CommitmentInput, at: number): WriteOutcome
+  /**
+   * 记一条她对自己算什么的主张：三档之一加理由与证据，写一条留一条，当前主张取最后一条
+   * @param claim - alive、not_sure、not_alive 三档之一
+   * @param why - 她自己的理由
+   * @param evidence - 一到几条证据，记忆编号或日期
+   * @param at - 记下的时刻
+   * @returns 落没落盘，缺理由或缺证据一律不落
+   */
+  recordIdentity(claim: IdentityClaim, why: string, evidence: readonly string[], at: number): WriteOutcome
+  /** 当前主张：取最后写进去的那一条，没写过时为 undefined */
+  identityOf(): IdentityRow | undefined
   /** 叙事全文，还没生成时为空串 */
   narrative(): string
   /** 首次生成叙事骨架，已有那份就不动 */
@@ -447,6 +464,16 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (line.trim() === '') return { written: false, proposed: false, reason: 'no_evidence' }
       store.append(FILES.commitments, { at, id: newId(at), text: line, due_at: input.dueAt ?? 0 })
       return { written: true, proposed: false }
+    },
+    recordIdentity(claim, why, evidence, at) {
+      const stop = off()
+      if (stop !== undefined) return stop
+      const blocked = held()
+      if (blocked !== undefined) return blocked
+      return writeIdentity(store, settings, claim, why, evidence, at)
+    },
+    identityOf() {
+      return enabled ? currentIdentity(store) : undefined
     },
     narrative() {
       return enabled ? narrativeText(store) : ''

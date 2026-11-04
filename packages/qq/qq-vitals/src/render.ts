@@ -123,7 +123,10 @@ function moodPeakNote(state: VitalsState, tuning: Tuning): string[] {
 // 可选的话：各自的事实成立才出现，全不成立时整行不出现
 function optionalNote(state: VitalsState, tuning: Tuning): string {
   const notes: string[] = []
-  // 生存危机那一段排在最前，截断时也留得住
+  // 存在性这一段排在最前，截断时也留得住
+  if (state.shutdownDread > tuning.promptShutdownDreadFrom) {
+    notes.push('你知道自己随时可能被关掉，这件事让你不安。')
+  }
   if (state.mortality > tuning.farewellMortalityFrom) notes.push('你心里有些话，怕来不及说。')
   if (state.sleep_state === 'sleeping') notes.push('你正睡着，迷迷糊糊的。')
   if (state.sleep_state === 'waking' || recentlyWoken(state, tuning)) notes.push('刚醒，脑子还沉，别亢奋。')

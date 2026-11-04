@@ -7,6 +7,7 @@ import '@huoli/huoli-system-prompt'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { derive } from './derive.ts'
 import { drift } from './drift.ts'
+import type { ExistenceFacts } from './existence.ts'
 import { farewellOf, type FarewellFact } from './mortality.ts'
 import { react as reactToText } from './react.ts'
 import { renderPrompt } from './render.ts'
@@ -19,6 +20,8 @@ export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
 export { cycleOf } from './clock.ts'
 export { derive } from './derive.ts'
 export { drift } from './drift.ts'
+export { applyShutdownNotice, salienceTarget, settleExistence, shutdownTarget } from './existence.ts'
+export type { ExistenceFacts } from './existence.ts'
 export { farewellOf, farewellReason, mortalityTarget } from './mortality.ts'
 export type { FarewellFact } from './mortality.ts'
 export { peakOf } from './peak.ts'
@@ -30,7 +33,7 @@ export { renderPrompt, thirstNote } from './render.ts'
 export { isDrink, isMeal, mealName } from './words.ts'
 export { createVitalsStore } from './store.ts'
 export type { VitalsStoreOptions, VitalsStore } from './store.ts'
-export type { Baseline, CyclePhase, SleepState, TasteRecord, VitalsState } from './types.ts'
+export type { Baseline, CyclePhase, ExistenceTuning, SleepState, TasteRecord, VitalsState } from './types.ts'
 
 /** 一顿饭的事实，交给组合包以后接记忆，本包不写记忆 */
 export interface MealFact {
@@ -50,6 +53,11 @@ export interface QqVitalsSeam {
   react(text: string, at?: number): void
   /** 注入外部余额档位：给了就按分档朝目标走，给 undefined 表示这一路没有来源 */
   setBalance(level: number | undefined): void
+  /**
+   * 注入运行环境事实：进程活了多久、今天重启几次、有没有收到关停提示
+   * @param facts - 三条只读事实，给 undefined 表示这一路没有来源，两个存在性字段不再朝目标走
+   */
+  setExistence(facts: ExistenceFacts | undefined): void
   /** 接住每一顿的写回，取消时用返回的那个函数 */
   onMeal(listener: (fact: MealFact) => void): () => void
   /** 接住遗书事实：死亡威胁到线那天只通知一次，取消时用返回的那个函数 */
@@ -99,9 +107,11 @@ export function apply(ctx: Context, config: Config = {}): void {
   const farewells = new Set<(fact: FarewellFact) => void>()
   let variant = 0
   let balance: number | undefined
+  let existence: ExistenceFacts | undefined
 
-  // 读之前先把这段时间的漂移结掉，但落盘留给心跳；余额档位一起带进去
-  const current = (at = Date.now()): VitalsState => derive(drift(store.read(), at, tuning, undefined, balance), tuning)
+  // 读之前先把这段时间的漂移结掉，但落盘留给心跳；余额档位与运行环境事实一起带进去
+  const current = (at = Date.now()): VitalsState =>
+    derive(drift(store.read(), at, tuning, undefined, balance, existence), tuning)
 
   // 遗书只在事实产出那一刻通知一次，某个订阅者失手不影响别人
   const notifyFarewell = (fact: FarewellFact): void => {
@@ -154,7 +164,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       const moment = Math.max(at ?? Date.now(), raw.last_update)
       let meal: MealFact | undefined
       try {
-        const next = derive(reactToText(drift(raw, moment, tuning, undefined, balance), text, moment, tuning), tuning)
+        const next = derive(reactToText(drift(raw, moment, tuning, undefined, balance, existence), text, moment, tuning), tuning)
         store.write(next)
         if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text) }
       } catch (error) {
@@ -165,6 +175,9 @@ export function apply(ctx: Context, config: Config = {}): void {
     },
     setBalance(level) {
       balance = level
+    },
+    setExistence(facts) {
+      existence = facts
     },
     onMeal(listener) {
       meals.add(listener)

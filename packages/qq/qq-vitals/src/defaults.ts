@@ -56,6 +56,9 @@ export const DEFAULTS: Tuning = {
     mortality: 0.0,
     negative_heat: 0.0,
     positive_heat: 0.0,
+    // 存在性这一路的两个起点，之后只由运行环境事实与夜色推动
+    mortalitySalience: 0.0,
+    shutdownDread: 0.0,
   },
   // 喝一杯水的写回量
   intensity: 0.6,
@@ -141,6 +144,10 @@ export const DEFAULTS: Tuning = {
   suppressMortalityFear: 0.20,
   suppressMortalityCalm: 0.60,
   suppressMortalityJoy: 0.45,
+  // 显著度压安心与满足：这件事在眼前时，这两个标签算不高
+  suppressSalienceFrom: 0.50,
+  suppressSalienceCalm: 0.65,
+  suppressSalienceContent: 0.60,
   // 昼夜与时段
   nightDarkFrom: 22,
   nightDarkUntil: 7,
@@ -384,6 +391,21 @@ export const DEFAULTS: Tuning = {
   mortalityFallPerBeat: 0.03,
   // 遗书：死亡威胁到这条线算高位，一天最多产出一次
   farewellMortalityFrom: 0.85,
+  // 存在性这一路：三条运行环境事实各算一项，显著度进得快，怕进得慢
+  salienceBase: 0.10,
+  saliencePerRestart: 0.20,
+  salienceWhileNotice: 0.45,
+  salienceByStability: 0.35,
+  existenceStableMs: 21_600_000,
+  salienceHalfHours: 0.5,
+  shutdownPerRestart: 0.30,
+  shutdownByStability: 0.20,
+  shutdownHalfHours: 6,
+  shutdownNoticeGain: 0.35,
+  shutdownNightRise: 0.04,
+  shutdownToDread: 0.80,
+  shutdownToFear: 0.50,
+  promptShutdownDreadFrom: 0.50,
 }
 
 /** 落盘时按数值读回来的字段 */
@@ -395,6 +417,7 @@ export const NUMERIC_FIELDS: readonly (keyof Baseline)[] = [
   'adenosine', 'core_temp', 'fever', 'cytokines', 'pain',
   'estrogen', 'progesterone', 'cramps',
   'anger', 'resentment', 'soothe', 'fear', 'worry', 'dread', 'mortality', 'negative_heat', 'positive_heat',
+  'mortalitySalience', 'shutdownDread',
 ]
 
 /** 派生上也要落盘的数值字段 */
@@ -408,7 +431,7 @@ export const STAMP_FIELDS = [
   'last_update', 'last_msg', 'last_meal', 'last_drink', 'last_drink_at', 'last_taste_at',
   'drink_mem_at', 'fluid_applied_at', 'praise_applied_at', 'anger_applied_at', 'meal_applied_at',
   'fear_applied_at', 'worry_applied_at', 'dread_applied_at', 'threat_applied_at', 'apology_applied_at',
-  'farewell_applied_at',
+  'farewell_applied_at', 'shutdown_notice_at',
   'wake_after', 'groggy_until', 'woken_at', 'nap_at',
 ] as const
 
@@ -480,6 +503,7 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     worry_applied_at: 0,
     dread_applied_at: 0,
     threat_applied_at: 0,
+    shutdown_notice_at: 0,
     apology_applied_at: 0,
     farewell_applied_at: 0,
     meal_applied_at: 0,

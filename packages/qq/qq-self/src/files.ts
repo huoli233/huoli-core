@@ -14,6 +14,8 @@ export const FILES = {
   questions: 'questions.jsonl',
   /** 她相信的事 */
   claims: 'claims.jsonl',
+  /** 她认为自己算什么 */
+  identity: 'identity.jsonl',
   /** 判断错的地方与改法 */
   errors: 'errors.jsonl',
   /** 项目，暂停期间的提议也记在这里 */

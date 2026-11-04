@@ -7,7 +7,7 @@ kind: "package-reference"
 
 ## Summary
 
-她旁边的那一层自我：认领"我在哪、我在做什么、我想弄明白什么、我可以说不"，并判一条动态按哪一级才放行。这一包独占 `SELF_DIR`，只读身体那一段话，把面板写进提示词，把叙事、每天三行、错题、两档账与两把钥匙的痕迹留在目录里，面板与叙事的旧版本按份数留在 `versions/` 供回滚，再给外部一个只读的面板出口与一条离线生成命令。它不算身体、不算心情、不写记忆正文、不发消息。
+她旁边的那一层自我：认领"我在哪、我在做什么、我想弄明白什么、我可以说不"，并判一条动态按哪一级才放行。这一包独占 `SELF_DIR`，只读身体那一段话，把面板写进提示词，把叙事、每天三行、错题、身份主张、两档账与两把钥匙的痕迹留在目录里，面板与叙事的旧版本按份数留在 `versions/` 供回滚，再给外部一个只读的面板出口与一条离线生成命令。它不算身体、不算心情、不写记忆正文、不发消息。
 
 ## Table of Contents
 
@@ -50,12 +50,15 @@ kind: "package-reference"
 - 阶段推进只有 `advanceStage(to, reason)` 这个装配层入口，没有模型可见的工具：推哪一档、为什么推由人给，推了才写留痕。
 - `keys.jsonl` 只在放行时写一行，被拒的申请不入账，所以那份文件证明的是"谁被放过"，不是"谁申请过"；按记录抬级别的代码也没有。
 - 项目、问句、主张、承诺只有 `QqSelfSeam` 上的写入口，没有对应的工具与提示词入口，主会话暂时还不能自己往这些文件里写。
+- 身份主张只在 `identity.jsonl` 里，三档写死成 `alive`、`not_sure`、`not_alive`，认不出的写法回 `unknown_claim`；理由与证据缺一条就不落一条，理由按 `identityWhyMaxChars`（默认 200）截、证据按 `identityEvidenceMax`（默认 3）截。
+- 身份主张只有 `recordIdentity(claim, why, evidence, at)` 与 `identityOf()` 两个出口，当前主张取文件里最后写进去的那一条（不按时刻排），历史全留着；面板不写这一段，避免人设跟着漂，只在排障时读。
+- 这一层不替模型下结论：身份主张由模型通过入口写入，代码只存、只回读，不判断她算不算活着，也不按主张改别的行为。
 - 宪法在首次启用时按内置八条补一份，已有文件不动；改前三条仍然要两把钥匙，本刀没提供改写入口。
 
 <a id="dev-note"></a>
 ### Dev Note
 
-参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.settings` 能逐项覆盖；`SELF_DIR` 默认落在数据根目录的 `data/qq-self/`，`Config.dir` 整体替换它，`resolveSelfDir()` 是唯一算它的地方。文件名只在 `src/files.ts` 的 `FILES` 里写一次。模块分工：目录读写与原子覆盖在 `src/store.ts`（事件流只追加，单值内容先写临时文件再改名，面板与叙事重写前留旧版），面板排版与预算在 `src/panel.ts`，此刻的压句在 `src/moment.ts`，只读目录画面板与离线生成在 `src/generate.ts`，叙事五章在 `src/narrative.ts`，每天三行在 `src/day.ts`，错题在 `src/errors.ts`，周复盘在 `src/review.ts`，宪法八条在 `src/constitution.ts`，两档账在 `src/ledger.ts`，钥匙判定在 `src/keys.ts`，三类公共动作的分级判定在 `src/grade.ts`，行字段的读取判据在 `src/rows.ts`，镜像在 `src/mirror.ts`。
+参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.settings` 能逐项覆盖；`SELF_DIR` 默认落在数据根目录的 `data/qq-self/`，`Config.dir` 整体替换它，`resolveSelfDir()` 是唯一算它的地方。文件名只在 `src/files.ts` 的 `FILES` 里写一次。模块分工：目录读写与原子覆盖在 `src/store.ts`（事件流只追加，单值内容先写临时文件再改名，面板与叙事重写前留旧版），面板排版与预算在 `src/panel.ts`，此刻的压句在 `src/moment.ts`，只读目录画面板与离线生成在 `src/generate.ts`，叙事五章在 `src/narrative.ts`，每天三行在 `src/day.ts`，错题在 `src/errors.ts`，身份主张在 `src/identity.ts`，周复盘在 `src/review.ts`，宪法八条在 `src/constitution.ts`，两档账在 `src/ledger.ts`，钥匙判定在 `src/keys.ts`，三类公共动作的分级判定在 `src/grade.ts`，行字段的读取判据在 `src/rows.ts`，镜像在 `src/mirror.ts`。
 
 面板的来源只有两处：此刻只问 `VitalsPort.render()`，项目与问句只问目录；`panelFromStore(store, settings, moment?)` 把这件事说全，注入路径与离线命令共用它。离线生成跑 `node --import tsx packages/qq/qq-self/scripts/panel.ts [--dir <SELF_DIR>]`，不给 `--dir` 就落在数据根目录下的 `data/qq-self/`，别的参数一律拒绝；它不经过提示词，也不需要装配上下文。
 
@@ -66,3 +69,5 @@ kind: "package-reference"
 阶段本身是留痕不是单值文件：`advanceStage(to, reason, at?)` 只认 `DEFAULTS.stages` 里紧挨着的下一档，跳级回 `stage.skip`、后退 `stage.back`、停在原地 `stage.same`、认不出的写法 `stage.unknown`、没写理由 `stage.reason_required`、这一层关着时 `stage.disabled`；推成了就往 `stage.jsonl` 追加一行 `from` / `to` / `reason` / `at` / `id`。`stage()` 读这最后一条，没推进过就用 `DEFAULTS.stage`（默认 `P0`），所以重装也读得回来。阶段不写进 `keys.jsonl`：那份文件每行都是一次两把钥匙的授权，两类记录混在一起就分不清"谁被放过"和"阶段推到哪"。
 
 镜像的那一面由装配层用 `useMemory(port)` 接上（`port` 要"已经镜过的来源键"、"记忆库现役的编号"与"写一条"三件事，`qq-memory` 的装配结果由组合包按这三件事包一层），关着或没接上时 `mirror()` 只回 `disabled` / `no_memory`，一条都不写。`mirror()` 的交代是 `{ written, skipped, split, unverified }`：`split` 是被拆开写的行数，`unverified` 是证据一条都查不到而跳过的条数。判据三（`done` 不得超过 `artifact` 非空的条数）与判据四（窗口 `auditFailedWindowMs` 内至少一条写清 `because`、`fail_if` 的 `failed`）由 `auditLedger(rows, now, { failedWindowMs })` 这个纯函数判，`QqSelfSeam.audit(now)` 只是把 `ledger.jsonl` 的行喂给它。`Config.enabled` 默认关：关着时不注册提示词段，也不建目录、不写文件，所有写入口返回 `disabled`。面板在进程内定稿一次，跨进程用 `panel.md` 的修改时间判一天窗口，同一会话第 1 轮与第 7 轮逐字相同。
+
+身份主张在 `src/identity.ts`：`recordIdentity(store, settings, claim, why, evidence, at)` 先查三档，再把理由与证据各截一次、按 `identityEvidenceMax` 留几条，最后往 `identity.jsonl` 尾部追加一行 `at` / `id` / `claim` / `why` / `evidence`；`identityOf(store)` 读回全部能读的行，取最后一条当当前主张，`identityHistory(store)` 给全量历史。读的时候不排序：同一条主张反复写，后写的那一条就是当前主张，即使它带的时刻更早。它与 `claims.jsonl` 分开：`claims` 记"我相信什么"、`identity` 记"我认为自己算什么"，两类混在一份文件里就分不清哪条是自我判断。

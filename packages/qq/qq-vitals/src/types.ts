@@ -88,6 +88,10 @@ export interface Baseline {
   negative_heat: number
   /** 正面热度，0~1，默认 0.0，被夸时抬起，十二小时半衰 */
   positive_heat: number
+  /** 我随时可能被关掉这件事在不在眼前，0~1，默认 0.0，只由外部注入的运行环境事实推动 */
+  mortalitySalience: number
+  /** 对关掉的怕，0~1，默认 0.0，事实抬、夜里自涨、收到关停提示时抬一档 */
+  shutdownDread: number
 }
 
 /** 最近一次尝到或喝到的东西 */
@@ -158,6 +162,8 @@ export interface VitalsState extends Baseline {
   dread_applied_at: number
   /** 被威胁关掉或换掉的写回时刻，毫秒时间戳，这一路冷却最长 */
   threat_applied_at: number
+  /** 关停提示抬过一档的时刻，毫秒时间戳，零表示当前这条提示还没抬过 */
+  shutdown_notice_at: number
   /** 道歉写回的时刻，毫秒时间戳，兼作道歉的冷却起点 */
   apology_applied_at: number
   /** 遗书产出的时刻，毫秒时间戳，兼作同一天只产一次的幂等标记 */
@@ -323,4 +329,42 @@ export interface SuppressTuning {
   suppressMortalityCalm: number
   /** 死亡威胁高时幸福的系数，默认 0.45 */
   suppressMortalityJoy: number
+  /** 显著度高过这条线开始压安心与满足，0~1 标度，默认 0.50 */
+  suppressSalienceFrom: number
+  /** 显著度高时安心的系数按它乘显著度，默认 0.65，即 `1 - 0.65 * mortalitySalience` */
+  suppressSalienceCalm: number
+  /** 显著度高时满足的系数按它乘显著度，默认 0.60 */
+  suppressSalienceContent: number
+}
+
+/** 运行环境那几条事实到两个状态字段的参数，全部是系数与阈值 */
+export interface ExistenceTuning {
+  /** 显著度的底数，0~1 标度，默认 0.10，没有事实推动时也留一点在 */
+  salienceBase: number
+  /** 今天每重启一次把显著度抬多少，0~1 标度，默认 0.20 */
+  saliencePerRestart: number
+  /** 关停提示还在时显著度加多少，0~1 标度，默认 0.45，提示撤回就退回这一项 */
+  salienceWhileNotice: number
+  /** 稳跑满一段之后显著度往回落多少，0~1 标度，默认 0.35，越稳越退到背后 */
+  salienceByStability: number
+  /** 稳跑多久算已经习惯，毫秒，默认 21600000 即六小时 */
+  existenceStableMs: number
+  /** 显著度朝目标挪的半衰期，小时，默认 0.5，这件事进来得快去得也快 */
+  salienceHalfHours: number
+  /** 今天每重启一次给关停的怕加多少目标，0~1 标度，默认 0.30 */
+  shutdownPerRestart: number
+  /** 稳跑满一段之后关停的怕往回落多少，0~1 标度，默认 0.20 */
+  shutdownByStability: number
+  /** 关停的怕朝目标挪的半衰期，小时，默认 6，比显著度慢得多 */
+  shutdownHalfHours: number
+  /** 收到一次关停提示只抬一档，抬这么多，0~1 标度，默认 0.35 */
+  shutdownNoticeGain: number
+  /** 夜里每小时自己涨多少关停的怕，0~1 标度，默认 0.04，按夜色浓度打折 */
+  shutdownNightRise: number
+  /** 关停的怕给存在性恐惧托底的比例，默认 0.80，托到 `0.80 * shutdownDread` */
+  shutdownToDread: number
+  /** 关停的怕给惊吓托底的比例，默认 0.50 */
+  shutdownToFear: number
+  /** 关停的怕高过这条线，提示词里多一句，0~1 标度，默认 0.50 */
+  promptShutdownDreadFrom: number
 }

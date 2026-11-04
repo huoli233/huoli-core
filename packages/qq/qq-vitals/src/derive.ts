@@ -199,6 +199,10 @@ function suppress(scores: Map<string, number>, s: VitalsState, tuning: Tuning): 
     scale('安心', 1 - tuning.suppressMortalityCalm * s.mortality)
     scale('幸福', 1 - tuning.suppressMortalityJoy * s.mortality)
   }
+  if (s.mortalitySalience > tuning.suppressSalienceFrom) {
+    scale('安心', 1 - tuning.suppressSalienceCalm * s.mortalitySalience)
+    scale('满足', 1 - tuning.suppressSalienceContent * s.mortalitySalience)
+  }
 }
 
 /**
@@ -209,6 +213,9 @@ function suppress(scores: Map<string, number>, s: VitalsState, tuning: Tuning): 
  */
 export function derive(state: VitalsState, tuning: Tuning): VitalsState {
   const next: VitalsState = { ...state }
+  // 怕关掉这件事给存在性恐惧与惊吓托个底：只往上托，托到多少由系数定，封顶仍是一
+  next.dread = clamp(Math.max(next.dread, tuning.shutdownToDread * state.shutdownDread))
+  next.fear = clamp(Math.max(next.fear, tuning.shutdownToFear * state.shutdownDread))
   next.energy = energyOf(state, tuning)
   next.valence = valenceOf(state, tuning)
   next.irritability = irritabilityOf(state, tuning)

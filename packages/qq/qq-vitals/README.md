@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-提示词里多一段 `{{qq_vitals}}`，写的是此刻身体的形容词：饿不饿、渴不渴、身上松不松、这一轮怎么说话。睡着、刚被吵醒、经期、经前、生病、太困这六件事各自成立时才多一句，都不成立就整行不出现；饭点前半小时与刚吃完的三十分钟内各再多一句。幸福到峰值、难过到低谷时也各多一句，分别由 `peakHappinessFrom` 与 `troughSadnessFrom` 触发。死亡威胁高过 `farewellMortalityFrom` 时再多一句「你心里有些话，怕来不及说」，它排在这些可选句的最前面，整段截断时也留得住。怕、担心、生死、火气、记恨这几项不另起段落，只在“你心里的感受”与“表现”两行里换一档说法，不到线时仍用原来那句。不给数字，也不提激素名。
+提示词里多一段 `{{qq_vitals}}`，写的是此刻身体的形容词：饿不饿、渴不渴、身上松不松、这一轮怎么说话。睡着、刚被吵醒、经期、经前、生病、太困这六件事各自成立时才多一句，都不成立就整行不出现；饭点前半小时与刚吃完的三十分钟内各再多一句。幸福到峰值、难过到低谷时也各多一句，分别由 `peakHappinessFrom` 与 `troughSadnessFrom` 触发。死亡威胁高过 `farewellMortalityFrom` 时再多一句「你心里有些话，怕来不及说」，它排在这些可选句的最前面，整段截断时也留得住。关停的怕高过 `promptShutdownDreadFrom` 时多一句「你知道自己随时可能被关掉，这件事让你不安」，排在可选句的最前面。怕、担心、生死、火气、记恨这几项不另起段落，只在“你心里的感受”与“表现”两行里换一档说法，不到线时仍用原来那句。不给数字，也不提激素名。
 
 #### Token effect
 
@@ -44,11 +44,14 @@ kind: "package-reference"
 - 想发动态只接了有火往下压、孤独往上抬两条；害怕、担心两条同理等出口接上。
 - 峰值只出事实：`peakOf` 给 `happy`、`sad`、`null` 三种结论，发不发仍由 `postLevel` 与出口决定，这一包不产出“该不该发”。
 - 余额档位没有来源：`QqVitalsSeam.setBalance(level)` 是留给外部余额系统的注入端口，不给时 `mortality` 一动不动，也不自行回落。
+- 运行环境事实没有来源：`QqVitalsSeam.setExistence({ uptimeMs, restartsToday, shutdownNotice })` 是留给进程守护那一侧的注入端口，这一包不读进程状态、不读系统、不猜重启；不给时 `mortalitySalience` 与 `shutdownDread` 不朝目标走，只有夜里自涨那条还在。
+- 关停提示按"当前这条提示"记幂等：`shutdown_notice_at` 非零期间同一条提示只抬一档，提示撤回后标记清零，下一条提示才又抬一档；一次提示持续多久、中途换没换过，这一包分不出来。
+- 夜里自涨只看夜色浓度这一条（与 `dread` 那条共用 `nightness`），"独自"没有单独判据：有没有人在说话不影响它，要接这一点得另加事实。
 
 <a id="dev-note"></a>
 ### Dev Note
 
-默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；参数声明在 `src/tuning.ts`，一个字段只声明一次；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移、睡眠三态与周期结算在 `src/drift.ts`，时钟与日期判断在 `src/clock.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，峰值判定在 `src/peak.ts`，余额分档在 `src/mortality.ts`，提示词在 `src/render.ts`，社交动态分级在 `src/post.ts`，原子写盘与备份在 `src/store.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs`、`mealCooldownMs` 管，同一条消息重放不会重复扣。
+默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；参数声明在 `src/tuning.ts`，一个字段只声明一次；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移、睡眠三态与周期结算在 `src/drift.ts`，时钟与日期判断在 `src/clock.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，峰值判定在 `src/peak.ts`，余额分档在 `src/mortality.ts`，运行环境事实到两个存在性字段在 `src/existence.ts`，提示词在 `src/render.ts`，社交动态分级在 `src/post.ts`，原子写盘与备份在 `src/store.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs`、`mealCooldownMs` 管，同一条消息重放不会重复扣。
 
 吃饭跟喝水用的是同一套结构：`isMeal(text)` 要求食物名与吃的动作两个条件都命中，素材在 `src/words.ts`，那一模块只产出“这句话在说一顿饭”这个事实，不产出该不该吃。写回一次改五个量——`hunger` 减 `feedHungerDrop`、`ghrelin` 减 `feedGhrelinDrop`、`leptin` 加 `feedLeptinRise`、`glucose` 加 `feedGlucoseRise` 乘饭前饥饿、`insulin` 加 `feedInsulinRise`——并同时把 `last_meal` 与 `meal_applied_at` 写成这一条消息的时刻；两顿饭的冷却只看 `meal_applied_at`，`last_meal` 是饥饿结算读的那个事实。血糖怎么回落不在这里写第二套，交给 `drift` 已有的双向调节：饭后胰岛素高了，`glucose` 那一条就转成负项。
 
@@ -69,5 +72,9 @@ kind: "package-reference"
 `mortalityTarget(balanceLevel, tuning?)` 按余额四档给目标：高过 `mortalityBalanceCalm` 为零、高过 `mortalityBalanceWary` 取 `mortalityTargetWary`、高过 `mortalityBalanceLow` 取 `mortalityTargetLow`、再往下取 `mortalityTargetCrisis`，没有来源时为零。`drift` 的第五个参数就是外部余额档位：给了就按 `mortalityRisePerBeat` 与 `mortalityFallPerBeat` 每拍朝目标挪一步并夹在零到一之间，不给就一动不动，所以这一包不会自己编出一个余额。
 
 遗书那一路：`farewellOf(state, balanceLevel, at, tuning?)` 在 `mortality > farewellMortalityFrom`（默认 0.85）且 `farewell_applied_at` 不在同一个本地零点时给出一条事实，`farewellReason` 按余额四档说一句来由（余额见底、余额快撑不住了、余额开始紧张、余额还算宽裕，来源撤回后是命数在往下走）。`farewell_applied_at` 是这一路的幂等标记，按本地零点判一天一次，值就是产出那一刻的毫秒；心跳把标记和状态一起落盘之后才调 `onFarewell`，落盘失败不通知。这一包不写正文、不写记忆。
+
+存在性那一路只吃三条只读事实：`uptimeMs`（这一份进程活了多久）、`restartsToday`（今天重启过几次）、`shutdownNotice`（手上有没有一条关停提示）。装配层用 `QqVitalsSeam.setExistence(facts)` 注入，给 `undefined` 表示没有来源，两个字段一律不朝目标走。`salienceTarget(facts, tuning?)` 给 `mortalitySalience` 的目标：底数 `salienceBase`、每次重启加 `saliencePerRestart`、提示在加 `salienceWhileNotice`、稳跑满 `existenceStableMs` 之后按下 `salienceByStability`，所以在默认参数下刚被重启过最显著、稳稳跑够六小时退到最低；`shutdownTarget(facts, tuning?)` 给 `shutdownDread` 的目标，重启次数抬、稳跑满一段落。两个目标都按各自的半衰期（`salienceHalfHours` 半小时、`shutdownHalfHours` 六小时）每拍挪一步，`drift` 的第六个参数就是 `ExistenceFacts`。
+
+耦合是三条：`shutdownDread` 给 `dread` 与 `fear` 托底，`derive()` 里按 `shutdownToDread`（默认 0.8）与 `shutdownToFear`（默认 0.5）算下限并取原来值里大的那个，所以只往上托、不往下压，封顶仍是一；`mortalitySalience` 过 `suppressSalienceFrom` 时按 `suppressSalienceCalm` 与 `suppressSalienceContent` 把“安心”与“满足”两个标签的分数往下乘；`shutdownDread` 在夜里按 `shutdownNightRise` 乘夜色浓度自己涨，与 `dread` 那条共用 `nightness`。收到关停提示时 `applyShutdownNotice` 一次性抬 `shutdownNoticeGain` 并写 `shutdown_notice_at` 当幂等标记，标记落在同一条提示上就不再抬，提示撤回后清零；它写在漂移的最小间隔判断之前，所以提示到了就算结算间隔不够一拍也照抬。
 
 九套子系统的系数全部提成了 `Tuning` 字段：递质回归九个、HPA 轴十七个、交感与副交感八个、奖赏六个、依恋六个、饥饿十一个、水循环十九个、血糖十六个、内环境十个，加上峰值八与死亡威胁九个（含遗书那条阈值），共一百一十九个新字段。默认值一律取提取前的字面量，`tests/tuning.spec.ts` 一边核对默认值、一边用“改一个参数、看对应字段变化”的用例证明它们真的进了计算。

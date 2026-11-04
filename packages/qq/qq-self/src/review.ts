@@ -3,6 +3,7 @@
 import { daysSince, localDay } from './day.ts'
 import { errorsSince } from './errors.ts'
 import { FILES } from './files.ts'
+import { identityOf } from './identity.ts'
 import { toProject } from './rows.ts'
 import type { SelfStore } from './store.ts'
 import type { LedgerSummary, ProjectTally, SelfSettings, WeeklyReview } from './types.ts'
@@ -40,7 +41,7 @@ function tallyProjects(store: SelfStore): ProjectTally {
 /**
  * 汇总近七天
  * @param options - 目录、参数、时刻与两档账
- * @returns 三行、错处、两档账、项目状态与缺了几天
+ * @returns 三行、错处、两档账、项目状态、缺了几天与当前主张
  */
 export function weeklyReview(options: ReviewOptions): WeeklyReview {
   const { store, settings, now } = options
@@ -56,5 +57,6 @@ export function weeklyReview(options: ReviewOptions): WeeklyReview {
     ledger: options.ledger,
     projects: tallyProjects(store),
     missingDays: Math.max(0, dayCount - covered.size),
+    identity: identityOf(store),
   }
 }

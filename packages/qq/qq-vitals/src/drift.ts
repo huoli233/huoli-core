@@ -5,6 +5,7 @@ import {
   cycleAnchorDay, cycleOf, inNapWindow, inSleepWindow, isDaytime, isMealHour, isQuietHour, localHour,
   localPoint, melatoninTarget, nightness, nightWakeAt, noradrenalineBaseline,
 } from './clock.ts'
+import { applyShutdownNotice, settleExistence, type ExistenceFacts } from './existence.ts'
 import { above, clamp, clampRange, decay, follow } from './math.ts'
 import { mortalityTarget } from './mortality.ts'
 import type { CyclePhase, VitalsState } from './types.ts'
@@ -334,6 +335,7 @@ function settleMood(next: VitalsState, at: number, hours: number, night: number,
  * @param tuning - 参数
  * @param random - 取零到一的随机源，入睡时刻与抖动都走它，测试可以换成定值
  * @param balance - 外部注入的余额档位，没给表示这一路没有来源，死亡威胁保持不动
+ * @param existence - 外部注入的运行环境事实，没给表示这一路没有来源，两个存在性字段保持不动
  * @returns 漂移后的状态
  */
 export function drift(
@@ -342,11 +344,14 @@ export function drift(
   tuning: Tuning,
   random: () => number = Math.random,
   balance?: number,
+  existence?: ExistenceFacts,
 ): VitalsState {
   const hours = clampRange((at - state.last_update) / 3_600_000, 0, tuning.hoursCap)
   const next: VitalsState = { ...state, last_update: at }
   drainFluid(next, at, tuning)
   settleCycle(next, at, tuning)
+  // 关停提示是事件不是速率：提示到了就记一档，与结算间隔够不够不用管
+  applyShutdownNotice(next, existence, at, tuning)
   if (hours < tuning.minDriftHours) return next
   const hour = localHour(at)
   const night = nightness(hour, tuning)
@@ -362,6 +367,7 @@ export function drift(
   settleGlucose(next, hours, tuning)
   settleInner(next, hours, hour, night, tuning)
   settleMortality(next, balance, tuning)
+  settleExistence(next, hours, night, existence, tuning)
   settleMood(next, at, hours, night, tuning)
   return next
 }
