@@ -58,7 +58,7 @@ describe('关键词路按片段判相关', () => {
   it('已遗忘的条目任何查询都不出现', () => {
     const { seam } = mount({ file: tempFile() })
     const item = seam.remember('爬山路上下起雨', 'group:1', { at: NOW - DAY_MS, importance: 40 })
-    seam.store.update(item.id, { clarity: 'forgotten', forgotten: true })
+    seam.store.update(item.id, { clarity: 'forgotten', state: 'forgotten', text: '', retiredAt: NOW })
 
     expect(recall(seam.store, { query: '爬山', scope: 'group:1', now: NOW })).toEqual([])
   })

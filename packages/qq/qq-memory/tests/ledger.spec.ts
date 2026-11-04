@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
@@ -13,6 +14,7 @@ import {
 import type { MemoryItem } from '../src/types.ts'
 import { cleanupTempDirs, mount, tempDir, tempFile } from './harness.ts'
 
+const DAY = 86_400_000
 const NOW = new Date(2026, 9, 30, 18, 39).getTime()
 
 function make(text: string, overrides: Partial<MemoryItem> = {}): MemoryItem {
@@ -29,7 +31,7 @@ function make(text: string, overrides: Partial<MemoryItem> = {}): MemoryItem {
     recoverTimes: 0,
     at: NOW,
     lastSeenAt: NOW,
-    forgotten: false,
+    state: 'active',
     source: 'chat',
     ...overrides,
   }
@@ -37,6 +39,10 @@ function make(text: string, overrides: Partial<MemoryItem> = {}): MemoryItem {
 
 const FIRST = make('先说的一句')
 const SECOND = make('后说的一句')
+// 同一条退役之后的样子：编号不变，没有正文，留着退役时刻
+const RETIRED_FIRST = make('先说的一句', { text: '', state: 'forgotten', clarity: 'forgotten', retiredAt: NOW })
+// 一条从头到尾只在退役态里出现过的记忆
+const RETIRED = make('先说过又忘掉的一句', { text: '', state: 'forgotten', clarity: 'forgotten', retiredAt: NOW })
 
 afterEach(cleanupTempDirs)
 
@@ -57,7 +63,7 @@ describe('建账', () => {
     const book = initBook([FIRST, SECOND])
 
     expect(Object.keys(book.entries)).toHaveLength(2)
-    expect(book.entries[FIRST.id]).toEqual(fingerprint(FIRST.text))
+    expect(book.entries[FIRST.id]).toEqual({ ...fingerprint(FIRST.text), state: 'held' })
   })
 
   it('账本默认落在主目录的 data 下', () => {
@@ -120,14 +126,27 @@ describe('对账', () => {
     expect(describeLedger(report)).toContain(SECOND.id)
   })
 
-  it('淡到底清掉正文的那条不算被改', () => {
+  it('淡到底退役记过账的那条不算被改', () => {
     const book = initBook([FIRST])
 
-    const report = verifyBook(book, [{ ...FIRST, text: '', forgotten: true }])
+    const { book: next, added } = syncBook(book, [RETIRED_FIRST])
+    const report = verifyBook(next, [RETIRED_FIRST])
 
+    expect(added).toEqual([])
+    expect(next.entries[FIRST.id]?.state).toBe('retired')
     expect(report.ok).toBe(true)
     expect(report.changed).toEqual([])
     expect(report.held).toBe(1)
+    expect(report.retired).toBe(1)
+  })
+
+  it('只清正文没登记退役的照样报被改', () => {
+    const book = initBook([FIRST])
+
+    const report = verifyBook(book, [{ ...FIRST, text: '', state: 'forgotten' }])
+
+    expect(report.ok).toBe(false)
+    expect(report.changed.map(one => one.id)).toEqual([FIRST.id])
   })
 
   it('还没入账的条数就是待入账', () => {
@@ -233,5 +252,88 @@ describe('落到文件', () => {
 
     expect(late.ok).toBe(true)
     expect(late.unrecorded).toEqual([])
+  })
+})
+
+describe('退役是显式的', () => {
+  it('遗忘之后账本记为退役，对账照样通过', () => {
+    const file = tempFile()
+    const { seam } = mount({ file })
+    const gone = seam.remember('会淡到没的一句', 'group:1', { importance: 40, at: NOW - 87 * DAY })
+    seam.store.update(gone.id, { clarity: 'trace', lastSeenAt: NOW - 87 * DAY })
+    seam.ledger('init')
+
+    // 这次整理掉一分、淡到已遗忘、清正文，账本跟着把它标成退役
+    const run = seam.maintain(NOW)
+    const report = seam.ledger('verify').report
+
+    expect(run.forgotten).toBe(1)
+    expect(report.ok).toBe(true)
+    expect(report.changed).toEqual([])
+    expect(report.retired).toBe(1)
+    expect(describeLedger(report)).toContain('已退役 1 条')
+  })
+
+  it('退役之后又长出正文就报被改', () => {
+    const book = initBook([RETIRED])
+
+    const report = verifyBook(book, [{ ...RETIRED, text: '退役之后又被人写回来的一句' }])
+
+    expect(report.ok).toBe(false)
+    expect(report.lost).toEqual([])
+    expect(report.changed.map(one => one.id)).toEqual([RETIRED.id])
+  })
+
+  it('把状态改回 active 且改写正文也报被改', () => {
+    const book = initBook([RETIRED])
+
+    const report = verifyBook(book, [{ ...RETIRED, text: '换了个说法还改回 active', state: 'active' }])
+
+    expect(report.ok).toBe(false)
+    expect(report.changed.map(one => one.id)).toEqual([RETIRED.id])
+  })
+
+  it('退役条数在报告里点得出来', () => {
+    const report = verifyBook(initBook([FIRST, RETIRED]), [FIRST, RETIRED])
+
+    expect(report.ok).toBe(true)
+    expect(report.retired).toBe(1)
+    expect(report.held).toBe(2)
+    expect(describeLedger(report)).toContain('已退役 1 条')
+  })
+})
+
+describe('账本版本戳', () => {
+  it('写出来的账本带 schemaVersion 与每条的状态', () => {
+    const file = path.join(tempDir(), 'ledger.json')
+
+    runLedger('init', { file, items: [FIRST, RETIRED] })
+
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as {
+      schemaVersion: number
+      entries: Record<string, { state: string; retiredAt?: number }>
+    }
+    expect(parsed.schemaVersion).toBe(1)
+    expect(parsed.entries[FIRST.id]?.state).toBe('held')
+    expect(parsed.entries[RETIRED.id]?.state).toBe('retired')
+    expect(parsed.entries[RETIRED.id]?.retiredAt).toBe(NOW)
+  })
+
+  it('没有 schemaVersion 的旧账本读得回来，按 1 补默认', () => {
+    const file = path.join(tempDir(), 'ledger.json')
+    // 旧格式：文件头只有 version，每条只有指纹与字数
+    fs.writeFileSync(file, JSON.stringify({ version: 1, entries: { [FIRST.id]: fingerprint(FIRST.text) } }, null, 2))
+
+    const report = runLedger('verify', { file, items: [FIRST] }).report
+
+    expect(report.ok).toBe(true)
+    expect(report.held).toBe(1)
+    expect(report.retired).toBe(0)
+
+    // 补一次账，写回去的文件就带上版本戳
+    runLedger('sync', { file, items: [FIRST] })
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as { schemaVersion: number }
+
+    expect(parsed.schemaVersion).toBe(1)
   })
 })

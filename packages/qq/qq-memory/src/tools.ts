@@ -66,7 +66,7 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
       if (text.length > 500) refuse('memory.too_long', '一条最多 500 字', '长事拆成几条记')
 
       const scope = deps.scopeOf(chatKey)
-      const duplicated = store.all().some(item => !item.forgotten && item.scope === scope && item.text === text)
+      const duplicated = store.all().some(item => item.state !== 'forgotten' && item.scope === scope && item.text === text)
       if (duplicated) refuse('memory.duplicate', '这条已经记过了', '换一条新的事')
 
       const layer = layerOf(args.layer)
@@ -88,7 +88,7 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
         recoverTimes: 0,
         at: now,
         lastSeenAt: now,
-        forgotten: false,
+        state: 'active',
         source: 'tool',
         ...personId !== '' ? { personId } : {},
       }

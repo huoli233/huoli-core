@@ -64,6 +64,8 @@ export interface GateConfig {
   gapMaxMs: number
   /** 劲头低于这个数就按这个数算，免得间隔被拉得没边 */
   biasFloor: number
+  /** 刚被吵醒之后还要安静多久，毫秒，迷糊没过去之前不开口 */
+  wakingDelayMs: number
   /** 正忙时多久再看 */
   busyRetryMs: number
   /** 有人在聊时多久再看 */
@@ -81,6 +83,7 @@ export const PROACTIVE_DEFAULTS: GateConfig = {
   gapMinMs: 150 * 60_000,
   gapMaxMs: 300 * 60_000,
   biasFloor: 0.2,
+  wakingDelayMs: 10 * 60_000,
   busyRetryMs: 60_000,
   talkingRetryMs: 5 * 60_000,
   pendingTtlMs: 14 * 86_400_000,

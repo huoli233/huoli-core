@@ -572,3 +572,142 @@ describe('劲头接进冷却与额度', () => {
     expect(cooldownMs(strict, 0.2)).toBeLessThan(cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 0.2))
   })
 })
+
+describe('睡着与刚被吵醒', () => {
+  const WAKE = BASE + 3 * 60 * 60_000
+  const OPEN = { enabled: true, quietStart: '00:00', quietEnd: '00:00' }
+
+  const asleepAt = (wakeAfter?: number) => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+    return seam.consider({
+      chatKey: 'group:sleep',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      asleep: true,
+      ...wakeAfter !== undefined ? { wakeAfter } : {},
+    })
+  }
+
+  it('睡着时一条候选都不攒，下次就是醒点', () => {
+    const decision = asleepAt(WAKE)
+
+    expect(decision.verdict.ok).toBe(false)
+    expect(decision.verdict.code).toBe('proactive.asleep')
+    expect(decision.verdict.reason).not.toBe('')
+    expect(decision.verdict.retryAt).toBe(WAKE)
+    expect(decision.considered).toHaveLength(0)
+    expect(decision.pending).toHaveLength(0)
+  })
+
+  it('睡着时待发条数不变，盘上一条都不写', () => {
+    const file = tempFile()
+    const seam = mount({ file, enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    seam.consider({
+      chatKey: 'group:sleep',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      asleep: true,
+      wakeAfter: WAKE,
+    })
+
+    expect(seam.pending.all()).toHaveLength(0)
+    expect(fs.existsSync(file)).toBe(false)
+    expect(seam.preview('group:sleep')).toHaveLength(0)
+  })
+
+  it('睡着但没排醒点时就只给码，不自己编一个时刻', () => {
+    const decision = asleepAt()
+
+    expect(decision.verdict.code).toBe('proactive.asleep')
+    expect(decision.verdict.retryAt).toBeUndefined()
+  })
+
+  it('刚被吵醒按默认值延后', () => {
+    const verdict = runGates({
+      now: BASE,
+      config: OPEN,
+      lastSpokenAt: 0,
+      todayCount: 0,
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      waking: true,
+    })
+
+    expect(verdict.ok).toBe(false)
+    expect(verdict.code).toBe('proactive.waking')
+    expect(verdict.retryAt).toBe(BASE + PROACTIVE_DEFAULTS.wakingDelayMs)
+  })
+
+  it('刚被吵醒的延后能从配置改', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET, wakingDelayMs: 90_000 })
+    const before = Date.now()
+
+    const decision = seam.consider({
+      chatKey: 'group:waking',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      waking: true,
+    })
+    const after = Date.now()
+
+    expect(decision.verdict.code).toBe('proactive.waking')
+    expect(decision.pending).toHaveLength(0)
+    expect(decision.verdict.retryAt).toBeGreaterThanOrEqual(before + 90_000)
+    expect(decision.verdict.retryAt).toBeLessThanOrEqual(after + 90_000)
+  })
+
+  it('醒着的时候照旧攒候选', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    const decision = seam.consider({
+      chatKey: 'group:awake',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      asleep: false,
+      wakeAfter: 0,
+      waking: false,
+    })
+
+    expect(decision.verdict.code).toBe('proactive.preview_ready')
+    expect(decision.pending).toHaveLength(2)
+  })
+
+  it('没接上身体就按醒着处理，不报错', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    const decision = consider(seam, 'group:nobody')
+
+    expect(decision.verdict.code).toBe('proactive.preview_ready')
+    expect(decision.pending).toHaveLength(2)
+  })
+
+  it('关掉开关时睡着也只是没开', () => {
+    const off = mount({ file: tempFile(), enabled: false, ...NO_QUIET }).consider({
+      chatKey: 'group:off',
+      candidates: CANDIDATES,
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      asleep: true,
+      wakeAfter: WAKE,
+    })
+
+    expect(off.verdict.code).toBe('proactive.off')
+    expect(off.pending).toHaveLength(0)
+  })
+})

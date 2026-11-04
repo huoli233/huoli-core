@@ -10,7 +10,7 @@ import { recall, type RecallHit } from './recall.ts'
 import { registerMemoryTools } from './tools.ts'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { defaultLedgerFile, runLedger, type LedgerAction, type LedgerRunResult } from './ledger.ts'
-import { healthLine } from './health.ts'
+import { healthLine, localDay } from './health.ts'
 import { clampImportance, metadataOr, sourceOr } from './guard.ts'
 import { mirroredBy, mirroredSelfIds } from './mirror.ts'
 import {
@@ -35,7 +35,7 @@ export type {
 } from './types.ts'
 export { CLARITY_LABEL, LAYER_LABEL, LAYER_ORDER, MEMORY_SOURCES } from './types.ts'
 export { mirroredBy, mirroredSelfIds, selfIdOf } from './mirror.ts'
-export type { MemoryStore, MemoryStoreOptions } from './store.ts'
+export type { MemoryStore, MemoryStoreOptions, MemoryStoreState } from './store.ts'
 export type { RecallHit, RecallInput, RecallReasons } from './recall.ts'
 export { cosineSimilarity, encodeVector, keyGrams, recall, renderRecall } from './recall.ts'
 export { buildInjectBlock, injectIntoUserText, shouldInject } from './inject.ts'
@@ -52,20 +52,29 @@ export {
   syncBook,
   verifyBook,
 } from './ledger.ts'
+export { LEDGER_SCHEMA_VERSION } from './ledger.ts'
 export type {
+  Fingerprint,
   LedgerAction,
   LedgerBook,
   LedgerChange,
   LedgerEntry,
+  LedgerEntryState,
   LedgerReport,
   LedgerRunOptions,
   LedgerRunResult,
 } from './ledger.ts'
-export { healthCounts, healthLine } from './health.ts'
+export { healthCounts, healthLine, localDay } from './health.ts'
 export type { HealthCounts, HealthInput } from './health.ts'
 
 /** 每天跑完一遍之后的交代 */
 export interface MaintainResult {
+  /** 这次是不是真的做了：同一天再调就是 false，什么都不碰 */
+  didWork: boolean
+  /** 整理日，本地日期；这次没做时就是前面那次记下的那一天 */
+  lastMaintainedDay: string
+  /** 这次之前记下的整理日，从没整理过是空串 */
+  previousMaintainedDay: string
   /** 这次掉了分的条数 */
   decayed: number
   /** 这次降了一档的条数 */
@@ -74,7 +83,7 @@ export interface MaintainResult {
   forgotten: number
   /** 这次新入账的条数 */
   added: number
-  /** 当天那行健康记录 */
+  /** 当天那行健康记录；这次没真的做时是空串 */
   line: string
 }
 
@@ -166,7 +175,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         recoverTimes: 0,
         at,
         lastSeenAt: at,
-        forgotten: false,
+        state: 'active',
         source: sourceOr(options.source, 'chat'),
         ...metadata === undefined ? {} : { metadata },
       }
@@ -195,7 +204,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         recoverTimes: 0,
         at,
         lastSeenAt: at,
-        forgotten: false,
+        state: 'active',
         source: 'self',
         metadata: {
           self_id: selfId,
@@ -225,10 +234,27 @@ export function apply(ctx: Context, config: Config = {}): void {
       return sweepOnce(store, Date.now())
     },
     maintain(now) {
+      const day = localDay(now)
+      const previous = store.state().lastMaintainedDay
+      // 一天只整理一次：同一天再调就什么都不碰，不衰减、不清理、不补账，也不出第二行
+      if (previous === day) {
+        return {
+          didWork: false,
+          lastMaintainedDay: previous,
+          previousMaintainedDay: previous,
+          decayed: 0,
+          stepped: 0,
+          forgotten: 0,
+          added: 0,
+          line: '',
+        }
+      }
       // 先掉重要度，再按新的重要度算清晰度，最后才清正文
       const decayed = decayAll(store, tuning)
       const swept = sweepOnce(store, now)
+      // 补账在退役之后，账本才记得住这次退的是哪条
       const synced = run('sync')
+      store.setState({ lastMaintainedDay: day })
       const line = healthLine({
         items: store.all(),
         now,
@@ -236,13 +262,22 @@ export function apply(ctx: Context, config: Config = {}): void {
         protectLine: tuning.protectLine,
         ledger: synced.report,
       })
-      return { decayed, stepped: swept.stepped, forgotten: swept.forgotten, added: synced.added.length, line }
+      return {
+        didWork: true,
+        lastMaintainedDay: day,
+        previousMaintainedDay: previous,
+        decayed,
+        stepped: swept.stepped,
+        forgotten: swept.forgotten,
+        added: synced.added.length,
+        line,
+      }
     },
     ledger(action) {
       return run(action)
     },
     outline(chatKey) {
-      const items = store.all().filter(item => !item.forgotten && item.scope === scopeOf(chatKey))
+      const items = store.all().filter(item => item.state !== 'forgotten' && item.scope === scopeOf(chatKey))
       if (items.length === 0) return '还没有记下什么。'
       const lines = items
         .slice(-8)

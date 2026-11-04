@@ -34,7 +34,7 @@ describe('每天掉一次重要度', () => {
 
     seam.maintain(NOW)
     const afterFirst = seam.store.byId(kept.id)?.importance ?? 0
-    const again = seam.maintain(NOW)
+    const again = seam.maintain(NOW + DAY)
 
     expect(afterFirst).toBe(DEFAULTS.importanceFloor)
     expect(seam.store.byId(kept.id)?.importance).toBe(DEFAULTS.importanceFloor)
@@ -89,7 +89,7 @@ describe('每天掉一次重要度', () => {
   it('已经忘掉的条目不再掉分', () => {
     const { seam } = mount({ file: tempFile() })
     const gone = seam.remember('已经忘掉的一句', 'group:1', { importance: 45, at: NOW })
-    seam.store.update(gone.id, { forgotten: true, clarity: 'forgotten', text: '' })
+    seam.store.update(gone.id, { state: 'forgotten', clarity: 'forgotten', text: '', retiredAt: NOW })
 
     const run = seam.maintain(NOW)
 
@@ -154,7 +154,7 @@ describe('被召回时回升', () => {
   it('已遗忘的条目既不回升也不动次数', () => {
     const { seam } = mount({ file: tempFile() })
     const gone = seam.remember('已经忘掉的一句', 'group:1', { importance: 45, at: NOW })
-    seam.store.update(gone.id, { forgotten: true, clarity: 'forgotten', text: '' })
+    seam.store.update(gone.id, { state: 'forgotten', clarity: 'forgotten', text: '', retiredAt: NOW })
 
     touch(seam.store, gone.id, NOW)
 
@@ -186,6 +186,8 @@ describe('先掉重要度，再算清晰度，最后清正文', () => {
     expect(after?.importance).toBeCloseTo(40 - DEFAULTS.decayBase * DEFAULTS.salienceMid)
     expect(after?.clarity).toBe('forgotten')
     expect(after?.text).toBe('')
+    expect(after?.state).toBe('forgotten')
+    expect(after?.retiredAt).toBe(NOW)
     expect(run.forgotten).toBe(1)
   })
 

@@ -36,7 +36,7 @@ kind: "package-bundle"
 ```markdown
 每轮结束往 data/qq-decisions.jsonl 追加一行：at、chatKey、awake、reason、attempted、sent、blocked。
 reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下次时间；这一行不进提示词、不进记忆，也不含模型原文与用户原文。
-主动开口也往同一个文件追加：每问一次要不要开口就落一行，reason 是 proactive:<结果码>；被闸门拦下时 blocked 同时写码与下次时间，awake 恒为 false、sent 恒为 0。
+主动开口也往同一个文件追加：每问一次要不要开口就落一行，reason 是 proactive:<结果码>；被闸门拦下时 blocked 同时写码与下次时间，awake 恒为 false、sent 恒为 0。睡着与被吵醒两种情形各有自己的码：`proactive:asleep` 的 `blocked.retryAt` 取身体排的醒点，`proactive:waking` 取延后到的时刻。
 ```
 
 ## Known Limitations and Deferred Work
@@ -70,6 +70,6 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 
 工具白名单在 `src/tool-whitelist.ts`：名单不空时用 `ctx.tools.guard()` 注册一个单调守卫，名单外的工具名一律拒，理由里带 `qq.tool_not_allowed` 与下一步；名单空着就不注册，只在启动时打印一次。
 
-主动开口的接线在 `apply` 的后半段：装配时取 `qq-proactive` 与 `qq-material` 两个仓，`qq-proactive` 那一行的 `enabled` 为假时一次都不问、也不写盘。开着时两个入口进来——`agent/turn-stopping` 每轮收尾问一次，`qq-channel` 的 `onIncoming` 在入站之后问一次并按 `proactiveThrottleMs` 节流（默认一分钟）。候选来自素材仓里这个会话惦记着的事，只带原话、来源与到达时刻，不带把握、有用程度与风险。攒住以后立刻 `preview(chatKey)` 摆出来，投递只认摆过的编号；每次问都往决策记录追加一行，理由码把闸门码的点换成冒号。
+主动开口的接线在 `apply` 的后半段：装配时取 `qq-proactive` 与 `qq-material` 两个仓，`qq-proactive` 那一行的 `enabled` 为假时一次都不问、也不写盘。开着时两个入口进来——`agent/turn-stopping` 每轮收尾问一次，`qq-channel` 的 `onIncoming` 在入站之后问一次并按 `proactiveThrottleMs` 节流（默认一分钟）。候选来自素材仓里这个会话惦记着的事，只带原话、来源与到达时刻，不带把握、有用程度与风险。攒住以后立刻 `preview(chatKey)` 摆出来，投递只认摆过的编号；每次问都往决策记录追加一行，理由码把闸门码的点换成冒号。问之前先从 `qq-vitals` 的 seam 读一次身体，把睡眠三项事实照抄进 `consider`：`asleep` 取 `asleep`、`wakeAfter` 取 `wake_after`、`waking` 取 `sleep_state === 'waking'`；身体没装上时这三项一个都不传，按醒着算。
 
 记忆注入的接线在 `apply` 的末尾：`memoryInject` 为真时注册一个 `agent/pre-step` 监听，先 `next()` 拿到这一步要进的消息，被前面那条步数上限拒掉时就原样返回、一次都不召回。拿到以后只挑 `source.kind` 是 `user` 的那几条拼成查询（运行环境那段也挂在 user 上，它的 `source.kind` 不是 `user`，所以不会被当成用户问的话），再用 `shouldInject(turn, 上一次插入的轮, memoryInjectRepeatTurns)` 判这一轮要不要插；要插就把召回结果交给 `buildInjectBlock`，块为空就原样返回，非空才改写最后那条用户消息的正文块，并把这一轮记进去重表。三个上限直接取自配置，默认值表里引用 `qq-memory` 的 `DEFAULTS`，只有一份真相；开关关着时这个监听根本不注册。

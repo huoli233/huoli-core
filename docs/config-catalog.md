@@ -2974,7 +2974,7 @@ export interface Config {
 
 - `inject`: `tools`
 - `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
-- `source`: [`packages/qq/qq-memory/src/index.ts:98`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:107`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3052,7 +3052,7 @@ export interface Config {
 
 ## `@huoli/huoli-qq-proactive`
 
-- `source`: [`packages/qq/qq-proactive/src/index.ts:80`](../packages/qq/qq-proactive/src/index.ts)
+- `source`: [`packages/qq/qq-proactive/src/index.ts:86`](../packages/qq/qq-proactive/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3077,6 +3077,8 @@ export interface Config {
   gapMaxMs?: number
   /** 劲头低于这个数就按这个数算 */
   biasFloor?: number
+  /** 刚被吵醒之后还要安静多久，毫秒 */
+  wakingDelayMs?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-proactive -->

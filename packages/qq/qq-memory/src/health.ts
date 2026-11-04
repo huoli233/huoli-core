@@ -37,8 +37,17 @@ function pad(value: number): string {
 // 本地时间的 yyyy-mm-dd hh:mm
 function stamp(now: number): string {
   const at = new Date(now)
-  const day = `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`
-  return `${day} ${pad(at.getHours())}:${pad(at.getMinutes())}`
+  return `${localDay(now)} ${pad(at.getHours())}:${pad(at.getMinutes())}`
+}
+
+/**
+ * 本地日期，一天只整理一次的判据就比这个串
+ * @param now - 现在的时间
+ * @returns 形如 2026-11-04
+ */
+export function localDay(now: number): string {
+  const at = new Date(now)
+  return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`
 }
 
 /**
@@ -52,7 +61,7 @@ export function healthCounts(items: readonly MemoryItem[], protectLine: number, 
   let pinned = 0
   let cold = 0
   for (const item of items) {
-    if (item.forgotten) {
+    if (item.state === 'forgotten') {
       cold += 1
       continue
     }

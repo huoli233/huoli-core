@@ -10,11 +10,17 @@ import {
   retention,
   type Clarity,
 } from '@huoli/huoli-qq-policy'
-import { newId, MEMORY_SOURCES, type MemoryItem, type MemoryLayer } from './types.ts'
+import { newId, MEMORY_SOURCES, MEMORY_STATES, type MemoryItem, type MemoryLayer, type MemoryState } from './types.ts'
 
 /** 存文件的选项 */
 export interface MemoryStoreOptions {
   file: string
+}
+
+/** 跟条目一起存的仓状态 */
+export interface MemoryStoreState {
+  /** 上次每天整理落在哪一天，本地日期，形如 2026-11-04；没整理过就是空串 */
+  lastMaintainedDay: string
 }
 
 /** 记忆仓 */
@@ -25,14 +31,21 @@ export interface MemoryStore {
   update(id: string, patch: Partial<MemoryItem>): void
   remove(id: string): void
   replaceAll(items: readonly MemoryItem[]): void
+  /** 仓级状态，跟条目同一份文件 */
+  state(): MemoryStoreState
+  setState(patch: Partial<MemoryStoreState>): void
   flush(): void
 }
 
 // 文件里的样子
 interface StoredMemory {
   version: 1
+  lastMaintainedDay: string
   items: MemoryItem[]
 }
+
+// 还没写过任何状态
+const NO_STATE: MemoryStoreState = { lastMaintainedDay: '' }
 
 const LAYERS: readonly MemoryLayer[] = ['ephemeral', 'episodic', 'semantic', 'private']
 
@@ -74,8 +87,14 @@ function normalizeItem(raw: Record<string, unknown>, now: number): MemoryItem {
   const computed = clarityFor(retention({ importance, at, lastSeenAt, recallCount }, now))
   const clarity = pick<Clarity>(raw.clarity, CLARITY_ORDER, computed)
   const personId = typeof raw.personId === 'string' && raw.personId !== '' ? raw.personId : undefined
+  // 旧的 forgotten 布尔折成两态，读回后不再写回这个键
+  const legacyForgotten = raw.forgotten === true
+  const state = pick<MemoryState>(raw.state, MEMORY_STATES, legacyForgotten || clarity === 'forgotten' ? 'forgotten' : 'active')
+  const kept: Record<string, unknown> = { ...raw }
+  delete kept.forgotten
+  delete kept.retiredAt
   return {
-    ...raw,
+    ...kept,
     id: textOr(raw.id, newId(at)),
     text: textOr(raw.text, ''),
     layer: pick(raw.layer, LAYERS, 'episodic'),
@@ -88,7 +107,9 @@ function normalizeItem(raw: Record<string, unknown>, now: number): MemoryItem {
     recoverTimes: Math.max(0, Math.round(numberOr(raw.recoverTimes, 0))),
     at,
     lastSeenAt,
-    forgotten: raw.forgotten === true || clarity === 'forgotten',
+    state,
+    // 旧文件里退役过的那条没有时刻，按写入时刻补，免得账本缺一格
+    ...state === 'forgotten' ? { retiredAt: Math.max(0, numberOr(raw.retiredAt, at)) } : {},
     source: pick(raw.source, MEMORY_SOURCES, 'chat'),
     metadata: isRecord(raw.metadata) ? raw.metadata : {},
     ...personId === undefined ? {} : { personId },
@@ -96,25 +117,28 @@ function normalizeItem(raw: Record<string, unknown>, now: number): MemoryItem {
 }
 
 // 读文件，出错就当还没记过事
-function load(file: string): MemoryItem[] {
+function load(file: string): { items: MemoryItem[]; state: MemoryStoreState } {
   try {
-    if (!fs.existsSync(file)) return []
+    if (!fs.existsSync(file)) return { items: [], state: NO_STATE }
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
-    if (text.trim().length === 0) return []
+    if (text.trim().length === 0) return { items: [], state: NO_STATE }
     const parsed: unknown = JSON.parse(text)
-    if (!isRecord(parsed) || !Array.isArray(parsed.items)) return []
+    if (!isRecord(parsed) || !Array.isArray(parsed.items)) return { items: [], state: NO_STATE }
     const now = Date.now()
-    return parsed.items.filter(isRecord).map(raw => normalizeItem(raw, now))
+    return {
+      items: parsed.items.filter(isRecord).map(raw => normalizeItem(raw, now)),
+      state: { lastMaintainedDay: textOr(parsed.lastMaintainedDay, '') },
+    }
   } catch {
-    return []
+    return { items: [], state: NO_STATE }
   }
 }
 
 // 整份写回，先写临时文件再改名
-function save(file: string, items: readonly MemoryItem[]): void {
+function save(file: string, items: readonly MemoryItem[], state: MemoryStoreState): void {
   fs.mkdirSync(path.dirname(file), { recursive: true })
   const temporary = `${file}.${process.pid}.tmp`
-  const body: StoredMemory = { version: 1, items: [...items] }
+  const body: StoredMemory = { version: 1, lastMaintainedDay: state.lastMaintainedDay, items: [...items] }
   fs.writeFileSync(temporary, `${JSON.stringify(body, null, 2)}\n`, { mode: 0o600 })
   fs.renameSync(temporary, file)
 }
@@ -125,7 +149,9 @@ function save(file: string, items: readonly MemoryItem[]): void {
  * @returns 处理结果
  */
 export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
-  let items: MemoryItem[] = load(options.file)
+  const loaded = load(options.file)
+  let items: MemoryItem[] = loaded.items
+  let state: MemoryStoreState = loaded.state
   const index = new Map<string, number>()
   const reindex = (): void => {
     index.clear()
@@ -134,7 +160,7 @@ export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
   reindex()
 
   const persist = (): void => {
-    save(options.file, items)
+    save(options.file, items, state)
   }
 
   return {
@@ -169,6 +195,13 @@ export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
     replaceAll(next) {
       items = [...next]
       reindex()
+      persist()
+    },
+    state() {
+      return { ...state }
+    },
+    setState(patch) {
+      state = { ...state, ...patch }
       persist()
     },
     flush() {

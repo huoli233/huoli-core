@@ -73,6 +73,12 @@ export interface ConsiderInput {
   hasChannel: boolean
   /** 身体那边给的想开口的劲，零到一，冷却与每天额度都按它缩放 */
   proactiveBias?: number
+  /** 身体那边给的睡眠事实：现在睡着就一条候选都不攒 */
+  asleep?: boolean
+  /** 睡着时预计醒来的毫秒时间戳，零表示没排期 */
+  wakeAfter?: number
+  /** 刚被吵醒、还没缓过来 */
+  waking?: boolean
   config?: Partial<GateConfig>
 }
 
@@ -98,6 +104,8 @@ export interface Config {
   gapMaxMs?: number
   /** 劲头低于这个数就按这个数算 */
   biasFloor?: number
+  /** 刚被吵醒之后还要安静多久，毫秒 */
+  wakingDelayMs?: number
 }
 
 const seams = new WeakMap<Context, QqProactiveSeam>()
@@ -135,6 +143,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     ...config.gapMinMs !== undefined ? { gapMinMs: config.gapMinMs } : {},
     ...config.gapMaxMs !== undefined ? { gapMaxMs: config.gapMaxMs } : {},
     ...config.biasFloor !== undefined ? { biasFloor: config.biasFloor } : {},
+    ...config.wakingDelayMs !== undefined ? { wakingDelayMs: config.wakingDelayMs } : {},
   }
   const enabled = config.enabled ?? PROACTIVE_DEFAULTS.enabled
 
@@ -154,6 +163,9 @@ export function apply(ctx: Context, config: Config = {}): void {
         botBusy: input.botBusy,
         hasChannel: input.hasChannel,
         ...input.proactiveBias !== undefined ? { proactiveBias: input.proactiveBias } : {},
+        ...input.asleep !== undefined ? { asleep: input.asleep } : {},
+        ...input.wakeAfter !== undefined ? { wakeAfter: input.wakeAfter } : {},
+        ...input.waking !== undefined ? { waking: input.waking } : {},
       }
       const gate = runGates(gateInput)
       if (!gate.ok) return { verdict: gate, pending: [], considered: [], facts }

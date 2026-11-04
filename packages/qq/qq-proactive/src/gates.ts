@@ -13,6 +13,12 @@ export interface GateInput {
   hasChannel: boolean
   /** 身体给的想开口的劲，零到一，没接上身体时为空 */
   proactiveBias?: number
+  /** 现在是不是睡着，没接上身体时为空 */
+  asleep?: boolean
+  /** 睡着时预计醒来的毫秒时间戳，零表示没排期 */
+  wakeAfter?: number
+  /** 刚被吵醒、还没缓过来时为真，没接上身体时为空 */
+  waking?: boolean
 }
 
 // 时分转成当天的分钟数
@@ -77,6 +83,20 @@ export function runGates(input: GateInput): GateVerdict {
   const config: GateConfig = { ...PROACTIVE_DEFAULTS, ...(input.config ?? {}) }
 
   if (!config.enabled) return { ok: false, code: 'proactive.off', reason: '主动开口没开' }
+  // 睡着时一条候选都不攒，下次能来的时候就是身体排的那个醒点
+  if (input.asleep === true) {
+    const wakeAfter = input.wakeAfter ?? 0
+    return {
+      ok: false,
+      code: 'proactive.asleep',
+      reason: '她睡着了，这时候不出声',
+      ...wakeAfter > 0 ? { retryAt: wakeAfter } : {},
+    }
+  }
+  // 刚被吵醒还有一段缓不过来，按配置延后再看
+  if (input.waking === true) {
+    return { ok: false, code: 'proactive.waking', reason: '她刚被吵醒，还没缓过来', retryAt: input.now + config.wakingDelayMs }
+  }
   if (!input.hasChannel) return { ok: false, code: 'proactive.no_channel', reason: '没有能发出去的通道' }
   if (input.botBusy) {
     return { ok: false, code: 'proactive.busy', reason: '正在说话', retryAt: input.now + config.busyRetryMs }

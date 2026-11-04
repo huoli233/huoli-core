@@ -117,6 +117,11 @@ function replyFactsOf(state: VitalsState): ReplyFacts {
   }
 }
 
+// 睡眠那三项事实原样转述：睡着、预计醒来的时刻、刚被吵醒，判不判由被动那一边的闸门定
+function sleepFactsOf(state: VitalsState): { asleep: boolean; wakeAfter: number; waking: boolean } {
+  return { asleep: state.asleep, wakeAfter: state.wake_after, waking: state.sleep_state === 'waking' }
+}
+
 // 身体没接上时按中性的身体算，上限照样是一个数
 const NEUTRAL_FACTS: ReplyFacts = { tired: 0.5, annoyed: 0.5, energy: 0.5, clingy: 0.5, lonely: 0.5 }
 
@@ -342,7 +347,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       humanActive: false,
       botBusy: busy,
       hasChannel: channel !== undefined,
-      ...body !== undefined ? { proactiveBias: body.proactive_bias } : {},
+      ...body !== undefined ? { proactiveBias: body.proactive_bias, ...sleepFactsOf(body) } : {},
     })
     // 攒住的当场摆出来，投递只认摆过的那几条
     if (decision.pending.length > 0) proactive.preview(chatKey)

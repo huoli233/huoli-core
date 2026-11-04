@@ -20,7 +20,7 @@ function make(id: string, text: string, importance: number, overrides: Partial<M
     recoverTimes: 0,
     at: NOW,
     lastSeenAt: NOW,
-    forgotten: false,
+    state: 'active',
     source: 'chat',
     ...overrides,
   }
@@ -28,7 +28,7 @@ function make(id: string, text: string, importance: number, overrides: Partial<M
 
 const WARM = make('id-warm', '天天提起的那句', 75)
 const LIGHT = make('id-light', '随口一句', 20)
-const COLD = make('id-cold', '', 75, { forgotten: true, clarity: 'forgotten' })
+const COLD = make('id-cold', '', 75, { state: 'forgotten', clarity: 'forgotten', retiredAt: NOW })
 const KEPT: readonly MemoryItem[] = [WARM, LIGHT, COLD]
 const PASSED: LedgerReport = verifyBook(initBook(KEPT), KEPT)
 

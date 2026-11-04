@@ -7,10 +7,11 @@ import SystemPrompt from '@huoli/huoli-system-prompt'
 import { apply as applyAttention } from '@huoli/huoli-qq-attention'
 import { apply as applyChannel } from '@huoli/huoli-qq-channel'
 import { apply as applyMaterial, qqMaterialOf } from '@huoli/huoli-qq-material'
-import { apply as applyProactive, qqProactiveOf, type QqProactiveSeam } from '@huoli/huoli-qq-proactive'
+import { apply as applyProactive, PROACTIVE_DEFAULTS, qqProactiveOf, type QqProactiveSeam } from '@huoli/huoli-qq-proactive'
 import { apply as applySubject } from '@huoli/huoli-qq-subject'
+import { apply as applyVitals, createVitalsStore, DEFAULTS, emptyState, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { apply as applyBundle, qqBundleOf } from '../src/index.ts'
+import { apply as applyBundle, qqBundleOf, type DecisionRecord } from '../src/index.ts'
 
 type SocketHandler = (event: { data?: string }) => void
 
@@ -71,12 +72,30 @@ function tempDir(): string {
 
 const NO_QUIET = { quietStart: '00:00', quietEnd: '00:00' }
 
-async function mount(options: { enabled: boolean; throttleMs?: number }): Promise<Mounted> {
+// 先把身体落成想要的那一态，装配时读到的就是它；一分钟内的读取不结算漂移，钟点不影响结果
+function seedBody(dir: string, patch: Partial<VitalsState>): string {
+  const file = path.join(dir, 'qq-vitals.json')
+  createVitalsStore({ file, tuning: DEFAULTS }).write({ ...emptyState(DEFAULTS, Date.now()), ...patch })
+  return file
+}
+
+// 睡着那一态取午睡：午睡只认到点醒，不会被按钟点叫醒，用例与当前几点无关
+function sleepingBody(wakeAfter: number): Partial<VitalsState> {
+  return { sleep_state: 'sleeping', sleep_kind: 'nap', nap_at: Date.now(), wake_after: wakeAfter, adenosine: 0.9 }
+}
+
+// 刚被吵醒那一态：迷糊窗口还没过
+function wakingBody(): Partial<VitalsState> {
+  return { sleep_state: 'waking', woken_at: Date.now(), groggy_until: Date.now() + 10 * 60_000, adenosine: 0.9 }
+}
+
+async function mount(options: { enabled: boolean; throttleMs?: number; body?: Partial<VitalsState> }): Promise<Mounted> {
   const dir = tempDir()
   const ctx = new Context()
   contexts.push(ctx)
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
+  if (options.body !== undefined) applyVitals(ctx, { file: seedBody(dir, options.body) })
   applyAttention(ctx, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
   applyMaterial(ctx, { thoughtsFile: path.join(dir, 'thoughts.json') })
@@ -102,7 +121,7 @@ async function endTurn(ctx: Context): Promise<void> {
   await ctx.serial('agent/turn-stopping', { agent: AGENT, turn: 1, signal: new AbortController().signal })
 }
 
-function proactiveRecords(ctx: Context): Array<{ reason: string | null; chatKey: string }> {
+function proactiveRecords(ctx: Context): DecisionRecord[] {
   const seam = qqBundleOf(ctx)
   if (seam === undefined) throw new Error('组合包没装上')
   return seam.decisions(0, 50).filter(record => record.reason?.startsWith('proactive:') === true)
@@ -223,5 +242,89 @@ describe('入站之后的节流', () => {
     socket.deliver(groupMessage('在不在', 22))
 
     expect(proactiveRecords(ctx)).toHaveLength(2)
+  })
+})
+
+describe('睡着的时候', () => {
+  const WAKE = Date.now() + 3 * 60 * 60_000
+
+  it('睡着时一条候选都不攒，记录里写 proactive:asleep 与醒点', async () => {
+    const { ctx, proactive, dir } = await mount({ enabled: true, body: sleepingBody(WAKE) })
+    const material = qqMaterialOf(ctx)
+    if (material === undefined) throw new Error('素材仓没装上')
+    material.thoughts.add('想说说楼下新开的店', 'group:1')
+
+    await endTurn(ctx)
+
+    const last = proactiveRecords(ctx).at(-1)
+    expect(last?.reason).toBe('proactive:asleep')
+    expect(last?.blocked).toEqual({ code: 'proactive.asleep', retryAt: WAKE })
+    expect(fs.existsSync(path.join(dir, 'proactive.json'))).toBe(false)
+    expect(proactive.preview('group:1')).toHaveLength(0)
+  })
+
+  it('睡着时待发条数前后一样', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: sleepingBody(WAKE) })
+    const material = qqMaterialOf(ctx)
+    if (material === undefined) throw new Error('素材仓没装上')
+    material.thoughts.add('想说说楼下新开的店', 'group:1')
+    const before = proactive.pending.all().length
+
+    await endTurn(ctx)
+
+    expect(proactive.pending.all()).toHaveLength(before)
+  })
+
+  it('刚被吵醒时延后再来，记录里写 proactive:waking', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: wakingBody() })
+    const material = qqMaterialOf(ctx)
+    if (material === undefined) throw new Error('素材仓没装上')
+    material.thoughts.add('想说说楼下新开的店', 'group:1')
+    const before = Date.now()
+
+    await endTurn(ctx)
+    const after = Date.now()
+
+    const last = proactiveRecords(ctx).at(-1)
+    const delay = PROACTIVE_DEFAULTS.wakingDelayMs
+    expect(last?.reason).toBe('proactive:waking')
+    expect(last?.blocked?.code).toBe('proactive.waking')
+    expect(last?.blocked?.retryAt).toBeGreaterThanOrEqual(before + delay)
+    expect(last?.blocked?.retryAt).toBeLessThanOrEqual(after + delay)
+    expect(proactive.preview('group:1')).toHaveLength(0)
+  })
+
+  it('醒着时照旧攒候选', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: { sleep_state: 'awake', adenosine: 0.2 } })
+    const material = qqMaterialOf(ctx)
+    if (material === undefined) throw new Error('素材仓没装上')
+    material.thoughts.add('想说说楼下新开的店', 'group:1')
+
+    await endTurn(ctx)
+
+    expect(proactive.preview('group:1').map(item => item.text)).toEqual(['想说说楼下新开的店'])
+    expect(proactiveRecords(ctx).at(-1)?.reason).toBe('proactive:preview_ready')
+  })
+
+  it('没接上身体就按醒着处理，不报错也不出睡眠码', async () => {
+    const { ctx, proactive } = await mount({ enabled: true })
+    const material = qqMaterialOf(ctx)
+    if (material === undefined) throw new Error('素材仓没装上')
+    material.thoughts.add('想说说楼下新开的店', 'group:1')
+
+    await endTurn(ctx)
+
+    expect(proactive.preview('group:1')).toHaveLength(1)
+    expect(proactiveRecords(ctx).at(-1)?.reason).toBe('proactive:preview_ready')
+  })
+
+  it('关着的时候睡着了也一样不问', async () => {
+    const { ctx, proactive } = await mount({ enabled: false, body: sleepingBody(WAKE) })
+    const asking = vi.spyOn(proactive, 'consider')
+
+    await endTurn(ctx)
+
+    expect(asking).not.toHaveBeenCalled()
+    expect(proactiveRecords(ctx)).toHaveLength(0)
   })
 })

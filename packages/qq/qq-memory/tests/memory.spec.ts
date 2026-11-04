@@ -115,8 +115,9 @@ describe('慢慢变淡', () => {
 
     const afterSweep = seam.store.byId(doomed.id)
 
-    expect(afterSweep?.forgotten).toBe(true)
+    expect(afterSweep?.state).toBe('forgotten')
     expect(afterSweep?.text).toBe('')
+    expect(afterSweep?.retiredAt).toBeGreaterThan(0)
   })
 })
 
@@ -185,15 +186,17 @@ describe('每天跑一次', () => {
     expect(seam.ledger('verify').report.ok).toBe(true)
   })
 
-  it('再跑一次不会重复入账', () => {
+  it('同一天再跑一次什么都不碰', () => {
     const { seam } = mount({ file: tempFile() })
     seam.remember(SENTENCE, 'group:1')
-    seam.maintain(Date.now())
+    const at = new Date(2026, 9, 30, 18, 39).getTime()
+    seam.maintain(at)
 
-    const again = seam.maintain(Date.now())
+    const again = seam.maintain(at + 60_000)
 
+    expect(again.didWork).toBe(false)
     expect(again.added).toBe(0)
-    expect(again.line).toContain('total=1')
+    expect(again.line).toBe('')
   })
 })
 

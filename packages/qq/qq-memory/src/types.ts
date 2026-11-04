@@ -11,6 +11,12 @@ export type MemorySource = 'chat' | 'tool' | 'proactive' | 'manual' | 'self'
 /** 五档来源，写入时按这张表校验 */
 export const MEMORY_SOURCES: readonly MemorySource[] = ['chat', 'tool', 'proactive', 'manual', 'self']
 
+/** 一条记忆现在还在不在用，退役的只留编号与时刻 */
+export type MemoryState = 'active' | 'forgotten'
+
+/** 两态，读到别的值一律按 active */
+export const MEMORY_STATES: readonly MemoryState[] = ['active', 'forgotten']
+
 /** 镜像的条目归哪一类，与自我层那三份文件一一对应 */
 export type MirrorSelfKind = 'claim' | 'project' | 'commitment'
 
@@ -30,7 +36,10 @@ export interface MemoryItem {
   recoverTimes: number
   at: number
   lastSeenAt: number
-  forgotten: boolean
+  /** 还在用还是已经退役 */
+  state: MemoryState
+  /** 退役那一刻，没退役就没有这个字段 */
+  retiredAt?: number
   source: MemorySource
   personId?: string
   /** 话题、地点、人物等附加事实，不参与打分，留给自我层镜像 */

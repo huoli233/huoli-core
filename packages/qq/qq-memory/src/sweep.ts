@@ -37,7 +37,7 @@ function startOfDay(at: number): number {
 export function promoteAll(store: MemoryStore, now: number): number {
   let moved = 0
   for (const item of store.all()) {
-    if (item.forgotten) continue
+    if (item.state === 'forgotten') continue
     if (item.layer === 'ephemeral') {
       if (now - item.at < PROMOTE_AFTER_MS) continue
       store.update(item.id, { layer: 'episodic' })
@@ -72,7 +72,7 @@ function clarityOf(item: MemoryItem, now: number) {
 export function decayAll(store: MemoryStore, tuning: Tuning = DEFAULTS): number {
   let dropped = 0
   for (const item of store.all()) {
-    if (item.forgotten) continue
+    if (item.state === 'forgotten') continue
     const drop = importanceDailyDrop(
       { importance: item.importance, recallCount: item.recallCount, emotional: item.emotional },
       tuning.protectLine,
@@ -88,7 +88,7 @@ export function decayAll(store: MemoryStore, tuning: Tuning = DEFAULTS): number 
 }
 
 /**
- * 重要度降完再跑：把该淡的往下挪一档，淡到底就只留个坑
+ * 重要度降完再跑：把该淡的往下挪一档，淡到底就退役并清掉正文
  * @param store - 存放的地方
  * @param now - 现在的时间
  * @returns 处理结果
@@ -97,12 +97,13 @@ export function sweepOnce(store: MemoryStore, now: number): { stepped: number; f
   let stepped = 0
   let forgotten = 0
   for (const item of store.all()) {
-    if (item.forgotten) continue
+    if (item.state === 'forgotten') continue
     const target = clarityOf(item, now)
     const next = stepClarity(item.clarity, target)
     if (next !== item.clarity) {
       if (next === 'forgotten') {
-        store.update(item.id, { clarity: next, text: '', forgotten: true })
+        // 退役时刻与清正文同一次写入，落盘后不会出现「有退役没时刻」的中间态
+        store.update(item.id, { clarity: next, text: '', state: 'forgotten', retiredAt: now })
         forgotten += 1
       } else {
         store.update(item.id, { clarity: next })
@@ -123,7 +124,7 @@ export function sweepOnce(store: MemoryStore, now: number): { stepped: number; f
  */
 export function touch(store: MemoryStore, id: string, now: number, tuning: Tuning = DEFAULTS): void {
   const item = store.byId(id)
-  if (item === undefined || item.forgotten) return
+  if (item === undefined || item.state === 'forgotten') return
   const day = startOfDay(now)
   const usedToday = item.recoverDay === day ? item.recoverTimes : 0
   const skipped = item.clarity === 'trace' || usedToday >= tuning.recoverPerDay

@@ -148,7 +148,7 @@ export function recall(store: MemoryStore, input: RecallInput = {}): RecallHit[]
 
   const hits: RecallHit[] = []
   for (const item of store.all()) {
-    if (item.forgotten || item.clarity === 'forgotten') continue
+    if (item.state === 'forgotten' || item.clarity === 'forgotten') continue
     if (input.scope !== undefined && input.scope !== '' && item.scope !== input.scope) continue
     const bodyGrams = new Set(keyGrams(item.text, tuning.gramSize))
     const grams = queryGrams.filter(gram => bodyGrams.has(gram))

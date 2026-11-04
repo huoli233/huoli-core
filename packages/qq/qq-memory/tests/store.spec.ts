@@ -37,7 +37,29 @@ describe('旧文件读得回来', () => {
     expect(item?.recallCount).toBe(0)
     expect(item?.emotional).toBe(0)
     expect(item?.source).toBe('chat')
-    expect(item?.forgotten).toBe(false)
+    expect(item?.state).toBe('active')
+  })
+
+  it('旧的 forgotten 布尔折成退役态，时刻按写入时刻补', () => {
+    const file = tempFile()
+    writeRaw(file, [{
+      id: 'old-forgotten',
+      text: '',
+      layer: 'episodic',
+      scope: 'group:1',
+      importance: 50,
+      clarity: 'forgotten',
+      at: AT,
+      forgotten: true,
+    }])
+
+    const store = createMemoryStore({ file })
+    const item = store.byId('old-forgotten')
+    store.flush()
+
+    expect(item?.state).toBe('forgotten')
+    expect(item?.retiredAt).toBe(AT)
+    expect(readBack(file)[0]?.forgotten).toBeUndefined()
   })
 
   it('不认识的字段原样留着，写回还在', () => {
