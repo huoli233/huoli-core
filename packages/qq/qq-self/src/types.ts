@@ -116,6 +116,47 @@ export interface WriteOutcome {
   reason?: WriteReason
 }
 
+/** 会按版本留存的那两种单值文件 */
+export type VersionKind = 'panel' | 'narrative'
+
+/** versions/ 里的一份旧版本 */
+export interface VersionEntry {
+  /** 版本文件名，形如 panel-20261104-1830.md */
+  name: string
+  /** 是哪一种文件的版本 */
+  kind: VersionKind
+  /** 存档时刻，从文件名读回 */
+  at: number
+  /** 文件字节数 */
+  bytes: number
+}
+
+/** 一次回滚的结果 */
+export interface RollbackOutcome {
+  /** 回滚成了没有 */
+  ok: boolean
+  /** 从哪一份版本恢复的，没成时不给 */
+  restoredFrom?: string
+  /** 回滚前那份现场又存成了哪一份版本，没有现场可存时不给 */
+  savedCurrent?: string
+  /** 没成时的码，形如 versions.missing */
+  code?: string
+  /** 一句可读原因 */
+  reason?: string
+  /** 没成时的下一步提示 */
+  hint?: string
+}
+
+/** 回滚之后逐字核对的结果 */
+export interface RollbackCheck {
+  /** 当前文件与这一版是否逐字相同 */
+  same: boolean
+  /** 首处不同的行号，从 1 起；全同或比不了时为 0 */
+  line: number
+  /** 比不了时的码，形如 versions.missing */
+  code?: string
+}
+
 /** 一个新项目的写法 */
 export interface ProjectInput {
   /** 这个项目叫什么 */
@@ -455,6 +496,8 @@ export interface SelfSettings {
   narrativeParaMaxChars: number
   /** 叙事每章最多几段 */
   narrativeParasMax: number
+  /** 面板与叙事各留最近几份旧版本 */
+  versionsKeep: number
   /** 同时最多几个没结束的项目 */
   openProjectMax: number
   /** 一周最多问几条 */

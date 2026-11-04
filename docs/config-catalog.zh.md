@@ -2845,7 +2845,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:40`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:42`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2884,6 +2884,12 @@ export interface Config {
   mealMemory?: boolean
   /** 一顿饭写成一条记忆时的重要度 */
   mealMemoryImportance?: number
+  /** 遗书写不写进记忆 */
+  farewellMemory?: boolean
+  /** 遗书写成一条记忆时的重要度 */
+  farewellMemoryImportance?: number
+  /** 调用方给的模型文本，遗书正文用它，不给就写一句中性的话 */
+  farewellText?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
@@ -3161,7 +3167,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:168`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:196`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3212,6 +3218,8 @@ export interface SelfSettings {
   narrativeParaMaxChars: number
   /** 叙事每章最多几段 */
   narrativeParasMax: number
+  /** 面板与叙事各留最近几份旧版本 */
+  versionsKeep: number
   /** 同时最多几个没结束的项目 */
   openProjectMax: number
   /** 一周最多问几条 */
@@ -3298,7 +3306,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:56`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:60`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3789,6 +3797,8 @@ export interface Tuning extends EmotionTuning, SuppressTuning {
   mortalityRisePerBeat: number
   /** 每拍朝目标退多少，0~1 标度，默认 0.03，退得比涨慢得多 */
   mortalityFallPerBeat: number
+  /** 死亡威胁高过这条线算高位，0~1 标度，默认 0.85；到线那天才产出一条想说最后的话的事实 */
+  farewellMortalityFrom: number
 }
 
 /** 愤怒、记仇、恐惧这几套的触发与衰减参数 */

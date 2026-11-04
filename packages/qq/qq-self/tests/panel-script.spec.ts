@@ -89,7 +89,10 @@ describe('离线生成面板', () => {
 
     expect(first.startsWith('<!-- generated_at: ')).toBe(true)
     expect(second.startsWith('<!-- generated_at: ')).toBe(true)
-    expect(fs.readdirSync(dir)).toEqual(['panel.md'])
+    expect(fs.readdirSync(dir).sort()).toEqual(['panel.md', 'versions'])
+    const kept = fs.readdirSync(path.join(dir, 'versions'))
+    expect(kept).toHaveLength(1)
+    expect(fs.readFileSync(path.join(dir, 'versions', kept[0] ?? ''), 'utf8')).toBe(first)
   })
 
   it('不认识的参数直接拒，一份文件也不写', () => {

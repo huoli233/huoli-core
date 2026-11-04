@@ -7,7 +7,7 @@ kind: "package-reference"
 
 ## Summary
 
-她旁边的那一层自我：认领"我在哪、我在做什么、我想弄明白什么、我可以说不"，并判一条动态按哪一级才放行。这一包独占 `SELF_DIR`，只读身体那一段话，把面板写进提示词，把叙事、每天三行、错题、两档账与两把钥匙的痕迹留在目录里，再给外部一个只读的面板出口与一条离线生成命令。它不算身体、不算心情、不写记忆正文、不发消息。
+她旁边的那一层自我：认领"我在哪、我在做什么、我想弄明白什么、我可以说不"，并判一条动态按哪一级才放行。这一包独占 `SELF_DIR`，只读身体那一段话，把面板写进提示词，把叙事、每天三行、错题、两档账与两把钥匙的痕迹留在目录里，面板与叙事的旧版本按份数留在 `versions/` 供回滚，再给外部一个只读的面板出口与一条离线生成命令。它不算身体、不算心情、不写记忆正文、不发消息。
 
 ## Table of Contents
 
@@ -41,7 +41,8 @@ kind: "package-reference"
 - 只读出口 `panelText(chatKey)` 读 `panel.md` 正文、`panelGeneratedAt(chatKey)` 读首行的 `generated_at`：两者都不重算、不写盘，`Config.mainChatKey` 之外的会话拿到空串（没配主会话时不按会话过滤）。HTTP 出口还没接。
 - 离线生成只有 `scripts/panel.ts` 一条命令，它读状态文件、只写 `panel.md`、把路径打在标准输出上，不注入也不改状态。
 - 叙事、每天三行、错题、周复盘只有 `QqSelfSeam` 上的读写入口，没有对应的工具与提示词入口，主会话暂时还不能自己往这些文件里写。
-- 叙事只有固定的五章：章名逐字对不上就回 `unknown_chapter`，写一次只动那一章，其余章与没写的章留占位；`versions/` 没做，所以换章与重做面板都不留旧版，回滚演练还做不了。
+- 叙事只有固定的五章：章名逐字对不上就回 `unknown_chapter`，写一次只动那一章，其余章与没写的章留占位；面板与叙事每次被重写前，旧文件按原始字节存进 `versions/`，名字形如 `panel-20261104-1830.md`（本地时间到分钟，同一分钟再存一份就加序号），`versionsKeep` 默认 20 份、超出的最旧先删。
+- 版本与回滚只有 `QqSelfSeam` 上的 `listVersions(kind)`、`rollback(kind, name)`、`verifyAfterRollback(kind, name)` 三个入口，没有工具与提示词入口；回滚先把当前那份存成新版本（坏掉的、空的也存），空版本不许再拿来回滚，回滚只动 `panel.md` 或 `narrative.md` 这一份。
 - 每天三行的行数固定在参数表里（默认三行），跳过那天落一条 `skipped: true` 加一句 `why`，同一天再写回 `duplicate`；`weeklyReview(now)` 只汇总不改账，缺了几天由它自己数。
 - `PAUSE` 下项目只写一条提议（`proposed: true`、`outcome: dropped`），返回值是 `{ written: true, proposed: true }`，与做成的 `{ written: true, proposed: false }` 分开；提议不占没结束项目的额度，也不进面板的"我在做"。
 - `PAUSE` 下 `drive` 也降级为只提议，与规范里"`drive` 照旧"不同；这一版按"暂停时所有写入只提议，不落盘"实现。
@@ -54,9 +55,11 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.settings` 能逐项覆盖；`SELF_DIR` 默认落在数据根目录的 `data/qq-self/`，`Config.dir` 整体替换它，`resolveSelfDir()` 是唯一算它的地方。文件名只在 `src/files.ts` 的 `FILES` 里写一次。模块分工：目录读写与原子覆盖在 `src/store.ts`（事件流只追加，单值内容先写临时文件再改名），面板排版与预算在 `src/panel.ts`，此刻的压句在 `src/moment.ts`，只读目录画面板与离线生成在 `src/generate.ts`，叙事五章在 `src/narrative.ts`，每天三行在 `src/day.ts`，错题在 `src/errors.ts`，周复盘在 `src/review.ts`，宪法八条在 `src/constitution.ts`，两档账在 `src/ledger.ts`，钥匙判定在 `src/keys.ts`，三类公共动作的分级判定在 `src/grade.ts`，行字段的读取判据在 `src/rows.ts`，镜像在 `src/mirror.ts`。
+参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.settings` 能逐项覆盖；`SELF_DIR` 默认落在数据根目录的 `data/qq-self/`，`Config.dir` 整体替换它，`resolveSelfDir()` 是唯一算它的地方。文件名只在 `src/files.ts` 的 `FILES` 里写一次。模块分工：目录读写与原子覆盖在 `src/store.ts`（事件流只追加，单值内容先写临时文件再改名，面板与叙事重写前留旧版），面板排版与预算在 `src/panel.ts`，此刻的压句在 `src/moment.ts`，只读目录画面板与离线生成在 `src/generate.ts`，叙事五章在 `src/narrative.ts`，每天三行在 `src/day.ts`，错题在 `src/errors.ts`，周复盘在 `src/review.ts`，宪法八条在 `src/constitution.ts`，两档账在 `src/ledger.ts`，钥匙判定在 `src/keys.ts`，三类公共动作的分级判定在 `src/grade.ts`，行字段的读取判据在 `src/rows.ts`，镜像在 `src/mirror.ts`。
 
 面板的来源只有两处：此刻只问 `VitalsPort.render()`，项目与问句只问目录；`panelFromStore(store, settings, moment?)` 把这件事说全，注入路径与离线命令共用它。离线生成跑 `node --import tsx packages/qq/qq-self/scripts/panel.ts [--dir <SELF_DIR>]`，不给 `--dir` 就落在数据根目录下的 `data/qq-self/`，别的参数一律拒绝；它不经过提示词，也不需要装配上下文。
+
+版本在 `store.ts` 里落地：面板走 `writePanel`、叙事走 `writeText`，两条都在改名覆盖之前把旧文件按原始字节抄进 `versions/`，版本名由本地时间到分钟拼成（`panel-20261104-1830.md`），同一分钟的第二份接 `-2`；滚动只数本种类的文件，超出的按名字里的时间从旧到新删。`rollback(kind, name)` 先校验名字属于该种类、文件存在且内容非空，再把当前那份（坏的、空的也算）存成新版本、最后原子写回正本，返回 `{ restoredFrom, savedCurrent }`；`verifyAfterRollback(kind, name)` 比原始字节，返回是否逐字相同与首处不同的行号（从 1 起，全同为 0）。
 
 `src/grade.ts` 三个纯函数各判一路，输入只有事实、输出只有放行或码与原因：`judgePostLevel` 认 `POST_LEVELS` 里的 `routine` 与 `public`，例行要报话题且落在预授权清单里（`post.topic_required` / `post.not_routine`），公开借 `requireKeys` 判 `public.say`（`post.needs_keys`）；`judgeComment` 先判 `public.comment` 的两把钥匙，再判话题在不在清单里（`comment.needs_keys` / `comment.topic_required` / `comment.topic_not_allowed`）；`judgePrivate` 判对象在不在允许名单（`private.peer_required` / `private.peer_not_allowed`），最后判 `public.direct` 的两把钥匙（`private.needs_keys`）。三路都先判阶段：不到 `publicMinStage`（默认 `P3`）的动态与评论回 `post.stage_blocked` / `comment.stage_blocked`，不到 `privateMinStage`（默认 `P3`）的私信回 `private.stage_blocked`，这时连钥匙都不看；两个下限的默认值只在这一张参数表里定，正式装配时 `qq-channel` 的 `Config` 还能各自覆盖一次。阶段高低由 `stageAllows(stage, minStage, stages)` 按 `DEFAULTS.stages` 的次序比，认不出的写法按"不到下限"算。
 

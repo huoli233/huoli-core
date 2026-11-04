@@ -28,9 +28,13 @@ import type {
   LedgerViolation,
   MirrorResult,
   ProjectInput,
+  RollbackCheck,
+  RollbackOutcome,
   SelfMirrorPort,
   SelfSettings,
   StageOutcome,
+  VersionEntry,
+  VersionKind,
   VitalsPort,
   WeeklyReview,
   WriteOutcome,
@@ -89,11 +93,15 @@ export type {
   ProjectRow,
   ProjectTally,
   QuestionRow,
+  RollbackCheck,
+  RollbackOutcome,
   SelfMirrorEntry,
   SelfMirrorPort,
   SelfMirrorWrite,
   SelfSettings,
   StageOutcome,
+  VersionEntry,
+  VersionKind,
   VitalsPort,
   WeeklyReview,
   WriteOutcome,
@@ -162,6 +170,26 @@ export interface QqSelfSeam {
   errors(sinceAt?: number): ErrorRow[]
   /** 近七天的汇总：三行、错处、两档账、项目状态 */
   weeklyReview(now: number): WeeklyReview
+  /**
+   * 列一个种类的旧版本，最近的在前
+   * @param kind - 面板还是叙事
+   * @returns 每份版本的名字、种类、时刻与字节数
+   */
+  listVersions(kind: VersionKind): VersionEntry[]
+  /**
+   * 回滚到某一份旧版本，动手前先把现场存成新版本
+   * @param kind - 面板还是叙事，名字必须属于这个种类
+   * @param name - listVersions 给的名字，逐字相同
+   * @returns 从哪一份恢复、现场存成了哪一份，或一个带原因与提示的码
+   */
+  rollback(kind: VersionKind, name: string): RollbackOutcome
+  /**
+   * 回滚之后逐字核对当前文件与那一份版本
+   * @param kind - 面板还是叙事
+   * @param name - 要比对的那一份版本名
+   * @returns 是否逐字相同，以及首处不同的行号
+   */
+  verifyAfterRollback(kind: VersionKind, name: string): RollbackCheck
 }
 
 /** 这一行接受的配置 */
@@ -465,6 +493,17 @@ export function apply(ctx: Context, config: Config = {}): void {
     },
     weeklyReview(now) {
       return summarizeWeek({ store, settings, now, ledger: ledger.summary(now) })
+    },
+    listVersions(kind) {
+      return store.listVersions(kind)
+    },
+    rollback(kind, name) {
+      const stop = off()
+      if (stop !== undefined) return { ok: false, code: 'versions.disabled', reason: '这一层关着，回滚不落盘', hint: '先把 Config.enabled 打开' }
+      return store.rollback(kind, name)
+    },
+    verifyAfterRollback(kind, name) {
+      return store.verifyAfterRollback(kind, name)
     },
   }
   seams.set(ctx.root, seam)

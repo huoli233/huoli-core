@@ -49,6 +49,7 @@ export const DEFAULTS: SelfSettings = {
   errorMaxChars: 200,
   narrativeParaMaxChars: 150,
   narrativeParasMax: 3,
+  versionsKeep: 20,
   openProjectMax: 2,
   questionPerWeekMax: 1,
   weekMs: 7 * 24 * 60 * 60 * 1000,

@@ -28,4 +28,6 @@ export const FILES = {
   keys: 'keys.jsonl',
   /** 阶段推进的留痕 */
   stage: 'stage.jsonl',
+  /** 面板与叙事的旧版本，一份旧文本一个文件 */
+  versions: 'versions',
 } as const
