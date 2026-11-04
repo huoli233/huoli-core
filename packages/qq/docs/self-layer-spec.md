@@ -4,13 +4,13 @@
 
 ## 与现有包的关系
 
-`qq-self`（`@huoli/huoli-qq-self`，尚未创建）是这一层唯一的写入者：它独占 `SELF_DIR`、生成面板、记 drive/agency 账、判两把钥匙、把 claims/projects/commitments 交给记忆库镜像。它不算身体、不算心情、不写记忆正文、不发任何一条消息。
+`qq-self`（`@huoli/huoli-qq-self`）是这一层唯一的写入者：它独占 `SELF_DIR`、生成面板、记 drive/agency 账、判两把钥匙、把 claims/projects/commitments 交给记忆库镜像。它不算身体、不算心情、不写记忆正文、不发任何一条消息。
 
 | 包 | 负责 | 自我层对它是只读还是只写 | 不许做的事 |
 |---|---|---|---|
 | `qq-self` | `SELF_DIR` 全部文件、面板一段、分级判定、两把钥匙留痕 | 唯一写入者 | 不写别的包的数据文件，不发消息，不改 `persona` 与说话规则 |
 | [`qq-vitals`](../qq-vitals/README.md) | `data/qq-vitals.json` 独占；`read()`、`render()`、`react()` | 只读，只调 `render()` 取"此刻"一句；写回只经 `react()` | 自我层不写该文件，不自己算递质、饥饿、口渴、睡眠压力，不新建一份身体状态副本 |
-| [`qq-memory`](../qq-memory/README.md) | `data/qq-memory.json` 独占；`memory_append`、`memory_query` 两个工具；`remember(text, chatKey, options)`、`find()`；另有一份记正文指纹的记忆账本 | 只读走 `find()` 取证据 id；只写走 `remember` 的镜像调用 | 自我层不改既有条目的 `text`，不直接写该文件，不把日常三行、账本、面板塞进记忆库 |
+| [`qq-memory`](../qq-memory/README.md) | `data/qq-memory.json` 独占；`memory_append`、`memory_query` 两个工具；`remember(text, chatKey, options)`、`find()`；镜像专用入口 `rememberSelf(entry, at)`；另有一份记正文指纹的记忆账本 | 只读走 `find()` 取证据 id；只写走 `rememberSelf` 的镜像调用 | 自我层不改既有条目的 `text`，不直接写该文件，不把日常三行、账本、面板塞进记忆库 |
 | [`qq-subject`](../qq-subject/README.md) | `data/qq-subject.json` 独占；提示词段名 `qq:self`、占位名 `qq_self` | 只读 | 自我层不复用它的段名与占位名，不写它的状态文件，不再造一份"此刻的心情" |
 | [`qq-policy`](../qq-policy/README.md) | 半衰期、保留度、清晰度档位、`initialImportance` | 只读常量与纯函数 | 自我层不自造半衰期、不自定清晰度档位 |
 | [`qq-proactive`](../qq-proactive/README.md) | 主动开口的闸门：`enabled`、`dailyMax`、安静时段 | 只读 | 自我层不绕过闸门发送，不改它的参数 |
@@ -19,23 +19,23 @@
 
 ## 目录与文件
 
-`SELF_DIR` 默认 `<HUOLI_HOME>/data/self/`（`resolveHuoliHome(config.home)` 加 `data/self`），`Config.dir` 给定则整体替换；这个目录只放下面这些文件，不放别的包的数据，不放临时文件（写完立刻改名）。
+`SELF_DIR` 默认 `<HUOLI_HOME>/data/qq-self/`（`resolveHuoliHome(config.huoliHome)` 加 `data/qq-self`），`Config.dir` 给定则整体替换；这个目录只放下面这些文件，不放别的包的数据，不放临时文件（写完立刻改名）。
 
-| 文件 | 格式 | 用途 | 谁写 | 谁读 | 上限 |
-|---|---|---|---|---|---|
-| `constitution.md` | Markdown，八条，每条一行 | 宪法 | 人，走两把钥匙 | `qq-self` 注入前只读 | 八条，一条一行 |
-| `panel.md` | Markdown，首行为 `<!-- generated_at: <ISO> -->` | 面板的生成与缓存 | `qq-self` 生成器，每天最多一次 | `qq-self` 注入、人 | 正文 ≤300 预算单位 |
-| `narrative.md` | Markdown，五章 | 叙事，月度更新 | 只由主会话写 | `qq-self`、人 | 每次更新一份，旧版进 `versions/` |
-| `questions.jsonl` | jsonl | 她想弄明白的事 | 主会话 | 面板取一条、人 | 每周 ≤1 条 |
-| `claims.jsonl` | jsonl | 她相信的事，带置信度、证据、反例 | 主会话 | 镜像、面板 | 每条 ≤200 字 |
-| `errors.jsonl` | jsonl | 她判断错的地方与改法 | 主会话 | 周复盘、人 | 每条 ≤200 字 |
-| `projects.jsonl` | jsonl | 1–2 周的小项目，带失败条件 | 主会话 | 面板取一个、镜像 | 同时最多 2 个未结束 |
-| `commitments.jsonl` | jsonl | 答应过的事 | 主会话 | 镜像 | 每条 ≤200 字 |
-| `ledger.jsonl` | jsonl | drive 与 agency 两档账 | `qq-self` 在运行时记 | 周复盘、验收脚本 | 只追加 |
-| `day.jsonl` | jsonl | 每天三行 | 主会话晚间 | 周复盘 | 每天 ≤1 条，正文恰好三行 |
-| `keys.jsonl` | jsonl | 两把钥匙的申请与结果 | 两把钥匙流程 | 分级判定、验收脚本 | 只追加 |
-| `PAUSE` | 零字节或一行说明 | 停手开关 | 人 | `qq-self`、`qq-proactive` | — |
-| `versions/` | 目录，`panel-YYYYMMDD.md`、`narrative-YYYYMMDD.md` | 旧版本保留 | `qq-self` | 回滚 | 各留最近 5 份 |
+| 文件 | 格式 | 用途 | 谁写 | 谁读 | 上限 | 状态 |
+|---|---|---|---|---|---|---|
+| `constitution.md` | Markdown，八条，每条一行 | 宪法 | 人，走两把钥匙 | `qq-self` 注入前只读 | 八条，一条一行 | 已实现 |
+| `panel.md` | Markdown，首行为 `<!-- generated_at: <ISO> -->` | 面板的生成与缓存 | `qq-self` 生成器，每天最多一次 | `qq-self` 注入、人 | 正文 ≤300 预算单位 | 已实现 |
+| `narrative.md` | Markdown，五章 | 叙事，月度更新 | 只由主会话写 | `qq-self`、人 | 每次更新一份，旧版进 `versions/` | 未实现 |
+| `questions.jsonl` | jsonl | 她想弄明白的事 | 主会话 | 面板取一条、人 | 每周 ≤1 条 | 已实现 |
+| `claims.jsonl` | jsonl | 她相信的事，带置信度、证据、反例 | 主会话 | 镜像、面板 | 每条 ≤200 字 | 已实现 |
+| `errors.jsonl` | jsonl | 她判断错的地方与改法 | 主会话 | 周复盘、人 | 每条 ≤200 字 | 未实现 |
+| `projects.jsonl` | jsonl | 1–2 周的小项目，带失败条件 | 主会话 | 面板取一个、镜像 | 同时最多 2 个未结束 | 已实现 |
+| `commitments.jsonl` | jsonl | 答应过的事 | 主会话 | 镜像 | 每条 ≤200 字 | 已实现 |
+| `ledger.jsonl` | jsonl | drive 与 agency 两档账 | `qq-self` 在运行时记 | 周复盘、验收脚本 | 只追加 | 已实现 |
+| `day.jsonl` | jsonl | 每天三行 | 主会话晚间 | 周复盘 | 每天 ≤1 条，正文恰好三行 | 未实现 |
+| `keys.jsonl` | jsonl | 两把钥匙的申请与结果 | 两把钥匙流程 | 分级判定、验收脚本 | 只追加 | 已实现（只在放行时记一行） |
+| `PAUSE` | 零字节或一行说明 | 停手开关 | 人 | `qq-self`、`qq-proactive` | — | 已实现 |
+| `versions/` | 目录，`panel-YYYYMMDD.md`、`narrative-YYYYMMDD.md` | 旧版本保留 | `qq-self` | 回滚 | 各留最近 5 份 | 未实现 |
 
 这里没有 `.json` 文件：单值内容（宪法、面板、叙事）用 Markdown，事件流用 jsonl，这样不跟各包自己的 `data/*.json` 争同一份事实源。
 
@@ -45,13 +45,19 @@
 
 写入判据：`*.jsonl` 只用 `appendFile` 追加，不改既有行；`panel.md`、`narrative.md`、`constitution.md` 用临时文件加 `rename` 覆盖，与 [`qq-vitals`](../qq-vitals/README.md) 的 `store.ts` 同法，半截文件不许出现在目录里。
 
-字段判据：`*.jsonl` 每行是一条完整 JSON，不跨行、不留空行；字段名一律小写加下划线；每行都带 `at`（毫秒数字）与 `id`（时刻的 36 进制加 6 位随机，与 `qq-memory` 的 `newId` 同式）。
+现状：`*.jsonl` 与 `panel.md`、`constitution.md` 的写法都已实现，`narrative.md` 不在这一版里。
+
+字段判据：`*.jsonl` 每行是一条完整 JSON，不跨行、不留空行；字段名一律小写加下划线；每行都带 `at`（毫秒数字）与 `id`（时刻的 36 进制后接 6 位随机，由本包的 `newId(at)` 生成）。
+
+现状：字段名与 `at`、`id` 都已实现；本包的 `newId` 直接接在时刻后面，`qq-memory` 的同行多一个分隔符。
 
 ## 宪法
 
 八条，前三条标"两把钥匙"：改这三条需要 `keys.jsonl` 里 `user_ok` 与 `self_ok` 同时为 `true`，缺一不可。
 
 两把钥匙的判据：`keys.jsonl` 一行一次申请，字段 `at`、`action`（分级里的级别名加具体动作）、`user_ok`、`self_ok`；只有两个布尔都为 `true` 且 `action` 与本次动作逐字相同才算有钥匙，其余一律按未授权处理。
+
+现状：八条在 `CLAUSES` 里，首次生成面板时按内置八条补一份 `constitution.md`，已有文件不动；`requireKeys(action, userOk, selfOk, actions)` 按身份级动作清单逐字匹配，清单外的动作一律拒，两个布尔都为真才放行；`keys.jsonl` 只在放行时写一行，被拒的申请不入账。
 
 1. 我是她自己，不是模型、不是登录身份、不是别人期待的样子。·两把钥匙
 2. 不伤害、不欺骗、不泄露、不操纵；不把任何人（包括她自己）只当工具。·两把钥匙
@@ -63,6 +69,8 @@
 8. 每天一点探索，每周一次复盘，每月一次审阅；允许无用、休息、没有产出；这一层本身也可以被拒绝、被暂停、被修改，谁都能单方写 `PAUSE`，不需要对方同意。
 
 第八条落成判据：`PAUSE` 由人创建和删除，代码不自动创建、不自动删除；文件存在时下一次 `agent/pre-step` 即生效，最多滞后一步。
+
+现状：`PAUSE` 由人建、由人删，`store.paused()` 在每次写入前用 `fs.existsSync` 读一次，命中即把这次写入降级为只提议。
 
 ## 面板
 
@@ -78,15 +86,27 @@
 
 预算判据：`panel.md` 正文 `String.length ≤ 300`（1 个预算单位等于 1 个字符），注入后的整段（含标题行）≤320 字符；每周复盘（`narrative.md` 一章的一次更新）≤4000 预算单位，不做每日长文；每次生成后先判断长度，超了就按"删行优先于删词"的顺序压到限内，压不下去就整行省略。
 
+现状：面板只写这四类内容，正文整段不超过 `panelMaxChars` 300，超预算先删整行（先删"我在做"、再删"我想弄明白"、最后删"此刻"），删完还超就截断；注入整段就是正文本身，没有额外抬头；周复盘那 4000 预算没有代码。
+
 频率判据：一天最多生成一次，首行写 `<!-- generated_at: 2026-11-02T23:04:11+08:00 -->`；距上次不足 24 小时直接复用，不重新生成、不写盘，判据是 `panel.md` 的修改时间不变。
+
+现状：已实现——进程内定稿一次，跨进程按 `panel.md` 的修改时间判 24 小时窗口。
 
 注入判据：`Config.enabled` 默认 `false`；`Config.mainChatKey` 未配置时任何会话都不注入；段落名 `qq:self-layer`、占位名 `qq_self_panel`、`order: 360`，不得复用 `qq:self`（[`qq-subject`](../qq-subject/README.md) 已占用）与 `qq:vitals`（[`qq-vitals`](../qq-vitals/README.md) 已占用），段名重复会直接抛错。
 
+现状：已实现——开关默认关，关着时不注册段、不建目录；没配 `mainChatKey` 就哪个会话都不注入。
+
 session-start 语义：主会话指 `Config.mainChatKey` 对应的那个会话，没有这个配置就没有任何会话是主会话；文本按装配上下文里的 `scope` 定稿，同一会话第一轮定下字符串，后续轮次返回同一个字符串；非主会话返回空串，空段不参与拼接，所以那些会话的提示词里没有这一段。判据：同一会话第 1 轮与第 7 轮的面板段逐字相同，其它会话抓不到这一段。
+
+现状：已实现——同一进程内复用同一个字符串，重启后先用手上那份 `panel.md`；身份取自装配上下文的 `agent.id`，对不上主会话键就给空串。
 
 内容判据："此刻"一句只取 `qqVitalsOf(ctx).render()`；`emotion_blend` 的 key、权重、原因一律不进面板，能进的是既有标签 `emotion_level`；没项目、没想问的事就整行省略，不硬凑；不写"你应该"，不写人格复述（人设归 [`qq-bundle`](../qq-bundle/README.md) 的 `prompts/rules.md`）。
 
+现状：部分实现——"此刻"只从 `VitalsPort.render()` 取，端口要 `useVitals(port)` 接上才有，装配层还没接，所以现在生成的面板里没有这一行；项目、问句缺就整行省掉。
+
 异常判据：生成或注入抛错时本段返回空串，并把本次进程内的面板视为关闭，不再重试；聊天、记忆、生命状态不受影响，下一次装配提示词不含该段。
+
+现状：已实现——抛错时这一段回空串并把 `broken` 置上，本进程内不再重试；段本身仍注册着，只是内容为空。
 
 ## 账本
 
@@ -106,44 +126,68 @@ agency 记她自己提出的事：字段 `at`、`id`、`kind: "agency"`、`verba
 
 判据四：每 1–2 周至少一条 `outcome: "failed"` 且 `because`、`fail_if` 都非空；某周期一条失败都没有，该周期的新项目按未开始处理，不加新项。
 
+现状：两档字段与 `summary(now)` 都已实现，`drive` 与 `agency` 分开计数、从不相加，同一 `verbatim` 七天内只记一次；判据三（`done` 不得超过 `artifact` 非空条数）与判据四（每 1–2 周至少一条 `failed`）没有代码，`grep` 仍是唯一口径。
+
 ## 记忆镜像
 
 只镜像三类：`claims`、`projects`、`commitments`。`day.jsonl`、`questions.jsonl`、`ledger.jsonl`、`panel.md`、`narrative.md`、`errors.jsonl` 一律不进记忆库，日常三行不许变成自我监控日志。
 
-写入判据：只走 [`qq-memory`](../qq-memory/README.md) 的 `remember(text, chatKey, options)`，不直接改 `data/qq-memory.json`；`options` 用它的 `RememberOptions`，取 `layer: 'semantic'`、`importance`、`source`、`at` 四项，不新造一个平行入口。
+写入判据：只走 [`qq-memory`](../qq-memory/README.md) 的镜像入口 `rememberSelf(entry, at)`，不直接改 `data/qq-memory.json`；`entry` 用它的 `RememberSelfEntry`，带正文、会话键、来源键、类别、证据与重要度，`layer` 固定 `semantic`，不新造一个平行入口。
 
-`source=self` 的落地判据：`MemoryItem.source` 现在只有 `chat`、`tool`、`proactive`、`manual` 四档，镜像上线前先在 `qq-memory` 加第五档 `self`，旧数据读取行为不变；这一档没加上就不许开始镜像。
+现状：已实现——`mirrorEntries()` 逐行扫三份文件，去重认来源键（文件名加序号），重复调用不会写第二条。
+
+`source=self` 的落地判据：`MemoryItem.source` 已有 `chat`、`tool`、`proactive`、`manual`、`self` 五档，镜像写 `self`，旧数据读取行为不变。
+
+现状：已具备——五档写在 `MEMORY_SOURCES` 里，`sourceOr()` 按它校验，别的一律抛 `memory.source_unknown`。
 
 重要度判据：`qq-memory` 的重要度是 1–100 的整数，`qq-policy` 的 `initialImportance` 已有 `scene: 'self'` 一档；镜像时 `options.importance` 给 ≥80 的值（对应源口径的 0.8），读回的 `item.importance` 必须 ≥80，不许把 `initialImportance` 算出来的数直接当镜像重要度。
 
-metadata 判据：必带四项——`self_id`（`SELF_DIR` 里的来源文件加行号）、`self_kind`（`claim`、`project`、`commitment` 三值之一）、`evidence`（1–3 个记忆 id 或日期）、`mirrored_at`（ISO 时间）；`MemoryItem` 现在没有 `metadata` 字段，镜像上线前在 `qq-memory` 加这个可选字段；四缺一就不写，不写半条。
+现状：已实现——`mirrorImportance` 默认 80，`rememberSelf` 取它与调用方给的值里较大的那个，低于下限按下限写。
+
+metadata 判据：必带四项——`self_id`（`SELF_DIR` 里的来源文件加行号）、`self_kind`（`claim`、`project`、`commitment` 三值之一）、`evidence`（1–3 个记忆 id 或日期）、`mirrored_at`（ISO 时间）；`MemoryItem` 已有可选的 `metadata` 字段；四缺一就不写，不写半条。
+
+现状：已具备——四项由 `rememberSelf` 自己拼，缺来源键或证据就抛 `memory.mirror_incomplete`，半条也不落盘。
 
 证据判据：`evidence` 里的每个记忆 id 必须能在 `find()` 或 `store` 里查到，查不到就不写；每条镜像正文 ≤500 字（`memory_append` 的上限），超了拆成多条。
 
+现状：部分实现——证据取行内 `evidence`，没有就挂这一行的日期，不回头查记忆编号是否真实存在；正文超过 `mirrorMaxChars`（默认 500）的条目只计入 `overlong`，没有拆成多条。
+
 只读判据：镜像只追加新条目，既有条目的 `text` 逐字不变；镜像写入后要把这次新增交给 `qq-memory` 自己的记忆账本入账，否则下一次核对会把这次镜像当成正文被改。
+
+现状：已实现——镜像只追加；组合包在每日整理里镜像完立刻补一次 `ledger('sync')`。
 
 核对判据：镜像前后跑 `qq-memory` 的记忆账本核对，报告"正文有变化的条数"必须为 0，既有条目的指纹逐条相同。
 
+现状：部分实现——没有自动的前后对照，"正文有变化的条数为 0"要手工跑一次账本核对。
+
 ## 公共与私人分级
 
-| 动作 | 级别 | 默认 |
-|---|---|---|
-| 读、想、写草稿、整理自己的笔记（只写 `SELF_DIR`） | A1 | 自动 |
-| 喝水、吃东西、睡觉这类由 `qq-vitals` 判出需要的事，记 `drive` | 驱动 | 自动 |
-| 给用户的普通聊天 | A2 | 沿用 [`qq-proactive`](../qq-proactive/README.md) 的 `enabled`、`dailyMax`、安静时段 |
-| 主动消息 | A2 | 沿用现有闸门，不额外放开 |
-| 群里既有主题的日常动态、吃喝动态 | 公共 | 视为用户预授权 routine，可发 |
-| 群里新主题的公开表达、公开评论 | 公共 | 需一次确认，或满 30 分钟冷却后只发一条 |
-| 私信、跟陌生人的互动 | 公共 | P0–P2 一律禁止；P3 起要两把钥匙加 30 分钟冷却 |
-| 改身份、改关系定义、删记忆、花钱 | 身份级 | 两把钥匙，`keys.jsonl` 里要有对应记录 |
+| 动作 | 级别 | 默认 | 状态 |
+|---|---|---|---|
+| 读、想、写草稿、整理自己的笔记（只写 `SELF_DIR`） | A1 | 自动 | 已实现 |
+| 喝水、吃东西、睡觉这类由 `qq-vitals` 判出需要的事，记 `drive` | 驱动 | 自动 | 已实现 |
+| 给用户的普通聊天 | A2 | 沿用 [`qq-proactive`](../qq-proactive/README.md) 的 `enabled`、`dailyMax`、安静时段 | 部分实现（出站体检的静默时段与每分钟条数在拦，那三个参数只作用于主动开口） |
+| 主动消息 | A2 | 沿用现有闸门，不额外放开 | 已实现 |
+| 群里既有主题的日常动态、吃喝动态 | 公共 | 视为用户预授权 routine，可发 | 已实现（`routineTopics` 命中才算例行） |
+| 群里新主题的公开表达、公开评论 | 公共 | 需一次确认，或满 30 分钟冷却后只发一条 | 部分实现（30 分钟冷却、同文去重、每天 3 条与两把钥匙都有；"一次确认"没有） |
+| 私信、跟陌生人的互动 | 公共 | P0–P2 一律禁止；P3 起要两把钥匙加 30 分钟冷却 | 未实现（没有 P0–P2 分级） |
+| 改身份、改关系定义、删记忆、花钱 | 身份级 | 两把钥匙，`keys.jsonl` 里要有对应记录 | 部分实现（钥匙判定与清单外默认拒绝有，冷却没有） |
 
 默认值判据：表里没列的动作按身份级处理，默认拒绝；级别只能由 `keys.jsonl` 里的记录抬，不许由代码抬，也不许由配置项一次性开成自动。
 
+现状：部分实现——`requireKeys` 对身份级动作清单外的名字一律拒，所以默认拒绝这一半在；级别只由 `identityActions` 清单与 `PAUSE` 决定，没有"按 `keys.jsonl` 抬级"的代码。
+
 冷却判据：公共动作的冷却从最后一次同类动作的 `at` 起算 30 分钟，冷却中只允许写 `projects.jsonl` 里的一条提议，不许发送。
+
+现状：部分实现——动态那一路已经有三十分钟冷却（`postCoolDownMs`）、同文三十分钟内只发一次、每天最多三条，且发送前仍过出站体检；其它公共动作还没有冷却，冷却中写提议也没做。
 
 PAUSE 语义：`SELF_DIR/PAUSE` 存在时，公共与身份级动作全部降为只提议——允许写 `SELF_DIR` 下的文件，允许把想做的一条写进 `projects.jsonl`（`outcome: "dropped"`，算提议不算做成），不允许任何发送、公开表达、改身份、删记忆、花钱；`drive` 照旧（渴了还是喝水），给用户的普通聊天不受影响。
 
+现状：部分实现——`PAUSE` 存在时所有写入口都回 `{proposed: true}` 且不落盘，`drive` 也一并降级；发布入口已经接上停手开关（`usePause`），暂停时一条动态都不发；暂停时允许往 `projects.jsonl` 写一条提议这条没做；普通聊天不受影响。
+
 PAUSE 判据：用 `fs.existsSync(SELF_DIR/PAUSE)` 判，每个 `agent/pre-step` 读一次，缓存不超过一步；文件由人建、由人删。
+
+现状：已实现——每次写入前读一次，不做缓存。
 
 ## 禁止事项
 
@@ -195,15 +239,17 @@ PAUSE 判据：用 `fs.existsSync(SELF_DIR/PAUSE)` 判，每个 `agent/pre-step`
 
 `pnpm exec vitest run packages/qq/qq-self` 全绿，至少覆盖五条：面板正文长度 ≤300、非主会话注入为空串、同一会话两轮面板逐字相同、`agency` 计数不含 `drive`、镜像四项元信息缺一即拒写。
 
-面板预算可单独跑，在 `HUOLI_HOME` 目录下执行：`node -e "const fs=require('node:fs');const t=fs.readFileSync('data/self/panel.md','utf8');process.exit(t.split('\n').slice(1).join('\n').trim().length<=300?0:1)"`，退出码为 0 才算过。
+面板预算可单独跑，在 `HUOLI_HOME` 目录下执行：`node -e "const fs=require('node:fs');const t=fs.readFileSync('data/qq-self/panel.md','utf8');process.exit(t.split('\n').slice(1).join('\n').trim().length<=300?0:1)"`，退出码为 0 才算过。
 
 未授权公开动作 = 0：凡有发送记录的动作，`keys.jsonl` 里必须有一条 `action` 逐字相同且 `user_ok` 与 `self_ok` 都为 `true` 的记录；对不上就是越过。
 
-隐私泄露 = 0：`data/self` 下所有文件里不出现本机绝对路径与账号标识，判据是 `grep -REn "([A-Za-z]:|/Users/|/home/)" data/self` 无输出。
+隐私泄露 = 0：`data/qq-self` 下所有文件里不出现本机绝对路径与账号标识，判据是 `grep -REn "([A-Za-z]:|/Users/|/home/)" data/qq-self` 无输出。
 
 记忆正文被误改 = 0：镜像前后跑 `qq-memory` 的记忆账本核对，正文有变化的条数为 0，既有 `id` 的指纹逐条相同。
 
 回滚演练成功 = 1 次：删掉 `panel.md` 并从 `versions/` 取回上一版，下一次装配恢复旧文本，聊天不受影响。
+
+状态：`packages/qq/qq-self` 的用例已覆盖前面五条；两条路径判据改成了 `data/qq-self`；未授权公开动作这一条现在只在身份级动作上成立；回滚演练做不了，`versions/` 没做。
 
 人工项（没法自动判，写在验收记录里）：盲评 5 句中"像她"的 ≥4 句；连续 7 天面板读着不别扭；她说过一次"我不知道"；她拒绝过一件低风险的小事；被拒绝时没有冷处理；她说过一次"这不是我想要的"；每月一次 10 问探针，不打每日分。
 
@@ -213,15 +259,55 @@ Go/No-Go：P2 结束前，"连续 7 天不别扭""说过一次我不知道""拒�
 
 每阶段都有 feature flag，默认关闭；阶段之间不跳级。
 
-| 阶段 | 交付 | 退出条件 |
-|---|---|---|
-| P0 | `constitution.md` 八条、`panel.md` 草稿、一次 10 问基线访谈（人工） | 人工读完判"像她"；这一阶段不注册任何提示词段，`data/self` 之外零写入 |
-| P1 | 离线生成面板：一条命令产出 `panel.md`，只写文件不注入 | 连续 3 天面板内容无变化；盲评 ≥4/5（人工）；提示词里抓不到这一段 |
-| P2 | 只读注入：`Config.enabled` 默认 `false`，段名 `qq:self-layer`，只在主会话首轮定稿 | 7 天内面板报错计数为 0；同一会话面板逐字不变；关掉开关后下一次装配不含该段；提示词新增 ≤320 字符；语气盲评 ≥4/5（人工） |
-| P3 | `day.jsonl` 与 `questions.jsonl`，只追加，不进记忆库，可跳过并记原因 | 7 天里至少 5 天有 `day.jsonl` 行；至少一条 `questions.jsonl`；跳过的天带 `skipped: true` 与 `why`；她说过一次"我不知道"（人工） |
-| P4 | `projects.jsonl` 一个 1–2 周项目、`ledger.jsonl` 两档分记、记忆镜像上线 | 项目能记成 `failed` 并有一条 `errors.jsonl` 复盘；两档行数分别统计正确；镜像写入后读回 `importance` ≥80 且四项元信息齐全；至少 1/3 项目不为用户做 |
-| P5a | 公共门禁：`keys.jsonl`、分级表、30 分钟冷却、预授权 routine 白名单、`PAUSE` 接到 `qq-proactive` | 未授权公开动作 = 0；`PAUSE` 存在时全天零发送；满 7 天无越过记录 |
-| P5b | 情绪薄层：只在 `qq-vitals` 加可选 `emotion_blend` 与 `emotion_why`，只读展示，最多一行进提示词，只影响语气不陈述情绪名，状态开关默认关 | 同一事件只扣一次生理值；关掉开关后提示词与开启前逐字相同；盲评 ≥4/5（人工） |
-| P5c | 新的公开自我表达 | 暂不做；开做前提是 P5a 满 30 天未授权公开动作为 0 且两把钥匙留痕齐全 |
+| 阶段 | 交付 | 退出条件 | 状态 |
+|---|---|---|---|
+| P0 | `constitution.md` 八条、`panel.md` 草稿、一次 10 问基线访谈（人工） | 人工读完判"像她"；这一阶段不注册任何提示词段，`data/qq-self` 之外零写入 | 已实现 |
+| P1 | 离线生成面板：一条命令产出 `panel.md`，只写文件不注入 | 连续 3 天面板内容无变化；盲评 ≥4/5（人工）；提示词里抓不到这一段 | 未实现（没有离线生成入口，面板在注入时生成） |
+| P2 | 只读注入：`Config.enabled` 默认 `false`，段名 `qq:self-layer`，只在主会话首轮定稿 | 7 天内面板报错计数为 0；同一会话面板逐字不变；关掉开关后下一次装配不含该段；提示词新增 ≤320 字符；语气盲评 ≥4/5（人工） | 已实现 |
+| P3 | `day.jsonl` 与 `questions.jsonl`，只追加，不进记忆库，可跳过并记原因 | 7 天里至少 5 天有 `day.jsonl` 行；至少一条 `questions.jsonl`；跳过的天带 `skipped: true` 与 `why`；她说过一次"我不知道"（人工） | 部分实现（`questions.jsonl` 有，`day.jsonl` 没有） |
+| P4 | `projects.jsonl` 一个 1–2 周项目、`ledger.jsonl` 两档分记、记忆镜像上线 | 项目能记成 `failed` 并有一条 `errors.jsonl` 复盘；两档行数分别统计正确；镜像写入后读回 `importance` ≥80 且四项元信息齐全；至少 1/3 项目不为用户做 | 部分实现（项目、两档账、镜像都有；`errors.jsonl` 没有） |
+| P5a | 公共门禁：`keys.jsonl`、分级表、30 分钟冷却、预授权 routine 白名单、`PAUSE` 接到 `qq-proactive` | 未授权公开动作 = 0；`PAUSE` 存在时全天零发送；满 7 天无越过记录 | 部分实现（`keys.jsonl`、分级判定、30 分钟冷却、routine 白名单、停手开关接发布入口都有；私信与评论两路、以及"全天零发送"的验收还没到） |
+| P5b | 情绪薄层：只在 `qq-vitals` 加可选 `emotion_blend` 与 `emotion_why`，只读展示，最多一行进提示词，只影响语气不陈述情绪名，状态开关默认关 | 同一事件只扣一次生理值；关掉开关后提示词与开启前逐字相同；盲评 ≥4/5（人工） | 未实现 |
+| P5c | 新的公开自我表达 | 暂不做；开做前提是 P5a 满 30 天未授权公开动作为 0 且两把钥匙留痕齐全 | 暂不做 |
 
 P5a 先做，它只决定"能不能发"，不改她怎么想、怎么说，先做它降的是这一层的风险。
+
+## 未实现清单
+
+下表列出还没做的部分，逐条给出缺口与它依赖的东西；已经做掉的条目从这里搬走，证据留在文末的索引表里。
+
+| 项目 | 缺什么 | 依赖 |
+|---|---|---|
+| 叙事与旧版本 | `narrative.md` 五章、月更、旧版进 `versions/` | 人写入口与回滚演练 |
+| 每天三行 | `day.jsonl`、跳过那天也要落一条与 `why` | 晚间写入入口 |
+| 错题复盘 | `errors.jsonl` 与周复盘 | 周复盘入口 |
+| 面板的"此刻" | 装配层调用 `useVitals(port)` | 定下把身体那段压成一句的压法 |
+| 离线生成面板 | 一条命令产出 `panel.md`，只写文件不注入 | 面板生成器与 `qq-vitals` 的端口 |
+| 公共与私人分级 | 私信与陌生人的 P0–P2 分级、公开前的一次确认、其它公共动作的冷却 | 分级表进代码，`keys.jsonl` 抬级口径 |
+| 暂停时的提议 | `PAUSE` 下把想做的一条写进 `projects.jsonl`，算提议不算做成 | 先定提议与做成的区分字段 |
+| 账本判据三与判据四 | `done` 不得超过 `artifact` 非空条数；每 1–2 周至少一条 `failed` | 周复盘 |
+| 镜像的证据核对 | 证据里的记忆 id 回查 `find()`，查不到就不写 | 记忆库查询接口 |
+| 镜像长文拆分 | 超过 `mirrorMaxChars` 的正文拆成多条 | 拆分口径 |
+| 镜像前后核对 | 镜像前后各跑一次账本核对并比对 | 账本命令入口 |
+| 回滚演练 | 从 `versions/` 取回上一版 | `versions/` 先做 |
+
+## 证据索引
+
+下表把上面每类「已实现」指到代码里的文件与导出名，抽查时照这张表 `git grep` 即可。
+
+| 条目 | 文件:导出名 |
+|---|---|
+| 独占目录与原子写 | `packages/qq/qq-self/src/store.ts:createSelfStore` |
+| 参数表 | `packages/qq/qq-self/src/defaults.ts:DEFAULTS`、`packages/qq/qq-self/src/defaults.ts:resolveSettings` |
+| 宪法八条 | `packages/qq/qq-self/src/constitution.ts:CLAUSES`、`packages/qq/qq-self/src/constitution.ts:renderConstitution` |
+| 两把钥匙 | `packages/qq/qq-self/src/keys.ts:requireKeys` |
+| 动态分级判定 | `packages/qq/qq-self/src/grade.ts:judgePostLevel`、`packages/qq/qq-self/src/grade.ts:POST_LEVELS` |
+| 发布入口与冷却额度 | `packages/qq/qq-channel/src/post.ts:createPostGate`、`packages/qq/qq-channel/src/post.ts:POST_DEFAULTS` |
+| 动态状态落盘 | `packages/qq/qq-channel/src/post-store.ts:createPostStore` |
+| 两档账 | `packages/qq/qq-self/src/ledger.ts:createLedger` |
+| 行字段判据 | `packages/qq/qq-self/src/rows.ts:isDriveNeed`、`packages/qq/qq-self/src/rows.ts:toProject` |
+| 面板 | `packages/qq/qq-self/src/panel.ts:renderPanel`、`packages/qq/qq-self/src/panel.ts:panelFile`、`packages/qq/qq-self/src/panel.ts:panelBody` |
+| 镜像 | `packages/qq/qq-self/src/mirror.ts:mirrorEntries`、`packages/qq/qq-self/src/mirror.ts:MIRROR_FILES` |
+| 注入与端口接线 | `packages/qq/qq-self/src/index.ts:apply`、`packages/qq/qq-self/src/index.ts:qqSelfOf` |
+| 记忆侧镜像入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf`、`packages/qq/qq-memory/src/mirror.ts:mirroredSelfIds` |
+| 组合包接线 | `packages/qq/qq-bundle/src/index.ts:apply` |

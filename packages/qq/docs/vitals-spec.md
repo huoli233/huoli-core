@@ -74,21 +74,23 @@
 
 | 字段 | 含义 | 默认值 | 状态 |
 |---|---|---|---|
-| `cycle_dom` | 每月开经日 | 5 | 未实现 |
-| `cycle_day` | 当前周期第几天 | 0 | 未实现 |
-| `cycle_len` | 本月周期长度（28~31） | 0 | 未实现 |
-| `cycle_phase` | 经期、卵泡期、排卵期、黄体期、经前期 | 空串 | 未实现 |
-| `estrogen` | 雌激素 | 0.35 | 未实现 |
-| `progesterone` | 孕激素 | 0.20 | 未实现 |
-| `cramps` | 痛经 | 0.0 | 未实现 |
-| `asleep` | 是否睡着 | 否 | 未实现 |
-| `sleep_kind` | 夜睡或午睡 | 空串 | 未实现 |
-| `wake_after` | 预计醒来时刻 | 0 | 未实现 |
-| `groggy_until` | 迷糊到什么时候 | 0 | 未实现 |
+| `cycle_dom` | 每月开经日 | 5 | 已实现 |
+| `cycle_day` | 当前周期第几天 | 0 | 已实现 |
+| `cycle_len` | 本月周期长度（28~31） | 0 | 已实现 |
+| `cycle_phase` | 经期、卵泡期、排卵期、黄体期、经前期 | 空串 | 已实现 |
+| `estrogen` | 雌激素 | 0.35 | 已实现 |
+| `progesterone` | 孕激素 | 0.20 | 已实现 |
+| `cramps` | 痛经 | 0.0 | 已实现 |
+| `asleep` | 是否睡着 | 否 | 已实现 |
+| `sleep_kind` | 夜睡或午睡 | 空串 | 已实现 |
+| `wake_after` | 预计醒来时刻 | 0 | 已实现 |
+| `groggy_until` | 迷糊到什么时候 | 0 | 已实现 |
+
+睡眠另有三个字段一起落盘：`sleep_state` 取 `awake`、`sleeping`、`waking` 三态，`asleep` 只是它睡着那一态的投影、读回来按三态重算；`woken_at` 记被消息吵醒的时刻，`nap_at` 记上一次午睡的开始时刻，用来判当天已经睡过。
 
 ### 派生量与标签
 
-`energy`、`valence`、`irritability`、`clinginess`、`loneliness`、`dominance` 由 `derive()` 写回，初值 0.5、0.5、0、0、0、0.5；`emotion_level` 初值为“平静”，`emotion_candidates` 初值为空数组；`proactive_bias` 默认 1.0、`post_want` 默认 0.3，两者都必须落进状态文件，当前未实现。
+`energy`、`valence`、`irritability`、`clinginess`、`loneliness`、`dominance` 由 `derive()` 写回，初值 0.5、0.5、0、0、0、0.5；`emotion_level` 初值为“平静”，`emotion_candidates` 初值为空数组；`proactive_bias` 从 `proactiveBiasStart` 1.0 起逐条相乘、夹到 `biasMin` 与 `biasMax` 之间再由 `biasUnit` 折成 0~1 的读数，`post_want` 从 `postStart` 0.3 起相乘后夹到 0~1，两者都落进状态文件的 `DERIVED_FIELDS`，已实现。
 
 ### 时间戳与标记
 
@@ -154,8 +156,8 @@
 | 愤怒与记恨衰减 | `anger` 0.5 小时半衰、`resentment` 48 小时半衰、`soothe` 2 小时半衰，另含越想越气的累积项 | 未实现 |
 | 恐惧与担心衰减 | `fear` τ 约 5 分钟、`worry` τ 约 48 分钟、`dread` τ 约 8 小时 | 未实现 |
 | 死亡威胁 | 随余额分档逼近目标、每拍 `+0.15`（涨）或 `-0.03`（退） | 未实现 |
-| 月经周期 | 按真实日期差算 `cycle_day` 与 `cycle_len`，写雌激素、孕激素、痛经曲线 | 未实现 |
-| 睡眠与午睡 | 入睡与醒来两套规则、腺苷的睡眠分支、醒后迷糊窗口 | 未实现 |
+| 月经周期 | 按真实日期差算 `cycle_day` 与 `cycle_len`，写雌激素、孕激素、痛经曲线 | 已实现 |
+| 睡眠与午睡 | 入睡与醒来两套规则、腺苷的睡眠分支、醒后迷糊窗口 | 已实现 |
 
 两条不可协商的判据：`thirst` 是存量，直接累积，写成“向目标值平滑”会让连续两次结算把刚起来的口渴抹回去（判据：把 `thirst` 置 0.58 后连续两次结算，值不得下降）；`cortisol` 只由 HPA 轴结算，不得放进递质回归，否则被凶之后三小时就恢复平静。
 
@@ -220,8 +222,8 @@
 | `fever` | 线性 | -0.20 | 已实现 |
 | `cytokines` | 线性 | -0.16 | 已实现 |
 | `pain` | 线性 | -0.15 | 已实现 |
-| `cramps` | 线性 | -0.35 | 未实现 |
-| 黄体期与经前期 | 命中则加 | -0.06 | 未实现 |
+| `cramps` | 线性 | -0.35 | 已实现 |
+| 黄体期与经前期 | 命中则加 | -0.06 | 已实现 |
 
 ### 好坏偏向 valence
 
@@ -242,9 +244,9 @@
 | `dread` | 线性 | -0.18 | 未实现 |
 | `worry` | 线性 | -0.08 | 未实现 |
 | `anger` | 线性 | -0.15 | 未实现 |
-| 经期 | 命中则加 | -0.12 | 未实现 |
-| 经前期 | 命中则加 | -0.10 | 未实现 |
-| 卵泡期 | 命中则加 | 0.06 | 未实现 |
+| 经期 | 命中则加 | -0.12 | 已实现 |
+| 经前期 | 命中则加 | -0.10 | 已实现 |
+| 卵泡期 | 命中则加 | 0.06 | 已实现 |
 
 ### 易怒 irritability
 
@@ -261,9 +263,9 @@
 | `pain` | 线性 | 0.25 | 已实现 |
 | `core_temp` | 超 37.2 部分 | 0.20 | 已实现 |
 | `anger` | 线性 | 0.45 | 未实现 |
-| 经前期 | 命中则加 | 0.28 | 未实现 |
-| 经期 | 命中则加 | 0.14 | 未实现 |
-| `cramps` | 线性 | 0.30 | 未实现 |
+| 经前期 | 命中则加 | 0.28 | 已实现 |
+| 经期 | 命中则加 | 0.14 | 已实现 |
+| `cramps` | 线性 | 0.30 | 已实现 |
 
 ### 黏人 clinginess
 
@@ -295,7 +297,7 @@
 | 低落 | `0.32 * (1 - S) + 0.26 C + 0.18 * (1 - OT) - 0.18 DA` | 已实现 |
 | 焦虑 | `0.30 crh + 0.28 acth + 0.22 ADR + 0.18 C + 0.18 * (1 - S) - 0.12 ACh` | 已实现 |
 | 惊慌 | `0.38 ADR + 0.28 crh + 0.18 acth + 0.16 NA - 0.15 ACh` | 已实现 |
-| 恼火 | `0.30 ADR + 0.28 C + 0.24 * (1 - S) + 0.12 * above(AVP - 0.50) - 0.12 ACh` | 未实现 |
+| 恼火 | `0.30 ADR + 0.28 C + 0.24 * (1 - S) + 0.12 * above(AVP - 0.50) - 0.12 ACh` | 未实现（依赖已具备） |
 | 饿怒 | `0.42 * above(ghrelin - 0.45) + 0.38 * above((0.42 - glucose) / 0.42) + 0.24 * irritability - 0.10 ACh` | 未实现（依赖已具备） |
 | 困倦 | `0.50 melatonin + 0.28 ACh + 0.20 * (1 - energy) - 0.15 ADR` | 未实现（依赖已具备） |
 | 想哭 | `0.34 * (1 - S) + 0.30 C + 0.18 * (1 - OT) + 0.18 * negative_heat - 0.15 END` | 未实现（依赖热度） |
@@ -307,8 +309,8 @@
 | 渴 | `0.85 * above(thirst - 0.25) + 0.10 angiotensin` | 未实现（依赖已具备） |
 | 生病 | `0.80 cytokines + 0.30 fever` | 未实现（依赖已具备） |
 | 累坏 | `0.60 * above(adenosine - 0.45) + 0.25 pain - 0.10 END` | 未实现（依赖已具备） |
-| 经期 | `0.75 cramps + 0.30 *（经期）` | 未实现（依赖 `cramps`） |
-| 经前 | `0.60 *（经前期）+ 0.20 progesterone` | 未实现（依赖 `cycle_phase`） |
+| 经期 | `0.75 cramps + 0.30 *（经期）` | 未实现（依赖已具备） |
+| 经前 | `0.60 *（经前期）+ 0.20 progesterone` | 未实现（依赖已具备） |
 
 ### 反向压制
 
@@ -378,15 +380,15 @@
 
 `hunger_note` 与 `thirst_note` 直接相接、不加分隔符；`body_note` 按 `adenosine > 0.60`、`adrenaline > 0.50`、`acetylcholine > 0.55` 的顺序取第一档；`heart_note` 按 `thirst > 0.62`、`irritability > 0.55`、`cortisol > 0.60`、`clinginess > 0.60` 的顺序取第一档；`style_note` 按“累了”“烦了”“黏人”的顺序取第一档，其余给中性句。这三档阈值同样属于参数，字段名与默认值随档位表一并维护，当前为字面量。
 
-可选段落（生存危机、刚被吵醒、经期、经前、生病、太困）各由对应状态触发，未实现，见未实现清单。
+可选段落共六段，各由对应状态触发：睡着、刚醒（含 `wokenWindowMinutes` 分钟内被吵醒）、经期、经前、生病、太困；六段都不成立时整行不出现，已实现。生存危机那一段要等 `mortality`，见未实现清单。
 
 ## 三处出口
 
 | 出口 | 读哪些字段 | 默认值 | 状态 |
 |---|---|---|---|
 | 提示词 | `emotion_candidates`、`emotion_level`、`energy`、`irritability`、`clinginess`、`hunger`、`thirst`、`adenosine`、`adrenaline`、`acetylcholine`、`cortisol` | 段名 `qq:vitals`、`order` 340、`promptMaxChars` 300、变体池 6 句 | 已实现 |
-| 回复条数 | `valence`、`energy`、`clinginess`、`loneliness`、`irritability`、`fear`、`dread`、`worry`、`anger`、`resentment` | 权重 `[40, 20, 28, 12]`、上限 4、下限 1 | 未实现 |
-| 主动性 | `energy`、`melatonin`、`loneliness`、`clinginess`、`irritability`、`thirst`、`cytokines`、`adenosine` 与情绪类字段 | `proactive_bias` 1.0、`post_want` 0.3 | 未实现 |
+| 回复条数 | `adenosine`、`irritability`、`energy`、`clinginess`、`loneliness` | 分档表，下限 1、上限 4 | 部分实现 |
+| 主动性 | `energy`、`melatonin`、`loneliness`、`clinginess`、`irritability`、`thirst`、`cytokines`、`adenosine` | `proactive_bias` 1.0、`post_want` 0.3 | 部分实现 |
 
 ### 提示词
 
@@ -394,7 +396,20 @@
 
 ### 回复条数
 
-条数是硬规则，不能只写在提示词里：先用权重 `replyWeights`（默认 `[40, 20, 28, 12]`，对应 1 到 4 条）抽出一个 `target`，再按顺序套硬规则，最后把一整段回复切成 `target` 条发送。
+现在接上的是上限这一条：`qq-pacing` 的 `replyBudget(facts)` 按分档表从睡眠压力、易怒、精力、黏人、孤独五项算出 1 到 4 的上限，组合包把它写成 `qq:reply-budget` 段（`order` 350）读给模型，只给上限、不说该不该回，已实现。
+
+| 档 | 判据 | 上限 |
+|---|---|---|
+| 又累又烦 | `adenosine ≥ tiredFrom` 且 `irritability ≥ annoyedFrom` | 1 |
+| 烦 | `irritability ≥ annoyedFrom` | 2 |
+| 累 | `adenosine ≥ tiredFrom` | 2 |
+| 特别黏又孤独 | `clinginess ≥ clingyStrongFrom` 且 `loneliness ≥ lonelyFrom` | 4 |
+| 有劲又想黏 | `energy ≥ energyEagerFrom` 且 `clinginess ≥ clingyFrom` | 3 |
+| 平常 | 其余 | 2 |
+
+阈值字段与默认值：`tiredFrom` 0.70、`annoyedFrom` 0.62、`energyEagerFrom` 0.60、`clingyFrom` 0.62、`clingyStrongFrom` 0.78、`lonelyFrom` 0.50，上下限 `minCap` 1、`maxCap` 4；从上往下取第一条命中的。
+
+规范里的另一条路仍是硬规则，不能只写在提示词里：先用权重 `replyWeights`（默认 `[40, 20, 28, 12]`，对应 1 到 4 条）抽出一个 `target`，再按顺序套硬规则，最后把一整段回复切成 `target` 条发送；这套权重、六条硬规则与整段切分都还没实现，见未实现清单。
 
 | 判据 | 动作 | 阈值字段 | 状态 |
 |---|---|---|---|
@@ -407,26 +422,26 @@
 
 ### 主动性
 
-主动性只由本包产出两个派生量，间隔换算与发送由主动性出口负责。`proactive_bias` 从 1.0 起，按顺序逐条相乘，最后夹到 `biasMin`（0.2）与 `biasMax`（2.5）之间，再折算成 0~1 的读数写进状态；1.0、0.2、2.5 三个数只出现在默认值表里。
+主动性只由本包产出两个派生量，间隔换算与发送由主动性出口负责。`proactive_bias` 从 1.0 起，按顺序逐条相乘，最后夹到 `biasMin`（0.2）与 `biasMax`（2.5）之间，再折算成 0~1 的读数写进状态；1.0、0.2、2.5 三个数只出现在默认值表里。这个读数已经接上主动性包：`runGates` 用 `cooldownMs` 与 `dailyCapOf` 按它缩放冷却区间与每天额度，劲头低到 `biasFloor` 以下按 `biasFloor` 算，没接上身体时按满劲头算。
 
 | 判据 | 系数字段 | 默认值 | 状态 |
 |---|---|---|---|
-| `energy < 0.35` | `biasLowEnergy` | 1.8 | 未实现 |
-| `melatonin > 0.55` | `biasSleepy` | 1.7 | 未实现 |
-| `loneliness > 0.55` 或 `clinginess > 0.62` | `biasWantsCompany` | 0.62 | 未实现 |
-| `irritability > 0.60` | `biasIrritable` | 0.88 | 未实现 |
+| `energy < 0.35` | `biasLowEnergy` | 1.8 | 已实现 |
+| `melatonin > 0.55` | `biasSleepy` | 1.7 | 已实现 |
+| `loneliness > 0.55` 或 `clinginess > 0.62` | `biasWantsCompany` | 0.62 | 已实现 |
+| `irritability > 0.60` | `biasIrritable` | 0.88 | 已实现 |
 | 幸福峰值 | `biasPeak` | 0.70 | 未实现 |
 | `fear > 0.45` | `biasFear` | 0.75 | 未实现 |
 | `worry > 0.45` | `biasWorry` | 0.70 | 未实现 |
 | `dread > 0.50` | `biasDread` | 0.85 | 未实现 |
-| `thirst > 0.65` | `biasThirsty` | 0.80 | 未实现 |
+| `thirst > 0.65` | `biasThirsty` | 0.80 | 已实现 |
 | `anger > 0.60` | `biasColdWar` | 1.60 | 未实现 |
 | `resentment > 0.50` | `biasResentful` | 1.30 | 未实现 |
-| `cytokines > 0.40` | `biasSick` | 1.50 | 未实现 |
-| `adenosine > 0.70` | `biasExhausted` | 1.40 | 未实现 |
+| `cytokines > 0.40` | `biasSick` | 1.50 | 已实现 |
+| `adenosine > 0.70` | `biasExhausted` | 1.40 | 已实现 |
 | 余额见底 | `biasBroke` | 取 `min(bias, 0.25)` | 未实现 |
 
-社交动态由 `post_want`（默认 0.3）驱动，先挂在已实现的易怒与孤独上：`irritability > 0.60` 乘 `postDown`（默认 0.35，不想营业），`loneliness > 0.55` 乘 `postWants`（默认 1.08，想让人看见），结果夹到 0~1；怕、担心、冷战三项等对应状态字段落地后再补系数，未落地前不参与计算。
+社交动态由 `post_want`（默认 0.3）驱动，先挂在已实现的易怒与孤独上：`irritability > 0.60` 乘 `postDown`（默认 0.35，不想营业），`loneliness > 0.55` 乘 `postWants`（默认 1.08，想让人看见），结果夹到 0~1；怕、担心、冷战三项等对应状态字段落地后再补系数，未落地前不参与计算。`post_want` 目前还没有消费方；一条动态该落在哪一级由纯函数 `postLevel(facts)` 判，默认 `none`，例行与高峰同时成立给 `routine`，`public` 还要两把钥匙同时在。
 
 ## 心跳与落盘
 
@@ -478,15 +493,17 @@
 | 注入检查 | 读 system prompt 装配结果 | 存在 `qq:vitals` 段且能被替换 | 已实现 |
 | 水罐颜色 | 任意水位 | 全蓝，不出现红或琥珀 | 未实现 |
 | 血糖 | 吃一顿 | 血糖升到 0.75 以上，三小时内回落 | 未实现 |
-| 睡眠 | 23 点后 | 进入睡眠，不主动发消息，被消息叫醒会回 | 未实现 |
-| 午睡 | 12 点到 15 点 | 睡 20 到 50 分钟，一天最多一次 | 未实现 |
+| 睡眠 | 23 点后 | 进入睡眠，被消息叫醒只记一笔 `woken_at` | 部分实现 |
+| 午睡 | 12 点到 15 点 | 睡 20 到 50 分钟，一天最多一次 | 已实现 |
+| 周期相位 | 锚点日与之后几天 | `cycle_day`、`cycle_len` 与相位跟着真实日期变，雌激素、孕激素、痛经写回并落盘 | 已实现 |
+| 六段可选 | 睡着、刚醒、经期、经前、生病、太困各成立一次 | 只有成立的那段出现，全不成立时整行不出现，总长仍 ≤300 | 已实现 |
 | 生气 | 被凶 | `anger` 到 0.6 以上，标签出现“生气”，条数 1 到 2 | 未实现 |
 | 冷战 | 凶完十二小时不理 | 记恨涨到 0.5 以上，标签出现“冷战”，主动变少 | 未实现 |
 | 哄好 | 道歉 | 愤怒与记恨下降，长冷战需要不止一次道歉 | 未实现 |
 | 心跳幂等 | 同一分钟内结算两次 | 一次性效果只施加一次（水队列、写回标记都不重复） | 已实现 |
 | 重启恢复 | 写完盘再新建状态仓 | 数值与名字字段原样恢复 | 已实现 |
 | 文件损坏 | 把正式文件写成半截 JSON | 回退到 `.bak`，`.bak` 不存在时回默认值，且 `.bak` 保留 | 已实现 |
-| 体检 | 检查状态新鲜度、取值越界、体温区间、睡着时醒来时刻 | 全部通过 | 部分实现 |
+| 体检 | 检查状态新鲜度、取值越界、体温区间、睡着时醒来时刻 | 全部通过 | 未实现 |
 
 体检判据的细则：状态文件超过 180 秒未更新即不合格；所有 0~1 字段越界即不合格；体温不在 34 到 42 摄氏度即不合格；任何时间戳落到未来 60 秒以外即不合格；`asleep` 为真而 `wake_after` 已过期即不合格；午睡醒来时刻超过两小时即不合格；面板读数与状态文件的 `energy` 相差超过 0.02 即不合格。
 
@@ -496,29 +513,53 @@
 
 ## 未实现清单
 
-下表列出这一刀没做的部分，逐条给出缺口与它依赖的东西。
+下表列出还没做的部分，逐条给出缺口与它依赖的东西；已经做掉的条目从这里搬走，证据留在文末的索引表里。
 
 | 项目 | 缺什么 | 依赖 |
 |---|---|---|
-| 愤怒与记恨 | `anger`、`resentment`、`soothe` 三个字段、衰减项、越想越气的累积项、道歉与好话的写回、冷战的标签与压制 | 三个新状态字段、触发词表（凶、敷衍、骗、爽约、不理），以及条数与主动性两处出口 |
-| 恐惧与担心 | `fear`、`worry`、`dread` 三个字段、三套冷却与半衰、被威胁关掉的加成、夜里独自涨 | 三个新状态字段、惊吓与担心词表、口头禅排除表（笑死、累死之类的口语不算死亡话题） |
+| 情绪状态机字段 | `anger`、`resentment`、`soothe`、`fear`、`worry`、`dread`、`mortality`、`negative_heat`、`positive_heat` 九个字段一个字都还没进状态 | 触发词表（凶、敷衍、骗、爽约、不理，以及笑死、累死这类口语的排除表），以及条数与主动性两处出口 |
+| 愤怒与记恨 | 三个字段、衰减项、越想越气的累积项、道歉与好话的写回、冷战的标签与压制 | 上面那一项的字段 |
+| 恐惧与担心 | 三个字段、三套冷却与半衰、被威胁关掉的加成、夜里独自涨 | 惊吓与担心词表、口头禅排除表 |
 | 死亡威胁 | `mortality` 字段、余额分档逼近、遗书写入 | 外部余额来源与长期记忆写入接口 |
-| 月经周期 | `cycle_*`、`estrogen`、`progesterone`、`cramps` 与五段曲线、开经日的记忆 | 真实日期差计算、可注入时钟、记忆写入接口 |
-| 睡眠与午睡 | `asleep`、`sleep_kind`、`wake_after`、`groggy_until`、入睡与醒来两套规则、腺苷睡眠分支、醒后迷糊窗口 | 上面这些字段、主动性出口推迟消息的接口 |
 | 吃饭写回 | 进食词表、`last_meal` 更新、血糖与胰岛素的一次性写回、进食记忆 | 食物与投喂词表、写回标记、记忆写入接口 |
-| 后 14 个标签 | 恼火、饿怒、困倦、想哭、害怕、担心、恐惧、生气、冷战、渴、生病、累坏、经期、经前 | 其中饿怒、困倦、渴、生病、累坏只依赖已有字段，可直接补；其余依赖上面几项的状态字段 |
+| 后 14 个标签 | 恼火、饿怒、困倦、想哭、害怕、担心、恐惧、生气、冷战、渴、生病、累坏、经期、经前 | 恼火、饿怒、困倦、渴、生病、累坏、经期、经前只依赖已有字段，可直接补；其余依赖上面几项的字段 |
 | 反向压制其余分支 | 恐惧、担心、存在恐惧、愤怒、死亡威胁五组压制 | 对应的状态字段，以及把阈值提为 Config 字段 |
-| 派生量缺项 | `energy` 的痛经与周期相位项、`valence` 的恐惧担心愤怒与周期项、`irritability` 的愤怒与周期项、`loneliness` 的记恨项 | 同上状态字段 |
-| 回复条数出口 | `target` 测算、权重与六条硬规则、整段切分发送 | 回复切分接口、上面几项的情绪字段 |
-| 主动性出口 | `proactive_bias`、`post_want` 两个派生量与其规则表 | 主动性包的消费接口、上面几项的情绪字段 |
-| 提示词可选段落 | 生存危机、刚被吵醒、经期、经前、生病、太困六段 | 余额、睡眠状态机、周期、免疫状态 |
+| 派生量缺项 | `loneliness` 的记恨项；`happiness`、`sadness` 两个派生量 | 记恨字段与峰值判据；周期项、痛经项已经补上 |
+| 峰值与遗书 | 幸福峰值、想哭低谷的判定与社交动态联动，`mortality` 高位时的遗书 | `happiness`、`sadness`、社交动态出口、记忆写入接口 |
+| 回复条数出口的规则 | 权重抽样、六条按情绪字段加减小条数的硬规则、把一整段回复切成几条发送 | 情绪字段；上限那一条已经接上 |
+| 主动性出口剩下的规则 | 幸福峰值、害怕、担心、存在恐惧、冷战、记恨、余额见底七条系数；`post_want` 还没有消费方 | 对应的状态字段与社交动态出口；读数与冷却额度已经接上 |
+| 提示词可选段落 | 只剩生存危机一段 | `mortality` |
 | 面板 | 只读的 HTTP 出口、水罐与各画布的色值、轮询间隔 | 状态投影出口（不得重算公式），以及水罐三档蓝色参数 |
 | 喝水记忆写回 | `drink_mem_at` 只被写入时间戳，没有真的产生记忆 | 长期记忆写入接口与重要性区间 |
+| 开经日的记忆 | 周期已经算出来，开经当天写一条记忆没做 | 记忆写入接口 |
+| 睡眠期间不主动打扰 | 主动性出口还没读 `asleep` 与 `wake_after` 把下一次消息推后 | 主动性出口读身体这两条事实 |
 | 消息入口接线 | 已闭环：组合包按消息编号去重后调一次 `react()`，戳一戳与纯占位内容不动身体 | — |
 | 单心跳守卫 | 重复装配同一状态文件时没有互斥，两条心跳会互相覆盖 | 装配侧去重，或把状态仓提升为按文件共享的实例 |
 | 补喝水流程 | 停心跳、备份、按参数补写、重启的操作与脚本 | 心跳可暂停的接口 |
-| 体检脚本 | 上面“体检”一节的判据没有独立脚本 | 状态仓读取接口与时间基准 |
-| 参数化缺口 | 结算系数、口渴与饥饿档位、压制阈值、成句阈值仍是字面量 | 把它们逐个提为 `Tuning` 字段并给默认值 |
+| 体检脚本 | “体检”一节的判据没有独立脚本 | 状态仓读取接口与时间基准 |
+| 参数化缺口 | 递质回归、HPA 轴、交感副交感、奖赏、依恋、饥饿、水循环、血糖、内环境这几套的系数，口渴与饥饿档位，压制阈值，成句阈值仍是字面量 | 把它们逐个提为 `Tuning` 字段并给默认值；周期与睡眠的系数已经进 `Tuning` |
 | 时区与夏令时 | 时段判断只用本地小时 | 可注入时钟，跨时区与夏令时的日界判断 |
 | 深夜加成 | 深夜同一句夸奖的兴奋度衰减 | 昼夜函数与反应写回的耦合 |
-| 峰值与遗书 | 幸福峰值、想哭低谷的判定与社交动态联动，`mortality` 高位时的遗书 | `happiness`、`sadness` 两个派生量、社交动态出口、记忆写入接口 |
+
+## 证据索引
+
+下表把上面每类「已实现」指到代码里的文件与导出名，抽查时照这张表 `git grep` 即可。
+
+| 条目 | 文件:导出名 |
+|---|---|
+| 五组生理字段与初值 | `packages/qq/qq-vitals/src/types.ts:Baseline`、`packages/qq/qq-vitals/src/defaults.ts:DEFAULTS` |
+| 睡眠三态与睡着投影 | `packages/qq/qq-vitals/src/types.ts:SleepState`、`packages/qq/qq-vitals/src/drift.ts:drift` |
+| 午睡与当天一次 | `packages/qq/qq-vitals/src/defaults.ts:DEFAULTS`、`packages/qq/qq-vitals/src/drift.ts:drift` |
+| 周期相位与日期差 | `packages/qq/qq-vitals/src/clock.ts:cycleOf`、`packages/qq/qq-vitals/src/types.ts:CyclePhase` |
+| 单次结算 | `packages/qq/qq-vitals/src/drift.ts:drift` |
+| 派生量 | `packages/qq/qq-vitals/src/derive.ts:derive` |
+| 想开口的读数 | `packages/qq/qq-vitals/src/derive.ts:derive`、`packages/qq/qq-vitals/src/defaults.ts:biasUnit` |
+| 想发动态的读数与分级 | `packages/qq/qq-vitals/src/derive.ts:derive`、`packages/qq/qq-vitals/src/post.ts:postLevel` |
+| 提示词六段 | `packages/qq/qq-vitals/src/render.ts:renderPrompt` |
+| 口渴五档 | `packages/qq/qq-vitals/src/render.ts:thirstNote` |
+| 喝水与情绪写回 | `packages/qq/qq-vitals/src/react.ts:react` |
+| 喝水识别 | `packages/qq/qq-vitals/src/words.ts:isDrink` |
+| 原子写盘与坏读回退 | `packages/qq/qq-vitals/src/store.ts:createVitalsStore` |
+| 心跳与段落接线 | `packages/qq/qq-vitals/src/index.ts:apply`、`packages/qq/qq-vitals/src/index.ts:qqVitalsOf` |
+| 回复条数上限 | `packages/qq/qq-pacing/src/reply.ts:replyBudget`、`packages/qq/qq-bundle/src/index.ts:apply` |
+| 主动性读劲头 | `packages/qq/qq-proactive/src/gates.ts:runGates`、`packages/qq/qq-proactive/src/gates.ts:cooldownMs` |

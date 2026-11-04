@@ -14,24 +14,24 @@
 
 ### 四层
 
-| 层 | 什么进这一层 | 上移判据 |
-|---|---|---|
-| `ephemeral` 刚发生 | 刚刚发生、还没沉淀成一句话的事 | 停留 `promoteAfterMs` 默认 30 分钟，到期且未被召回则升入 `episodic` |
-| `episodic` 这段经历 | 一段里能独立读懂的完整事 | 重要度 ≥ `promoteImportance` 默认 60，或被召回 ≥ `promoteRecalls` 默认 2 次，升入 `semantic` |
-| `semantic` 长期印象 | 反复出现、跨天仍然成立的事 | 只参与衰减与遗忘，不再上移 |
-| `private` 私下的事 | 只在私聊会话里成立的事 | 与 `episodic` 同寿命，只对同一 `scope` 的私聊上下文可见 |
+| 层 | 什么进这一层 | 上移判据 | 状态 |
+|---|---|---|---|
+| `ephemeral` 刚发生 | 刚刚发生、还没沉淀成一句话的事 | 停留 `promoteAfterMs` 默认 30 分钟，到期且未被召回则升入 `episodic` | 已实现，字面量 |
+| `episodic` 这段经历 | 一段里能独立读懂的完整事 | 重要度 ≥ `promoteImportance` 默认 60，或被召回 ≥ `promoteRecalls` 默认 2 次，升入 `semantic` | 已实现，字面量 |
+| `semantic` 长期印象 | 反复出现、跨天仍然成立的事 | 只参与衰减与遗忘，不再上移 | 已实现 |
+| `private` 私下的事 | 只在私聊会话里成立的事 | 与 `episodic` 同寿命，只对同一 `scope` 的私聊上下文可见 | 已实现（按 `scope` 过滤，没有额外规则） |
 
 判据：晋升只按 `ephemeral → episodic → semantic` 单向进行，同一轮内不得跨两级；`private` 不参与晋升链，也不因重要度高而改层。
 
 ### 清晰度五档
 
-| 档 | 保留度门槛 | 含义 | 是否参与注入 |
-|---|---|---|---|
-| `vivid` 清晰 | ≥ `clarityVivid` 默认 68 | 细节都在 | 参与 |
-| `clear` 清楚 | ≥ `clarityClear` 默认 46 | 记得主干 | 参与 |
-| `fuzzy` 模糊 | ≥ `clarityFuzzy` 默认 24 | 只记得大概 | 参与，排在清楚之后 |
-| `trace` 只剩印象 | ≥ `clarityTrace` 默认 12 | 只剩「有这回事」 | 不参与 |
-| `forgotten` 已遗忘 | < 12 | 正文已清空，只留编号与指纹 | 不参与 |
+| 档 | 保留度门槛 | 含义 | 是否参与注入 | 状态 |
+|---|---|---|---|---|
+| `vivid` 清晰 | ≥ `clarityVivid` 默认 68 | 细节都在 | 参与 | 已实现，常量表 |
+| `clear` 清楚 | ≥ `clarityClear` 默认 46 | 记得主干 | 参与 | 已实现，常量表 |
+| `fuzzy` 模糊 | ≥ `clarityFuzzy` 默认 24 | 只记得大概 | 参与，排在清楚之后 | 已实现，常量表 |
+| `trace` 只剩印象 | ≥ `clarityTrace` 默认 12 | 只剩「有这回事」 | 不参与 | 已实现，常量表 |
+| `forgotten` 已遗忘 | < 12 | 正文已清空，只留编号与指纹 | 不参与 | 已实现，常量表 |
 
 判据：清晰度是保留度的纯函数（`clarityFor(score)`），不单独存第二份「衰减进度」；从当前档到计算档之间一次只走一档（`stepClarity`），不得跨档，也不得回升到更高档位——被召回带来的回升只作用在重要度上。
 
@@ -43,36 +43,40 @@
 
 年龄扣分：`min(agePenaltyMax 默认 80, max(0, ageDays − ageGraceDays 默认 7) × rate)`，其中 `rate` 在重要度 ≥ `anchorImportance` 默认 60 时取 `rateAnchor` 默认 0.12，否则取 `rateNormal` 默认 0.35。
 
-判据：保留度只由 `importance`、`at`、`lastSeenAt`、`recallCount` 与当前时刻算出，输入缺一即按字段表默认值补齐；上面十一个数值都是 `Config` 字段，默认值集中在 `qq-policy` 一处，覆盖只改数值不改公式。
+判据：保留度只由 `importance`、`at`、`lastSeenAt`、`recallCount` 与当前时刻算出，输入缺一即按字段表默认值补齐；上面十一个数值的默认值集中在 `qq-policy` 的 `RETENTION` 一处，覆盖只改那张表不改公式，它们还没提成 `Config` 字段。
+
+状态：已实现——`retention()` 按需重算、不落盘，`clarityFor()` 把分数折成档位。
 
 ### 重要度与保护线
 
 重要度是 1 到 100 的整数，写入时由场景、是否指向自己、情绪强度、是否首次见面、是否有约定或冲突、平台权重等输入一次算出（`initialImportance`），之后只被每日跌幅与召回回升修改。
 
-保护线 `protectImportance` 默认 70：重要度达到或超过这条线的记忆不参与每日跌幅，明确「这件事必须记住」正是它唯一的入口。
+保护线 `protectImportance` 默认 60（取保留度表里的锚点线 `anchorImportance`）：重要度达到或超过这条线的记忆不参与每日跌幅，明确「这件事必须记住」正是它唯一的入口。
 
 地板 `importanceFloor` 默认 5：任何衰减结果不得低于它，避免一夜之间归零；地板之上仍有清晰度档位负责把「只剩印象」和「已遗忘」区分开。
 
+状态：写入时的重要度评估已实现（`initialImportance()`）；每日跌幅与召回回升都还没实现，保护线目前只用在健康一行里数 `pinned`，地板没有代码。
+
 ### 字段表
 
-下表每一行都是记忆对象的一个字段；「默认值」列写的是字段缺省时的取值，所有可调数值都是 `Config` 字段，装配时覆盖即可生效，代码里不留第二份常量。
+下表每一行都是记忆对象的一个字段；「默认值」列写的是字段缺省时的取值，可调数值的默认值集中在 `qq-policy` 与 `qq-memory` 两张表里，装配时覆盖即可生效。
 
-| 字段 | 类型 | 默认值 | 判据 |
-|---|---|---|---|
-| `id` | string | 写入时生成，`<基数 36 时间>-<6 位随机>` | 全库唯一，写入后不可变，遗忘后仍保留 |
-| `text` | string | 无默认，必填 | 4～`maxTextChars` 默认 500 字；遗忘后为空串 |
-| `importance` | number | 由 `initialImportance` 算出 | 1～100 整数；≥ `protectImportance` 默认 70 进入保护线 |
-| `layer` | `ephemeral` \| `episodic` \| `semantic` \| `private` | `episodic` | 只按晋升顺序上移 |
-| `clarity` | `vivid` \| `clear` \| `fuzzy` \| `trace` \| `forgotten` | `vivid` | 由保留度推得，一次只降一档 |
-| `at` | number | 写入时刻（毫秒时间戳） | 不可变；召回排序与日期渲染只用它 |
-| `lastSeenAt` | number | 等于 `at` | 每次被召回改为当前时刻 |
-| `recallCount` | number | 0 | 每次被召回加 1，只增不减 |
-| `source` | `chat` \| `tool` \| `proactive` \| `manual` | `chat` | 由写入路径决定，写入后不改 |
-| `metadata` | object | `{}` | 话题、地点、人物等附加事实；不参与打分 |
-| `scope` | string | 当前会话键 | 召回、注入、账本一律按它过滤 |
-| `emotional` | number | 0 | 0～1，只参与衰减系数，不参与排序；读取大于 1 的旧值按 24 分制折算 |
+| 字段 | 类型 | 默认值 | 判据 | 状态 |
+|---|---|---|---|---|
+| `id` | string | 写入时生成，`<基数 36 时间>-<6 位随机>` | 全库唯一，写入后不可变，遗忘后仍保留 | 已实现 |
+| `text` | string | 无默认，必填 | 4～`maxTextChars` 默认 500 字；遗忘后为空串 | 已实现，工具层按 2 字与 500 字卡 |
+| `importance` | number | 由 `initialImportance` 算出 | 1～100 整数；≥ `protectImportance` 默认 60 进入保护线 | 已实现 |
+| `layer` | `ephemeral` \| `episodic` \| `semantic` \| `private` | `episodic` | 只按晋升顺序上移 | 已实现 |
+| `clarity` | `vivid` \| `clear` \| `fuzzy` \| `trace` \| `forgotten` | `vivid` | 由保留度推得，一次只降一档 | 已实现 |
+| `at` | number | 写入时刻（毫秒时间戳） | 不可变；召回排序与日期渲染只用它 | 已实现 |
+| `lastSeenAt` | number | 等于 `at` | 每次被召回改为当前时刻 | 已实现 |
+| `recallCount` | number | 0 | 每次被召回加 1，只增不减 | 已实现 |
+| `source` | `chat` \| `tool` \| `proactive` \| `manual` \| `self` | `chat` | 由写入路径决定，写入后不改；五档之外抛 `memory.source_unknown` | 已实现 |
+| `metadata` | object | `{}` | 话题、地点、人物等附加事实；不参与打分 | 已实现 |
+| `scope` | string | 当前会话键 | 召回、注入、账本一律按它过滤 | 已实现 |
+| `emotional` | number | 0 | 0～1，只参与衰减系数，不参与排序；读取大于 1 的旧值按 24 分制折算 | 已实现 |
 
-判据：字段集合封闭——`metadata` 里可以长任何东西，顶层不得随手加字段；读到未知顶层字段时原样保留并随写回同文件，不因不识别而丢弃。
+判据：字段集合封闭——`metadata` 里可以长任何东西，顶层不得随手加字段；`MemoryItem` 另有一个可选的人字段 `personId`；读到未知顶层字段时原样保留并随写回同文件，不因不识别而丢弃。
 
 ## 写入
 
@@ -88,6 +92,8 @@
 
 排空路径：缓冲区在每日整理与装配卸载时各排空一次，排空后 `pending` 必须归零。
 
+状态：只有显式路径已实现——`memory_append` 工具与 `remember(text, chatKey, options)` 都是当轮立即写；批量、反思、排空三条路径没有代码，也没有待写缓冲区，`pending` 恒为零。
+
 ### 写入门槛
 
 长度门槛：`text` 归一化后长度小于 `minTextChars` 默认 4 判为噪声，直接丢弃；超过 `maxTextChars` 默认 500 判为需要拆分，拒绝写入并回明确的拆分提示。
@@ -98,6 +104,8 @@
 
 队列门槛：待写缓冲上限 `queueMax` 默认 200；超限时按重要度从低到高丢弃并计入 `dropped`，丢弃必须能在健康一行里看见，不得静默丢。
 
+状态：内容门槛已实现——`scope` 取自会话键、`layer` 非法值回落 `episodic`、`source` 由调用点给并在 `guard.ts` 里按五档校验；长度门槛在工具层按 2 字与 500 字卡；重要度门槛与队列门槛没有实现。
+
 ### 去重与幂等
 
 归一化规则：去首尾空白、连续空白压成一个、全角空格与全角标点转半角，仅用于比较，不改写 `text` 原文。
@@ -107,6 +115,8 @@
 近似重复：与既有条目的文本相似度 ≥ `nearDuplicateRatio` 默认 0.92 时并入旧条，只把 `lastSeenAt` 更新为当前时刻、`importance` 取两者较大值；正文永不改写，因此账本指纹不会因为合并而漂移。
 
 幂等边界：幂等键是 `(scope, 归一化 text)`，与 `layer`、`source` 无关；同一次批量写入里同一句出现两次，也只产生一条。
+
+状态：只实现了工具层的整句比对——同会话同正文再记一次直接拒绝并回 `memory.duplicate`，不返回既有 `id`；「完全相同」的幂等返回、归一化比较、近似重复合并与批量内去重都没有代码。
 
 ## 召回
 
@@ -120,17 +130,23 @@
 
 合并规则：同一 `id` 在两路都出现时取相似度较大的一路，不叠加、不重复计分；候选集按 `id` 去重后再排序。
 
+状态：两路都已实现——`keyGrams()` 切片段、`encodeVector()` 与 `cosineSimilarity()` 走向量；向量路是 1024 维字面哈希编码，不带语义模型，意思相近但用字不同的两句仍然对不上，条目多时要换成预算好的索引，现在每次召回按需重算。
+
 ### 打分与排序
 
 `score = weightSim × sim + weightImportance × (importance / 100) + weightFreshness × freshness`，其中 `weightSim` 默认 0.75、`weightImportance` 默认 0.15、`weightFreshness` 默认 0.10，`freshness = 1 / (1 + ageDays / freshnessDays)`，`freshnessDays` 默认 7。
 
 排序按 `score` 降序，同分按 `at` 降序；取前 `recallLimit` 默认 3 条。没有候选时返回空数组，不返回占位条目——「没有想起相关的事」这句话属于渲染层，不属于召回层。
 
+状态：已实现，三个权重与其它召回参数都在 `qq-memory` 的 `DEFAULTS` 里逐项可覆盖。
+
 ### 优先级
 
 关键词命中优先于纯向量命中：关键词命中的候选不受 `minSimilarity` 约束，只受命中数门槛约束；向量候选必须同时过门槛。两路冲突时以关键词路给出的相似度为准。
 
 `scope` 过滤先于一切打分：不同 `scope` 的条目在召回阶段就不可见，`private` 层条目只在同 `scope` 的私聊召回里出现。查询为空串时只按重要度与新鲜度排序，不按字面。
+
+状态：关键词候选不受 `minSimilarity` 约束已实现；两路冲突时取的是两者较大的相似度，不是以关键词路为准。
 
 ### 只给事实与理由
 
@@ -139,6 +155,8 @@
 禁止出现在召回结果里的内容：任何「要不要提」「用什么语气」「是否主动开口」的判断或字段，任何拼好的提示词文本，任何改写过的正文。取舍与措辞属于注入层与对话层。
 
 副作用边界：召回对记忆集只允许三种改动——`recallCount` 加 1、`lastSeenAt` 改为当前时刻、按回升规则抬升 `importance`；不新增条目、不改 `text`、不改 `layer`、不改 `at`。
+
+状态：`RecallHit` 六个字段与 `reasons` 四项已实现；副作用只有前两种，`touch()` 不动 `importance`，第三种还没实现。
 
 ## 遗忘
 
@@ -152,11 +170,15 @@
 
 新重要度：`next = max(importanceFloor, importance - drop)`，`importanceFloor` 默认 5。
 
+状态：未实现——没有按天算的跌幅、没有单日封顶、也没有地板；清晰度由保留度重算后按档推进，重要度写入之后不再变。
+
 ### 保护线与地板
 
-重要度 ≥ `protectImportance` 默认 70 的条目当天 `drop` 取 0，既不下降也不参与「是否该遗忘」的判断；保护线只能由写入时的评估结果决定，不能由衰减过程反向抬高。
+重要度 ≥ `protectImportance` 默认 60 的条目当天 `drop` 取 0，既不下降也不参与「是否该遗忘」的判断；保护线只能由写入时的评估结果决定，不能由衰减过程反向抬高。
 
 地板不可越过：任何计算路径（含连续多日高速率）算出的重要度都不得低于 `importanceFloor`；清空正文只发生在清晰度落到 `forgotten` 时，与地板无关。
+
+状态：保护线只用在健康一行里数 `pinned`，没有衰减可停；地板没有代码。
 
 ### 被召回时的回升
 
@@ -166,11 +188,15 @@
 
 `trace` 与 `forgotten` 条目不参与回升：只剩印象的事可以因为再被提起而重新变清楚，但那是新建一条带日期的记忆，不是复活旧条。
 
+状态：未实现——`touch()` 只把 `recallCount` 加一、`lastSeenAt` 改成现在，重要度不动；被提起的条目靠保留度里的召回加分与近期加分维持清晰度。
+
 ### 一次只降一档
 
 清晰度按「当前档 → 计算档」单向推进，每轮最多跨一档；计算档高于当前档时不动作（清晰度不因时间倒流或参数调整而自行上升）。
 
 正文清空是单向动作：把 `clarity` 置为 `forgotten`、`text` 置为空串、并在账本里把该 `id` 标为 `retired` 并写入 `retiredAt`；编号、`at`、`source` 保留，用于回答「是不是曾经记过这件事」。
+
+状态：降档与清空正文都由 `stepClarity()` 与 `sweepOnce()` 实现；账本里没有 `retired` 这一态，退役记录没做。
 
 ## 注入
 
@@ -188,6 +214,8 @@
 
 `{items}` 每条占一行，格式为 `- <YYYY-MM-DD> <text>`，日期取 `at` 的本地日期；条目顺序沿用召回顺序，不另行排序。
 
+状态：已实现——`buildInjectBlock(hits)` 按这段模板拼；有候选被放下时末尾另加一行「（另有 N 条没有放下）」，护栏句始终在最后一行。
+
 ### 上限
 
 注入总字数上限 `injectMaxChars` 默认 1200，按「整个返回串」计——模板骨架、条目标记、正文全部算在内，不是只算正文。
@@ -195,6 +223,8 @@
 条数上限 `injectMaxItems` 默认 3；召回给出更多候选时只取前 3 条，先按分数，再按日期。
 
 超限处理：从末尾整条丢弃，直到整个返回串不超上限；绝不在条目中间截断，绝不截断模板最后一行护栏；首条就超限时返回空串。
+
+状态：字数与条数上限都已实现；挑哪几条按重要度与清晰度先排一遍，再回到召回顺序上摆。
 
 ### 位置
 
@@ -206,27 +236,33 @@
 
 空注入即无操作：召回为空或全部超限时 `buildInjectBlock` 返回空串，调用方原样发送用户消息，不补「（没有相关记忆）」之类的占位文字。
 
+状态：纯函数 `buildInjectBlock`、`injectIntoUserText` 与 `shouldInject` 都已导出并实现；消息入口还没接上它们，用户消息后面目前不会带这段背景，去重窗口也就还没有真正的调用点。
+
 ## 账本
 
 账本是一份只追加的指纹清单，用来证明「已经记下的东西没被改、没被删、没被顶替」；它不是备份，不存正文。
 
 ### 三种操作
 
-`--init`（包内函数 `initLedger`）：账本不存在时建立空账本，并把当前所有持有正文的条目写进去。账本已存在且非空时拒绝重建，退出码 2——重建等于抹掉证明。
+`--init`（包内函数 `initBook`）：账本不存在时建立空账本，并把当前所有持有正文的条目写进去。账本已存在且非空时拒绝重建，退出码 2——重建等于抹掉证明。
 
-`--sync`（包内函数 `syncLedger`）：把库里新出现、账本里还没有的 `id` 追加进去。只补新 id：已有 id 的指纹、长度、状态一律不覆盖、不删除、不改写。
+`--sync`（包内函数 `syncBook`）：把库里新出现、账本里还没有的 `id` 追加进去。只补新 id：已有 id 的指纹、长度、状态一律不覆盖、不删除、不改写。
 
-`--verify`（包内函数 `verifyLedger`）：逐条核对并给出结论。通过退出码 0；出现任何不一致退出码 1，并列出不一致的 `id` 与原因类别（正文被改、条目缺失、退役条目复活、账本缺项）。
+`--verify`（包内函数 `verifyBook`）：逐条核对并给出结论。通过退出码 0；出现任何不一致退出码 1，并列出不一致的 `id` 与原因类别（正文被改、条目缺失、退役条目复活、账本缺项）。
 
 命令行入口只做薄包装：三个标记各自转调同名函数并把函数返回的退出码原样抛出，入口内不判断内容、不写账本。
 
 顺序纪律：先 `--sync` 再 `--verify`；顺序反过来会把新记忆误报成「丢了」。`--verify` 之前不得跑 `--init`。
+
+状态：三个动作与一次跑完三件的 `runLedger(action, options)` 都已实现，返回 `{ action, report, added, entries }`；没有命令行入口，包内也没有 `--init`、`--sync`、`--verify` 三个标记，`report.ok` 由调用方自己判断。
 
 ### 哈希字段
 
 每条账本记录三个字段：`sha256` 取正文 UTF-8 字节的 SHA-256 小写十六进制；`len` 取正文的字符数；`state` 取 `held` 或 `retired`，退役条目另带 `retiredAt`。
 
 文件形状为 `{ "schemaVersion": 1, "entries": { "<id>": { "sha256": "...", "len": 123, "state": "held" } } }`；`schemaVersion` 是迁移与回滚依赖的版本戳，不随内容变化。
+
+状态：`sha256` 与 `len` 已实现（`fingerprint(text)`）；每条只记这两个字段，没有 `state` 与 `retiredAt`；文件头是 `{ "version": 1, "entries": {...} }`，没有 `schemaVersion`。
 
 ### 核对判据
 
@@ -235,6 +271,8 @@
 `retired` 条目：必须不再持有正文——库里没有该 id，或该 id 的 `text` 为空；退役条目重新长出正文即失败。
 
 集合互斥：同一 `id` 不得同时是 `held` 与 `retired`；账本内 `id` 不得重复。
+
+状态：`held` 这一半已实现——丢条目记为 `lost`，指纹或长度不符记为 `changed`，现在有账本还没记的记为 `unrecorded`；没有退役态，`retired` 那一条与集合互斥用不上。
 
 ### 负例必须失败
 
@@ -246,11 +284,15 @@
 
 未做任何改动：退出码 0，且核对条数与账本条目数一致。上面三条负例与这一条对照各写一条测试，缺一条视为账本未交付。
 
+状态：改正文与删条目两条有测试覆盖，`describeLedger()` 会把差异点成编号；退役复活这条没有对应的账本字段，测不了。
+
 ### 与遗忘的关系
 
 清空正文必须先退役：先把该 `id` 标为 `retired` 并写 `retiredAt`，再清正文；顺序反过来，`--verify` 会把它报成正文被改，这是判据本身在正确工作。
 
 去重合并不得改写正文：合并只更新 `lastSeenAt` 与 `importance`，因此账本指纹天然稳定，不需要为合并留例外。
+
+状态：正文清空后账本不做任何标记，`verifyBook()` 遇到「已遗忘且正文为空」的条目按对得上处理；近似重复合并没有实现，也就不需要为它留例外。
 
 ## 每日健康一行
 
@@ -266,7 +308,9 @@
 
 `total` 是未遗忘条目数；`pinned` 是 `importance ≥ protectImportance` 的条目数；`cold` 是清晰度落在 `trace` 或 `forgotten` 的条目数；`inject_cap` 是当前生效的 `injectMaxChars`；`pending` 是已入队未写入的条数。
 
-`ledger` 取值只有四种：`OK` 视为通过，`DRIFT` 指纹或长度不符，`MISSING` 账本不存在，`ERROR` 账本读不了；除 `OK` 之外都算告警。
+`ledger` 目标有四种取值：`OK` 视为通过，`DRIFT` 指纹或长度不符，`MISSING` 账本不存在，`ERROR` 账本读不了；除 `OK` 之外都算告警。
+
+状态：字段顺序、字段数量与 `total`、`pinned`、`inject_cap`、`pending` 四个值都已实现（`healthLine()`）；`ledger` 现在只有 `OK` 与 `FAIL` 两种，`FAIL` 一并代表后面三类；`cold` 只数已遗忘的条目，不数 `trace`。
 
 ### 挂载时间与顺序
 
@@ -275,6 +319,8 @@
 执行顺序固定为：每日遗忘 → 账本 `--sync` → 账本 `--verify` → 输出健康一行。健康一行反映的是遗忘与同步之后的状态，不是前一天的状态。
 
 落盘方式为追加一行到健康日志，不覆盖历史；写失败必须抛出可见错误，不得静默跳过。
+
+状态：未实现——没有每日定时触发，也没有往健康日志追加一行的出口；`healthLine()` 只在 `maintain(now)` 里被拼一次，而组合包每天调的是 `promote()`、`sweep()`、`mirror()` 与 `ledger('sync')`，没调 `maintain`。
 
 ### 告警阈值
 
@@ -287,6 +333,8 @@
 `cold / total > coldAlert` 默认 0.5：一半以上记忆只剩印象，衰减参数或写入重要度需要重新校准。
 
 阈值命中只输出告警标记与实际值，不自作主张修改记忆，也不自动修补账本。
+
+状态：未实现——四个阈值都还没有代码，健康一行只给数，不给告警标记。
 
 ## 人格保护
 
@@ -302,6 +350,8 @@
 
 不外传：记忆正文、账本、人格文本不出本机；向量编码必须在本地完成；任何远程请求体与日志都不得携带 `text` 原文，只允许携带 `id`、长度与计数。
 
+状态：不动人格、不覆盖、不混用、不外传四条有代码支撑——记忆包不注册提示词段，写入只有追加与改单条两种形态，召回与注入按 `scope` 过滤，编码全在本地算；只读探测没有实现，没有只读打开既有文件的探测工具。
+
 ## 验收
 
 以下六条全部通过才算能力交付；每条都写明判据与失败表现，任何一条不过就按失败处理，不带着问题交付。
@@ -312,11 +362,20 @@
 
 无关的话不乱返回：查询与库内内容无关的词必须返回空数组；跨 `scope` 查询必须返回空数组；`forgotten` 条目在任何查询下都不得出现。
 
-账本可核对：`verifyLedger` 在未改动状态下退出码 0；三条负例（改正文、删条目、退役复活）必须各自退出码 1，且原因类别正确。
+账本可核对：`verifyBook` 在未改动状态下判为通过；三条负例（改正文、删条目、退役复活）必须各自判为不通过，且原因类别正确。
 
 健康一行可用：单行输出、字段顺序与数量固定、`ledger=OK`；构造 `pending=51` 与 `pinned=31` 两种状态时，告警标记必须出现。
 
 性格不变：固定一组问题，在注入关闭与注入开启两种状态下各跑一次，比较句子长度、称呼方式、口头禅、情绪强度四项；四项均不得出现可观测差异。这项以快照对比为主判据，人工复听只作为兜底。
+
+| 判据 | 状态 |
+|---|---|
+| 服务可装配 | 已实现 |
+| 写进去能查到 | 已实现 |
+| 无关的话不乱返回 | 已实现 |
+| 账本可核对 | 部分实现——没有命令行退出码，退役复活这条测不了 |
+| 健康一行可用 | 部分实现——格式与计数在，四个告警阈值没有 |
+| 性格不变 | 未实现——没有这组对照快照 |
 
 ## 迁移与回滚
 
@@ -333,3 +392,52 @@
 迁移形态：读旧文件 → 生成新文件 → 核对条目数与账本一致 → 临时文件写完后原子改名 → 旧文件留作备份。禁止原地改写旧文件内容，也禁止在同一文件里半途写入。
 
 回滚：用最新备份覆盖回记忆文件与账本，回滚后立即跑一次 `--verify`；允许出现的差异只有退役集合的变化，正文指纹的任何差异都要查清再收尾。
+
+状态：旧文件兼容已实现——`normalizeItem()` 逐字段补默认值，`emotional` 大于 1 按 24 分制折算，未知顶层字段原样带着；备份、版本戳、读取更高版本时停下、原子迁移与回滚演练都没有实现。
+
+## 未实现清单
+
+下表列出还没做的部分，逐条给出缺口与它依赖的东西；已经做掉的条目从这里搬走，证据留在文末的索引表里。
+
+| 项目 | 缺什么 | 依赖 |
+|---|---|---|
+| 重要度衰减 | 每日跌幅、单日封顶、地板 | 先定衰减与保护线的口径，再把五个参数提成 `Config` 字段 |
+| 召回回升 | `recallRecover`、`recoverCeiling`、每天一次的限额 | 同上 |
+| 账本退役态 | `state`、`retiredAt`、退役判据与复活负例 | 账本格式升一版，并把清空正文的顺序改成先退役 |
+| 账本命令行 | `--init`、`--sync`、`--verify` 三个标记与退出码 | 包内 bin 入口 |
+| 近似重复合并 | 相似度计算、并入旧条、`lastSeenAt` 与重要度取大 | 归一化与相似度两件先落地 |
+| 写入的三条路径 | 批量、反思、排空，以及待写缓冲区与 `pending` | 轮次计数与每日整理入口 |
+| 重要度门槛与队列上限 | `writeMinImportance`、`queueMax`、超限丢弃与 `dropped` 计数 | 缓冲区先有 |
+| 注入接线 | 消息入口取召回结果、按 `injectRepeatTurns` 去重、接在用户消息尾部 | 消息入口 |
+| 每日健康一行 | 每日定时触发、追加健康日志、四档 `ledger` 取值、`trace` 计入 `cold`、四个告警阈值 | 每日调度与账本退役态 |
+| 只读探测 | 只读打开既有文件与账本、产出报告不产出写入 | 探测工具 |
+| 迁移与回滚 | 备份与保留份数、版本戳、高版本拒绝、回滚后核对 | — |
+| 性格不变快照 | 固定问题集与注入开关两种状态的对照 | 注入接线先落地 |
+
+## 证据索引
+
+下表把上面每类「已实现」指到代码里的文件与导出名，抽查时照这张表 `git grep` 即可。
+
+| 条目 | 文件:导出名 |
+|---|---|
+| 一条记忆的字段与四层 | `packages/qq/qq-memory/src/types.ts:MemoryItem`、`packages/qq/qq-memory/src/types.ts:MemoryLayer` |
+| 五档来源 | `packages/qq/qq-memory/src/types.ts:MEMORY_SOURCES`、`packages/qq/qq-memory/src/guard.ts:sourceOr` |
+| 来源与 metadata 校验 | `packages/qq/qq-memory/src/guard.ts:metadataOr` |
+| 写入入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf` |
+| 镜像入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf`、`packages/qq/qq-memory/src/mirror.ts:mirroredSelfIds` |
+| 两个工具 | `packages/qq/qq-memory/src/tools.ts:registerMemoryTools` |
+| 往上挪一层 | `packages/qq/qq-memory/src/sweep.ts:promoteAll` |
+| 变淡与清空正文 | `packages/qq/qq-memory/src/sweep.ts:sweepOnce` |
+| 被提起一次 | `packages/qq/qq-memory/src/sweep.ts:touch` |
+| 保留度 | `packages/qq/qq-policy/src/retention.ts:retention` |
+| 清晰度五档 | `packages/qq/qq-policy/src/retention.ts:clarityFor`、`packages/qq/qq-policy/src/retention.ts:stepClarity` |
+| 写入重要度 | `packages/qq/qq-policy/src/retention.ts:initialImportance` |
+| 召回 | `packages/qq/qq-memory/src/recall.ts:recall` |
+| 关键词路 | `packages/qq/qq-memory/src/recall.ts:keyGrams` |
+| 向量路 | `packages/qq/qq-memory/src/recall.ts:encodeVector`、`packages/qq/qq-memory/src/recall.ts:cosineSimilarity` |
+| 注入模板 | `packages/qq/qq-memory/src/inject.ts:buildInjectBlock`、`packages/qq/qq-memory/src/inject.ts:injectIntoUserText` |
+| 注入去重 | `packages/qq/qq-memory/src/inject.ts:shouldInject` |
+| 账本 | `packages/qq/qq-memory/src/ledger.ts:initBook`、`packages/qq/qq-memory/src/ledger.ts:syncBook`、`packages/qq/qq-memory/src/ledger.ts:verifyBook` |
+| 指纹 | `packages/qq/qq-memory/src/ledger.ts:fingerprint` |
+| 健康一行 | `packages/qq/qq-memory/src/health.ts:healthLine`、`packages/qq/qq-memory/src/health.ts:healthCounts` |
+| 落盘与旧文件补齐 | `packages/qq/qq-memory/src/store.ts:createMemoryStore` |
