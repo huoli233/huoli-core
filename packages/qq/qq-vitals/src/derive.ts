@@ -1,4 +1,4 @@
-// 八个派生量加常用标签：派生量只算一次，别处只读
+// 十个派生量加常用标签：派生量只算一次，别处只读
 
 import { biasUnit, type Tuning } from './defaults.ts'
 import { above, clamp, clampRange } from './math.ts'
@@ -74,6 +74,18 @@ function dominanceOf(s: VitalsState): number {
   return clampRange(0.5 + 0.35 * (s.dopamine - 0.5) - 0.3 * (s.cortisol - 0.2) + 0.2 * (s.serotonin - 0.65), -1, 1)
 }
 
+// 幸福：想要、亲近、稳定、满足一起抬，压力与急性应激往下压，正面热度再补一点
+function joyScore(s: VitalsState): number {
+  return 0.32 * s.dopamine + 0.25 * s.oxytocin + 0.22 * s.serotonin + 0.16 * s.endorphin
+    - 0.28 * s.cortisol - 0.15 * s.adrenaline + 0.10 * s.positive_heat
+}
+
+// 想哭：稳定少、压力大、亲近少都往下沉，负面热度再压一把
+function sorrowScore(s: VitalsState): number {
+  return 0.34 * (1 - s.serotonin) + 0.30 * s.cortisol + 0.18 * (1 - s.oxytocin)
+    + 0.18 * s.negative_heat - 0.15 * s.endorphin
+}
+
 // 想开口：没力气、犯困、想有人陪、口渴、生病、睡不够各乘一条，命中就乘，不命中的算一
 function biasFactors(s: VitalsState, tuning: Tuning): number[] {
   const wantsCompany = s.loneliness > tuning.biasLonelyAbove || s.clinginess > tuning.biasClingyAbove
@@ -104,8 +116,7 @@ function postWantOf(s: VitalsState, tuning: Tuning): number {
 // 二十六个标签，每个都是多系统加权
 function labelScores(s: VitalsState, tuning: Tuning): Map<string, number> {
   const scores = new Map<string, number>()
-  scores.set('幸福', 0.32 * s.dopamine + 0.25 * s.oxytocin + 0.22 * s.serotonin + 0.16 * s.endorphin
-    - 0.28 * s.cortisol - 0.15 * s.adrenaline + 0.10 * s.positive_heat)
+  scores.set('幸福', joyScore(s))
   scores.set('开心', 0.34 * s.dopamine + 0.18 * s.oxytocin + 0.18 * s.serotonin + 0.12 * s.endorphin
     - 0.16 * s.cortisol - 0.10 * s.adrenaline)
   scores.set('安心', 0.35 * s.acetylcholine + 0.28 * s.endorphin + 0.22 * s.oxytocin + 0.18 * s.serotonin
@@ -130,8 +141,7 @@ function labelScores(s: VitalsState, tuning: Tuning): Map<string, number> {
   scores.set('饿怒', 0.42 * above(s.ghrelin - 0.45) + 0.38 * above((0.42 - s.glucose) / 0.42)
     + 0.24 * s.irritability - 0.10 * s.acetylcholine)
   scores.set('困倦', 0.50 * s.melatonin + 0.28 * s.acetylcholine + 0.20 * (1 - s.energy) - 0.15 * s.adrenaline)
-  scores.set('想哭', 0.34 * (1 - s.serotonin) + 0.30 * s.cortisol + 0.18 * (1 - s.oxytocin)
-    + 0.18 * s.negative_heat - 0.15 * s.endorphin)
+  scores.set('想哭', sorrowScore(s))
   scores.set('害怕', 0.85 * s.fear + 0.18 * s.adrenaline + 0.10 * (1 - s.serotonin) + 0.05 * s.noradrenaline)
   scores.set('担心', 0.80 * s.worry + 0.14 * s.cortisol + 0.10 * s.acth + 0.08 * s.oxytocin
     - 0.08 * s.acetylcholine)
@@ -205,6 +215,8 @@ export function derive(state: VitalsState, tuning: Tuning): VitalsState {
   next.clinginess = clinginessOf(state)
   next.loneliness = lonelinessOf(state)
   next.dominance = dominanceOf(state)
+  next.happiness = clamp(joyScore(state))
+  next.sadness = clamp(sorrowScore(state))
   next.proactive_bias = proactiveBiasOf(next, tuning)
   next.post_want = postWantOf(next, tuning)
   const ranked = [...labelScores(next, tuning)]

@@ -112,6 +112,14 @@ function mealJustHad(state: VitalsState, tuning: Tuning): boolean {
   return state.last_update - state.meal_applied_at < tuning.mealCooldownMs
 }
 
+// 幸福到峰值、难过到低谷各多一句，没到线就不出现
+function moodPeakNote(state: VitalsState, tuning: Tuning): string[] {
+  const notes: string[] = []
+  if (state.happiness >= tuning.peakHappinessFrom) notes.push('心里是亮的，忍不住想笑。')
+  if (state.sadness >= tuning.troughSadnessFrom) notes.push('眼里发酸，快撑不住了。')
+  return notes
+}
+
 // 可选的话：各自的事实成立才出现，全不成立时整行不出现
 function optionalNote(state: VitalsState, tuning: Tuning): string {
   const notes: string[] = []
@@ -127,6 +135,7 @@ function optionalNote(state: VitalsState, tuning: Tuning): string {
   }
   if (mealSoon(state, tuning)) notes.push('快到饭点了，脑子里开始盘算吃什么。')
   if (mealJustHad(state, tuning)) notes.push('刚吃完，身上暖着，说话可以慢一点。')
+  notes.push(...moodPeakNote(state, tuning))
   return notes.join('')
 }
 

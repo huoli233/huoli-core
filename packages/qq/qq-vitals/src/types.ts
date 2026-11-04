@@ -108,6 +108,10 @@ export interface VitalsState extends Baseline {
   clinginess: number
   loneliness: number
   dominance: number
+  /** 幸福，0~1，多系统加权的派生量，只用来判峰值与换语气，不判该不该发 */
+  happiness: number
+  /** 想哭，0~1，多系统加权的派生量，只用来判低谷与换语气，不判该不该发 */
+  sadness: number
   /** 想开口的劲，零到一，只给模型参考，不替它决定要不要开口 */
   proactive_bias: number
   /** 想发动态的劲，零到一，只给分级判定用 */

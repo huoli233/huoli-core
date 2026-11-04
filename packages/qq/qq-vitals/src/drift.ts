@@ -6,94 +6,153 @@ import {
   localPoint, melatoninTarget, nightness, nightWakeAt, noradrenalineBaseline,
 } from './clock.ts'
 import { above, clamp, clampRange, decay, follow } from './math.ts'
+import { mortalityTarget } from './mortality.ts'
 import type { CyclePhase, VitalsState } from './types.ts'
 
 // 递质回基线：皮质醇不在这里，它只由 HPA 轴管
-function settleTransmitters(next: VitalsState, hours: number, night: number, hour: number): void {
-  const halfLife = night >= 0.6 ? 0.45 : 0.75
+function settleTransmitters(next: VitalsState, hours: number, night: number, hour: number, tuning: Tuning): void {
+  const halfLife = night >= tuning.nightFullFrom ? tuning.transmitterNightHalfHours : tuning.transmitterHalfHours
   const naBase = noradrenalineBaseline(hour)
-  next.dopamine = clamp(follow(next.dopamine, 0.50 - 0.16 * night, halfLife, hours))
-  next.oxytocin = clamp(follow(next.oxytocin, 0.45 + 0.04 * night, halfLife, hours))
-  next.serotonin = clamp(follow(next.serotonin, 0.65 - 0.12 * night, halfLife, hours))
-  next.noradrenaline = clamp(follow(next.noradrenaline, naBase - 0.10 * night, halfLife, hours))
+  const dopamineTarget = tuning.transmitterDopamineBase - tuning.transmitterDopamineNightDrop * night
+  const oxytocinTarget = tuning.transmitterOxytocinBase + tuning.transmitterOxytocinNightRise * night
+  const serotoninTarget = tuning.transmitterSerotoninBase - tuning.transmitterSerotoninNightDrop * night
+  const naTarget = naBase - tuning.transmitterNoradrenalineNightDrop * night
+  next.dopamine = clamp(follow(next.dopamine, dopamineTarget, halfLife, hours))
+  next.oxytocin = clamp(follow(next.oxytocin, oxytocinTarget, halfLife, hours))
+  next.serotonin = clamp(follow(next.serotonin, serotoninTarget, halfLife, hours))
+  next.noradrenaline = clamp(follow(next.noradrenaline, naTarget, halfLife, hours))
+}
+
+// 缺糖与高饥饿折成零到一，一起算进这一轮的负荷
+function hpaLoadOf(next: VitalsState, tuning: Tuning): number {
+  const lowGlucose = above((tuning.hpaGlucoseFloor - next.glucose) / tuning.hpaGlucoseFloor)
+  const highHunger = above((next.hunger - tuning.hpaHungerFrom) / tuning.hpaHungerSpan)
+  return clamp(tuning.hpaLoadCortisol * next.cortisol + tuning.hpaLoadGlucose * lowGlucose
+    + tuning.hpaLoadHunger * highHunger)
+}
+
+// 负反馈：皮质醇越高越压 crh，压回去的那部分按自己的跨度折算
+function hpaFeedbackOf(next: VitalsState, tuning: Tuning): number {
+  return 1 - tuning.hpaFeedbackGain * clamp((next.cortisol - tuning.hpaFeedbackFrom) / tuning.hpaFeedbackSpan)
 }
 
 // HPA 轴：慢，被催产素缓冲；返回这一轮的负荷，交感也用它
-function settleHpa(next: VitalsState, hours: number): number {
-  const lowGlucose = above((0.62 - next.glucose) / 0.62)
-  const highHunger = above((next.hunger - 0.50) / 0.50)
-  const load = clamp(0.55 * next.cortisol + 0.25 * lowGlucose + 0.20 * highHunger)
-  const feedback = 1 - 0.70 * clamp((next.cortisol - 0.55) / 0.45)
-  next.crh = clamp(follow(next.crh, clamp(load * feedback), 0.15, hours))
-  next.acth = clamp(follow(next.acth, next.crh, 0.45, hours))
-  const buffer = 1 - 0.35 * clamp((next.oxytocin - 0.40) / 0.60)
-  next.cortisol = clamp(follow(next.cortisol, clamp(0.15 + 0.80 * next.acth) * buffer, 1.20, hours))
+function settleHpa(next: VitalsState, hours: number, tuning: Tuning): number {
+  const load = hpaLoadOf(next, tuning)
+  const feedback = hpaFeedbackOf(next, tuning)
+  next.crh = clamp(follow(next.crh, clamp(load * feedback), tuning.hpaCrhHalfHours, hours))
+  next.acth = clamp(follow(next.acth, next.crh, tuning.hpaActhHalfHours, hours))
+  const buffer = 1 - tuning.hpaOxytocinBufferGain
+    * clamp((next.oxytocin - tuning.hpaOxytocinBufferFrom) / tuning.hpaOxytocinBufferSpan)
+  next.cortisol = clamp(follow(
+    next.cortisol,
+    clamp(tuning.hpaCortisolBase + tuning.hpaCortisolActhGain * next.acth) * buffer,
+    tuning.hpaCortisolHalfHours,
+    hours,
+  ))
   return load
 }
 
 // 交感与副交感
-function settleAutonomic(next: VitalsState, hours: number, night: number, load: number): void {
-  next.adrenaline = clamp(follow(next.adrenaline, clamp(0.05 + 0.85 * load), 0.06, hours))
-  const paraTarget = clamp(0.22 + 0.35 * (1 - next.adrenaline) + 0.22 * next.leptin + 0.18 * night)
-  next.acetylcholine = clamp(follow(next.acetylcholine, paraTarget, 0.55, hours))
+function settleAutonomic(next: VitalsState, hours: number, night: number, load: number, tuning: Tuning): void {
+  const adrenalineTarget = clamp(tuning.adrenalineBase + tuning.adrenalineLoadGain * load)
+  next.adrenaline = clamp(follow(next.adrenaline, adrenalineTarget, tuning.adrenalineHalfHours, hours))
+  const paraTarget = clamp(tuning.parasympatheticBase
+    + tuning.parasympatheticAdrenalineGain * (1 - next.adrenaline)
+    + tuning.parasympatheticLeptinGain * next.leptin
+    + tuning.parasympatheticNightGain * night)
+  next.acetylcholine = clamp(follow(next.acetylcholine, paraTarget, tuning.parasympatheticHalfHours, hours))
 }
 
 // 奖赏双系统
-function settleReward(next: VitalsState, hours: number): void {
-  const want = clamp(0.70 * next.dopamine + 0.30 * next.oxytocin - 0.25 * next.cortisol)
-  next.endorphin = clamp(follow(next.endorphin, clamp(0.20 + 0.65 * want), 0.80, hours))
+function settleReward(next: VitalsState, hours: number, tuning: Tuning): void {
+  const want = clamp(tuning.rewardWantDopamine * next.dopamine + tuning.rewardWantOxytocin * next.oxytocin
+    - tuning.rewardWantCortisol * next.cortisol)
+  const target = clamp(tuning.endorphinBase + tuning.endorphinWantGain * want)
+  next.endorphin = clamp(follow(next.endorphin, target, tuning.endorphinHalfHours, hours))
 }
 
 // 依恋：渴了更想抓住人
-function settleAttachment(next: VitalsState, hours: number): void {
-  const target = clamp(0.16 + 0.58 * next.clinginess + 0.35 * next.cortisol + 0.25 * above(next.osmolality - 0.40))
-  next.vasopressin = clamp(follow(next.vasopressin, target, 1.5, hours))
+function settleAttachment(next: VitalsState, hours: number, tuning: Tuning): void {
+  const target = clamp(tuning.vasopressinBase
+    + tuning.vasopressinClingyGain * next.clinginess
+    + tuning.vasopressinCortisolGain * next.cortisol
+    + tuning.vasopressinOsmolalityGain * above(next.osmolality - tuning.vasopressinOsmolalityFrom))
+  next.vasopressin = clamp(follow(next.vasopressin, target, tuning.vasopressinHalfHours, hours))
+}
+
+// 距上次进食越久涨得越快，饭点再快一点，越饱越慢
+function hungerRateOf(next: VitalsState, hour: number, meal: number, tuning: Tuning): number {
+  let rate = tuning.hungerRate
+  if (meal < tuning.hungerRecentHours) rate *= tuning.hungerRecentFactor
+  else if (meal < tuning.hungerMiddleHours) rate *= tuning.hungerMiddleFactor
+  else if (meal > tuning.hungerLongHours) rate *= tuning.hungerLongFactor
+  if (isMealHour(hour)) rate *= tuning.hungerMealHourFactor
+  rate *= Math.max(tuning.hungerSatietyFloor, 1 - tuning.hungerSatietyGain * next.hunger)
+  if (isQuietHour(hour)) rate *= tuning.hungerQuietFactor
+  return rate
 }
 
 // 胃排空加三餐节律
-function settleHunger(next: VitalsState, hours: number, hour: number, meal: number): void {
-  let rate = 0.055
-  if (meal < 1.5) rate *= 0.35
-  else if (meal < 3.0) rate *= 0.70
-  else if (meal > 6.0) rate *= 1.15
-  if (isMealHour(hour)) rate *= 1.30
-  rate *= Math.max(0.25, 1 - 0.75 * next.hunger)
-  if (isQuietHour(hour)) rate *= 0.25
-  next.hunger = clamp(next.hunger + hours * rate)
+function settleHunger(next: VitalsState, hours: number, hour: number, meal: number, tuning: Tuning): void {
+  next.hunger = clamp(next.hunger + hours * hungerRateOf(next, hour, meal, tuning))
+}
+
+// 活动量：警觉高、急性应激高都算在动
+function activityOf(next: VitalsState, tuning: Tuning): number {
+  return tuning.waterActivityBase
+    + tuning.waterActivityNoradrenalineGain * above(next.noradrenaline - tuning.waterActivityNoradrenalineFrom)
+    + tuning.waterActivityAdrenalineGain * above(next.adrenaline - tuning.waterActivityAdrenalineFrom)
 }
 
 // 水循环：口渴是累积量，不许写成向目标平滑
 function settleWater(next: VitalsState, hours: number, hour: number, tuning: Tuning): void {
-  let activity = 1.0
-  activity += 0.25 * above(next.noradrenaline - 0.50)
-  activity += 0.15 * above(next.adrenaline - 0.25)
-  let loss = 0.070 * hours * (isQuietHour(hour) ? 0.30 : 1.0) * activity
-  loss *= clampRange(tuning.metabolicRate, 0.75, 1.7)
-  next.osmolality = clamp(next.osmolality + loss * 0.55)
-  next.blood_volume = clamp(next.blood_volume - loss * 0.40)
-  const angiotensinTarget = clamp(0.10 + 0.85 * above((0.85 - next.blood_volume) / 0.45))
-  next.angiotensin = clamp(follow(next.angiotensin, angiotensinTarget, 0.70, hours))
-  next.thirst = clamp(next.thirst + loss * 0.60 + 0.05 * above(next.angiotensin - 0.35))
+  const activity = activityOf(next, tuning)
+  const quiet = isQuietHour(hour) ? tuning.waterQuietFactor : 1.0
+  let loss = tuning.waterLossRate * hours * quiet * activity
+  loss *= clampRange(tuning.metabolicRate, tuning.metabolicRateMin, tuning.metabolicRateMax)
+  next.osmolality = clamp(next.osmolality + loss * tuning.waterOsmolalityGain)
+  next.blood_volume = clamp(next.blood_volume - loss * tuning.waterVolumeDrop)
+  const gap = above((tuning.angiotensinVolumeFrom - next.blood_volume) / tuning.angiotensinVolumeSpan)
+  next.angiotensin = clamp(follow(
+    next.angiotensin,
+    clamp(tuning.angiotensinBase + tuning.angiotensinGain * gap),
+    tuning.angiotensinHalfHours,
+    hours,
+  ))
+  next.thirst = clamp(next.thirst + loss * tuning.thirstLossGain
+    + tuning.thirstAngiotensinGain * above(next.angiotensin - tuning.thirstAngiotensinFrom))
 }
 
 // 血糖双向调节：只升不降会一路不回落
-function settleGlucose(next: VitalsState, hours: number): void {
-  const insulinTarget = clamp(0.08 + 0.95 * above((next.glucose - 0.62) / 0.30))
-  next.insulin = clamp(follow(next.insulin, insulinTarget, 0.35, hours))
-  const glucagonTarget = clamp(0.08 + 0.95 * above((0.60 - next.glucose) / 0.30))
-  next.glucagon = clamp(follow(next.glucagon, glucagonTarget, 0.55, hours))
-  const span = Math.min(1.0, hours)
-  const rise = 0.010 + 0.03 * above(next.hunger - 0.60) + 0.10 * next.glucagon - 0.28 * next.insulin
+function settleGlucose(next: VitalsState, hours: number, tuning: Tuning): void {
+  const insulinTarget = clamp(tuning.insulinBase
+    + tuning.insulinGain * above((next.glucose - tuning.insulinGlucoseFrom) / tuning.insulinGlucoseSpan))
+  next.insulin = clamp(follow(next.insulin, insulinTarget, tuning.insulinHalfHours, hours))
+  const glucagonTarget = clamp(tuning.glucagonBase
+    + tuning.glucagonGain * above((tuning.glucagonGlucoseBelow - next.glucose) / tuning.glucagonGlucoseSpan))
+  next.glucagon = clamp(follow(next.glucagon, glucagonTarget, tuning.glucagonHalfHours, hours))
+  const span = Math.min(tuning.glucoseSpanCap, hours)
+  const rise = tuning.glucoseRiseBase
+    + tuning.glucoseHungerGain * above(next.hunger - tuning.glucoseHungerFrom)
+    + tuning.glucoseGlucagonGain * next.glucagon
+    - tuning.glucoseInsulinDrop * next.insulin
   next.glucose = clamp(next.glucose + rise * span)
 }
 
 // 睡眠压力、体温、免疫、疼痛
 function settleInner(next: VitalsState, hours: number, hour: number, night: number, tuning: Tuning): void {
   next.adenosine = clamp(next.adenosine + adenosineStep(next, hours, hour, tuning))
-  next.cytokines = clamp(decay(next.cytokines, hours, 36))
-  next.fever = clamp(follow(next.fever, clamp(next.cytokines * 0.85), 1.0, hours))
-  next.core_temp = Math.round((36.55 - 0.30 * night + 1.60 * next.fever) * 100) / 100
-  next.pain = clamp(decay(next.pain, Math.min(24, hours), 0.5))
+  next.cytokines = clamp(decay(next.cytokines, hours, tuning.cytokinesHalfHours))
+  const feverTarget = clamp(next.cytokines * tuning.feverCytokinesGain)
+  next.fever = clamp(follow(next.fever, feverTarget, tuning.feverHalfHours, hours))
+  next.core_temp = Math.round(coreTempOf(next, night, tuning) * 100) / 100
+  next.pain = clamp(decay(next.pain, Math.min(tuning.painHoursCap, hours), tuning.painHalfHours))
+}
+
+// 体温由夜色与发烧两件事撑着，落在两位小数上
+function coreTempOf(next: VitalsState, night: number, tuning: Tuning): number {
+  return tuning.coreTempBase - tuning.coreTempNightDrop * night + tuning.coreTempFeverGain * next.fever
 }
 
 // 醒着继续累积，睡着按睡的速率回血；午睡回得更快
@@ -102,7 +161,7 @@ function adenosineStep(next: VitalsState, hours: number, hour: number, tuning: T
     const drop = next.sleep_kind === 'nap' ? tuning.napAdenosineDrop : tuning.sleepAdenosineDrop
     return -drop * hours
   }
-  return (isQuietHour(hour) ? 0.020 : 0.042) * hours
+  return (isQuietHour(hour) ? tuning.adenosineQuietRate : tuning.adenosineAwakeRate) * hours
 }
 
 // 午睡一天只睡一次：上一次午睡和现在是同一个本地零点
@@ -248,11 +307,23 @@ function settleResentment(next: VitalsState, at: number, hours: number, night: n
   next.resentment = clamp(next.resentment + bump * (night >= tuning.nightFullFrom ? tuning.resentNightFactor : 1))
 }
 
+// 死亡威胁：有余额档位就朝目标挪一拍，没有来源时一动不动
+function settleMortality(next: VitalsState, balance: number | undefined, tuning: Tuning): void {
+  if (balance === undefined) return
+  const target = mortalityTarget(balance, tuning)
+  if (target > next.mortality) {
+    next.mortality = clampRange(next.mortality + tuning.mortalityRisePerBeat, 0, target)
+    return
+  }
+  if (target < next.mortality) {
+    next.mortality = clampRange(next.mortality - tuning.mortalityFallPerBeat, target, 1)
+  }
+}
+
 // 情绪结算三件事：先各自回落，再算越想越气，最后夜里独自涨的那一点
 function settleMood(next: VitalsState, at: number, hours: number, night: number, tuning: Tuning): void {
   settleDecay(next, hours, tuning)
   settleResentment(next, at, hours, night, tuning)
-  // 死亡威胁只由外部余额驱动，这一包没有那一路来源
   next.dread = clamp(next.dread + tuning.dreadNightRise * night * hours)
 }
 
@@ -262,9 +333,16 @@ function settleMood(next: VitalsState, at: number, hours: number, night: number,
  * @param at - 当前毫秒时间戳
  * @param tuning - 参数
  * @param random - 取零到一的随机源，入睡时刻与抖动都走它，测试可以换成定值
+ * @param balance - 外部注入的余额档位，没给表示这一路没有来源，死亡威胁保持不动
  * @returns 漂移后的状态
  */
-export function drift(state: VitalsState, at: number, tuning: Tuning, random: () => number = Math.random): VitalsState {
+export function drift(
+  state: VitalsState,
+  at: number,
+  tuning: Tuning,
+  random: () => number = Math.random,
+  balance?: number,
+): VitalsState {
   const hours = clampRange((at - state.last_update) / 3_600_000, 0, tuning.hoursCap)
   const next: VitalsState = { ...state, last_update: at }
   drainFluid(next, at, tuning)
@@ -273,16 +351,17 @@ export function drift(state: VitalsState, at: number, tuning: Tuning, random: ()
   const hour = localHour(at)
   const night = nightness(hour, tuning)
   settleSleep(next, at, hour, hours, tuning, random)
-  settleTransmitters(next, hours, night, hour)
-  const load = settleHpa(next, hours)
-  settleAutonomic(next, hours, night, load)
-  settleReward(next, hours)
-  settleAttachment(next, hours)
+  settleTransmitters(next, hours, night, hour, tuning)
+  const load = settleHpa(next, hours, tuning)
+  settleAutonomic(next, hours, night, load, tuning)
+  settleReward(next, hours, tuning)
+  settleAttachment(next, hours, tuning)
   next.melatonin = clamp(follow(next.melatonin, melatoninTarget(hour, tuning), 0.70, hours))
-  settleHunger(next, hours, hour, (at - next.last_meal) / 3_600_000)
+  settleHunger(next, hours, hour, (at - next.last_meal) / 3_600_000, tuning)
   settleWater(next, hours, hour, tuning)
-  settleGlucose(next, hours)
+  settleGlucose(next, hours, tuning)
   settleInner(next, hours, hour, night, tuning)
+  settleMortality(next, balance, tuning)
   settleMood(next, at, hours, night, tuning)
   return next
 }

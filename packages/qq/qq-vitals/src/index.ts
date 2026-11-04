@@ -18,6 +18,9 @@ export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
 export { cycleOf } from './clock.ts'
 export { derive } from './derive.ts'
 export { drift } from './drift.ts'
+export { mortalityTarget } from './mortality.ts'
+export { peakOf } from './peak.ts'
+export type { PeakKind } from './peak.ts'
 export { postLevel } from './post.ts'
 export type { PostDecision, PostFacts } from './post.ts'
 export { react } from './react.ts'
@@ -43,6 +46,8 @@ export interface QqVitalsSeam {
   render(): string
   /** 记一句话：写回身体并落盘，冷却窗口内的重复写法不再计入 */
   react(text: string, at?: number): void
+  /** 注入外部余额档位：给了就按分档朝目标走，给 undefined 表示这一路没有来源 */
+  setBalance(level: number | undefined): void
   /** 接住每一顿的写回，取消时用返回的那个函数 */
   onMeal(listener: (fact: MealFact) => void): () => void
 }
@@ -88,9 +93,10 @@ export function apply(ctx: Context, config: Config = {}): void {
   const store = createVitalsStore({ file, tuning })
   const meals = new Set<(fact: MealFact) => void>()
   let variant = 0
+  let balance: number | undefined
 
-  // 读之前先把这段时间的漂移结掉，但落盘留给心跳
-  const current = (): VitalsState => derive(drift(store.read(), Date.now(), tuning), tuning)
+  // 读之前先把这段时间的漂移结掉，但落盘留给心跳；余额档位一起带进去
+  const current = (): VitalsState => derive(drift(store.read(), Date.now(), tuning, undefined, balance), tuning)
 
   // 心跳一次：结算、写盘；出错只记一笔，不让循环停掉
   const beat = (): void => {
@@ -127,7 +133,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       const moment = Math.max(at ?? Date.now(), raw.last_update)
       let meal: MealFact | undefined
       try {
-        const next = derive(reactToText(drift(raw, moment, tuning), text, moment, tuning), tuning)
+        const next = derive(reactToText(drift(raw, moment, tuning, undefined, balance), text, moment, tuning), tuning)
         store.write(next)
         if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text) }
       } catch (error) {
@@ -135,6 +141,9 @@ export function apply(ctx: Context, config: Config = {}): void {
         return
       }
       if (meal !== undefined) notifyMeal(meal)
+    },
+    setBalance(level) {
+      balance = level
     },
     onMeal(listener) {
       meals.add(listener)

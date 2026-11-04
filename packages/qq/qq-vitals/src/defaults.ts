@@ -1,241 +1,10 @@
 // 所有默认参数只在这里出现一次，别处一律从 Tuning 里取
 
-import type { Baseline, EmotionTuning, SuppressTuning, VitalsState } from './types.ts'
+import type { Baseline, VitalsState } from './types.ts'
 import { clamp, clampRange } from './math.ts'
+import type { Tuning } from './tuning.ts'
 
-/** 可被 Config 覆盖的参数集合 */
-export interface Tuning extends EmotionTuning, SuppressTuning {
-  /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
-  beatMs: number
-  /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
-  startDelayMs: number
-  /** 单次漂移最多补算多少小时，默认 24 小时，挡住长时间停机后一次算过头 */
-  hoursCap: number
-  /** 触发漂移所需的最小间隔，小时，默认 60 分之一即一分钟，更密的重复读取不再重算 */
-  minDriftHours: number
-  /** 初始身体状态，各字段是这份状态第一次落盘时的数值起点 */
-  baseline: Baseline
-  /** 喝水得到的多巴胺与内啡肽奖励倍率，默认 0.6 让一杯水的快感压不过被夸 */
-  intensity: number
-  /** 两次喝水写回的最小间隔，毫秒，默认 180000 即三分钟内重复说要水不再叠加 */
-  drinkCooldownMs: number
-  /** 喝水写进记忆的最小间隔，毫秒，默认 1200000 即二十分钟内连着喝只记一次 */
-  drinkMemoryMs: number
-  /** 喝一次水让口渴下降多少，0~1 标度，默认 0.55 表示一口能缓掉一半 */
-  drinkThirstDrop: number
-  /** 喝一次水让血浆渗透压下降多少，0~1 标度，默认 0.30 */
-  drinkOsmolalityDrop: number
-  /** 喝一次水让血容量回升多少，0~1 标度，默认 0.18 */
-  drinkVolumeRise: number
-  /** 喝一次水让血管紧张素下降多少，0~1 标度，默认 0.25，血量补回来后渴觉驱动随之减弱 */
-  drinkAngiotensinDrop: number
-  /** 喝一次水往待排水队列里加多少，0~1 标度，默认 0.55，停留够时长的下一拍才排空 */
-  drinkQueueRise: number
-  /** 喝水给多巴胺的基础增量，0~1 标度，默认 0.06，写回时还要再乘 intensity */
-  drinkDopamineGain: number
-  /** 喝水给内啡肽的基础增量，0~1 标度，默认 0.05，写回时还要再乘 intensity */
-  drinkEndorphinGain: number
-  /** 水待在体内多久才排掉，毫秒，默认 3600000 即一小时 */
-  fluidDwellMs: number
-  /** 被夸与被凶各自写回的最小间隔，毫秒，默认 300000 即五分钟，防止连发消息反复加成 */
-  reactCooldownMs: number
-  /** 被夸一次加多少多巴胺，0~1 标度，默认 0.10 */
-  praiseDopamineGain: number
-  /** 被夸一次加多少催产素，0~1 标度，默认 0.08 */
-  praiseOxytocinGain: number
-  /** 被夸一次加多少内啡肽，0~1 标度，默认 0.03 */
-  praiseEndorphinGain: number
-  /** 被夸一次减多少皮质醇，0~1 标度，默认 0.03 */
-  praiseCortisolDrop: number
-  /** 被凶一次加多少皮质醇，0~1 标度，默认 0.05 */
-  angerCortisolGain: number
-  /** 被凶一次加多少肾上腺素，0~1 标度，默认 0.18，让心跳与警觉立刻上来 */
-  angerAdrenalineGain: number
-  /** 被凶一次加多少去甲肾上腺素，0~1 标度，默认 0.15 */
-  angerNoradrenalineGain: number
-  /** 被凶一次减多少血清素，0~1 标度，默认 0.10 */
-  angerSerotoninDrop: number
-  /** 被凶一次加多少血管加压素，0~1 标度，默认 0.06，对应更强的占有与黏人 */
-  angerVasopressinGain: number
-  /** 两顿饭写回的最小间隔，毫秒，默认 1800000 即半小时内再说吃也只算一顿 */
-  mealCooldownMs: number
-  /** 一顿饭填掉的饥饿，0~1 标度，默认 0.22 */
-  feedHungerDrop: number
-  /** 一顿饭压下去的胃饥饿素，0~1 标度，默认 0.28 */
-  feedGhrelinDrop: number
-  /** 一顿饭抬起来的瘦素，0~1 标度，默认 0.22 */
-  feedLeptinRise: number
-  /** 一顿饭抬起的血糖上限，0~1 标度，默认 0.26，写回时按饭前的饥饿打折 */
-  feedGlucoseRise: number
-  /** 一顿饭抬起的胰岛素，0~1 标度，默认 0.20，回落交给漂移的双向调节 */
-  feedInsulinRise: number
-  /** 想开口这一项的起步倍率，默认 1.0 表示不加不减，命中各档再逐条相乘 */
-  proactiveBiasStart: number
-  /** 想开口倍率的下限，默认 0.2，夹住之后再折成零到一的读数 */
-  biasMin: number
-  /** 想开口倍率的上限，默认 2.5 */
-  biasMax: number
-  /** 没力气时想开口的倍率，默认 1.8，越没劲越想找人说句话 */
-  biasLowEnergy: number
-  /** 精力低于这条线算没力气，0~1 标度，默认 0.35 */
-  biasLowEnergyBelow: number
-  /** 犯困时想开口的倍率，默认 1.7 */
-  biasSleepy: number
-  /** 褪黑素高于这条线算犯困，0~1 标度，默认 0.55 */
-  biasSleepyAbove: number
-  /** 想有人陪着时想开口的倍率，默认 0.62 */
-  biasWantsCompany: number
-  /** 孤独高于这条线算想有人陪，0~1 标度，默认 0.55 */
-  biasLonelyAbove: number
-  /** 黏人高于这条线也算想有人陪，0~1 标度，默认 0.62 */
-  biasClingyAbove: number
-  /** 心里有火时想开口的倍率，默认 0.88 */
-  biasIrritable: number
-  /** 易怒高于这条线算心里有火，0~1 标度，默认 0.60 */
-  biasIrritableAbove: number
-  /** 口渴时想开口的倍率，默认 0.80，先去找水而不是找人 */
-  biasThirsty: number
-  /** 口渴高于这条线算缺水，0~1 标度，默认 0.65 */
-  biasThirstyAbove: number
-  /** 生病时想开口的倍率，默认 1.50 */
-  biasSick: number
-  /** 细胞因子高于这条线算生病，0~1 标度，默认 0.40 */
-  biasSickAbove: number
-  /** 睡不够时想开口的倍率，默认 1.40 */
-  biasExhausted: number
-  /** 睡眠压力高于这条线算睡不够，0~1 标度，默认 0.70 */
-  biasExhaustedAbove: number
-  /** 想发动态的起步值，0~1 标度，默认 0.30 */
-  postStart: number
-  /** 心里有火时想发动态的倍率，默认 0.35，不想营业 */
-  postDown: number
-  /** 易怒高于这条线算不想营业，0~1 标度，默认 0.60 */
-  postDownAbove: number
-  /** 孤独时想发动态的倍率，默认 1.08，想让人看见 */
-  postWants: number
-  /** 孤独高于这条线算想让人看见，0~1 标度，默认 0.55 */
-  postWantsAbove: number
-  /** 每轮身体提示词的字数上限，默认 300，超出就截断且至少保留 60 字 */
-  promptMaxChars: number
-  /** 情绪标签入选的分数阈值，0~1 标度，默认 0.40，低于它的候选不写进提示词 */
-  labelThreshold: number
-  /** 每轮最多带几个情绪标签，默认 3，按分数从高到低取 */
-  labelCount: number
-  /** 夜色算全黑的起始钟点，本地小时 0~24，默认 22 点 */
-  nightDarkFrom: number
-  /** 夜色算全黑的结束钟点，本地小时 0~24，默认 7 点 */
-  nightDarkUntil: number
-  /** 全黑与白天之间爬上爬下的过渡时长，小时，默认 2 小时，夜色浓度按它线性过渡 */
-  nightRamp: number
-  /** 褪黑素跟随夜色的时间窗起始钟点，本地小时 0~24，默认 21 点 */
-  melatoninFrom: number
-  /** 该时间窗的结束钟点，本地小时 0~24，默认 7 点，窗外褪黑素朝零回落 */
-  melatoninUntil: number
-  /** 水分流失的代谢倍率，默认 1.0 为基准，参与计算时夹在 0.75 到 1.7 之间 */
-  metabolicRate: number
-  /** 夜睡从几点开始，本地小时 0~24，默认 23 点 */
-  sleepFrom: number
-  /** 夜睡到几点算天亮，本地小时 0~24，默认 7 点 */
-  sleepUntil: number
-  /** 睡眠压力高过这条线才睡得着，0~1 标度，默认 0.50 */
-  sleepAdenosineFrom: number
-  /** 夜睡该醒的钟点，本地小时 0~24，默认 7.5 即七点半 */
-  wakeAt: number
-  /** 该醒时刻前后抖动的分钟数，默认 40，让每天不完全一样 */
-  wakeJitterMinutes: number
-  /** 白天里睡眠压力低于这条线就自然醒，0~1 标度，默认 0.30 */
-  wakeAdenosineBelow: number
-  /** 白天最晚这个钟点必须醒，本地小时 0~24，默认 11 点 */
-  wakeLatest: number
-  /** 夜睡一小时掉多少睡眠压力，0~1 标度，默认 0.22 */
-  sleepAdenosineDrop: number
-  /** 夜睡醒后迷糊多久，分钟，默认 15 */
-  groggyMinutes: number
-  /** 午睡时段的起点，本地小时 0~24，默认 12 点 */
-  napFrom: number
-  /** 午睡时段的终点，本地小时 0~24，默认 15 点 */
-  napUntil: number
-  /** 睡眠压力高过这条线才可能睡午觉，0~1 标度，默认 0.22 */
-  napAdenosineAbove: number
-  /** 午睡时段里每分钟睡着的概率，0~1 标度，默认 0.03 */
-  napChancePerMinute: number
-  /** 午睡最短时长，分钟，默认 20 */
-  napMinMinutes: number
-  /** 午睡最长时长，分钟，默认 50 */
-  napMaxMinutes: number
-  /** 午睡一小时掉多少睡眠压力，0~1 标度，默认 0.35，短睡效率更高 */
-  napAdenosineDrop: number
-  /** 午睡醒后迷糊多久，分钟，默认 5 */
-  napGroggyMinutes: number
-  /** 被消息吵醒后还算刚醒多久，分钟，默认 15 */
-  wokenWindowMinutes: number
-  /** 每月开经日，默认 5 号；今天早于它就取上月的这一天 */
-  cycleDom: number
-  /** 经期最后一天，默认第 5 天 */
-  cycleMenstrualEnd: number
-  /** 卵泡期最后一天，默认第 12 天 */
-  cycleFollicularEnd: number
-  /** 排卵期最后一天，默认第 15 天 */
-  cycleOvulationEnd: number
-  /** 黄体期最后一天，默认第 23 天，之后到周期结束都算经前期 */
-  cycleLutealEnd: number
-  /** 经期的雌激素，0~1 标度，默认 0.18 */
-  cycleEstrogenMenstrual: number
-  /** 卵泡期起点的雌激素，0~1 标度，默认 0.25 */
-  cycleEstrogenFollicularStart: number
-  /** 卵泡期终点的雌激素，0~1 标度，默认 0.75 */
-  cycleEstrogenFollicularEnd: number
-  /** 排卵期的雌激素，0~1 标度，默认 0.86 */
-  cycleEstrogenOvulation: number
-  /** 黄体期的雌激素，0~1 标度，默认 0.62 */
-  cycleEstrogenLuteal: number
-  /** 经前期的雌激素，0~1 标度，默认 0.38 */
-  cycleEstrogenPremenstrual: number
-  /** 经期的孕激素，0~1 标度，默认 0.10 */
-  cycleProgesteroneMenstrual: number
-  /** 卵泡期的孕激素，0~1 标度，默认 0.10 */
-  cycleProgesteroneFollicular: number
-  /** 排卵期的孕激素，0~1 标度，默认 0.26 */
-  cycleProgesteroneOvulation: number
-  /** 黄体期起点的孕激素，0~1 标度，默认 0.25 */
-  cycleProgesteroneLutealStart: number
-  /** 黄体期终点的孕激素，0~1 标度，默认 0.70 */
-  cycleProgesteroneLutealEnd: number
-  /** 经前期的孕激素，0~1 标度，默认 0.55 */
-  cycleProgesteronePremenstrual: number
-  /** 经期第一天的痛经，0~1 标度，默认 0.75 */
-  cycleCrampsStart: number
-  /** 经期最后一天的痛经，0~1 标度，默认 0.15 */
-  cycleCrampsEnd: number
-  /** 经前期的痛经，0~1 标度，默认 0.05 */
-  cycleCrampsPremenstrual: number
-  /** 痛经对精力的扣减，默认 0.35 */
-  energyCrampsPenalty: number
-  /** 黄体期与经前期对精力的扣减，默认 0.06 */
-  energyLutealPenalty: number
-  /** 经期对好坏的扣减，默认 0.12 */
-  valenceMenstrualPenalty: number
-  /** 经前期对好坏的扣减，默认 0.10 */
-  valencePremenstrualPenalty: number
-  /** 卵泡期对好坏的加成，默认 0.06 */
-  valenceFollicularGain: number
-  /** 经前期对易怒的加成，默认 0.28 */
-  irritabilityPremenstrualGain: number
-  /** 经期对易怒的加成，默认 0.14 */
-  irritabilityMenstrualGain: number
-  /** 痛经对易怒的加成，默认 0.30 */
-  irritabilityCrampsGain: number
-  /** 细胞因子高过这条线，提示词里要说生病，0~1 标度，默认 0.35 */
-  promptSickCytokinesFrom: number
-  /** 发烧高过这条线也要说生病，0~1 标度，默认 0.30 */
-  promptSickFeverFrom: number
-  /** 睡眠压力高过这条线要说太困，0~1 标度，默认 0.65 */
-  promptSleepyAdenosineFrom: number
-  /** 褪黑素高过这条线也要说太困，0~1 标度，默认 0.55 */
-  promptSleepyMelatoninFrom: number
-  /** 离饭点还有多久算快开饭了，分钟，默认 30，只在提示词里多一句 */
-  promptMealSoonMinutes: number
-}
+export type { Tuning } from './tuning.ts'
 
 /** 全仓唯一的默认值表 */
 export const DEFAULTS: Tuning = {
@@ -379,6 +148,8 @@ export const DEFAULTS: Tuning = {
   melatoninFrom: 21,
   melatoninUntil: 7,
   metabolicRate: 1.0,
+  metabolicRateMin: 0.75,
+  metabolicRateMax: 1.7,
   // 睡眠与午睡：夜睡一套醒法，午睡只看到点
   sleepFrom: 23,
   sleepUntil: 7,
@@ -484,6 +255,133 @@ export const DEFAULTS: Tuning = {
   promptSleepyAdenosineFrom: 0.65,
   promptSleepyMelatoninFrom: 0.55,
   promptMealSoonMinutes: 30,
+  // 递质回归：白天与夜里的半衰期、各递质回落目标里的夜色项
+  transmitterNightHalfHours: 0.45,
+  transmitterHalfHours: 0.75,
+  transmitterDopamineBase: 0.50,
+  transmitterDopamineNightDrop: 0.16,
+  transmitterOxytocinBase: 0.45,
+  transmitterOxytocinNightRise: 0.04,
+  transmitterSerotoninBase: 0.65,
+  transmitterSerotoninNightDrop: 0.12,
+  transmitterNoradrenalineNightDrop: 0.10,
+  // HPA 轴：负荷、负反馈、三段半衰与催产素缓冲
+  hpaGlucoseFloor: 0.62,
+  hpaHungerFrom: 0.50,
+  hpaHungerSpan: 0.50,
+  hpaLoadCortisol: 0.55,
+  hpaLoadGlucose: 0.25,
+  hpaLoadHunger: 0.20,
+  hpaFeedbackGain: 0.70,
+  hpaFeedbackFrom: 0.55,
+  hpaFeedbackSpan: 0.45,
+  hpaCrhHalfHours: 0.15,
+  hpaActhHalfHours: 0.45,
+  hpaCortisolHalfHours: 1.20,
+  hpaCortisolBase: 0.15,
+  hpaCortisolActhGain: 0.80,
+  hpaOxytocinBufferFrom: 0.40,
+  hpaOxytocinBufferSpan: 0.60,
+  hpaOxytocinBufferGain: 0.35,
+  // 交感与副交感
+  adrenalineBase: 0.05,
+  adrenalineLoadGain: 0.85,
+  adrenalineHalfHours: 0.06,
+  parasympatheticBase: 0.22,
+  parasympatheticAdrenalineGain: 0.35,
+  parasympatheticLeptinGain: 0.22,
+  parasympatheticNightGain: 0.18,
+  parasympatheticHalfHours: 0.55,
+  // 奖赏双系统
+  rewardWantDopamine: 0.70,
+  rewardWantOxytocin: 0.30,
+  rewardWantCortisol: 0.25,
+  endorphinBase: 0.20,
+  endorphinWantGain: 0.65,
+  endorphinHalfHours: 0.80,
+  // 依恋双轴
+  vasopressinBase: 0.16,
+  vasopressinClingyGain: 0.58,
+  vasopressinCortisolGain: 0.35,
+  vasopressinOsmolalityFrom: 0.40,
+  vasopressinOsmolalityGain: 0.25,
+  vasopressinHalfHours: 1.5,
+  // 饥饿：胃排空速率与三餐、夜间、饱腹的折扣
+  hungerRate: 0.055,
+  hungerRecentHours: 1.5,
+  hungerRecentFactor: 0.35,
+  hungerMiddleHours: 3.0,
+  hungerMiddleFactor: 0.70,
+  hungerLongHours: 6.0,
+  hungerLongFactor: 1.15,
+  hungerMealHourFactor: 1.30,
+  hungerSatietyFloor: 0.25,
+  hungerSatietyGain: 0.75,
+  hungerQuietFactor: 0.25,
+  // 水循环：失水速率、活动量加成与几个折算系数
+  waterActivityBase: 1.0,
+  waterActivityNoradrenalineFrom: 0.50,
+  waterActivityNoradrenalineGain: 0.25,
+  waterActivityAdrenalineFrom: 0.25,
+  waterActivityAdrenalineGain: 0.15,
+  waterLossRate: 0.070,
+  waterQuietFactor: 0.30,
+  waterOsmolalityGain: 0.55,
+  waterVolumeDrop: 0.40,
+  angiotensinBase: 0.10,
+  angiotensinVolumeFrom: 0.85,
+  angiotensinVolumeSpan: 0.45,
+  angiotensinGain: 0.85,
+  angiotensinHalfHours: 0.70,
+  thirstLossGain: 0.60,
+  thirstAngiotensinFrom: 0.35,
+  thirstAngiotensinGain: 0.05,
+  // 血糖双向调节
+  insulinBase: 0.08,
+  insulinGlucoseFrom: 0.62,
+  insulinGlucoseSpan: 0.30,
+  insulinGain: 0.95,
+  insulinHalfHours: 0.35,
+  glucagonBase: 0.08,
+  glucagonGlucoseBelow: 0.60,
+  glucagonGlucoseSpan: 0.30,
+  glucagonGain: 0.95,
+  glucagonHalfHours: 0.55,
+  glucoseRiseBase: 0.010,
+  glucoseHungerFrom: 0.60,
+  glucoseHungerGain: 0.03,
+  glucoseGlucagonGain: 0.10,
+  glucoseInsulinDrop: 0.28,
+  glucoseSpanCap: 1.0,
+  // 内环境：腺苷、细胞因子、体温与疼痛
+  adenosineAwakeRate: 0.042,
+  adenosineQuietRate: 0.020,
+  cytokinesHalfHours: 36,
+  feverCytokinesGain: 0.85,
+  feverHalfHours: 1.0,
+  coreTempBase: 36.55,
+  coreTempNightDrop: 0.30,
+  coreTempFeverGain: 1.60,
+  painHalfHours: 0.5,
+  painHoursCap: 24,
+  // 峰值：幸福峰值与想哭低谷的判据
+  peakHappinessFrom: 0.86,
+  peakDopamineFrom: 0.70,
+  peakOxytocinFrom: 0.58,
+  peakSerotoninFrom: 0.68,
+  peakCortisolBelow: 0.30,
+  troughSadnessFrom: 0.85,
+  troughSerotoninBelow: 0.32,
+  troughCortisolFrom: 0.65,
+  // 死亡威胁：余额分档与每拍逼近的步长
+  mortalityBalanceCalm: 10,
+  mortalityBalanceWary: 8,
+  mortalityBalanceLow: 5,
+  mortalityTargetWary: 0.25,
+  mortalityTargetLow: 0.55,
+  mortalityTargetCrisis: 1.0,
+  mortalityRisePerBeat: 0.15,
+  mortalityFallPerBeat: 0.03,
 }
 
 /** 落盘时按数值读回来的字段 */
@@ -500,7 +398,7 @@ export const NUMERIC_FIELDS: readonly (keyof Baseline)[] = [
 /** 派生上也要落盘的数值字段 */
 export const DERIVED_FIELDS = [
   'energy', 'valence', 'irritability', 'clinginess', 'loneliness', 'dominance',
-  'proactive_bias', 'post_want',
+  'happiness', 'sadness', 'proactive_bias', 'post_want',
 ] as const
 
 /** 落盘时按时间戳读回来的字段 */
@@ -548,6 +446,8 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     clinginess: 0.0,
     loneliness: 0.0,
     dominance: 0.5,
+    happiness: 0.0,
+    sadness: 0.0,
     proactive_bias: biasUnit(tuning.proactiveBiasStart, tuning),
     post_want: clamp(tuning.postStart),
     emotion_level: '平静',
