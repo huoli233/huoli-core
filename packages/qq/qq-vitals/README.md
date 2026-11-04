@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-提示词里多一段 `{{qq_vitals}}`，写的是此刻身体的形容词：饿不饿、渴不渴、身上松不松、这一轮怎么说话。睡着、刚被吵醒、经期、经前、生病、太困这六件事各自成立时才多一句，都不成立就整行不出现。不给数字，也不提激素名。
+提示词里多一段 `{{qq_vitals}}`，写的是此刻身体的形容词：饿不饿、渴不渴、身上松不松、这一轮怎么说话。睡着、刚被吵醒、经期、经前、生病、太困这六件事各自成立时才多一句，都不成立就整行不出现；饭点前半小时与刚吃完的三十分钟内各再多一句。不给数字，也不提激素名。
 
 #### Token effect
 
@@ -34,7 +34,8 @@ kind: "package-reference"
 ## Known Limitations and Deferred Work
 
 - 十二套子系统落了递质回归、HPA 轴、交感副交感、奖赏、依恋、昼夜、饥饿、水循环、血糖、睡眠压力、月经周期、睡眠与午睡；愤怒、恐惧、死亡威胁没做。
-- 互动只认喝水、被夸、被凶三条；睡着时只记一笔被吵醒，三条都不写。这几条由装配层的 `QqVitalsSeam.react` 收消息时写回。
+- 互动只认喝水、吃饭、被夸、被凶四条；睡着时只记一笔被吵醒，四条都不写。这几条由装配层的 `QqVitalsSeam.react` 收消息时写回。
+- 进食记忆没写：记下一顿只会走 `QqVitalsSeam.onMeal` 这个接口位，本包不落任何记忆，要等组合包把它接到长期记忆。
 - 开经当天写一条记忆这段没做，等记忆写入接口接上。
 - 睡眠期间不主动打扰要主动性出口读 `asleep` 与 `wake_after` 把下一次消息推后，那一段在主动性包里，本包只出这两个事实。
 - 时段判断只用本地小时，没处理跨时区与夏令时。
@@ -44,7 +45,9 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移、睡眠三态与周期结算在 `src/drift.ts`，时钟与日期判断在 `src/clock.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，提示词在 `src/render.ts`，社交动态分级在 `src/post.ts`，原子写盘与备份在 `src/store.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs` 管，同一条消息重放不会重复扣。
+默认参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.tuning` 可以逐项覆盖；状态默认落在数据根目录的 `data/qq-vitals.json`，可用 `Config.file` 改。各段公式的位置：漂移、睡眠三态与周期结算在 `src/drift.ts`，时钟与日期判断在 `src/clock.ts`，写回在 `src/react.ts`，派生量与标签在 `src/derive.ts`，提示词在 `src/render.ts`，社交动态分级在 `src/post.ts`，原子写盘与备份在 `src/store.ts`，词表在 `src/words.ts`。`react` 是纯函数，装配层把它包成 `seam.react(text, at)`：先按消息时间结算漂移，再写回并立即落盘；冷却窗口由 `drinkCooldownMs`、`reactCooldownMs`、`mealCooldownMs` 管，同一条消息重放不会重复扣。
+
+吃饭跟喝水用的是同一套结构：`isMeal(text)` 要求食物名与吃的动作两个条件都命中，素材在 `src/words.ts`，那一模块只产出“这句话在说一顿饭”这个事实，不产出该不该吃。写回一次改五个量——`hunger` 减 `feedHungerDrop`、`ghrelin` 减 `feedGhrelinDrop`、`leptin` 加 `feedLeptinRise`、`glucose` 加 `feedGlucoseRise` 乘饭前饥饿、`insulin` 加 `feedInsulinRise`——并同时把 `last_meal` 与 `meal_applied_at` 写成这一条消息的时刻；两顿饭的冷却只看 `meal_applied_at`，`last_meal` 是饥饿结算读的那个事实。血糖怎么回落不在这里写第二套，交给 `drift` 已有的双向调节：饭后胰岛素高了，`glucose` 那一条就转成负项。
 
 睡眠走 `awake | sleeping | waking` 三态：夜里且睡眠压力过 `sleepAdenosineFrom` 就睡，醒来看“到点、白天里睡眠压力回到低位、白天最晚”三条，午睡只认到点这一条，两套规则不共用，一觉睡着期间不会起第二觉；醒后留一段迷糊窗口，窗口走完回到醒着。睡着期间腺苷按 `sleepAdenosineDrop` 或 `napAdenosineDrop` 往下掉，别的子系统照常结算；`asleep` 是睡着这一态的布尔投影，写的地方只有一处，读回来也按三态重算，不会两边对不上。午睡一天一次，靠 `nap_at` 落在同一个本地零点判断。`drift` 的第四个参数是零到一的随机源，入睡时刻的抖动与午睡概率都走它，测试给一个定值就完全可复现。
 

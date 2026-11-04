@@ -1,4 +1,4 @@
-// 口语词表：喝水要“饮品词 + 提示词”两条都命中
+// 口语词表：喝水与吃饭都要“名词 + 提示词”两条都命中
 
 /** 饮品词 */
 export const DRINK: readonly string[] = [
@@ -12,6 +12,21 @@ export const DRINK_HINTS: readonly string[] = [
   '端来', '拿去喝', '帮你倒', '接过去', '递来', '舀一勺', '倒水', '接给你',
   '喝水', '喝口水', '喝一口水', '喝了水', '去喝水', '自己喝', '喝完了',
   '灌水', '补水', '递给我', '给我倒', '倒杯', '一杯水', '润润嗓子', '喝吧', '给你水',
+]
+
+/** 食物词：饮品不在这里，喝奶茶不算吃了一顿 */
+export const MEAL: readonly string[] = [
+  '饭', '米饭', '炒饭', '盖饭', '盒饭', '便当', '面', '面条', '拉面', '炒面', '拌面', '泡面',
+  '米粉', '粥', '饺子', '包子', '馒头', '面包', '汉堡', '披萨', '薯条', '炸鸡', '烤肉',
+  '火锅', '烧烤', '麻辣烫', '卤味', '菜', '肉', '排骨', '鸡腿', '鱼', '虾', '蛋',
+  '水果', '蛋糕', '饼干', '零食', '夜宵', '早饭', '午饭', '晚饭', '早餐', '午餐', '晚餐', '食堂',
+]
+
+/** 吃饭的口语提示词：光有食物名不算，还要有一句“吃下去”的动作 */
+export const MEAL_HINTS: readonly string[] = [
+  '吃了', '吃完', '吃过', '吃个', '吃口', '吃一口', '吃点', '吃饭', '吃顿', '吃碗', '吃上',
+  '去吃饭', '开饭', '干饭', '点了份', '点份', '点了个', '点了', '叫了外卖', '点了外卖',
+  '下馆子', '做了一顿', '煮了', '盛了一碗', '投喂', '喂你', '给你点', '饱了',
 ]
 
 /** 被夸的词 */
@@ -55,4 +70,26 @@ export function drinkName(text: string): string {
  */
 export function isDrink(text: string): boolean {
   return mentionsAny(text, DRINK) && mentionsAny(text, DRINK_HINTS)
+}
+
+/**
+ * 这句话里最长的那个食物名
+ * @param text - 用户这句话
+ * @returns 命中的食物名，没命中给空串
+ */
+export function mealName(text: string): string {
+  let hit = ''
+  for (const word of MEAL) {
+    if (text.includes(word) && word.length > hit.length) hit = word
+  }
+  return hit
+}
+
+/**
+ * 这句话是不是在说吃一顿饭，只产出事实，不判该不该吃
+ * @param text - 用户这句话
+ * @returns 食物名与吃的动作都命中才是 true
+ */
+export function isMeal(text: string): boolean {
+  return mentionsAny(text, MEAL) && mentionsAny(text, MEAL_HINTS)
 }

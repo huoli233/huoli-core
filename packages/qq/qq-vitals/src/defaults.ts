@@ -57,6 +57,18 @@ export interface Tuning {
   angerSerotoninDrop: number
   /** 被凶一次加多少血管加压素，0~1 标度，默认 0.06，对应更强的占有与黏人 */
   angerVasopressinGain: number
+  /** 两顿饭写回的最小间隔，毫秒，默认 1800000 即半小时内再说吃也只算一顿 */
+  mealCooldownMs: number
+  /** 一顿饭填掉的饥饿，0~1 标度，默认 0.22 */
+  feedHungerDrop: number
+  /** 一顿饭压下去的胃饥饿素，0~1 标度，默认 0.28 */
+  feedGhrelinDrop: number
+  /** 一顿饭抬起来的瘦素，0~1 标度，默认 0.22 */
+  feedLeptinRise: number
+  /** 一顿饭抬起的血糖上限，0~1 标度，默认 0.26，写回时按饭前的饥饿打折 */
+  feedGlucoseRise: number
+  /** 一顿饭抬起的胰岛素，0~1 标度，默认 0.20，回落交给漂移的双向调节 */
+  feedInsulinRise: number
   /** 想开口这一项的起步倍率，默认 1.0 表示不加不减，命中各档再逐条相乘 */
   proactiveBiasStart: number
   /** 想开口倍率的下限，默认 0.2，夹住之后再折成零到一的读数 */
@@ -221,6 +233,8 @@ export interface Tuning {
   promptSleepyAdenosineFrom: number
   /** 褪黑素高过这条线也要说太困，0~1 标度，默认 0.55 */
   promptSleepyMelatoninFrom: number
+  /** 离饭点还有多久算快开饭了，分钟，默认 30，只在提示词里多一句 */
+  promptMealSoonMinutes: number
 }
 
 /** 全仓唯一的默认值表 */
@@ -287,6 +301,13 @@ export const DEFAULTS: Tuning = {
   angerNoradrenalineGain: 0.15,
   angerSerotoninDrop: 0.10,
   angerVasopressinGain: 0.06,
+  // 吃一顿饭的写回量与冷却
+  mealCooldownMs: 1_800_000,
+  feedHungerDrop: 0.22,
+  feedGhrelinDrop: 0.28,
+  feedLeptinRise: 0.22,
+  feedGlucoseRise: 0.26,
+  feedInsulinRise: 0.20,
   // 想开口与想发动态：起步值与逐条相乘的系数
   proactiveBiasStart: 1.0,
   biasMin: 0.2,
@@ -376,6 +397,7 @@ export const DEFAULTS: Tuning = {
   promptSickFeverFrom: 0.30,
   promptSleepyAdenosineFrom: 0.65,
   promptSleepyMelatoninFrom: 0.55,
+  promptMealSoonMinutes: 30,
 }
 
 /** 落盘时按数值读回来的字段 */
@@ -397,7 +419,7 @@ export const DERIVED_FIELDS = [
 /** 落盘时按时间戳读回来的字段 */
 export const STAMP_FIELDS = [
   'last_update', 'last_msg', 'last_meal', 'last_drink', 'last_drink_at', 'last_taste_at',
-  'drink_mem_at', 'fluid_applied_at', 'praise_applied_at', 'anger_applied_at',
+  'drink_mem_at', 'fluid_applied_at', 'praise_applied_at', 'anger_applied_at', 'meal_applied_at',
   'wake_after', 'groggy_until', 'woken_at', 'nap_at',
 ] as const
 
@@ -463,6 +485,7 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     fluid_applied_at: 0,
     praise_applied_at: 0,
     anger_applied_at: 0,
+    meal_applied_at: 0,
     last_drink_name: '',
     last_taste: null,
     last_user_text: '',

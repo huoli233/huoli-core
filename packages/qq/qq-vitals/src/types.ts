@@ -128,6 +128,8 @@ export interface VitalsState extends Baseline {
   fluid_applied_at: number
   praise_applied_at: number
   anger_applied_at: number
+  /** 上一顿饭写回的时刻，毫秒时间戳，零表示还没记过，兼作两顿饭之间的冷却起点 */
+  meal_applied_at: number
   last_drink_name: string
   last_taste: TasteRecord | null
   last_user_text: string

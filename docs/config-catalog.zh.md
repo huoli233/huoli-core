@@ -2949,6 +2949,10 @@ export interface Config {
   privateAllowPeers?: readonly string[]
   /** 待确认项多久没人点头就失效 */
   confirmTtlMs?: number
+  /** 公开动态与公开评论最早从哪个阶段开始，不给就用自我层默认值表 */
+  publicMinStage?: string
+  /** 私信最早从哪个阶段开始，不给就用自我层默认值表 */
+  privateMinStage?: string
   /** 三类动作的状态文件放哪，不填就落在数据根目录下的 data */
   actionsFile?: string
 }
@@ -3145,7 +3149,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:118`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:128`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3204,6 +3208,8 @@ export interface SelfSettings {
   identityActions: readonly string[]
   /** 现在处在哪个阶段，形如 P2 */
   stage: string
+  /** 公开展示（动态与评论）最早从哪个阶段开始 */
+  publicMinStage: string
   /** 私信最早从哪个阶段开始 */
   privateMinStage: string
   /** 阶段的先后顺序，比高低只看这张表的次序 */
@@ -3268,7 +3274,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:40`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:51`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3335,6 +3341,18 @@ export interface Tuning {
   angerSerotoninDrop: number
   /** 被凶一次加多少血管加压素，0~1 标度，默认 0.06，对应更强的占有与黏人 */
   angerVasopressinGain: number
+  /** 两顿饭写回的最小间隔，毫秒，默认 1800000 即半小时内再说吃也只算一顿 */
+  mealCooldownMs: number
+  /** 一顿饭填掉的饥饿，0~1 标度，默认 0.22 */
+  feedHungerDrop: number
+  /** 一顿饭压下去的胃饥饿素，0~1 标度，默认 0.28 */
+  feedGhrelinDrop: number
+  /** 一顿饭抬起来的瘦素，0~1 标度，默认 0.22 */
+  feedLeptinRise: number
+  /** 一顿饭抬起的血糖上限，0~1 标度，默认 0.26，写回时按饭前的饥饿打折 */
+  feedGlucoseRise: number
+  /** 一顿饭抬起的胰岛素，0~1 标度，默认 0.20，回落交给漂移的双向调节 */
+  feedInsulinRise: number
   /** 想开口这一项的起步倍率，默认 1.0 表示不加不减，命中各档再逐条相乘 */
   proactiveBiasStart: number
   /** 想开口倍率的下限，默认 0.2，夹住之后再折成零到一的读数 */
@@ -3499,6 +3517,8 @@ export interface Tuning {
   promptSleepyAdenosineFrom: number
   /** 褪黑素高过这条线也要说太困，0~1 标度，默认 0.55 */
   promptSleepyMelatoninFrom: number
+  /** 离饭点还有多久算快开饭了，分钟，默认 30，只在提示词里多一句 */
+  promptMealSoonMinutes: number
 }
 
 /** 初始值与漂移都要用到的数值字段，除体温外都是 0~1 */

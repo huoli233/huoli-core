@@ -1,5 +1,6 @@
 // 只给形容词的一段话：不给数字、不提激素名、每次措辞不同
 
+import { isMealHour, localHour } from './clock.ts'
 import type { Tuning } from './defaults.ts'
 import type { VitalsState } from './types.ts'
 
@@ -89,7 +90,19 @@ function recentlyWoken(state: VitalsState, tuning: Tuning): boolean {
   return state.woken_at > 0 && state.last_update - state.woken_at < tuning.wokenWindowMinutes * 60_000
 }
 
-// 六段可选的话：各自的事实成立才出现，全不成立时整行不出现
+// 快到饭点：只看这一拍落在饭点前多久，不看她现在饿不饿
+function mealSoon(state: VitalsState, tuning: Tuning): boolean {
+  const hour = localHour(state.last_update)
+  return !isMealHour(hour) && isMealHour(hour + tuning.promptMealSoonMinutes / 60)
+}
+
+// 刚吃过：只认真的记下过一顿，没记过的身体不说这句话
+function mealJustHad(state: VitalsState, tuning: Tuning): boolean {
+  if (state.meal_applied_at <= 0) return false
+  return state.last_update - state.meal_applied_at < tuning.mealCooldownMs
+}
+
+// 可选的话：各自的事实成立才出现，全不成立时整行不出现
 function optionalNote(state: VitalsState, tuning: Tuning): string {
   const notes: string[] = []
   if (state.sleep_state === 'sleeping') notes.push('你正睡着，迷迷糊糊的。')
@@ -102,6 +115,8 @@ function optionalNote(state: VitalsState, tuning: Tuning): string {
   if (state.adenosine > tuning.promptSleepyAdenosineFrom || state.melatonin > tuning.promptSleepyMelatoninFrom) {
     notes.push('太困了，句子更短，会走神。')
   }
+  if (mealSoon(state, tuning)) notes.push('快到饭点了，脑子里开始盘算吃什么。')
+  if (mealJustHad(state, tuning)) notes.push('刚吃完，身上暖着，说话可以慢一点。')
   return notes.join('')
 }
 

@@ -1,9 +1,9 @@
-// 一句话进来，身体改一点：喝水、被夸、被凶
+// 一句话进来，身体改一点：喝水、吃饭、被夸、被凶
 
 import type { Tuning } from './defaults.ts'
 import { clamp } from './math.ts'
 import type { VitalsState } from './types.ts'
-import { ANGER, drinkName, isDrink, mentionsAny, PRAISE } from './words.ts'
+import { ANGER, drinkName, isDrink, isMeal, mentionsAny, PRAISE } from './words.ts'
 
 // 喝一杯水：写回五项，再加多巴胺与内啡肽；last_drink 兼冷却与幂等
 function applyDrink(next: VitalsState, text: string, at: number, tuning: Tuning): void {
@@ -31,6 +31,21 @@ function applyDrink(next: VitalsState, text: string, at: number, tuning: Tuning)
   }
   next.last_taste_at = at
   if (at - next.drink_mem_at > tuning.drinkMemoryMs) next.drink_mem_at = at
+}
+
+// 吃一顿饭：五个量各走一步，血糖怎么回落交给漂移那套双向调节，这里不另写一套
+function applyMeal(next: VitalsState, text: string, at: number, tuning: Tuning): void {
+  if (!isMeal(text)) return
+  if (at - next.meal_applied_at < tuning.mealCooldownMs) return
+  const hungry = next.hunger
+  next.meal_applied_at = at
+  next.last_meal = at
+  next.hunger = clamp(hungry - tuning.feedHungerDrop)
+  next.ghrelin = clamp(next.ghrelin - tuning.feedGhrelinDrop)
+  next.leptin = clamp(next.leptin + tuning.feedLeptinRise)
+  // 越饿升得越多，但饭前不饿时也至少抬六成，保证一顿饭能把血糖顶到常规水平之上
+  next.glucose = clamp(next.glucose + tuning.feedGlucoseRise * (0.6 + 0.4 * hungry))
+  next.insulin = clamp(next.insulin + tuning.feedInsulinRise)
 }
 
 // 被夸：想要与亲近都涨一点
@@ -72,6 +87,7 @@ export function react(state: VitalsState, text: string, at: number, tuning: Tuni
     return next
   }
   applyDrink(next, text, at, tuning)
+  applyMeal(next, text, at, tuning)
   applyPraise(next, text, at, tuning)
   applyAnger(next, text, at, tuning)
   return next

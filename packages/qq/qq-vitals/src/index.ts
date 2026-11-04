@@ -11,6 +11,7 @@ import { react as reactToText } from './react.ts'
 import { renderPrompt } from './render.ts'
 import { createVitalsStore } from './store.ts'
 import type { VitalsState } from './types.ts'
+import { mealName } from './words.ts'
 
 export type { Tuning } from './defaults.ts'
 export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
@@ -21,10 +22,18 @@ export { postLevel } from './post.ts'
 export type { PostDecision, PostFacts } from './post.ts'
 export { react } from './react.ts'
 export { renderPrompt, thirstNote } from './render.ts'
-export { isDrink } from './words.ts'
+export { isDrink, isMeal, mealName } from './words.ts'
 export { createVitalsStore } from './store.ts'
 export type { VitalsStoreOptions, VitalsStore } from './store.ts'
 export type { Baseline, CyclePhase, SleepState, TasteRecord, VitalsState } from './types.ts'
+
+/** 一顿饭的事实，交给组合包以后接记忆，本包不写记忆 */
+export interface MealFact {
+  /** 这一顿记下的毫秒时间戳 */
+  at: number
+  /** 句子里命中的食物名，没命中给空串 */
+  name: string
+}
 
 /** 一个应用里的那份身体 */
 export interface QqVitalsSeam {
@@ -34,6 +43,8 @@ export interface QqVitalsSeam {
   render(): string
   /** 记一句话：写回身体并落盘，冷却窗口内的重复写法不再计入 */
   react(text: string, at?: number): void
+  /** 接住每一顿的写回，取消时用返回的那个函数 */
+  onMeal(listener: (fact: MealFact) => void): () => void
 }
 
 /** 这一行接受的配置 */
@@ -75,6 +86,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const tuning = resolveTuning(config.tuning)
   const file = config.file ?? join(resolveHuoliHome(config.huoliHome), 'data', 'qq-vitals.json')
   const store = createVitalsStore({ file, tuning })
+  const meals = new Set<(fact: MealFact) => void>()
   let variant = 0
 
   // 读之前先把这段时间的漂移结掉，但落盘留给心跳
@@ -86,6 +98,17 @@ export function apply(ctx: Context, config: Config = {}): void {
       store.write(current())
     } catch (error) {
       ctx.logger('qq-vitals').warn('心跳写盘失败：%s', String(error))
+    }
+  }
+
+  // 一顿饭只有真写回的那次才通知，重复进入的同一条消息不通知
+  const notifyMeal = (fact: MealFact): void => {
+    for (const listener of meals) {
+      try {
+        listener(fact)
+      } catch (error) {
+        ctx.logger('qq-vitals').warn('进食回调失败：%s', String(error))
+      }
     }
   }
 
@@ -102,10 +125,21 @@ export function apply(ctx: Context, config: Config = {}): void {
       // 时间戳只往前走，秒级的消息时间不会把上一次记录顶回去
       const raw = store.read()
       const moment = Math.max(at ?? Date.now(), raw.last_update)
+      let meal: MealFact | undefined
       try {
-        store.write(derive(reactToText(drift(raw, moment, tuning), text, moment, tuning), tuning))
+        const next = derive(reactToText(drift(raw, moment, tuning), text, moment, tuning), tuning)
+        store.write(next)
+        if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text) }
       } catch (error) {
         ctx.logger('qq-vitals').warn('消息写盘失败：%s', String(error))
+        return
+      }
+      if (meal !== undefined) notifyMeal(meal)
+    },
+    onMeal(listener) {
+      meals.add(listener)
+      return () => {
+        meals.delete(listener)
       }
     },
   }
@@ -133,6 +167,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     clearTimeout(start)
     if (timer !== undefined) clearInterval(timer)
     store.write(current())
+    meals.clear()
     seams.delete(ctx)
   })
 }
