@@ -2822,13 +2822,15 @@ export type Config = LocalConfig
 ## `@huoli/huoli-qq-attention`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-attention/src/index.ts:26`](../packages/qq/qq-attention/src/index.ts)
+- `source`: [`packages/qq/qq-attention/src/index.ts:27`](../packages/qq/qq-attention/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 状态文件放哪 */
+  /** 状态文件放哪，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
   /** 机器人叫什么，用来认名字 */
   selfNames?: readonly string[]
 }
@@ -2841,7 +2843,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:15`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:16`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2862,7 +2864,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:23`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:25`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2885,13 +2887,15 @@ export interface Config {
 ## `@huoli/huoli-qq-continuity`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-continuity/src/index.ts:23`](../packages/qq/qq-continuity/src/index.ts)
+- `source`: [`packages/qq/qq-continuity/src/index.ts:24`](../packages/qq/qq-continuity/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 收尾记录放哪 */
+  /** 收尾记录放哪，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-continuity -->
@@ -2902,13 +2906,15 @@ export interface Config {
 ## `@huoli/huoli-qq-material`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-material/src/index.ts:21`](../packages/qq/qq-material/src/index.ts)
+- `source`: [`packages/qq/qq-material/src/index.ts:22`](../packages/qq/qq-material/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 惦记的事存哪 */
+  /** 惦记的事存哪，不填就用主目录下的 data */
   thoughtsFile?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-material -->
@@ -2919,13 +2925,27 @@ export interface Config {
 ## `@huoli/huoli-qq-memory`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-memory/src/index.ts:29`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:71`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 记忆存哪 */
+  /** 记忆存哪，不填就用主目录下的 data */
   file?: string
+  /** 账本存哪，不填就用主目录下的 data */
+  ledgerFile?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
+  /** 想改哪些默认参数 */
+  tuning?: Partial<Tuning>
+}
+
+/** 可被 Config 覆盖的参数集合 */
+export interface Tuning {
+  /** 重要度到这条线以上算受保护 */
+  protectLine: number
+  /** 每次召回注入的正文上限 */
+  injectCap: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-memory -->
@@ -2935,13 +2955,15 @@ export interface Config {
 
 ## `@huoli/huoli-qq-pacing`
 
-- `source`: [`packages/qq/qq-pacing/src/index.ts:24`](../packages/qq/qq-pacing/src/index.ts)
+- `source`: [`packages/qq/qq-pacing/src/index.ts:25`](../packages/qq/qq-pacing/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 记账文件放哪 */
+  /** 记账文件放哪，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
   /** 一段话最多拆几条 */
   maxParts?: number
   /** 每条最多几个字 */
@@ -2960,8 +2982,10 @@ export interface Config {
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 攒着的和记账都放这个文件 */
+  /** 攒着的和记账都放这个文件，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
   /** 要不要主动开口 */
   enabled?: boolean
   /** 一天最多开口几次 */
@@ -2970,9 +2994,101 @@ export interface Config {
   quietStart?: string
   /** 安静时段到几点结束 */
   quietEnd?: string
+  /** 冷却区间下限 */
+  gapMinMs?: number
+  /** 冷却区间上限 */
+  gapMaxMs?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-proactive -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-self -->
+<a id="huolihuoli-qq-self"></a>
+
+## `@huoli/huoli-qq-self`
+
+- `inject`: `systemPrompt`
+- `source`: [`packages/qq/qq-self/src/index.ts:96`](../packages/qq/qq-self/src/index.ts)
+
+```ts config-catalog
+/** 这一行接受的配置 */
+export interface Config {
+  /** 打开这一层，默认关 */
+  enabled?: boolean
+  /** SELF_DIR 放哪，不给就落在数据根目录下的 data/qq-self */
+  dir?: string
+  /** 数据根目录，不给就用默认的家目录 */
+  huoliHome?: string
+  /** 主会话的键，不配就哪个会话都不注入 */
+  mainChatKey?: string
+  /** 想改哪些默认参数 */
+  settings?: Partial<SelfSettings>
+}
+
+/** 这一层的参数表，Config.settings 可以逐项覆盖 */
+export interface SelfSettings {
+  /** 面板正文最多几个字 */
+  panelMaxChars: number
+  /** 面板复用多久之后才重做 */
+  panelMaxAgeMs: number
+  /** 此刻那一句最多几个字 */
+  momentMaxChars: number
+  /** 项目名最多几个字 */
+  projectMaxChars: number
+  /** 下一步最多几个字 */
+  nextMaxChars: number
+  /** 想问的事最多几个字 */
+  questionMaxChars: number
+  /** did 那一句最多几个字 */
+  didMaxChars: number
+  /** 原话最多几个字 */
+  verbatimMaxChars: number
+  /** 相信的事最多几个字 */
+  claimMaxChars: number
+  /** 一条相信的事最多挂几个证据 */
+  claimEvidenceMax: number
+  /** 答应的事最多几个字 */
+  commitmentMaxChars: number
+  /** 同时最多几个没结束的项目 */
+  openProjectMax: number
+  /** 一周最多问几条 */
+  questionPerWeekMax: number
+  /** 一周多长 */
+  weekMs: number
+  /** 身体的四种需要 */
+  driveNeeds: readonly DriveNeed[]
+  /** 身份级动作清单，逐字匹配 */
+  identityActions: readonly string[]
+  /** 提示词里的段落名 */
+  sectionName: string
+  /** 提示词里的占位名 */
+  variableName: string
+  /** 段落排在什么位置 */
+  sectionOrder: number
+  /** 面板每行的抬头 */
+  labels: PanelLabels
+}
+
+/** 身体的四种需要，与身体那边的字段名逐字相同 */
+export type DriveNeed = 'hunger' | 'thirst' | 'adenosine' | 'energy'
+
+/** 面板每行的抬头 */
+export interface PanelLabels {
+  /** 首行的标题 */
+  header: string
+  /** 此刻 */
+  moment: string
+  /** 我在做 */
+  doing: string
+  /** 下一步 */
+  next: string
+  /** 我想弄明白 */
+  question: string
+  /** 收尾那句 */
+  refuse: string
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-self -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-subject -->
 <a id="huolihuoli-qq-subject"></a>
@@ -2980,13 +3096,15 @@ export interface Config {
 ## `@huoli/huoli-qq-subject`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-subject/src/index.ts:22`](../packages/qq/qq-subject/src/index.ts)
+- `source`: [`packages/qq/qq-subject/src/index.ts:23`](../packages/qq/qq-subject/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 状态存哪 */
+  /** 状态存哪，不填就用主目录下的 data */
   file?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
   /** 一段状态最多写多少字 */
   maxChars?: number
   /** 每个群叫什么名字，写快照时用 */
@@ -2994,6 +3112,161 @@ export interface Config {
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-subject -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-vitals -->
+<a id="huolihuoli-qq-vitals"></a>
+
+## `@huoli/huoli-qq-vitals`
+
+- `inject`: `systemPrompt`
+- `source`: [`packages/qq/qq-vitals/src/index.ts:37`](../packages/qq/qq-vitals/src/index.ts)
+
+```ts config-catalog
+/** 这一行接受的配置 */
+export interface Config {
+  /** 状态文件放哪，不给就落在数据根目录下的 data/qq-vitals.json */
+  file?: string
+  /** 数据根目录，不给就用默认的家目录 */
+  huoliHome?: string
+  /** 想改哪些默认参数 */
+  tuning?: Partial<Tuning>
+}
+
+/** 可被 Config 覆盖的参数集合 */
+export interface Tuning {
+  /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
+  beatMs: number
+  /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
+  startDelayMs: number
+  /** 单次漂移最多补算多少小时，默认 24 小时，挡住长时间停机后一次算过头 */
+  hoursCap: number
+  /** 触发漂移所需的最小间隔，小时，默认 60 分之一即一分钟，更密的重复读取不再重算 */
+  minDriftHours: number
+  /** 初始身体状态，各字段是这份状态第一次落盘时的数值起点 */
+  baseline: Baseline
+  /** 喝水得到的多巴胺与内啡肽奖励倍率，默认 0.6 让一杯水的快感压不过被夸 */
+  intensity: number
+  /** 两次喝水写回的最小间隔，毫秒，默认 180000 即三分钟内重复说要水不再叠加 */
+  drinkCooldownMs: number
+  /** 喝水写进记忆的最小间隔，毫秒，默认 1200000 即二十分钟内连着喝只记一次 */
+  drinkMemoryMs: number
+  /** 喝一次水让口渴下降多少，0~1 标度，默认 0.55 表示一口能缓掉一半 */
+  drinkThirstDrop: number
+  /** 喝一次水让血浆渗透压下降多少，0~1 标度，默认 0.30 */
+  drinkOsmolalityDrop: number
+  /** 喝一次水让血容量回升多少，0~1 标度，默认 0.18 */
+  drinkVolumeRise: number
+  /** 喝一次水让血管紧张素下降多少，0~1 标度，默认 0.25，血量补回来后渴觉驱动随之减弱 */
+  drinkAngiotensinDrop: number
+  /** 喝一次水往待排水队列里加多少，0~1 标度，默认 0.55，停留够时长的下一拍才排空 */
+  drinkQueueRise: number
+  /** 喝水给多巴胺的基础增量，0~1 标度，默认 0.06，写回时还要再乘 intensity */
+  drinkDopamineGain: number
+  /** 喝水给内啡肽的基础增量，0~1 标度，默认 0.05，写回时还要再乘 intensity */
+  drinkEndorphinGain: number
+  /** 水待在体内多久才排掉，毫秒，默认 3600000 即一小时 */
+  fluidDwellMs: number
+  /** 被夸与被凶各自写回的最小间隔，毫秒，默认 300000 即五分钟，防止连发消息反复加成 */
+  reactCooldownMs: number
+  /** 被夸一次加多少多巴胺，0~1 标度，默认 0.10 */
+  praiseDopamineGain: number
+  /** 被夸一次加多少催产素，0~1 标度，默认 0.08 */
+  praiseOxytocinGain: number
+  /** 被夸一次加多少内啡肽，0~1 标度，默认 0.03 */
+  praiseEndorphinGain: number
+  /** 被夸一次减多少皮质醇，0~1 标度，默认 0.03 */
+  praiseCortisolDrop: number
+  /** 被凶一次加多少皮质醇，0~1 标度，默认 0.05 */
+  angerCortisolGain: number
+  /** 被凶一次加多少肾上腺素，0~1 标度，默认 0.18，让心跳与警觉立刻上来 */
+  angerAdrenalineGain: number
+  /** 被凶一次加多少去甲肾上腺素，0~1 标度，默认 0.15 */
+  angerNoradrenalineGain: number
+  /** 被凶一次减多少血清素，0~1 标度，默认 0.10 */
+  angerSerotoninDrop: number
+  /** 被凶一次加多少血管加压素，0~1 标度，默认 0.06，对应更强的占有与黏人 */
+  angerVasopressinGain: number
+  /** 每轮身体提示词的字数上限，默认 300，超出就截断且至少保留 60 字 */
+  promptMaxChars: number
+  /** 情绪标签入选的分数阈值，0~1 标度，默认 0.40，低于它的候选不写进提示词 */
+  labelThreshold: number
+  /** 每轮最多带几个情绪标签，默认 3，按分数从高到低取 */
+  labelCount: number
+  /** 夜色算全黑的起始钟点，本地小时 0~24，默认 22 点 */
+  nightDarkFrom: number
+  /** 夜色算全黑的结束钟点，本地小时 0~24，默认 7 点 */
+  nightDarkUntil: number
+  /** 全黑与白天之间爬上爬下的过渡时长，小时，默认 2 小时，夜色浓度按它线性过渡 */
+  nightRamp: number
+  /** 褪黑素跟随夜色的时间窗起始钟点，本地小时 0~24，默认 21 点 */
+  melatoninFrom: number
+  /** 该时间窗的结束钟点，本地小时 0~24，默认 7 点，窗外褪黑素朝零回落 */
+  melatoninUntil: number
+  /** 水分流失的代谢倍率，默认 1.0 为基准，参与计算时夹在 0.75 到 1.7 之间 */
+  metabolicRate: number
+}
+
+/** 初始值与漂移都要用到的数值字段，除体温外都是 0~1 */
+export interface Baseline {
+  /** 多巴胺，0~1，默认 0.50，给想要与动力定个中间起点 */
+  dopamine: number
+  /** 催产素，0~1，默认 0.45，决定一上来有多亲近 */
+  oxytocin: number
+  /** 皮质醇，0~1，默认 0.20，偏低表示初始没有压力 */
+  cortisol: number
+  /** 血清素，0~1，默认 0.65，给情绪稳定定个偏高的起点 */
+  serotonin: number
+  /** 去甲肾上腺素，0~1，默认 0.45，之后按时段基线漂移 */
+  noradrenaline: number
+  /** 促肾上腺皮质激素释放激素，0~1，默认 0.15，HPA 轴最上游的静息水平 */
+  crh: number
+  /** 促肾上腺皮质激素，0~1，默认 0.15，跟着 crh 慢半拍走 */
+  acth: number
+  /** 肾上腺素，0~1，默认 0.05，平时几乎不分泌 */
+  adrenaline: number
+  /** 乙酰胆碱，0~1，默认 0.45，副交感张力的起点 */
+  acetylcholine: number
+  /** 内啡肽，0~1，默认 0.45，舒适感的起点 */
+  endorphin: number
+  /** 血管加压素，0~1，默认 0.30，对应依恋与占有 */
+  vasopressin: number
+  /** 褪黑素，0~1，默认 0.0，白天醒着时不参与压低精力 */
+  melatonin: number
+  /** 胃饥饿素，0~1，默认 0.30，目前只随状态落盘与读回，不进入漂移计算 */
+  ghrelin: number
+  /** 瘦素，0~1，默认 0.55，饱腹信号，会抬高副交感目标 */
+  leptin: number
+  /** 血糖，0~1，默认 0.65，落在正常范围的偏上 */
+  glucose: number
+  /** 胰岛素，0~1，默认 0.12，血糖升高时朝上涨 */
+  insulin: number
+  /** 胰高血糖素，0~1，默认 0.10，血糖走低时朝上涨 */
+  glucagon: number
+  /** 饥饿，0~1，默认 0.35，之后按胃排空与三餐节律累积 */
+  hunger: number
+  /** 口渴，0~1，默认 0.25，之后只累积不回滑，靠喝水往下压 */
+  thirst: number
+  /** 血浆渗透压，0~1，默认 0.35，随失水上升 */
+  osmolality: number
+  /** 血容量，0~1，默认 0.85，随失水下降并驱动血管紧张素 */
+  blood_volume: number
+  /** 血管紧张素，0~1，默认 0.10，血容量不足时上来带动渴觉 */
+  angiotensin: number
+  /** 待排水队列，0~1，默认 0.0，初始没有积存，喝水后累积 */
+  fluid_queue: number
+  /** 腺苷即睡眠压力，0~1，默认 0.20，醒着越久越高 */
+  adenosine: number
+  /** 核心体温，摄氏度，默认 36.6，每拍按夜色与发热重算 */
+  core_temp: number
+  /** 发热程度，0~1，默认 0.0，表示不发烧 */
+  fever: number
+  /** 细胞因子，0~1，默认 0.0，无炎症时为零 */
+  cytokines: number
+  /** 疼痛，0~1，默认 0.0，不疼 */
+  pain: number
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-vitals -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-repeat-tool-reminder -->
 <a id="huolihuoli-repeat-tool-reminder"></a>
