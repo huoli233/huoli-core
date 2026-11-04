@@ -39,11 +39,15 @@ kind: "package-reference"
 - 全部记忆装在一个文件里，条数多了要换存储。
 - 重要度只在写入时算一次，之后不会自动重评。
 - `maintain` 已经导出，按天调用还没接到组合包里。
+- 镜像按来源键（`metadata.self_id`）去重，同一个来源换了来源键仍会各写一条：去重认的是来源位置，不是正文。
 
 <a id="dev-note"></a>
 ### Dev Note
 
 配置项在 `src/index.ts` 的 `Config`：记忆文件、账本文件、主目录覆盖，以及 `tuning` 里的一整组参数，默认值只在 `src/defaults.ts` 的 `DEFAULTS` 出现一次。默认落在主目录的 data 下（`data/qq-memory.json` 与 `data/qq-memory-ledger.json`）；往上挪一层与每天变淡分别由 `promoteAll` 和 `sweepOnce` 做，半衰期与清晰度档位取自 `@huoli/huoli-qq-policy`。
+
+来源只有五档：`chat`、`tool`、`proactive`、`manual`、`self`，写入时按 `MEMORY_SOURCES` 校验，别的值直接抛 `memory.source_unknown`；`metadata` 必须是对象且键为非空字符串，否则抛 `memory.metadata_invalid`。第五档由镜像专用入口 `rememberSelf(entry, at)` 写入：它照 `remember` 落一条，`layer` 固定 `semantic`、`source` 固定 `self`、重要度取 `selfImportanceFloor`（默认 80）与调用方给的值里较大的那个，`metadata` 由它自己拼 `self_id`、`self_kind`、`evidence`、`mirrored_at` 四项，缺来源键或证据就抛 `memory.mirror_incomplete`。同一个 `self_id` 只写一条，重复调用拿回原来那条并给出 `created: false`；`mirroredSelfIds()` 供镜像侧先查再写。
+
 
 召回在 `src/recall.ts`：`recall(store, { query, scope, limit, now, tuning })` 返回 `RecallHit[]`，每条只有 `id`、`text`、`at`、`clarity`、`score`、`reasons` 六个字段；`reasons` 是 `grams`、`vectorSim`、`importanceTerm`、`freshnessTerm`，分数按 `weightSim × 相似度 + importanceTerm + freshnessTerm` 重算得到，清晰度与时间读顶层那两个字段，保留度由两项一并重算。关键词路把两边都按 `gramSize` 切成片段，短查询命中一条、长查询命中两条才算相关；没有候选就是空数组，占位句留给渲染层。副作用只在 `touch`：召回次数加一、`lastSeenAt` 改成现在。
 

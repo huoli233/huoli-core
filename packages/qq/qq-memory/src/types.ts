@@ -5,6 +5,15 @@ import type { Clarity } from '@huoli/huoli-qq-policy'
 /** 记忆放在哪一层 */
 export type MemoryLayer = 'ephemeral' | 'episodic' | 'semantic' | 'private'
 
+/** 记忆是从哪条路径写进来的，只认这五档 */
+export type MemorySource = 'chat' | 'tool' | 'proactive' | 'manual' | 'self'
+
+/** 五档来源，写入时按这张表校验 */
+export const MEMORY_SOURCES: readonly MemorySource[] = ['chat', 'tool', 'proactive', 'manual', 'self']
+
+/** 镜像的条目归哪一类，与自我层那三份文件一一对应 */
+export type MirrorSelfKind = 'claim' | 'project' | 'commitment'
+
 /** 一条记忆 */
 export interface MemoryItem {
   id: string
@@ -18,7 +27,7 @@ export interface MemoryItem {
   at: number
   lastSeenAt: number
   forgotten: boolean
-  source: 'chat' | 'tool' | 'proactive' | 'manual'
+  source: MemorySource
   personId?: string
   /** 话题、地点、人物等附加事实，不参与打分，留给自我层镜像 */
   metadata?: Record<string, unknown>
@@ -37,6 +46,32 @@ export interface RememberOptions {
   at?: number
   /** 跟着这条一起存的附加事实 */
   metadata?: Record<string, unknown>
+}
+
+/** 镜像一条时给的字段，四项元信息缺一不写 */
+export interface RememberSelfEntry {
+  /** 镜像的正文 */
+  text: string
+  /** 记到哪个会话 */
+  chatKey: string
+  /** 来源文件里的那一条的唯一键，形如 `claims.jsonl#3` */
+  selfId: string
+  /** 哪一类来源 */
+  selfKind: MirrorSelfKind
+  /** 一到三条记忆编号或日期 */
+  evidence: readonly string[]
+  /** 调用方给的重要度，低于镜像下限时按下限写 */
+  importance?: number
+}
+
+/** 镜像一条的结果 */
+export interface RememberSelfResult {
+  /** 这一条的编号 */
+  id: string
+  /** 是这次新写的还是早就镜过的 */
+  created: boolean
+  /** 落库的那一条 */
+  item: MemoryItem
 }
 
 /** 层的中文说法 */

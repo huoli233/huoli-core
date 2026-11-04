@@ -11,10 +11,30 @@ import { registerMemoryTools } from './tools.ts'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { defaultLedgerFile, runLedger, type LedgerAction, type LedgerRunResult } from './ledger.ts'
 import { healthLine } from './health.ts'
-import { CLARITY_LABEL, LAYER_LABEL, newId, type MemoryItem, type MemoryLayer, type RememberOptions } from './types.ts'
+import { clampImportance, metadataOr, sourceOr } from './guard.ts'
+import { mirroredBy, mirroredSelfIds } from './mirror.ts'
+import {
+  CLARITY_LABEL,
+  LAYER_LABEL,
+  newId,
+  type MemoryItem,
+  type MemoryLayer,
+  type RememberOptions,
+  type RememberSelfEntry,
+  type RememberSelfResult,
+} from './types.ts'
 
-export type { MemoryItem, MemoryLayer, RememberOptions } from './types.ts'
-export { CLARITY_LABEL, LAYER_LABEL, LAYER_ORDER } from './types.ts'
+export type {
+  MemoryItem,
+  MemoryLayer,
+  MemorySource,
+  MirrorSelfKind,
+  RememberOptions,
+  RememberSelfEntry,
+  RememberSelfResult,
+} from './types.ts'
+export { CLARITY_LABEL, LAYER_LABEL, LAYER_ORDER, MEMORY_SOURCES } from './types.ts'
+export { mirroredBy, mirroredSelfIds, selfIdOf } from './mirror.ts'
 export type { MemoryStore, MemoryStoreOptions } from './store.ts'
 export type { RecallHit, RecallInput, RecallReasons, VectorPath } from './recall.ts'
 export { keyGrams, recall, renderRecall } from './recall.ts'
@@ -60,6 +80,10 @@ export interface MaintainResult {
 export interface QqMemorySeam {
   store: MemoryStore
   remember(text: string, chatKey: string, options?: RememberOptions): MemoryItem
+  /** 自我层镜像一条：只加来源与重要度下限，别处照 remember */
+  rememberSelf(entry: RememberSelfEntry, at: number): RememberSelfResult
+  /** 已经镜过的来源键，按镜像顺序 */
+  mirroredSelfIds(): readonly string[]
   find(query: string, chatKey: string, limit?: number): RecallHit[]
   promote(): number
   sweep(): { stepped: number; forgotten: number }
@@ -122,6 +146,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       const at = options.at ?? Date.now()
       const layer = options.layer ?? 'episodic'
       const emotional = options.emotional ?? 0
+      const metadata = metadataOr(options.metadata)
       const item: MemoryItem = {
         id: newId(at),
         text,
@@ -138,11 +163,46 @@ export function apply(ctx: Context, config: Config = {}): void {
         at,
         lastSeenAt: at,
         forgotten: false,
-        source: options.source ?? 'chat',
-        ...options.metadata !== undefined ? { metadata: options.metadata } : {},
+        source: sourceOr(options.source, 'chat'),
+        ...metadata === undefined ? {} : { metadata },
       }
       store.add(item)
       return item
+    },
+    rememberSelf(entry, at) {
+      const selfId = entry.selfId.trim()
+      const evidence = entry.evidence.map(item => item.trim()).filter(item => item !== '')
+      if (selfId === '' || evidence.length === 0) {
+        throw new Error('memory.mirror_incomplete: 镜像要带来源键与证据｜下一步: 补齐这两项再写')
+      }
+      // 同一个来源键只写一条，重复调用拿回原来那条
+      const kept = mirroredBy(store, selfId)
+      if (kept !== undefined) return { id: kept.id, created: false, item: kept }
+      const item: MemoryItem = {
+        id: newId(at),
+        text: entry.text,
+        layer: 'semantic',
+        scope: scopeOf(entry.chatKey),
+        importance: Math.max(tuning.selfImportanceFloor, clampImportance(entry.importance, tuning.selfImportanceFloor)),
+        emotional: 0,
+        clarity: 'vivid',
+        recallCount: 0,
+        at,
+        lastSeenAt: at,
+        forgotten: false,
+        source: 'self',
+        metadata: {
+          self_id: selfId,
+          self_kind: entry.selfKind,
+          evidence,
+          mirrored_at: new Date(at).toISOString(),
+        },
+      }
+      store.add(item)
+      return { id: item.id, created: true, item }
+    },
+    mirroredSelfIds() {
+      return mirroredSelfIds(store)
     },
     find(query, chatKey, limit) {
       return recall(store, {

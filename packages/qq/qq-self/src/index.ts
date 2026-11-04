@@ -8,6 +8,7 @@ import '@huoli/huoli-system-prompt'
 import { DIR_NAME, resolveSettings } from './defaults.ts'
 import { requireKeys as decideKeys } from './keys.ts'
 import { createLedger } from './ledger.ts'
+import { mirrorEntries } from './mirror.ts'
 import { renderPanel } from './panel.ts'
 import { toProject, toQuestion } from './rows.ts'
 import { createSelfStore, newId } from './store.ts'
@@ -19,10 +20,12 @@ import type {
   DriveNeed,
   KeysOutcome,
   LedgerSummary,
+  MirrorResult,
   PanelInput,
   ProjectInput,
   ProjectRow,
   QuestionRow,
+  SelfMirrorPort,
   SelfSettings,
   VitalsPort,
   WriteOutcome,
@@ -33,6 +36,8 @@ export { DEFAULTS, DIR_NAME, resolveSettings } from './defaults.ts'
 export { requireKeys } from './keys.ts'
 export { createLedger } from './ledger.ts'
 export type { LedgerOptions, SelfLedger } from './ledger.ts'
+export { MIRROR_FILES, mirrorEntries } from './mirror.ts'
+export type { MirrorInput } from './mirror.ts'
 export { panelBody, panelFile, renderPanel } from './panel.ts'
 export { DRIVE_NEEDS, isDriveNeed } from './rows.ts'
 export { createSelfStore, newId } from './store.ts'
@@ -53,12 +58,17 @@ export type {
   KeysOutcome,
   LedgerEntry,
   LedgerSummary,
+  MirrorKind,
+  MirrorResult,
   PanelInput,
   PanelLabels,
   ProjectInput,
   ProjectOutcome,
   ProjectRow,
   QuestionRow,
+  SelfMirrorEntry,
+  SelfMirrorPort,
+  SelfMirrorWrite,
   SelfSettings,
   VitalsPort,
   WriteOutcome,
@@ -72,6 +82,10 @@ export interface QqSelfSeam {
   panel(): string
   /** 接上身体，面板的此刻只从这里取 */
   useVitals(port: VitalsPort | undefined): void
+  /** 接上记忆库，镜像只往那里写 */
+  useMemory(port: SelfMirrorPort | undefined): void
+  /** 把还没镜过的三类记录写进记忆库 */
+  mirror(at?: number): MirrorResult
   /** 记一条 drive */
   recordDrive(need: DriveNeed, at: number, detail?: DriveDetail): WriteOutcome
   /** 记一条 agency */
@@ -148,6 +162,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const enabled = config.enabled ?? false
   const mainChatKey = config.mainChatKey ?? ''
   let vitals: VitalsPort | undefined
+  let memory: SelfMirrorPort | undefined
   let cache: string | undefined
   let broken = false
 
@@ -211,6 +226,22 @@ export function apply(ctx: Context, config: Config = {}): void {
     useVitals(port) {
       vitals = port
       cache = undefined
+    },
+    useMemory(port) {
+      memory = port
+    },
+    mirror(at) {
+      if (!enabled) return { written: 0, skipped: 0, overlong: 0, reason: 'disabled' }
+      if (memory === undefined) return { written: 0, skipped: 0, overlong: 0, reason: 'no_memory' }
+      return mirrorEntries({
+        store,
+        port: memory,
+        at: at ?? Date.now(),
+        scope: mainChatKey === '' ? settings.mirrorScope : mainChatKey,
+        importance: settings.mirrorImportance,
+        maxChars: settings.mirrorMaxChars,
+        evidenceMax: settings.claimEvidenceMax,
+      })
     },
     recordDrive(need, at, detail) {
       const stop = off()

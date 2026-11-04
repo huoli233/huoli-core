@@ -2,7 +2,8 @@
 
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
-import type { ChannelStatus } from './events.ts'
+import type { ChannelStatus, OutboundEvent } from './events.ts'
+import type { OutboundVerdict } from './outbound.ts'
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
@@ -12,11 +13,26 @@ export interface ChannelToolDeps {
   split: (text: string) => { parts: string[]; gapsMs: number[] }
   spend: (text: string) => void
   allow: (text: string) => { ok: boolean; code?: string; reason?: string; hint?: string }
+  /** 发之前过一遍出站体检 */
+  inspect: (chatKey: string, text: string) => OutboundVerdict
+  /** 真的发出去一条之后记一笔 */
+  account: (at: number) => void
+  /** 把这一路发生的事报给外面，只报事实 */
+  report: (event: OutboundEvent) => void
 }
 
 // 拒绝时抛错
 function refuse(code: string, error: string, hint: string): never {
   throw new Error(`${code}: ${error}｜下一步: ${hint}`)
+}
+
+// 把下次什么时候说进提示里
+function nextStep(verdict: { hint?: string; retryAt?: number }): string {
+  const hint = verdict.hint ?? '过一会儿再说'
+  if (verdict.retryAt === undefined) return hint
+  const date = new Date(verdict.retryAt)
+  const clock = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  return `${hint}（${clock} 之后再来）`
 }
 
 // 取这次调用属于哪个会话
@@ -58,11 +74,23 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
     },
     async execute(args, exec) {
       const chatKey = chatKeyOf(exec)
+      const openedAt = Date.now()
+      deps.report({ kind: 'attempt', at: openedAt, chatKey, count: 1 })
       const text = textArg(args.text, 'channel.empty', '没话可说', '要发就写点东西，不说就别调这个工具')
       if (!deps.status().connected) refuse('channel.offline', '现在没连上 QQ', '等连上再发，或者先不发作罢')
 
+      const inspection = deps.inspect(chatKey, text)
+      if (!inspection.ok) {
+        deps.report({ kind: 'blocked', at: Date.now(), chatKey, count: 0, ...inspection.code === undefined ? {} : { code: inspection.code }, ...inspection.retryAt === undefined ? {} : { retryAt: inspection.retryAt } })
+        refuse(inspection.code ?? 'outbound.blocked', inspection.reason ?? '现在不能发', nextStep(inspection))
+      }
+
       const verdict = deps.allow(text)
-      if (!verdict.ok) refuse(verdict.code ?? 'channel.blocked', verdict.reason ?? '现在不能发', verdict.hint ?? '过一会儿再说')
+      if (!verdict.ok) {
+        const code = verdict.code ?? 'channel.blocked'
+        deps.report({ kind: 'blocked', at: Date.now(), chatKey, count: 0, code })
+        refuse(code, verdict.reason ?? '现在不能发', nextStep(verdict))
+      }
 
       const planned = deps.split(text)
       const sent: string[] = []
@@ -71,11 +99,14 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
         if (!result.ok) {
           refuse(result.code ?? 'channel.send_failed', result.reason ?? '发送失败', '换一句短点的，或者等一下再发')
         }
+        const moment = Date.now()
         deps.spend(part)
+        deps.account(moment)
         sent.push(result.messageId ?? '')
         const gap = planned.gapsMs[at]
         if (gap !== undefined) await sleep(gap)
       }
+      deps.report({ kind: 'sent', at: Date.now(), chatKey, count: planned.parts.length })
       return { parts: planned.parts.length, messageIds: sent }
     },
   }))
@@ -91,7 +122,9 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args) {
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      deps.report({ kind: 'attempt', at: Date.now(), chatKey, count: 1 })
       const messageId = textArg(args.messageId, 'channel.no_target', '没说是哪条消息', '从消息列表里拿编号')
       if (!deps.status().connected) refuse('channel.offline', '现在没连上 QQ', '等连上再说')
       const emoji = textArg(args.emoji, 'channel.no_emoji', '没给表情', '给一个表情编号')

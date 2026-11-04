@@ -3,11 +3,14 @@
 import type { Context } from '@huoli/cordis'
 import { qqPacingOf, splitSpeech } from '@huoli/huoli-qq-pacing'
 import { createWsChannel, type WsChannel } from './ws.ts'
-import { toIncoming, toPoke, type ChannelStatus, type IncomingMessage, type IncomingPoke } from './events.ts'
+import { toIncoming, toPoke, type ChannelStatus, type IncomingMessage, type IncomingPoke, type OutboundEvent } from './events.ts'
+import { createOutboundCheck, OUTBOUND_DEFAULTS, type OutboundTuning } from './outbound.ts'
 import { registerChannelTools } from './tools.ts'
 
-export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, SentResult } from './events.ts'
+export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
 export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
+export type { OutboundCheck, OutboundInput, OutboundTuning, OutboundVerdict } from './outbound.ts'
+export { createOutboundCheck, OUTBOUND_DEFAULTS } from './outbound.ts'
 export type { WsChannel, WsHandlers, WsOptions } from './ws.ts'
 export { createWsChannel } from './ws.ts'
 
@@ -19,6 +22,8 @@ export interface QqChannelSeam {
   onIncoming(handler: (message: IncomingMessage) => void): () => void
   /** 收一次戳一戳，返回注销函数 */
   onPoke(handler: (poke: IncomingPoke) => void): () => void
+  /** 看发送这一路发生了什么，返回注销函数 */
+  onOutbound(handler: (event: OutboundEvent) => void): () => void
 }
 
 /** 这一行接受的配置 */
@@ -31,6 +36,24 @@ export interface Config {
   accessToken?: string
   /** 断了之后隔多久重连 */
   reconnectMs?: number
+  /** 允许发声的群编号，空表示不限制 */
+  allowGroups?: readonly string[]
+  /** 允许发声的人编号，空表示不限制 */
+  allowPeople?: readonly string[]
+  /** 一条最多几个字 */
+  maxChars?: number
+  /** 一分钟最多几条 */
+  perMinute?: number
+  /** 条数往回看的窗口 */
+  windowMs?: number
+  /** 静默时段从几点开始 */
+  quietStart?: string
+  /** 静默时段到几点结束 */
+  quietEnd?: string
+  /** 敏感词，命中就拦 */
+  banned?: readonly string[]
+  /** 白名单、长度、敏感词这三类拒绝给出的下次时间 */
+  retryMs?: number
 }
 
 const seams = new WeakMap<Context, QqChannelSeam>()
@@ -50,6 +73,21 @@ export const name = 'qq-channel'
 /** 要用的内核接口 */
 export const inject = ['tools']
 
+// 把配置摊成体检参数，没给的按默认值表走
+function resolveOutbound(config: Config): OutboundTuning {
+  return {
+    allowGroups: config.allowGroups ?? OUTBOUND_DEFAULTS.allowGroups,
+    allowPeople: config.allowPeople ?? OUTBOUND_DEFAULTS.allowPeople,
+    maxChars: Math.max(1, config.maxChars ?? OUTBOUND_DEFAULTS.maxChars),
+    perMinute: Math.max(1, config.perMinute ?? OUTBOUND_DEFAULTS.perMinute),
+    windowMs: Math.max(1, config.windowMs ?? OUTBOUND_DEFAULTS.windowMs),
+    quietStart: config.quietStart ?? OUTBOUND_DEFAULTS.quietStart,
+    quietEnd: config.quietEnd ?? OUTBOUND_DEFAULTS.quietEnd,
+    banned: config.banned ?? OUTBOUND_DEFAULTS.banned,
+    retryMs: Math.max(0, config.retryMs ?? OUTBOUND_DEFAULTS.retryMs),
+  }
+}
+
 /**
  * 装配通道与发送工具
  * @param ctx - 运行环境
@@ -58,6 +96,7 @@ export const inject = ['tools']
 export function apply(ctx: Context, config: Config): void {
   const incoming: Array<(message: IncomingMessage) => void> = []
   const pokes: Array<(poke: IncomingPoke) => void> = []
+  const outboundEvents: Array<(event: OutboundEvent) => void> = []
 
   // 注销就是把这一条从表里拿掉，卸载之后再来消息不会再找到它
   const listen = <T>(list: Array<(value: T) => void>, handler: (value: T) => void): (() => void) => {
@@ -106,8 +145,18 @@ export function apply(ctx: Context, config: Config): void {
     onPoke(handler) {
       return listen(pokes, handler)
     },
+    onOutbound(handler) {
+      return listen(outboundEvents, handler)
+    },
   }
   seams.set(ctx, seam)
+
+  const tuning = resolveOutbound(config)
+  const outbound = createOutboundCheck(tuning)
+
+  // 名单空着等于不管，但要说一次，免得以为已经在管了
+  if (tuning.allowGroups.length === 0) ctx.logger('qq-channel').info('群白名单为空，所有群都能发')
+  if (tuning.allowPeople.length === 0) ctx.logger('qq-channel').info('人白名单为空，所有人都能发')
 
   // 拆句直接用说话规矩里的纯函数，不依赖它有没有先装好
   const pacing = qqPacingOf(ctx)
@@ -123,6 +172,13 @@ export function apply(ctx: Context, config: Config): void {
     allow: (text) => {
       const verdict = pacing?.allow(text)
       return verdict !== undefined ? verdict : { ok: true }
+    },
+    inspect: (chatKey, text) => outbound.check({ chatKey, text }),
+    account: (at) => {
+      outbound.record(at)
+    },
+    report: (event) => {
+      for (const handler of outboundEvents) handler(event)
     },
   })
 

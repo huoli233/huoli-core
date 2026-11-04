@@ -1,4 +1,4 @@
-// 把各个零件装到一起：规则、每天该做的事、收消息往哪放
+// 把各个零件装到一起：规则、每天该做的事、收消息往哪放、每轮留下什么痕迹
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -6,12 +6,22 @@ import { fileURLToPath } from 'node:url'
 import type { Context } from '@huoli/cordis'
 import '@huoli/huoli-system-prompt'
 import '@huoli/huoli-agent'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
 import { qqMemoryOf } from '@huoli/huoli-qq-memory'
 import { hasWords, qqChannelOf, type IncomingMessage } from '@huoli/huoli-qq-channel'
 import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
+import { qqSelfOf } from '@huoli/huoli-qq-self'
 import { qqVitalsOf, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
+import { BUNDLE_DEFAULTS } from './defaults.ts'
+import { createDecisionLog, type DecisionBlock, type DecisionRecord } from './decisions.ts'
+import { registerToolWhitelist } from './tool-whitelist.ts'
+
+export type { DecisionBlock, DecisionLog, DecisionRecord } from './decisions.ts'
+export { createDecisionLog } from './decisions.ts'
+export { BUNDLE_DEFAULTS } from './defaults.ts'
+export { registerToolWhitelist, TOOL_WHITELIST_OPEN } from './tool-whitelist.ts'
 
 /** 这一行接受的配置 */
 export interface Config {
@@ -21,16 +31,49 @@ export interface Config {
   dailySweepHour?: number
   /** 一轮最多走几步 */
   maxSteps?: number
+  /** 去重表最多留多少条 */
+  seenMax?: number
+  /** 轮次记录放哪，不填就用主目录下的 data */
+  decisionsFile?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
+  /** 允许调用的工具名，空表示不限制 */
+  allowedTools?: readonly string[]
+}
+
+/** 排查用的接口，不进模型可见上下文 */
+export interface QqBundleSeam {
+  /** 从某一时刻起的轮次记录 */
+  decisions(sinceAt: number, limit: number): DecisionRecord[]
 }
 
 /** 插件的行名 */
 export const name = 'qq-bundle'
 
 /** 要用的内核接口 */
-export const inject = ['systemPrompt']
+export const inject = ['systemPrompt', 'tools']
 
-// 去重表只留最近这么多条，跑久了也不会一直涨
-const SEEN_MAX = 256
+// 这一轮到目前为止的事实
+interface RoundFacts {
+  at: number
+  chatKey: string
+  awake: boolean
+  reason: string | null
+  attempted: boolean
+  sent: number
+  blocked: DecisionBlock | null
+}
+
+const seams = new WeakMap<Context, QqBundleSeam>()
+
+/**
+ * 取轮次记录，未装配时为 undefined
+ * @param ctx - 运行环境
+ * @returns 排查用的接口
+ */
+export function qqBundleOf(ctx: Context): QqBundleSeam | undefined {
+  return seams.get(ctx)
+}
 
 // 规则文件的位置
 function defaultRulesPath(): string {
@@ -94,11 +137,82 @@ export function apply(ctx: Context, config: Config = {}): void {
     text: () => budgetLine(vitals),
   })
 
+  // 名单里没有的工具一律不许调，名单空着就不限制
+  registerToolWhitelist(ctx, config.allowedTools ?? BUNDLE_DEFAULTS.allowedTools)
+
+  // 每轮一条痕迹：只留事实与理由码，不碰原文
+  const decisionsFile = config.decisionsFile ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-decisions.jsonl')
+  const decisions = createDecisionLog({ file: decisionsFile })
+  const rounds = new Map<string, RoundFacts>()
+  const wakes = new Map<string, string>()
+
+  const seam: QqBundleSeam = {
+    decisions(sinceAt, limit) {
+      return decisions.read(sinceAt, limit)
+    },
+  }
+  seams.set(ctx, seam)
+
+  // 收一轮：追加一行，收完就从表里拿掉，同一轮不会写两次
+  const flush = (chatKey: string): void => {
+    const round = rounds.get(chatKey)
+    if (round === undefined) return
+    rounds.delete(chatKey)
+    try {
+      decisions.append({
+        at: round.at,
+        chatKey: round.chatKey,
+        awake: round.awake,
+        reason: round.reason,
+        attempted: round.attempted,
+        sent: round.sent,
+        blocked: round.blocked,
+      })
+    } catch (error) {
+      ctx.logger('qq-bundle').warn('轮次记录写不进去：%s', String(error))
+    }
+  }
+
+  // 手上没有这一轮就补一条空白，闸门拦下时也要能落一行
+  const roundOf = (chatKey: string, at: number): RoundFacts => {
+    const existing = rounds.get(chatKey)
+    if (existing !== undefined) return existing
+    const opened: RoundFacts = { at, chatKey, awake: false, reason: null, attempted: false, sent: 0, blocked: null }
+    rounds.set(chatKey, opened)
+    return opened
+  }
+
+  // 开一轮：把攒着的唤醒事实收进来，收完就清掉
+  const openRound = (chatKey: string, at: number): void => {
+    const reason = wakes.get(chatKey)
+    wakes.delete(chatKey)
+    rounds.set(chatKey, {
+      at,
+      chatKey,
+      awake: reason !== undefined,
+      reason: reason ?? null,
+      attempted: false,
+      sent: 0,
+      blocked: null,
+    })
+  }
+
   // 每轮最多走几步：走太多就是在空转，停掉比继续烧钱好
-  const maxSteps = Math.max(1, config.maxSteps ?? 40)
+  const maxSteps = Math.max(1, config.maxSteps ?? BUNDLE_DEFAULTS.maxSteps)
   ctx.on('agent/pre-step', async (payload, next) => {
-    if (payload.step > maxSteps) return { kind: 'reject' as const }
+    const chatKey = payload.agent.id
+    if (payload.step === 1) openRound(chatKey, Date.now())
+    if (payload.step > maxSteps) {
+      roundOf(chatKey, Date.now()).blocked = { code: 'bundle.step_cap', retryAt: null }
+      flush(chatKey)
+      return { kind: 'reject' as const }
+    }
     return next()
+  })
+
+  // 一轮结束就把这一轮的事实落成一行
+  ctx.on('agent/turn-stopping', ({ agent }) => {
+    flush(agent.id)
   })
 
   // 收消息：先记进身体，再放进注意力收件箱，顺便把当前会话记成活跃的那个
@@ -107,6 +221,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const channel = qqChannelOf(ctx)
   if (channel !== undefined) {
     // 同一条消息只认一次：按会话加编号留住最近这一段
+    const seenMax = Math.max(1, config.seenMax ?? BUNDLE_DEFAULTS.seenMax)
     const seen: string[] = []
     const seenKeys = new Set<string>()
     const firstTime = (message: IncomingMessage): boolean => {
@@ -115,7 +230,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (seenKeys.has(key)) return false
       seenKeys.add(key)
       seen.push(key)
-      if (seen.length > SEEN_MAX) {
+      if (seen.length > seenMax) {
         const oldest = seen.shift()
         if (oldest !== undefined) seenKeys.delete(oldest)
       }
@@ -124,6 +239,7 @@ export function apply(ctx: Context, config: Config = {}): void {
 
     const offIncoming = channel.onIncoming((message) => {
       if (!firstTime(message)) return
+      wakes.set(message.chatKey, 'incoming')
       if (hasWords(message.text)) vitals?.react(message.text, message.at)
       attention?.inbox.push(message.chatKey, {
         senderId: message.senderId,
@@ -134,6 +250,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       subject?.store.setActive(message.chatKey)
     })
     const offPoke = channel.onPoke((poke) => {
+      wakes.set(poke.chatKey, 'poke')
       attention?.inbox.push(poke.chatKey, {
         senderId: poke.userId,
         senderName: poke.userId,
@@ -142,22 +259,49 @@ export function apply(ctx: Context, config: Config = {}): void {
       })
       subject?.store.setActive(poke.chatKey)
     })
+    // 发送那一路只记事实：调没调、发了几条、被哪条闸门拦下
+    const offOutbound = channel.onOutbound((event) => {
+      const round = rounds.get(event.chatKey)
+      if (round === undefined) return
+      if (event.kind === 'attempt') round.attempted = true
+      else if (event.kind === 'sent') round.sent += event.count
+      else if (round.blocked === null) round.blocked = { code: event.code ?? 'outbound.blocked', retryAt: event.retryAt ?? null }
+    })
     ctx.effect(() => () => {
       offIncoming()
       offPoke()
+      offOutbound()
     })
   }
 
-  // 每天一次：把记忆往上挪一层、该淡的淡一档
+  // 每天一次：把记忆往上挪一层、该淡的淡一档，再把自我层没镜过的记录镜像进来
   const memory = qqMemoryOf(ctx)
-  const hour = Math.max(0, Math.min(23, config.dailySweepHour ?? 4))
+  const self = qqSelfOf(ctx)
+  // 镜像只往记忆库写，接上以后每日整理才会带上它
+  if (self !== undefined) self.useMemory(memory)
+  const hour = Math.max(0, Math.min(23, config.dailySweepHour ?? BUNDLE_DEFAULTS.dailySweepHour))
   const idle = setInterval(() => {
     if (new Date().getHours() !== hour) return
-    memory?.promote()
-    memory?.sweep()
+    try {
+      memory?.promote()
+      memory?.sweep()
+      // 关着的那一层不写，镜像入口自己会返回没写
+      const mirrored = self?.mirror()
+      // 镜像写入立刻入账，下一次核对才不会把它当成正文被改
+      if ((mirrored?.written ?? 0) > 0) memory?.ledger('sync')
+    } catch (error) {
+      // 每天这一步失手就记一行，别让定时器把整个进程带走
+      ctx.logger('qq-bundle').warn('每天整理没做完：%s', String(error))
+    }
   }, 60 * 60_000)
   idle.unref()
   ctx.effect(() => () => {
     clearInterval(idle)
+  })
+
+  // 卸载时把手上这一轮也落下去，别丢
+  ctx.effect(() => () => {
+    for (const chatKey of [...rounds.keys()]) flush(chatKey)
+    seams.delete(ctx)
   })
 }

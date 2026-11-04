@@ -2842,8 +2842,8 @@ export interface Config {
 
 ## `@huoli/huoli-qq-bundle`
 
-- `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:17`](../packages/qq/qq-bundle/src/index.ts)
+- `inject`: `systemPrompt` · `tools`
+- `source`: [`packages/qq/qq-bundle/src/index.ts:27`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2854,6 +2854,14 @@ export interface Config {
   dailySweepHour?: number
   /** 一轮最多走几步 */
   maxSteps?: number
+  /** 去重表最多留多少条 */
+  seenMax?: number
+  /** 轮次记录放哪，不填就用主目录下的 data */
+  decisionsFile?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
+  /** 允许调用的工具名，空表示不限制 */
+  allowedTools?: readonly string[]
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
@@ -2864,7 +2872,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:25`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:30`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2877,6 +2885,24 @@ export interface Config {
   accessToken?: string
   /** 断了之后隔多久重连 */
   reconnectMs?: number
+  /** 允许发声的群编号，空表示不限制 */
+  allowGroups?: readonly string[]
+  /** 允许发声的人编号，空表示不限制 */
+  allowPeople?: readonly string[]
+  /** 一条最多几个字 */
+  maxChars?: number
+  /** 一分钟最多几条 */
+  perMinute?: number
+  /** 条数往回看的窗口 */
+  windowMs?: number
+  /** 静默时段从几点开始 */
+  quietStart?: string
+  /** 静默时段到几点结束 */
+  quietEnd?: string
+  /** 敏感词，命中就拦 */
+  banned?: readonly string[]
+  /** 白名单、长度、敏感词这三类拒绝给出的下次时间 */
+  retryMs?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-channel -->
@@ -2925,7 +2951,7 @@ export interface Config {
 ## `@huoli/huoli-qq-memory`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-memory/src/index.ts:72`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:96`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2968,6 +2994,8 @@ export interface Tuning {
   weightFreshness: number
   /** 新鲜度按几天摊完 */
   freshnessDays: number
+  /** 镜像写进来时重要度不低于这条线 */
+  selfImportanceFloor: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-memory -->
@@ -3030,7 +3058,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:96`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:110`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3077,6 +3105,12 @@ export interface SelfSettings {
   questionPerWeekMax: number
   /** 一周多长 */
   weekMs: number
+  /** 镜像进记忆时给多少重要度 */
+  mirrorImportance: number
+  /** 一条镜像正文最多几个字 */
+  mirrorMaxChars: number
+  /** 没有主会话键时镜像落到哪个会话 */
+  mirrorScope: string
   /** 身体的四种需要 */
   driveNeeds: readonly DriveNeed[]
   /** 身份级动作清单，逐字匹配 */

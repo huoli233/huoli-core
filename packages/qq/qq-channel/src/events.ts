@@ -34,6 +34,16 @@ export interface SentResult {
   reason?: string
 }
 
+/** 发送这一路发生的事，只给排查用，不带原文 */
+export interface OutboundEvent {
+  kind: 'attempt' | 'sent' | 'blocked'
+  at: number
+  chatKey: string
+  count: number
+  code?: string
+  retryAt?: number
+}
+
 /** 连接状态 */
 export interface ChannelStatus {
   connected: boolean

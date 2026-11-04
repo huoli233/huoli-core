@@ -119,6 +119,52 @@ export interface CommitmentInput {
   dueAt?: number
 }
 
+/** 镜像的条目归哪一类，与三份来源文件一一对应 */
+export type MirrorKind = 'claim' | 'project' | 'commitment'
+
+/** 交给记忆库镜像的一条 */
+export interface SelfMirrorEntry {
+  /** 镜像正文 */
+  text: string
+  /** 记到哪个会话 */
+  chatKey: string
+  /** 来源文件加序号，形如 `claims.jsonl#3` */
+  selfId: string
+  /** 哪一类来源 */
+  selfKind: MirrorKind
+  /** 一到三条记忆编号或日期 */
+  evidence: readonly string[]
+  /** 这条给多少重要度 */
+  importance?: number
+}
+
+/** 记忆库写回的结果 */
+export interface SelfMirrorWrite {
+  /** 那一条的编号 */
+  id: string
+  /** 是这次新写的还是早就镜过的 */
+  created: boolean
+}
+
+/** 记忆库露给镜像的那一面 */
+export interface SelfMirrorPort {
+  /** 已经镜过的来源键 */
+  mirroredSelfIds(): readonly string[]
+  /** 写一条镜像，同一个来源键只写一次 */
+  rememberSelf(entry: SelfMirrorEntry, at: number): SelfMirrorWrite
+}
+
+/** 一次镜像的交代 */
+export interface MirrorResult {
+  /** 这次新写进去几条 */
+  written: number
+  /** 已经镜过而跳过的条数 */
+  skipped: number
+  /** 超过一条上限没写的条数 */
+  overlong: number
+  /** 一条都没写时为什么 */
+  reason?: 'disabled' | 'no_memory'
+}
 
 /** 一次钥匙判定 */
 export interface KeysDecision {
@@ -229,6 +275,12 @@ export interface SelfSettings {
   questionPerWeekMax: number
   /** 一周多长 */
   weekMs: number
+  /** 镜像进记忆时给多少重要度 */
+  mirrorImportance: number
+  /** 一条镜像正文最多几个字 */
+  mirrorMaxChars: number
+  /** 没有主会话键时镜像落到哪个会话 */
+  mirrorScope: string
   /** 身体的四种需要 */
   driveNeeds: readonly DriveNeed[]
   /** 身份级动作清单，逐字匹配 */

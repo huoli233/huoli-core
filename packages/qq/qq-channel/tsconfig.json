@@ -20,6 +20,9 @@
     },
     {
       "path": "../qq-pacing"
+    },
+    {
+      "path": "../qq-proactive"
     }
   ]
 }

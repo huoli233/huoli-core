@@ -30,6 +30,8 @@ export interface Tuning {
   weightFreshness: number
   /** 新鲜度按几天摊完 */
   freshnessDays: number
+  /** 镜像写进来时重要度不低于这条线 */
+  selfImportanceFloor: number
 }
 
 /** 全包唯一的默认值表 */
@@ -48,6 +50,8 @@ export const DEFAULTS: Tuning = {
   weightImportance: 0.15,
   weightFreshness: 0.1,
   freshnessDays: 7,
+  // 镜像进来的事是自我层认定要记住的，落在保护线之上
+  selfImportanceFloor: 80,
 }
 
 /** 截断时清晰度的分量，越清楚越靠前 */

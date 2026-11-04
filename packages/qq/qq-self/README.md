@@ -33,7 +33,9 @@ kind: "package-reference"
 
 ## Known Limitations and Deferred Work
 
-- 记忆镜像没做：规范要求先给 `qq-memory` 的条目加 `source=self` 与 `metadata` 两项前置，两项都还没加，本刀既不写记忆库，也不新造平行入口。
+- 记忆镜像只镜 `claims.jsonl`、`projects.jsonl`、`commitments.jsonl` 三类，`day.jsonl`、`questions.jsonl`、`ledger.jsonl`、`errors.jsonl`、`panel.md`、`narrative.md` 一律不进记忆库；去重认来源键（文件加序号），同一条改过正文也不会再镜一次。
+- 镜像的证据只取行内 `evidence`，没有就挂这一行的日期，不回头查记忆编号是否真实存在。
+- 一条正文超过 `mirrorMaxChars`（默认 500）的条目不写，只计入 `overlong`，没有拆成多条。
 - 面板的"此刻"留了 `useVitals()` 端口，本刀没在装配层接线：要把身体那段话压成面板能用的"一句"，得先定压法，这一步留给下一刀。
 - `narrative.md`、`day.jsonl`、`errors.jsonl`、`versions/` 没做，本刀只管面板、两档账、钥匙与 `PAUSE`。
 - `PAUSE` 下 `drive` 也降级为只提议，与规范里"`drive` 照旧"不同；这一版按"暂停时所有写入只提议，不落盘"实现。
@@ -45,4 +47,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.settings` 能逐项覆盖；`SELF_DIR` 默认落在数据根目录的 `data/qq-self/`，`Config.dir` 整体替换它。模块分工：目录读写与原子覆盖在 `src/store.ts`（事件流只追加，单值内容先写临时文件再改名），面板排版与预算在 `src/panel.ts`，宪法八条在 `src/constitution.ts`，两档账在 `src/ledger.ts`，钥匙判定在 `src/keys.ts`，行字段的读取判据在 `src/rows.ts`。`Config.enabled` 默认关：关着时不注册提示词段，也不建目录、不写文件，所有写入口返回 `disabled`。面板在进程内定稿一次，跨进程用 `panel.md` 的修改时间判一天窗口，同一会话第 1 轮与第 7 轮逐字相同。
+参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.settings` 能逐项覆盖；`SELF_DIR` 默认落在数据根目录的 `data/qq-self/`，`Config.dir` 整体替换它。模块分工：目录读写与原子覆盖在 `src/store.ts`（事件流只追加，单值内容先写临时文件再改名），面板排版与预算在 `src/panel.ts`，宪法八条在 `src/constitution.ts`，两档账在 `src/ledger.ts`，钥匙判定在 `src/keys.ts`，行字段的读取判据在 `src/rows.ts`，镜像在 `src/mirror.ts`。镜像的那一面由装配层用 `useMemory(port)` 接上（`port` 只需要"已经镜过的来源键"与"写一条"两件事，`qq-memory` 的装配结果按结构直接满足），关着或没接上时 `mirror()` 只回 `disabled` / `no_memory`，一条都不写。`Config.enabled` 默认关：关着时不注册提示词段，也不建目录、不写文件，所有写入口返回 `disabled`。面板在进程内定稿一次，跨进程用 `panel.md` 的修改时间判一天窗口，同一会话第 1 轮与第 7 轮逐字相同。

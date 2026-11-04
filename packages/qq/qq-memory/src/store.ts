@@ -9,7 +9,7 @@ import {
   retention,
   type Clarity,
 } from '@huoli/huoli-qq-policy'
-import { newId, type MemoryItem, type MemoryLayer } from './types.ts'
+import { newId, MEMORY_SOURCES, type MemoryItem, type MemoryLayer } from './types.ts'
 
 /** 存文件的选项 */
 export interface MemoryStoreOptions {
@@ -34,8 +34,6 @@ interface StoredMemory {
 }
 
 const LAYERS: readonly MemoryLayer[] = ['ephemeral', 'episodic', 'semantic', 'private']
-
-const SOURCES: readonly MemoryItem['source'][] = ['chat', 'tool', 'proactive', 'manual']
 
 // 认得出是一个对象
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -87,7 +85,7 @@ function normalizeItem(raw: Record<string, unknown>, now: number): MemoryItem {
     at,
     lastSeenAt,
     forgotten: raw.forgotten === true || clarity === 'forgotten',
-    source: pick(raw.source, SOURCES, 'chat'),
+    source: pick(raw.source, MEMORY_SOURCES, 'chat'),
     metadata: isRecord(raw.metadata) ? raw.metadata : {},
     ...personId === undefined ? {} : { personId },
   }
