@@ -1,6 +1,7 @@
 // 十个派生量加常用标签：派生量只算一次，别处只读
 
 import { biasUnit, type Tuning } from './defaults.ts'
+import { mixOf } from './emotion.ts'
 import { above, clamp, clampRange } from './math.ts'
 import { deltaOf, propagate, type NetworkPass } from './network.ts'
 import type { CyclePhase, VitalsState } from './types.ts'
@@ -244,12 +245,15 @@ export function derive(state: VitalsState, tuning: Tuning): VitalsState {
   next.sadness = clamp(sorrowScore(state))
   next.proactive_bias = proactiveBiasOf(next, tuning)
   next.post_want = postWantOf(next, tuning)
-  const ranked = [...labelScores(next, tuning)]
+  const picked = [...labelScores(next, tuning)]
     .filter(entry => entry[1] > tuning.labelThreshold)
     .sort((left, right) => right[1] - left[1])
     .slice(0, Math.max(1, tuning.labelCount))
-    .map(entry => entry[0])
-  next.emotion_candidates = ranked
-  next.emotion_level = ranked[0] ?? '平静'
+  next.emotion_candidates = picked.map(entry => entry[0])
+  next.emotion_level = next.emotion_candidates[0] ?? '平静'
+  // 混合层只读这批分数，写回的是两段展示字段，不碰任何生理值
+  const mix = mixOf(picked, next, tuning)
+  next.emotion_blend = mix.blend
+  next.emotion_why = mix.why
   return next
 }

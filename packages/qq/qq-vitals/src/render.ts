@@ -89,6 +89,18 @@ function styleNote(state: VitalsState, tuning: Tuning): string {
   return '这次照平常说，别端着。'
 }
 
+// 一路压过其余时话更短；几路掺在一起时话说得断
+const FOCUS_TONE = '语气：句子短一点，说完一句就停，中间留个空，不用解释。'
+const SPLIT_TONE = '语气：话说得跳一点，先半句，停一下再补半句，别把话说圆。'
+
+// 混合层到语气的那一行只讲怎么演，不提情绪名、权重与来由；开关关着或没有混合层时整行不出现
+function toneNote(state: VitalsState, tuning: Tuning): string {
+  if (!tuning.emotionToneEnabled) return ''
+  if (state.emotion_blend.length === 0) return ''
+  const line = state.emotion_blend.length === 1 ? FOCUS_TONE : SPLIT_TONE
+  return line.slice(0, Math.max(20, tuning.emotionToneMaxChars))
+}
+
 // 标签那两行
 function labelNote(state: VitalsState): string {
   const picked = state.emotion_candidates.length > 0 ? state.emotion_candidates.join('、') : '平静'
@@ -155,6 +167,7 @@ function optionalNote(state: VitalsState, tuning: Tuning): string {
  */
 export function renderPrompt(state: VitalsState, tuning: Tuning, variant = 0): string {
   const tail = TAILS[variant % TAILS.length] ?? TAILS[0] ?? ''
+  const tone = toneNote(state, tuning)
   const optional = optionalNote(state, tuning)
   const text = [
     HEADER,
@@ -164,6 +177,7 @@ export function renderPrompt(state: VitalsState, tuning: Tuning, variant = 0): s
     `你身体的感受：${bodyNote(state)}`,
     `你心里的感受：${heartNote(state, tuning)}`,
     `表现：${styleNote(state, tuning)}`,
+    ...(tone === '' ? [] : [tone]),
     ...(optional === '' ? [] : [`眼下的情况：${optional}`]),
     '怕和担心只在被触发时出现；平时不提生死，也不拿生死当撒娇手段。',
     tail,

@@ -120,6 +120,11 @@ export const DEFAULTS: Tuning = {
   promptMaxChars: 300,
   labelThreshold: 0.40,
   labelCount: 3,
+  // 混合层：默认只读展示，语气那一行要显式打开
+  emotionToneEnabled: false,
+  emotionBlendCount: 3,
+  emotionBlendWeightFrom: 0.15,
+  emotionToneMaxChars: 60,
   // 反向压制：每条触发线的阈值与乘数
   suppressFearFrom: 0.45,
   suppressFearCalm: 0.55,
@@ -525,6 +530,8 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     post_want: clamp(tuning.postStart),
     emotion_level: '平静',
     emotion_candidates: [],
+    emotion_blend: [],
+    emotion_why: '',
     sleep_state: 'awake',
     asleep: false,
     sleep_kind: '',

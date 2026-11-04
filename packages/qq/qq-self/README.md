@@ -38,7 +38,10 @@ kind: "package-reference"
 - 一条正文超过 `mirrorMaxChars`（默认 500）的会拆成几条写，来源键接序号（形如 `claims.jsonl#3-1`）；拆开的几条共用同一份证据与重要度，召回与召回计数都按条算，不合并回一条。
 - 判据三与判据四只出违规清单（`audit(now)`），每日维护把它写进日志；不拦新项目，也不改已有行的 `outcome`。
 - 面板的"此刻"由装配层用 `useVitals(momentPort(vitals))` 接线，`momentPort()` 每次取都现压一句（取第一行主体、去掉括号与编号、超长截断）；不接就只有项目与问句那两行。
-- 只读出口 `panelText(chatKey)` 读 `panel.md` 正文、`panelGeneratedAt(chatKey)` 读首行的 `generated_at`：两者都不重算、不写盘，`Config.mainChatKey` 之外的会话拿到空串（没配主会话时不按会话过滤）。HTTP 出口还没接。
+- 只读出口 `panelText(chatKey)` 读 `panel.md` 正文、`panelGeneratedAt(chatKey)` 读首行的 `generated_at`：两者都不重算、不写盘，`Config.mainChatKey` 之外的会话拿到空串（没配主会话时不按会话过滤）。
+- HTTP 出口只在 `Config.panelPort` 非零且这一层开着时起，只绑 `127.0.0.1`，只有 `GET /`、`GET /api/state`、`GET /api/health` 三个路由：别的路径回 404、别的方法回 405，`Host` 不是 `127.0.0.1` 或 `localhost` 的回 403（防域名重绑），三个路由都不写文件、不改状态。没有鉴权，本机任何进程都能读，所以它只适合在本机看，不能当对外服务。
+- 端口默认 0（不监听）；被占或监听失手只记一行 warn 并降级为不监听，别的功能照旧；不是 0 到 65535 的整数也按不开算并记一行。卸载时等服务真关掉才算完，关完那个端口立刻能再绑；`QqSelfSeam.panelPort()` 给实际绑上的端口，没开时为 0。
+- `/api/state` 只有五样：`panel`（正文与生成时间）、`identity`（三档主张、理由与时刻，没写过时整个字段省掉）、`ledger`（drive 与 agency 与近七天 agency 条数）、`days`（近七天每天三行）、`health`（健康一行）。用户原文、记忆正文与 `keys.jsonl` 的钥匙记录一律不进去，目录里别的东西也不读。面板还没生成时 `panel.md` 那两份值按目录现画一份（只算不写盘），`generatedAt` 为空串。
 - 离线生成只有 `scripts/panel.ts` 一条命令，它读状态文件、只写 `panel.md`、把路径打在标准输出上，不注入也不改状态。
 - 叙事、每天三行、错题、周复盘只有 `QqSelfSeam` 上的读写入口，没有对应的工具与提示词入口，主会话暂时还不能自己往这些文件里写。
 - 叙事只有固定的五章：章名逐字对不上就回 `unknown_chapter`，写一次只动那一章，其余章与没写的章留占位；面板与叙事每次被重写前，旧文件按原始字节存进 `versions/`，名字形如 `panel-20261104-1830.md`（本地时间到分钟，同一分钟再存一份就加序号），`versionsKeep` 默认 20 份、超出的最旧先删。
@@ -58,9 +61,11 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.settings` 能逐项覆盖；`SELF_DIR` 默认落在数据根目录的 `data/qq-self/`，`Config.dir` 整体替换它，`resolveSelfDir()` 是唯一算它的地方。文件名只在 `src/files.ts` 的 `FILES` 里写一次。模块分工：目录读写与原子覆盖在 `src/store.ts`（事件流只追加，单值内容先写临时文件再改名，面板与叙事重写前留旧版），面板排版与预算在 `src/panel.ts`，此刻的压句在 `src/moment.ts`，只读目录画面板与离线生成在 `src/generate.ts`，叙事五章在 `src/narrative.ts`，每天三行在 `src/day.ts`，错题在 `src/errors.ts`，身份主张在 `src/identity.ts`，周复盘在 `src/review.ts`，宪法八条在 `src/constitution.ts`，两档账在 `src/ledger.ts`，钥匙判定在 `src/keys.ts`，三类公共动作的分级判定在 `src/grade.ts`，行字段的读取判据在 `src/rows.ts`，镜像在 `src/mirror.ts`。
+参数集中在 `src/defaults.ts` 的 `DEFAULTS`，`Config.settings` 能逐项覆盖；`SELF_DIR` 默认落在数据根目录的 `data/qq-self/`，`Config.dir` 整体替换它，`resolveSelfDir()` 是唯一算它的地方。文件名只在 `src/files.ts` 的 `FILES` 里写一次。模块分工：目录读写与原子覆盖在 `src/store.ts`（事件流只追加，单值内容先写临时文件再改名，面板与叙事重写前留旧版），面板排版与预算在 `src/panel.ts`，此刻的压句在 `src/moment.ts`，只读目录画面板与离线生成在 `src/generate.ts`，叙事五章在 `src/narrative.ts`，每天三行在 `src/day.ts`，错题在 `src/errors.ts`，身份主张在 `src/identity.ts`，周复盘在 `src/review.ts`，宪法八条在 `src/constitution.ts`，两档账在 `src/ledger.ts`，钥匙判定在 `src/keys.ts`，三类公共动作的分级判定在 `src/grade.ts`，行字段的读取判据在 `src/rows.ts`，镜像在 `src/mirror.ts`，只读出口的内容在 `src/panel-state.ts`，HTTP 服务与那一页在 `src/panel-http.ts`。
 
 面板的来源只有两处：此刻只问 `VitalsPort.render()`，项目与问句只问目录；`panelFromStore(store, settings, moment?)` 把这件事说全，注入路径与离线命令共用它。离线生成跑 `node --import tsx packages/qq/qq-self/scripts/panel.ts [--dir <SELF_DIR>]`，不给 `--dir` 就落在数据根目录下的 `data/qq-self/`，别的参数一律拒绝；它不经过提示词，也不需要装配上下文。
+
+只读出口在 `panel-http.ts`：`startPanelHttp({ port, state, warn })` 只绑 `127.0.0.1`，`close()` 之后连还挂着的连接一起断；监听失手走 `error` 事件，记一行就回 `undefined`，调用方不用 try。`panelPage(state)` 把她的原话全部转义，样式内联、没有外部资源，`meta refresh` 十秒一次；`answer()` 只认 GET 的三个路径。装配层每次请求现算一份内容，`panelStateOf()` 只从 `panel.md`、`identity.jsonl`、`day.jsonl`、`ledger.jsonl` 与项目行里取，不碰 `keys.jsonl`，也不写盘：面板不在时按目录现画一份，`generatedAt` 留空。
 
 版本在 `store.ts` 里落地：面板走 `writePanel`、叙事走 `writeText`，两条都在改名覆盖之前把旧文件按原始字节抄进 `versions/`，版本名由本地时间到分钟拼成（`panel-20261104-1830.md`），同一分钟的第二份接 `-2`；滚动只数本种类的文件，超出的按名字里的时间从旧到新删。`rollback(kind, name)` 先校验名字属于该种类、文件存在且内容非空，再把当前那份（坏的、空的也算）存成新版本、最后原子写回正本，返回 `{ restoredFrom, savedCurrent }`；`verifyAfterRollback(kind, name)` 比原始字节，返回是否逐字相同与首处不同的行号（从 1 起，全同为 0）。
 

@@ -467,6 +467,30 @@ export interface WeeklyReview {
   identity: IdentityRow | undefined
 }
 
+/** 只读出口里一天的那三行 */
+export interface PanelDayRow {
+  /** 记下的时刻 */
+  at: number
+  /** 三行正文，跳过的那天是三条空串 */
+  lines: readonly string[]
+  /** 今天跳过了没有 */
+  skipped: boolean
+}
+
+/** 只读出口露出去的全部内容：只有她自己的话与计数，没有用户原文、记忆正文与钥匙记录 */
+export interface PanelState {
+  /** 面板正文与首行记的生成时间，还没生成时两个都是空串 */
+  panel: { body: string; generatedAt: string }
+  /** 当前身份主张，一条都没写过时不给 */
+  identity?: { claim: IdentityClaim; why: string; at: number }
+  /** 两档账汇总，两档从不相加 */
+  ledger: LedgerSummary
+  /** 最近七天的三行，按时间先后 */
+  days: readonly PanelDayRow[]
+  /** 健康一行，永远只有一行 */
+  health: string
+}
+
 /** 宪法一条 */
 export interface ConstitutionClause {
   /** 第几条 */

@@ -102,6 +102,18 @@ export interface Baseline {
   scar: number
 }
 
+/** 混合层的一条：只给面板与排障读，不进提示词正文，不写记忆，也不改生理值 */
+export interface EmotionBlend {
+  /** 标签名，取自这一轮的候选 */
+  key: string
+  /** 归一后的权重，几条加起来是一 */
+  weight: number
+  /** 这条标签自己的半衰期，分钟，零表示它不按半衰自己消 */
+  half_min: number
+  /** 一句来由，取自这条标签打分里贡献最大的那一项 */
+  why: string
+}
+
 /** 最近一次尝到或喝到的东西 */
 export interface TasteRecord {
   name: string
@@ -130,6 +142,10 @@ export interface VitalsState extends Baseline {
   post_want: number
   emotion_level: string
   emotion_candidates: string[]
+  /** 混合层的几条，按分数从高到低，只读展示用 */
+  emotion_blend: EmotionBlend[]
+  /** 混合层的一句人读说明，只读展示用 */
+  emotion_why: string
   /** 睡眠三态，睡着期间身体照常漂移，交互只剩被吵醒一种 */
   sleep_state: SleepState
   /** 睡着这一态的布尔投影，给只读这段状态的下游用，写的地方只有一处 */
@@ -295,6 +311,18 @@ export interface EmotionTuning {
   promptResentFrom: number
   /** 死亡威胁高过这条线换说法，0~1 标度，默认 0.25 */
   promptMortalityFrom: number
+}
+
+/** 混合层与语气提示的参数：开关、条数、权重下限与那一行的字数上限 */
+export interface EmotionBlendTuning {
+  /** 混合层的语气提示要不要进提示词，默认 false；关着时渲染结果与没这一层时逐字相同 */
+  emotionToneEnabled: boolean
+  /** 混合层最多取几条，默认 3，按标签分数从高到低取 */
+  emotionBlendCount: number
+  /** 归一后权重低于这条线的不进混合层，0~1 标度，默认 0.15，头一条一直被留着 */
+  emotionBlendWeightFrom: number
+  /** 语气提示那一行最多多少字，默认 60，至少留 20 字 */
+  emotionToneMaxChars: number
 }
 
 /** 反向压制：一个触发条件配几条压下去的系数，全部是标签打分的乘数 */

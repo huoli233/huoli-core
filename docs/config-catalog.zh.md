@@ -3171,7 +3171,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:213`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:224`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3184,6 +3184,8 @@ export interface Config {
   huoliHome?: string
   /** 主会话的键，不配就哪个会话都不注入 */
   mainChatKey?: string
+  /** 只读面板出口绑哪个端口，默认 0 表示不开；开了只绑回环地址，没有鉴权 */
+  panelPort?: number
   /** 想改哪些默认参数 */
   settings?: Partial<SelfSettings>
 }
@@ -3314,7 +3316,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:84`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:86`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3328,7 +3330,8 @@ export interface Config {
 }
 
 /** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
-export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning {
+export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning,
+  EmotionBlendTuning {
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -4081,6 +4084,18 @@ export interface ScarTuning {
   scarSuppressJoy: number
   /** 疤痕高过这条线，提示词里多一句，0~1 标度，默认 0.70 */
   promptScarFrom: number
+}
+
+/** 混合层与语气提示的参数：开关、条数、权重下限与那一行的字数上限 */
+export interface EmotionBlendTuning {
+  /** 混合层的语气提示要不要进提示词，默认 false；关着时渲染结果与没这一层时逐字相同 */
+  emotionToneEnabled: boolean
+  /** 混合层最多取几条，默认 3，按标签分数从高到低取 */
+  emotionBlendCount: number
+  /** 归一后权重低于这条线的不进混合层，0~1 标度，默认 0.15，头一条一直被留着 */
+  emotionBlendWeightFrom: number
+  /** 语气提示那一行最多多少字，默认 60，至少留 20 字 */
+  emotionToneMaxChars: number
 }
 
 /** 初始值与漂移都要用到的数值字段，除体温外都是 0~1；情绪九项只给起点，之后由触发与半衰管 */

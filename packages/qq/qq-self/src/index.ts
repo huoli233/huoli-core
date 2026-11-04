@@ -13,7 +13,9 @@ import { requireKeys as decideKeys } from './keys.ts'
 import { createLedger } from './ledger.ts'
 import { mirrorEntries } from './mirror.ts'
 import { readNarrative as narrativeText, seedNarrative as seedNarrativeFile, updateNarrative as writeNarrative } from './narrative.ts'
-import { panelStamp } from './panel.ts'
+import { startPanelHttp, type PanelHttp } from './panel-http.ts'
+import { panelStateOf } from './panel-state.ts'
+import { panelBody, panelStamp } from './panel.ts'
 import { toProject } from './rows.ts'
 import { weeklyReview as summarizeWeek } from './review.ts'
 import { createSelfStore, newId } from './store.ts'
@@ -30,6 +32,7 @@ import type {
   LedgerSummary,
   LedgerViolation,
   MirrorResult,
+  PanelState,
   ProjectInput,
   RollbackCheck,
   RollbackOutcome,
@@ -57,6 +60,10 @@ export type { MirrorInput } from './mirror.ts'
 export { compressMoment, momentPort } from './moment.ts'
 export type { MomentOptions } from './moment.ts'
 export { NARRATIVE_CHAPTERS, narrativeSkeleton, readNarrative, seedNarrative, updateNarrative } from './narrative.ts'
+export { panelPage, startPanelHttp } from './panel-http.ts'
+export type { PanelHttp, PanelHttpOptions } from './panel-http.ts'
+export { panelStateOf } from './panel-state.ts'
+export type { PanelStateInput } from './panel-state.ts'
 export { panelBody, panelFile, panelStamp, renderPanel } from './panel.ts'
 export { weeklyReview } from './review.ts'
 export type { ReviewOptions } from './review.ts'
@@ -90,8 +97,10 @@ export type {
   LedgerViolation,
   MirrorKind,
   MirrorResult,
+  PanelDayRow,
   PanelInput,
   PanelLabels,
+  PanelState,
   PostLevelFacts,
   PrivateFacts,
   ProjectInput,
@@ -124,6 +133,8 @@ export interface QqSelfSeam {
   panelText(chatKey: string): string
   /** 面板首行记的生成时间，只读缓存文件 */
   panelGeneratedAt(chatKey: string): string
+  /** 只读出口现在绑在哪个端口，没开时为 0 */
+  panelPort(): number
   /** 接上身体，面板的此刻只从这里取 */
   useVitals(port: VitalsPort | undefined): void
   /** 接上记忆库，镜像只往那里写 */
@@ -219,6 +230,8 @@ export interface Config {
   huoliHome?: string
   /** 主会话的键，不配就哪个会话都不注入 */
   mainChatKey?: string
+  /** 只读面板出口绑哪个端口，默认 0 表示不开；开了只绑回环地址，没有鉴权 */
+  panelPort?: number
   /** 想改哪些默认参数 */
   settings?: Partial<SelfSettings>
 }
@@ -257,10 +270,15 @@ export function apply(ctx: Context, config: Config = {}): void {
   const ledger = createLedger({ store, settings })
   const enabled = config.enabled ?? false
   const mainChatKey = config.mainChatKey ?? ''
+  // 出口的端口只认 0 到 65535 的整数，别的写法按不开算
+  const wantedPort = config.panelPort ?? 0
+  const panelPort = Number.isInteger(wantedPort) && wantedPort >= 0 && wantedPort <= 65_535 ? wantedPort : 0
   let vitals: VitalsPort | undefined
   let memory: SelfMirrorPort | undefined
   let cache: string | undefined
   let broken = false
+  let panel: PanelHttp | undefined
+  let unloaded = false
 
   // 画一份新面板：此刻只问身体，其余只问目录
   const build = (): string => {
@@ -290,6 +308,22 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 停手期间第二个写入一律只提议
   const held = (): WriteOutcome | undefined => store.paused() ? { written: false, proposed: true, reason: 'paused' } : undefined
 
+  // 只读出口每次现算一份：只读目录，不写盘，也不碰提示词那一段的缓存
+  const panelStateNow = (now: number): PanelState => {
+    const text = store.readText(FILES.panel)
+    const kept = text === undefined ? '' : panelBody(text)
+    const stamp = text === undefined ? '' : panelStamp(text)
+    const moment = vitals === undefined ? undefined : vitals.render()
+    return panelStateOf({
+      store,
+      settings,
+      now,
+      panel: kept === '' ? panelFromStore(store, settings, moment) : kept,
+      generatedAt: kept === '' ? '' : stamp,
+      ledger: ledger.summary(now),
+    })
+  }
+
   // 只有主会话键对得上才给读面板，没配主会话就不按会话过滤
   const mine = (chatKey: string): boolean => mainChatKey === '' || chatKey === mainChatKey
 
@@ -316,6 +350,9 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (!enabled || !mine(chatKey)) return ''
       const text = store.readText(FILES.panel)
       return text === undefined ? '' : panelStamp(text)
+    },
+    panelPort() {
+      return panel === undefined ? 0 : panel.port
     },
     useVitals(port) {
       vitals = port
@@ -535,6 +572,27 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
   seams.set(ctx.root, seam)
 
+  // 只读出口：只绑回环地址，这一层关着或端口是 0 就一个都不开
+  if (enabled && panelPort === 0 && wantedPort !== 0) {
+    ctx.logger('qq-self').warn('只读出口的端口 %s 认不出来，这一次不开', String(wantedPort))
+  }
+  const opening = enabled && panelPort > 0
+    ? startPanelHttp({
+      port: panelPort,
+      state: panelStateNow,
+      warn: (message) => { ctx.logger('qq-self').warn('%s', message) },
+    })
+    : Promise.resolve(undefined)
+  // 起来的那一下才记下端口；卸载先到就当场关掉，绝不留一个在听的端口
+  void opening.then((started) => {
+    if (started === undefined) return
+    if (unloaded) {
+      void started.close()
+      return
+    }
+    panel = started
+  })
+
   // 只给主会话注入这一段，其它会话拿到空串
   if (enabled) {
     ctx.systemPrompt.section({
@@ -558,6 +616,9 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
 
   ctx.effect(() => () => {
+    unloaded = true
     seams.delete(ctx.root)
+    // 卸载时把出口关掉：等它起完再关，关完那个端口就空出来了
+    return opening.then(started => started === undefined ? undefined : started.close())
   })
 }

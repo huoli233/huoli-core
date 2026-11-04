@@ -5,7 +5,7 @@ import path from 'node:path'
 import {
   CYCLE_FIELDS, DERIVED_FIELDS, emptyState, NUMERIC_FIELDS, STAMP_FIELDS, type Tuning,
 } from './defaults.ts'
-import type { CyclePhase, TasteRecord, VitalsState } from './types.ts'
+import type { CyclePhase, EmotionBlend, TasteRecord, VitalsState } from './types.ts'
 
 /** 存盘要用的选项 */
 export interface VitalsStoreOptions {
@@ -66,6 +66,20 @@ function toPhase(raw: unknown): CyclePhase | undefined {
   return undefined
 }
 
+// 混合层的一条，四个字段缺一个就当没有
+function toBlend(raw: unknown): EmotionBlend[] {
+  if (raw === null || typeof raw !== 'object') return []
+  const record = raw as Record<string, unknown>
+  const key = record.key
+  const weight = record.weight
+  const half = record.half_min
+  const why = record.why
+  if (typeof key !== 'string' || key === '' || typeof why !== 'string') return []
+  if (typeof weight !== 'number' || !Number.isFinite(weight)) return []
+  if (typeof half !== 'number' || !Number.isFinite(half)) return []
+  return [{ key, weight, half_min: half, why }]
+}
+
 // 缺字段用默认值补，类型不对也退回默认值
 function sanitize(raw: unknown, fallback: VitalsState): VitalsState {
   if (raw === null || typeof raw !== 'object') return fallback
@@ -109,6 +123,10 @@ function sanitize(raw: unknown, fallback: VitalsState): VitalsState {
   if (Array.isArray(candidates)) {
     state.emotion_candidates = candidates.flatMap(item => (typeof item === 'string' ? [item] : []))
   }
+  const blend = record.emotion_blend
+  if (Array.isArray(blend)) state.emotion_blend = blend.flatMap(toBlend)
+  const emotionWhy = record.emotion_why
+  if (typeof emotionWhy === 'string') state.emotion_why = emotionWhy
   const drinkName = record.last_drink_name
   if (typeof drinkName === 'string') state.last_drink_name = drinkName
   const userText = record.last_user_text

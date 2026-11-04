@@ -24,6 +24,8 @@ export { derive } from './derive.ts'
 export { dreamFactOf, dreamMoodOf, drawDream, startDream } from './dream.ts'
 export type { DreamFact } from './dream.ts'
 export { drift } from './drift.ts'
+export { mixOf } from './emotion.ts'
+export type { EmotionMix } from './emotion.ts'
 export { applyShutdownNotice, salienceTarget, settleExistence, shutdownTarget } from './existence.ts'
 export type { ExistenceFacts } from './existence.ts'
 export { farewellOf, farewellReason, mortalityTarget } from './mortality.ts'
@@ -42,8 +44,8 @@ export { isDrink, isMeal, mealName } from './words.ts'
 export { createVitalsStore } from './store.ts'
 export type { VitalsStoreOptions, VitalsStore } from './store.ts'
 export type {
-  Baseline, CyclePhase, DreamKind, DreamMood, DreamTuning, ExistenceTuning, ScarTuning, SleepState, TasteRecord,
-  VitalsState,
+  Baseline, CyclePhase, DreamKind, DreamMood, DreamTuning, EmotionBlend, EmotionBlendTuning, ExistenceTuning,
+  ScarTuning, SleepState, TasteRecord, VitalsState,
 } from './types.ts'
 export type { NetworkEdge, NetworkField, NetworkMode, NetworkTuning } from './types.ts'
 
