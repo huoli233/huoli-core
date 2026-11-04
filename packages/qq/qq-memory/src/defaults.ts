@@ -44,6 +44,8 @@ export interface Tuning extends DecayParams, RecoverParams {
   minTextChars: number
   /** 一条正文长过这几个字要求拆分，不入队 */
   maxTextChars: number
+  /** 新写入算出的重要度低于这条线就丢掉，1 到 100 与重要度同刻度 */
+  writeMinImportance: number
   /** 待写队列最多压几条，满了先丢最旧的 */
   queueMax: number
   /** 每几轮把队列排空一次 */
@@ -92,6 +94,8 @@ export const DEFAULTS: Tuning = {
   selfImportanceFloor: 80,
   minTextChars: 4,
   maxTextChars: 500,
+  // 门槛只管新写入：算出来不到这一分的事不值得占掉一条记忆
+  writeMinImportance: 10,
   queueMax: 200,
   flushEveryTurns: 4,
   reflectEveryTurns: 10,

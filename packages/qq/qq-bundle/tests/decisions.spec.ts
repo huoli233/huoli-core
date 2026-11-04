@@ -93,7 +93,13 @@ async function mount(patch: { banned?: readonly string[] } = {}): Promise<Mounte
   await ctx.plugin(SystemPrompt, {})
   applyAttention(ctx, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyMemory(ctx, { file: path.join(dir, 'memory.json'), healthLogFile: path.join(dir, 'health.log') })
+  // 队列与账本也落在临时目录里：每轮收尾会推一拍队列，别去碰主目录那份
+  applyMemory(ctx, {
+    file: path.join(dir, 'memory.json'),
+    ledgerFile: path.join(dir, 'ledger.json'),
+    healthLogFile: path.join(dir, 'health.log'),
+    queueFile: path.join(dir, 'queue.json'),
+  })
   applyChannel(ctx, {
     url: 'ws://127.0.0.1:6700',
     selfId: '999',

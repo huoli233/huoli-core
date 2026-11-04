@@ -2998,7 +2998,7 @@ export interface Config {
 
 - `inject`: `tools`
 - `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
-- `source`: [`packages/qq/qq-memory/src/index.ts:142`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:146`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3053,6 +3053,8 @@ export interface Tuning extends DecayParams, RecoverParams {
   minTextChars: number
   /** 一条正文长过这几个字要求拆分，不入队 */
   maxTextChars: number
+  /** 新写入算出的重要度低于这条线就丢掉，1 到 100 与重要度同刻度 */
+  writeMinImportance: number
   /** 待写队列最多压几条，满了先丢最旧的 */
   queueMax: number
   /** 每几轮把队列排空一次 */

@@ -106,7 +106,7 @@
 
 队列门槛：待写缓冲上限 `queueMax` 默认 200；超限时按重要度从低到高丢弃并计入 `dropped`，丢弃必须能在健康一行里看见，不得静默丢。
 
-状态：内容门槛、长度门槛与队列上限都已实现——`scope` 取自会话键、`layer` 非法值回落 `episodic`、`source` 按五档校验；长度按 `minTextChars` 与 `maxTextChars` 卡；队列满了按最旧丢弃并累加 `dropped`，健康一行的待写入数会反映出来；重要度门槛（`writeMinImportance`）仍未做。
+状态：内容门槛、长度门槛、队列上限与重要度门槛都已实现——`scope` 取自会话键、`layer` 非法值回落 `episodic`、`source` 按五档校验；长度按 `minTextChars` 与 `maxTextChars` 卡；队列满了按最旧丢弃并累加 `dropped`；低于 `writeMinImportance` 的新条目在入队、直接写入与反思三处都被挡下，丢弃数记在 `droppedLow`，显式写入与并入旧条不受这道门槛限制。
 
 ### 去重与幂等
 
@@ -409,7 +409,7 @@
 | 账本命令行 | `--init`、`--sync`、`--verify` 三个标记与退出码 | 包内 bin 入口 |
 | 近似重复合并 | 已实现：同作用域内按余弦比，超门槛并入旧条并累加合并次数 | — |
 | 写入的三条路径 | 已实现：队列 + 按轮数排空 + 定期反思，健康一行的待写入数取队列真实长度 | — |
-| 重要度门槛与队列上限 | `writeMinImportance`、`queueMax`、超限丢弃与 `dropped` 计数 | 缓冲区先有 |
+| 重要度门槛与队列上限 | 已实现：`writeMinImportance` 挡新写入（含入队与反思），`queueMax` 满则丢最旧，丢弃数记 `dropped` / `droppedLow` | — |
 | 注入接线 | 已实现：模型请求前查召回、按 `injectRepeatTurns`（默认 3）去重、接在用户消息尾部 | — |
 | 每日健康一行 | 每日定时触发、追加健康日志、四档 `ledger` 取值、`trace` 计入 `cold`、四个告警阈值 | 每日调度与账本退役态 |
 | 只读探测 | 只读打开既有文件与账本、产出报告不产出写入 | 探测工具 |

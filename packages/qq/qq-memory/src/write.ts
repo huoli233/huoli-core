@@ -9,8 +9,39 @@ import { layerOr } from './guard.ts'
 import type { MemoryStore } from './store.ts'
 import { MEMORY_SOURCES, newId, type MemoryItem, type MemorySource, type RememberOptions } from './types.ts'
 
-// 队列文件的结构版本，只随结构变化递增，调参不动它
-const QUEUE_VERSION = 1
+// 队列文件的结构版本，只随结构变化递增，调参不动它；第二版只多了一个丢弃计数，旧文件读回来按 0 起
+const QUEUE_VERSION = 2
+
+/** 重要度不到门槛的失败码，装配层按它数被丢掉的条数 */
+export const LOW_IMPORTANCE = 'memory.low_importance'
+
+/** 一条新写入过没过重要度门槛 */
+export interface WriteGate {
+  /** 过了才会真写进去 */
+  written: boolean
+  /** 没过时的失败码，过了是空串 */
+  code: string
+  /** 没过时给人看的一句原因，过了是空串 */
+  reason: string
+  /** 没过时的下一步，过了是空串 */
+  hint: string
+}
+
+/**
+ * 新写一条前判重要度够不够，够不上就丢并说清为什么
+ * @param importance - 算出来的重要度
+ * @param min - 门槛，默认取默认值表里的 writeMinImportance
+ * @returns 过没过；没过时一并给出失败码、原因与下一步
+ */
+export function importanceGate(importance: number, min: number = DEFAULTS.writeMinImportance): WriteGate {
+  if (importance >= min) return { written: true, code: '', reason: '', hint: '' }
+  return {
+    written: false,
+    code: LOW_IMPORTANCE,
+    reason: `重要度 ${importance} 不到门槛 ${min}，这句不值得记下`,
+    hint: '写一件更重要的事，或调低 writeMinImportance',
+  }
+}
 
 /** 排队等着写进记忆的一条 */
 export interface QueuedFact {
@@ -25,7 +56,7 @@ export interface QueuedFact {
 }
 
 /** 入队的结果 */
-export interface EnqueueOutcome {
+export interface EnqueueOutcome extends WriteGate {
   /** 队列里现在压着几条 */
   pending: number
   /** 累计丢掉了最旧的几条 */
@@ -43,7 +74,7 @@ export interface FlushOutcome {
 }
 
 /** 一次反思的结果 */
-export interface ReflectOutcome {
+export interface ReflectOutcome extends WriteGate {
   /** 合成的那一条编号，没合成就空串 */
   id: string
   /** 被合成的原件编号，没合成就空数组 */
@@ -64,6 +95,7 @@ export interface TurnOutcome {
 export interface WriteQueue {
   pending(): number
   dropped(): number
+  droppedLow(): number
   turns(): number
   enqueue(text: string, chatKey: string, options?: RememberOptions): EnqueueOutcome
   flush(now: number): FlushOutcome
@@ -79,6 +111,8 @@ export interface WriteQueueOptions {
   tuning: Tuning
   /** 记忆仓，反思要从这里挑原件 */
   store: MemoryStore
+  /** 算一条待写会在写入时落到多少重要度，重要度门槛按它判 */
+  importanceOf: (chatKey: string, options: RememberOptions) => number
   /** 排空时把一条真正写进记忆，抛错就留在队列里等下次 */
   write: (fact: QueuedFact) => void
 }
@@ -89,28 +123,37 @@ export interface NearDuplicate {
   similarity: number
 }
 
-/** 写入一条的结果 */
-export interface WriteOutcome {
+/** 写入一条的结果，过不了门槛时 merged 为 false、id 为空串 */
+export interface WriteOutcome extends WriteGate {
   /** 是并进旧条还是新写一条 */
   merged: boolean
-  /** 落库的那条编号，合并时是旧条的 */
+  /** 落库的那条编号，合并时是旧条的；丢掉时是空串 */
   id: string
-  /** 落库的那条 */
-  item: MemoryItem
+  /** 落库的那条，丢掉时没有条目 */
+  item: MemoryItem | undefined
 }
 
 // 队列文件的样子
 interface QueueFile {
   version: number
   dropped: number
+  droppedLow: number
   turns: number
   lastFlushedAt: number
   lastReflectedAt: number
   entries: QueuedFact[]
 }
 
-// 一条都没排空过、也没反思过
-const EMPTY_QUEUE: QueueFile = { version: QUEUE_VERSION, dropped: 0, turns: 0, lastFlushedAt: 0, lastReflectedAt: 0, entries: [] }
+// 一条都没排空过、也没反思过，两个丢弃计数都从零起
+const EMPTY_QUEUE: QueueFile = {
+  version: QUEUE_VERSION,
+  dropped: 0,
+  droppedLow: 0,
+  turns: 0,
+  lastFlushedAt: 0,
+  lastReflectedAt: 0,
+  entries: [],
+}
 
 // 认得出是一个对象
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -168,6 +211,7 @@ function loadQueue(file: string): QueueFile {
     return {
       version: numberOr(parsed.version, QUEUE_VERSION),
       dropped: Math.max(0, Math.round(numberOr(parsed.dropped, 0))),
+      droppedLow: Math.max(0, Math.round(numberOr(parsed.droppedLow, 0))),
       turns: Math.max(0, Math.round(numberOr(parsed.turns, 0))),
       lastFlushedAt: numberOr(parsed.lastFlushedAt, 0),
       lastReflectedAt: numberOr(parsed.lastReflectedAt, 0),
@@ -226,24 +270,28 @@ export function nearDuplicateOf(
  * 写一条记忆：与同 scope 的旧条够像就并进去，否则新增一条
  * @param store - 存放的地方
  * @param draft - 已经拼好的那一条
- * @param tuning - 相似度门槛
+ * @param tuning - 相似度门槛与重要度门槛
  * @returns 处理结果
  */
 export function writeFact(store: MemoryStore, draft: MemoryItem, tuning: Tuning = DEFAULTS): WriteOutcome {
   const found = nearDuplicateOf(store, draft.text, draft.scope, tuning.nearDuplicateRatio)
   const old = found === undefined ? undefined : store.byId(found.id)
-  if (old === undefined) {
-    store.add(draft)
-    return { merged: false, id: draft.id, item: draft }
+  if (old !== undefined) {
+    // 并进旧条不看门槛：门槛只管新写入，已经记下的事不该因为这次算得低就被丢掉
+    const mergedCount = Math.max(0, Math.round(numberOr(old.metadata?.['mergedCount'], 0))) + 1
+    // 合并只动被提起时刻、重要度与一条合并记录：正文与召回次数保持旧条的样子，账本指纹才不会漂移
+    store.update(old.id, {
+      lastSeenAt: draft.lastSeenAt,
+      importance: Math.max(old.importance, draft.importance),
+      metadata: { ...old.metadata, mergedCount },
+    })
+    return { written: true, code: '', reason: '', hint: '', merged: true, id: old.id, item: store.byId(old.id) ?? old }
   }
-  const mergedCount = Math.max(0, Math.round(numberOr(old.metadata?.['mergedCount'], 0))) + 1
-  // 合并只动被提起时刻、重要度与一条合并记录：正文与召回次数保持旧条的样子，账本指纹才不会漂移
-  store.update(old.id, {
-    lastSeenAt: draft.lastSeenAt,
-    importance: Math.max(old.importance, draft.importance),
-    metadata: { ...old.metadata, mergedCount },
-  })
-  return { merged: true, id: old.id, item: store.byId(old.id) ?? old }
+  const gate = importanceGate(draft.importance, tuning.writeMinImportance)
+  // 门槛不放行就一条都不落盘，把理由交回调用方，丢掉的那条由装配层计数
+  if (!gate.written) return { ...gate, merged: false, id: '', item: undefined }
+  store.add(draft)
+  return { ...gate, merged: false, id: draft.id, item: draft }
 }
 
 // 把攒下的几条合成一条：正文按时间顺序接起来，重要度取最高的那条
@@ -280,12 +328,13 @@ export function createWriteQueue(options: WriteQueueOptions): WriteQueue {
   const loaded = loadQueue(options.file)
   const entries: QueuedFact[] = loaded.entries
   let dropped = loaded.dropped
+  let droppedLow = loaded.droppedLow
   let turns = loaded.turns
   let lastFlushedAt = loaded.lastFlushedAt
   let lastReflectedAt = loaded.lastReflectedAt
 
   const persist = (): void => {
-    saveQueue(options.file, { version: QUEUE_VERSION, dropped, turns, lastFlushedAt, lastReflectedAt, entries })
+    saveQueue(options.file, { version: QUEUE_VERSION, dropped, droppedLow, turns, lastFlushedAt, lastReflectedAt, entries })
   }
 
   // 攒下的条目里挑一组同 scope 的，够条数才值得合成
@@ -331,12 +380,20 @@ export function createWriteQueue(options: WriteQueueOptions): WriteQueue {
 
   const reflect = (now: number): ReflectOutcome => {
     const window = pickWindow()
-    if (window === undefined) return { id: '', mergedFrom: [] }
+    // 没到点或不够条数时什么都不合成，也没被门槛丢掉，四项空着不算一次丢弃
+    if (window === undefined) return { written: false, code: '', reason: '', hint: '', id: '', mergedFrom: [] }
     const draft = reflectionOf(window, now, tuning)
+    // 合成条目重要度取原件最大值，通常过得去，这里仍判一次；不过门槛就原样留着原件
+    const gate = importanceGate(draft.importance, tuning.writeMinImportance)
+    if (!gate.written) {
+      droppedLow += 1
+      persist()
+      return { ...gate, id: '', mergedFrom: [] }
+    }
     options.store.add(draft)
     lastReflectedAt = now
     persist()
-    return { id: draft.id, mergedFrom: window.map(item => item.id) }
+    return { ...gate, id: draft.id, mergedFrom: window.map(item => item.id) }
   }
 
   return {
@@ -346,6 +403,9 @@ export function createWriteQueue(options: WriteQueueOptions): WriteQueue {
     dropped() {
       return dropped
     },
+    droppedLow() {
+      return droppedLow
+    },
     turns() {
       return turns
     },
@@ -354,6 +414,13 @@ export function createWriteQueue(options: WriteQueueOptions): WriteQueue {
       if (body === '') refuse('memory.empty', '空的一句入不了队', '写一件能独立读懂的事')
       if (body.length < tuning.minTextChars) refuse('memory.too_short', `短过 ${tuning.minTextChars} 字当噪声`, '写清一件事再入队')
       if (body.length > tuning.maxTextChars) refuse('memory.too_long', `一条最多 ${tuning.maxTextChars} 字`, '长事拆成几条再入队')
+      // 重要度不够的新写入不占队列的位置：丢了几条记在 droppedLow 里，入队返回值与队列文件都看得见
+      const gate = importanceGate(options.importanceOf(chatKey, given), tuning.writeMinImportance)
+      if (!gate.written) {
+        droppedLow += 1
+        persist()
+        return { ...gate, pending: entries.length, dropped }
+      }
       entries.push({ text: body, chatKey, enqueuedAt: given.at ?? Date.now(), options: given })
       // 队列压满时先丢最旧的，丢了几条记在 dropped 里，健康一行与入队返回值都看得见
       while (entries.length > tuning.queueMax) {
@@ -361,7 +428,7 @@ export function createWriteQueue(options: WriteQueueOptions): WriteQueue {
         dropped += 1
       }
       persist()
-      return { pending: entries.length, dropped }
+      return { ...gate, pending: entries.length, dropped }
     },
     flush,
     reflect,

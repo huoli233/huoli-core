@@ -15,6 +15,7 @@ import { clampImportance, metadataOr, sourceOr } from './guard.ts'
 import {
   createWriteQueue,
   defaultQueueFile,
+  LOW_IMPORTANCE,
   writeFact,
   type EnqueueOutcome,
   type FlushOutcome,
@@ -75,7 +76,7 @@ export type {
 } from './ledger.ts'
 export { appendHealthLine, defaultHealthLogFile, healthAlerts, healthCounts, healthLine, ledgerLevel, localDay } from './health.ts'
 export type { HealthAlert, HealthCounts, HealthInput, LedgerLevel } from './health.ts'
-export { createWriteQueue, defaultQueueFile, nearDuplicateOf, writeFact } from './write.ts'
+export { createWriteQueue, defaultQueueFile, importanceGate, LOW_IMPORTANCE, nearDuplicateOf, writeFact } from './write.ts'
 export type {
   EnqueueOutcome,
   FlushOutcome,
@@ -83,6 +84,7 @@ export type {
   QueuedFact,
   ReflectOutcome,
   TurnOutcome,
+  WriteGate,
   WriteOutcome,
   WriteQueue,
   WriteQueueOptions,
@@ -126,6 +128,8 @@ export interface QqMemorySeam {
   pending(): number
   /** 累计丢掉的最旧条数 */
   dropped(): number
+  /** 累计因重要度不到门槛而丢掉的条数，入队、直接写入与反思三条路径合在一起 */
+  droppedLow(): number
   /** 自我层镜像一条：只加来源与重要度下限，别处照 remember */
   rememberSelf(entry: RememberSelfEntry, at: number): RememberSelfResult
   /** 已经镜过的来源键，按镜像顺序 */
@@ -226,6 +230,19 @@ export function apply(ctx: Context, config: Config = {}): void {
   const store = createMemoryStore({ file })
   const scopeOf = (chatKey: string): string => chatKey
   const run = (action: LedgerAction): LedgerRunResult => runLedger(action, { file: ledgerFile, items: store.all() })
+  // 直接写入被门槛丢掉的条数；队列与反思那两条路的数落在队列文件里，droppedLow() 把两边合起来给
+  let droppedLow = 0
+
+  // 一条待写写到库里会是多少重要度：入队门槛与拼条目共用这一处，两处不会算出两个数
+  const importanceOf = (chatKey: string, options: RememberOptions): number => {
+    if (options.importance !== undefined) return options.importance
+    const layer = options.layer ?? 'episodic'
+    return initialImportance({
+      scene: sceneOf(layer, chatKey),
+      directed: options.directed ?? false,
+      emotional: options.emotional ?? 0,
+    })
+  }
 
   // 拼一条待写的记忆，显式路径与排空路径共用这一处，字段不会两处对不上
   const itemOf = (text: string, chatKey: string, options: RememberOptions, at: number): MemoryItem => {
@@ -237,11 +254,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       text,
       layer,
       scope: scopeOf(chatKey),
-      importance: options.importance ?? initialImportance({
-        scene: sceneOf(layer, chatKey),
-        directed: options.directed ?? false,
-        emotional,
-      }),
+      importance: importanceOf(chatKey, options),
       emotional,
       clarity: 'vivid',
       recallCount: 0,
@@ -259,6 +272,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     file: queueFile,
     tuning,
     store,
+    importanceOf,
     // 排空写的都是聊天里攒下的事实，来源没点名就按聊天记，其余几项照入队时给的
     write(fact) {
       writeFact(store, itemOf(fact.text, fact.chatKey, fact.options, fact.enqueuedAt), tuning)
@@ -273,7 +287,9 @@ export function apply(ctx: Context, config: Config = {}): void {
       return item
     },
     write(text, chatKey, options = {}) {
-      return writeFact(store, itemOf(text, chatKey, options, options.at ?? Date.now()), tuning)
+      const outcome = writeFact(store, itemOf(text, chatKey, options, options.at ?? Date.now()), tuning)
+      if (outcome.code === LOW_IMPORTANCE) droppedLow += 1
+      return outcome
     },
     enqueue(text, chatKey, options) {
       return queue.enqueue(text, chatKey, options)
@@ -292,6 +308,9 @@ export function apply(ctx: Context, config: Config = {}): void {
     },
     dropped() {
       return queue.dropped()
+    },
+    droppedLow() {
+      return queue.droppedLow() + droppedLow
     },
     rememberSelf(entry, at) {
       const selfId = entry.selfId.trim()

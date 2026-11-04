@@ -42,6 +42,7 @@ kind: "package-reference"
 - 反思只把同一会话最近的几条正文按顺序接成一条，不做语义概括；同一批原件靠 `lastReflectedAt` 不再重复合成，但队列文件被删掉时这个时刻一起丢。
 - 近似重复只按向量余弦判，编码是字面哈希，同一件事换个说法多半判不成重复；门槛调低会开始把不相干的两句并到一起。
 - 镜像按来源键（`metadata.self_id`）去重，同一个来源换了来源键仍会各写一条：去重认的是来源位置，不是正文。
+- 被重要度门槛丢掉的条数只落在 `droppedLow()` 与队列文件的 `droppedLow` 里；健康一行的字段与顺序按规范固定，这一栏放不进去，从日志上看不到这个数。
 
 <a id="dev-note"></a>
 ### Dev Note
@@ -51,6 +52,8 @@ kind: "package-reference"
 写入分成两条路，两条都在 `src/write.ts`。待写队列 `createWriteQueue({ file, tuning, store, write })` 把一条待写当成 `{ text, chatKey, enqueuedAt, options }` 存进自己的文件：`enqueue` 只做轻校验（空、短过 `minTextChars`、长过 `maxTextChars` 各抛 `memory.empty`、`memory.too_short`、`memory.too_long`），过不了就拒收，过了就落盘，压过 `queueMax` 时按最旧先丢并把条数记进 `dropped`；`flush(now)` 逐条交给装配层真正写进记忆，中间哪条抛错就停在那条、整条留在队列里等下次，不丢也不改写成成功，`kept` 与 `error` 一起说明这次写到哪；`advanceTurn(now)` 管轮数，满 `flushEveryTurns`（默认 4）轮排空一次、满 `reflectEveryTurns`（默认 10）轮反思一次，显式调用 `flush` 与 `reflect` 不等轮数。反思把同一 `scope` 里 `at` 晚于上次反思时刻的 `ephemeral`、`episodic` 条目取最近 `reflectWindow`（默认 6）条、够 `reflectMinItems`（默认 2）条才合成一条 `semantic`：正文按顺序用分号接起来并截到 `maxTextChars`，重要度取其中最高的那条，`source` 记 `chat`，`metadata.mergedFrom` 留原件编号，原件不删。队列文件有 `version` 戳、原子写、读坏按空队列重来，记忆文件本身不受影响；装配卸载与每日整理各排空一次，健康一行的 `pending` 就是队列此刻的长度。到点那一轮若队列已经空着就不再排一遍：每日整理里刚排过空，再排只是白写一遍盘，`lastFlushedAt` 也不动；每日整理之后又攒下的事照样在下一个到点的轮次排空。轮数由组合包在每轮收尾调 `tick(now)` 推进，本包自己不排时钟。
 
 近似重复合并走 `writeFact(store, draft, tuning)`：先按 `nearDuplicateOf(store, text, scope, ratio)` 在同一 `scope` 的未退役条目里用 `recall.ts` 的 `encodeVector` 与 `cosineSimilarity` 比一遍，只取最像且相似度 ≥ `nearDuplicateRatio`（默认 0.92）的那条，够像就并入旧条——`lastSeenAt` 取新时刻、`importance` 取两者较大、`recallCount` 与正文都不动、`metadata.mergedCount` 加一，返回 `{ merged: true, id }`，因此不会多出第二份正文、账本指纹也不会漂移；够不上就照常新增一条并返回 `{ merged: false, id }`。`remember` 是显式路径，仍然一条一条照写不合并；`write` 与排空路径才走合并。
+
+重要度门槛在 `src/write.ts` 的 `importanceGate(importance, min)`，默认值表里那一条叫 `writeMinImportance`（默认 10，与重要度同 1～100 刻度，`Config.tuning` 可改）：入队与直接写入两条路径都先按 `importanceOf` 算出这条会落到多少重要度，低于门槛就不入队、不落盘，返回 `{ written: false, code: 'memory.low_importance', reason, hint }`，原因那句带上门槛与算出来的分；正好等于门槛按写入办。被丢掉几条不静默——队列这条路径记进队列文件的 `droppedLow`，直接写入的记在装配层，`droppedLow()` 把两边合起来给一个数。并进旧条、更新既有条目的合并动作不看门槛：门槛只管新写入，已经记下的事不会因为这次算得低而被丢掉。反思合成的那一条同样判一次，重要度取原条目最大值，过不了就原件留着不合成，也算一次丢弃。
 
 保护线与地板也在 `DEFAULTS` 里：`protectLine` 取保留度表的 `anchorImportance`（默认 70），到这条线以上的条目 `decayAll` 一分不掉；`importanceFloor` 默认 5，任何跌幅都夹在它之上。重要度写入时是整数，衰减把它记到一位小数，读回来不取整，所以关掉再开还是同一个数。
 

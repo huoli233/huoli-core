@@ -22,6 +22,8 @@ function bareQueue(write: (fact: QueuedFact) => void, tuning: Partial<Tuning> = 
     file: path.join(tempDir(), 'queue.json'),
     tuning: { ...DEFAULTS, ...tuning },
     store,
+    // 这些用例都不关心重要度门槛，按刚好过门槛算
+    importanceOf: (_chatKey, options) => options.importance ?? DEFAULTS.writeMinImportance,
     write,
   })
   return { store, queue }
