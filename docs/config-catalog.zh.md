@@ -2845,7 +2845,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:30`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:40`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2860,6 +2860,8 @@ export interface Config {
   seenMax?: number
   /** 轮次记录放哪，不填就用主目录下的 data */
   decisionsFile?: string
+  /** 每日维护日志放哪，不填就用主目录下的 data */
+  maintenanceLogFile?: string
   /** 入站之后隔多久才再问一次要不要主动开口 */
   proactiveThrottleMs?: number
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
@@ -3008,7 +3010,7 @@ export interface Config {
 
 - `inject`: `tools`
 - `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
-- `source`: [`packages/qq/qq-memory/src/index.ts:146`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:153`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3085,6 +3087,12 @@ export interface Tuning extends DecayParams, RecoverParams {
   pinnedAlert: number
   /** 已退役与只剩印象的条数占未退役条数的比例超过它就在健康一行末尾告警 */
   coldRatioAlert: number
+  /** 备份留几份，超出的按最旧先删 */
+  backupKeep: number
+  /** 性格不变快照拿来找记忆的那句，空串只按重要度与新鲜度挑 */
+  snapshotQuery: string
+  /** 性格不变快照拿来试注入的那句闲聊，固定问题集在调用方 */
+  snapshotSample: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-memory -->
@@ -3153,7 +3161,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:128`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:168`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3194,12 +3202,24 @@ export interface SelfSettings {
   claimEvidenceMax: number
   /** 答应的事最多几个字 */
   commitmentMaxChars: number
+  /** 每天固定几行 */
+  dayLines: number
+  /** 每天那三行每行最多几个字，跳过原因也按它截 */
+  dayLineMaxChars: number
+  /** 错处与改法最多几个字 */
+  errorMaxChars: number
+  /** 叙事每段最多几个字 */
+  narrativeParaMaxChars: number
+  /** 叙事每章最多几段 */
+  narrativeParasMax: number
   /** 同时最多几个没结束的项目 */
   openProjectMax: number
   /** 一周最多问几条 */
   questionPerWeekMax: number
   /** 一周多长 */
   weekMs: number
+  /** 判据四看的窗口，超过这么久没有一条失败就算违规 */
+  auditFailedWindowMs: number
   /** 镜像进记忆时给多少重要度 */
   mirrorImportance: number
   /** 一条镜像正文最多几个字 */
@@ -3278,7 +3298,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:51`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:56`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3421,6 +3441,10 @@ export interface Tuning extends EmotionTuning, SuppressTuning {
   melatoninUntil: number
   /** 水分流失的代谢倍率，默认 1.0 为基准，参与计算时夹在 0.75 到 1.7 之间 */
   metabolicRate: number
+  /** 代谢倍率的下限，默认 0.75，配错也不至于把失水压到没有 */
+  metabolicRateMin: number
+  /** 代谢倍率的上限，默认 1.7，配错也不至于一次失水失到脱力 */
+  metabolicRateMax: number
   /** 夜睡从几点开始，本地小时 0~24，默认 23 点 */
   sleepFrom: number
   /** 夜睡到几点算天亮，本地小时 0~24，默认 7 点 */
@@ -3523,6 +3547,248 @@ export interface Tuning extends EmotionTuning, SuppressTuning {
   promptSleepyMelatoninFrom: number
   /** 离饭点还有多久算快开饭了，分钟，默认 30，只在提示词里多一句 */
   promptMealSoonMinutes: number
+  // 递质回归：白天的半衰期、夜里的半衰期与各递质的回落目标
+  /** 夜里回基线的半衰期，小时，默认 0.45，比白天快 */
+  transmitterNightHalfHours: number
+  /** 白天回基线的半衰期，小时，默认 0.75 */
+  transmitterHalfHours: number
+  /** 多巴胺的白天回落目标，0~1 标度，默认 0.50 */
+  transmitterDopamineBase: number
+  /** 夜色把多巴胺目标压下去多少，默认 0.16，按夜色浓度打折 */
+  transmitterDopamineNightDrop: number
+  /** 催产素的白天回落目标，0~1 标度，默认 0.45 */
+  transmitterOxytocinBase: number
+  /** 夜色把催产素目标抬起来多少，默认 0.04 */
+  transmitterOxytocinNightRise: number
+  /** 血清素的白天回落目标，0~1 标度，默认 0.65 */
+  transmitterSerotoninBase: number
+  /** 夜色把血清素目标压下去多少，默认 0.12 */
+  transmitterSerotoninNightDrop: number
+  /** 夜色把去甲肾上腺素目标压下去多少，默认 0.10 */
+  transmitterNoradrenalineNightDrop: number
+  // HPA 轴：负荷、负反馈、三段半衰与催产素缓冲
+  /** 低血糖判据的基线，0~1 标度，默认 0.62，低于它算缺糖 */
+  hpaGlucoseFloor: number
+  /** 饥饿高过这条线才算给 HPA 加负荷，0~1 标度，默认 0.50 */
+  hpaHungerFrom: number
+  /** 高饥饿折成零到一的跨度，默认 0.50 */
+  hpaHungerSpan: number
+  /** 负荷里皮质醇的权重，默认 0.55 */
+  hpaLoadCortisol: number
+  /** 负荷里低血糖的权重，默认 0.25 */
+  hpaLoadGlucose: number
+  /** 负荷里高饥饿的权重，默认 0.20 */
+  hpaLoadHunger: number
+  /** 负反馈的强度，默认 0.70，皮质醇越高越压 crh */
+  hpaFeedbackGain: number
+  /** 负反馈开始起作用的皮质醇，0~1 标度，默认 0.55 */
+  hpaFeedbackFrom: number
+  /** 负反馈折算的跨度，默认 0.45 */
+  hpaFeedbackSpan: number
+  /** crh 的半衰期，小时，默认 0.15，最快的一段 */
+  hpaCrhHalfHours: number
+  /** acth 的半衰期，小时，默认 0.45 */
+  hpaActhHalfHours: number
+  /** 皮质醇的半衰期，小时，默认 1.20，最慢的一段 */
+  hpaCortisolHalfHours: number
+  /** 皮质醇目标的底数，0~1 标度，默认 0.15 */
+  hpaCortisolBase: number
+  /** acth 折算成皮质醇目标的系数，默认 0.80 */
+  hpaCortisolActhGain: number
+  /** 催产素缓冲的起点，0~1 标度，默认 0.40，低于它不缓冲 */
+  hpaOxytocinBufferFrom: number
+  /** 催产素缓冲折算的跨度，默认 0.60 */
+  hpaOxytocinBufferSpan: number
+  /** 催产素缓冲的力度，默认 0.35，最多把皮质醇目标压低这么多 */
+  hpaOxytocinBufferGain: number
+  // 交感与副交感
+  /** 肾上腺素的底数，0~1 标度，默认 0.05 */
+  adrenalineBase: number
+  /** 负荷折算成肾上腺素目标的系数，默认 0.85 */
+  adrenalineLoadGain: number
+  /** 肾上腺素半衰期，小时，默认 0.06，来得急去得快 */
+  adrenalineHalfHours: number
+  /** 副交感的底数，0~1 标度，默认 0.22 */
+  parasympatheticBase: number
+  /** 肾上腺素把副交感压下去多少，默认 0.35 */
+  parasympatheticAdrenalineGain: number
+  /** 瘦素把副交感抬起来多少，默认 0.22 */
+  parasympatheticLeptinGain: number
+  /** 夜色把副交感抬起来多少，默认 0.18 */
+  parasympatheticNightGain: number
+  /** 副交感半衰期，小时，默认 0.55 */
+  parasympatheticHalfHours: number
+  // 奖赏双系统
+  /** 想要里多巴胺的权重，默认 0.70 */
+  rewardWantDopamine: number
+  /** 想要里催产素的权重，默认 0.30 */
+  rewardWantOxytocin: number
+  /** 想要里皮质醇的扣减，默认 0.25 */
+  rewardWantCortisol: number
+  /** 内啡肽目标的底数，0~1 标度，默认 0.20 */
+  endorphinBase: number
+  /** 想要折算成内啡肽目标的系数，默认 0.65 */
+  endorphinWantGain: number
+  /** 内啡肽半衰期，小时，默认 0.80 */
+  endorphinHalfHours: number
+  // 依恋双轴
+  /** 血管加压素目标的底数，0~1 标度，默认 0.16 */
+  vasopressinBase: number
+  /** 黏人折算成血管加压素目标的系数，默认 0.58 */
+  vasopressinClingyGain: number
+  /** 皮质醇折算成血管加压素目标的系数，默认 0.35 */
+  vasopressinCortisolGain: number
+  /** 血浆渗透压高过这条线才给血管加压素加目标，0~1 标度，默认 0.40 */
+  vasopressinOsmolalityFrom: number
+  /** 渗透压折算成血管加压素目标的系数，默认 0.25 */
+  vasopressinOsmolalityGain: number
+  /** 血管加压素半衰期，小时，默认 1.5 */
+  vasopressinHalfHours: number
+  // 饥饿：胃排空速率与三餐、夜间、饱腹的折扣
+  /** 胃排空的基础速率，0~1 标度每小时，默认 0.055 */
+  hungerRate: number
+  /** 距上次进食多久之内算刚吃过，小时，默认 1.5 */
+  hungerRecentHours: number
+  /** 刚吃过时饥饿速率的折扣，默认 0.35 */
+  hungerRecentFactor: number
+  /** 距上次进食多久之内算吃过不久，小时，默认 3.0 */
+  hungerMiddleHours: number
+  /** 吃过不久时饥饿速率的折扣，默认 0.70 */
+  hungerMiddleFactor: number
+  /** 距上次进食多久之后算久没吃，小时，默认 6.0 */
+  hungerLongHours: number
+  /** 久没吃时饥饿速率的倍数，默认 1.15 */
+  hungerLongFactor: number
+  /** 饭点这一小时饥饿速率的倍数，默认 1.30 */
+  hungerMealHourFactor: number
+  /** 饱腹折扣的下限，默认 0.25，再饱也不会完全停下 */
+  hungerSatietyFloor: number
+  /** 饱腹折算成折扣的系数，默认 0.75，即 `1 - 0.75 * hunger` */
+  hungerSatietyGain: number
+  /** 夜间饥饿速率的倍数，默认 0.25 */
+  hungerQuietFactor: number
+  // 水循环：失水速率、活动量加成与几个折算系数
+  /** 活动量的基数，默认 1.0，静止时按它算 */
+  waterActivityBase: number
+  /** 去甲肾上腺素高过这条线算在活动，0~1 标度，默认 0.50 */
+  waterActivityNoradrenalineFrom: number
+  /** 活动量里去甲肾上腺素的权重，默认 0.25 */
+  waterActivityNoradrenalineGain: number
+  /** 肾上腺素高过这条线也算在活动，0~1 标度，默认 0.25 */
+  waterActivityAdrenalineFrom: number
+  /** 活动量里肾上腺素的权重，默认 0.15 */
+  waterActivityAdrenalineGain: number
+  /** 基础失水速率，0~1 标度每小时，默认 0.070 */
+  waterLossRate: number
+  /** 夜间失水速率的折扣，默认 0.30 */
+  waterQuietFactor: number
+  /** 失水折算成血浆渗透压上升的系数，默认 0.55 */
+  waterOsmolalityGain: number
+  /** 失水折算成血容量下降的系数，默认 0.40 */
+  waterVolumeDrop: number
+  /** 血管紧张素目标的底数，0~1 标度，默认 0.10 */
+  angiotensinBase: number
+  /** 血容量低于这条线才开始抬血管紧张素，0~1 标度，默认 0.85 */
+  angiotensinVolumeFrom: number
+  /** 血容量折算的跨度，默认 0.45 */
+  angiotensinVolumeSpan: number
+  /** 血容量缺口折算成血管紧张素目标的系数，默认 0.85 */
+  angiotensinGain: number
+  /** 血管紧张素半衰期，小时，默认 0.70 */
+  angiotensinHalfHours: number
+  /** 失水折算成口渴上升的系数，默认 0.60 */
+  thirstLossGain: number
+  /** 血管紧张素高过这条线才推动口渴，0~1 标度，默认 0.35 */
+  thirstAngiotensinFrom: number
+  /** 血管紧张素折算成口渴上升的系数，默认 0.05 */
+  thirstAngiotensinGain: number
+  // 血糖双向调节
+  /** 胰岛素目标的底数，0~1 标度，默认 0.08 */
+  insulinBase: number
+  /** 血糖高过这条线开始抬胰岛素，0~1 标度，默认 0.62 */
+  insulinGlucoseFrom: number
+  /** 血糖折算的跨度，默认 0.30 */
+  insulinGlucoseSpan: number
+  /** 血糖缺口折算成胰岛素目标的系数，默认 0.95 */
+  insulinGain: number
+  /** 胰岛素半衰期，小时，默认 0.35 */
+  insulinHalfHours: number
+  /** 胰高血糖素目标的底数，0~1 标度，默认 0.08 */
+  glucagonBase: number
+  /** 血糖低于这条线开始抬胰高血糖素，0~1 标度，默认 0.60 */
+  glucagonGlucoseBelow: number
+  /** 血糖折算的跨度，默认 0.30 */
+  glucagonGlucoseSpan: number
+  /** 血糖缺口折算成胰高血糖素目标的系数，默认 0.95 */
+  glucagonGain: number
+  /** 胰高血糖素半衰期，小时，默认 0.55 */
+  glucagonHalfHours: number
+  /** 血糖每小时的底数涨幅，默认 0.010 */
+  glucoseRiseBase: number
+  /** 饥饿高过这条线才开始额外升糖，0~1 标度，默认 0.60 */
+  glucoseHungerFrom: number
+  /** 饥饿折算成升糖的系数，默认 0.03 */
+  glucoseHungerGain: number
+  /** 胰高血糖素折算成升糖的系数，默认 0.10 */
+  glucoseGlucagonGain: number
+  /** 胰岛素折算成降糖的系数，默认 0.28 */
+  glucoseInsulinDrop: number
+  /** 单次结算里血糖涨幅最多按多少小时算，默认 1 小时 */
+  glucoseSpanCap: number
+  // 内环境：腺苷、细胞因子、体温与疼痛
+  /** 醒着时每小时涨多少腺苷，0~1 标度，默认 0.042 */
+  adenosineAwakeRate: number
+  /** 夜间每小时涨多少腺苷，0~1 标度，默认 0.020 */
+  adenosineQuietRate: number
+  /** 细胞因子半衰期，小时，默认 36 */
+  cytokinesHalfHours: number
+  /** 细胞因子折算成发烧目标的系数，默认 0.85 */
+  feverCytokinesGain: number
+  /** 发烧跟随的半衰期，小时，默认 1.0 */
+  feverHalfHours: number
+  /** 体温基线，摄氏度，默认 36.55 */
+  coreTempBase: number
+  /** 夜色把体温压下去多少，摄氏度，默认 0.30 */
+  coreTempNightDrop: number
+  /** 发烧折算成体温上升的系数，摄氏度，默认 1.60 */
+  coreTempFeverGain: number
+  /** 疼痛半衰期，小时，默认 0.5 */
+  painHalfHours: number
+  /** 疼痛单次结算最多按多少小时算，小时，默认 24 */
+  painHoursCap: number
+  // 峰值与死亡威胁
+  /** 幸福峰值的 happiness 下限，0~1 标度，默认 0.86 */
+  peakHappinessFrom: number
+  /** 幸福峰值要求的多巴胺下限，0~1 标度，默认 0.70 */
+  peakDopamineFrom: number
+  /** 幸福峰值要求的催产素下限，0~1 标度，默认 0.58 */
+  peakOxytocinFrom: number
+  /** 幸福峰值要求的血清素下限，0~1 标度，默认 0.68 */
+  peakSerotoninFrom: number
+  /** 幸福峰值要求的皮质醇上限，0~1 标度，默认 0.30 */
+  peakCortisolBelow: number
+  /** 想哭低谷的 sadness 下限，0~1 标度，默认 0.85 */
+  troughSadnessFrom: number
+  /** 想哭低谷要求的血清素上限，0~1 标度，默认 0.32 */
+  troughSerotoninBelow: number
+  /** 想哭低谷要求的皮质醇下限，0~1 标度，默认 0.65 */
+  troughCortisolFrom: number
+  /** 余额高于这条线算宽裕，默认 10，死亡威胁目标为零 */
+  mortalityBalanceCalm: number
+  /** 余额高于这条线算偏紧，默认 8，落进第二档 */
+  mortalityBalanceWary: number
+  /** 余额高于这条线算吃紧，默认 5，落进第三档 */
+  mortalityBalanceLow: number
+  /** 第二档的死亡威胁目标，0~1 标度，默认 0.25 */
+  mortalityTargetWary: number
+  /** 第三档的死亡威胁目标，0~1 标度，默认 0.55 */
+  mortalityTargetLow: number
+  /** 最紧一档的死亡威胁目标，0~1 标度，默认 1.0 */
+  mortalityTargetCrisis: number
+  /** 每拍朝目标涨多少，0~1 标度，默认 0.15 */
+  mortalityRisePerBeat: number
+  /** 每拍朝目标退多少，0~1 标度，默认 0.03，退得比涨慢得多 */
+  mortalityFallPerBeat: number
 }
 
 /** 愤怒、记仇、恐惧这几套的触发与衰减参数 */

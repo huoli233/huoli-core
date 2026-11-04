@@ -106,7 +106,12 @@ describe('镜像接进了记忆库', () => {
     writeRows(dir, 'claims.jsonl', [{ at: AT, id: 'c1', text: '周五爬山那次她更想待在家里' }])
     // 钟拨到整理前半小时，组合包在这一刻挂上，下一次整点检查就落在四点
     vi.useFakeTimers({ now: new Date(2026, 10, 3, 3, 30, 0).getTime() })
-    applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
+    applyBundle(ctx, {
+      maxSteps: 5,
+      dailySweepHour: 4,
+      decisionsFile: path.join(dir, 'decisions.jsonl'),
+      maintenanceLogFile: path.join(dir, 'maintenance.log'),
+    })
 
     vi.advanceTimersByTime(60 * 60_000)
 

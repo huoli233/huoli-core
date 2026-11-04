@@ -126,7 +126,7 @@ agency 记她自己提出的事：字段 `at`、`id`、`kind: "agency"`、`verba
 
 判据四：每 1–2 周至少一条 `outcome: "failed"` 且 `because`、`fail_if` 都非空；某周期一条失败都没有，该周期的新项目按未开始处理，不加新项。
 
-现状：两档字段与 `summary(now)` 都已实现，`drive` 与 `agency` 分开计数、从不相加，同一 `verbatim` 七天内只记一次；判据三（`done` 不得超过 `artifact` 非空条数）与判据四（每 1–2 周至少一条 `failed`）没有代码，`grep` 仍是唯一口径。
+现状：两档字段与 `summary(now)` 都已实现，`drive` 与 `agency` 分开计数、从不相加，同一 `verbatim` 七天内只记一次；判据三与判据四由 `qq-self` 的 `auditLedger(rows, now, { failedWindowMs })` 这个纯函数判，返回违规清单（`rule` 取 `done_without_artifact` / `no_recent_failed`，各带一条可读说明与牵扯条数），`QqSelfSeam.audit(now)` 把 `ledger.jsonl` 的行喂给它，判据四的窗口取 `DEFAULTS.auditFailedWindowMs`（默认两周），空账不算违规。查出违规只写进每日维护日志，不改已有行，也不拦新项目。
 
 ## 记忆镜像
 
@@ -134,7 +134,7 @@ agency 记她自己提出的事：字段 `at`、`id`、`kind: "agency"`、`verba
 
 写入判据：只走 [`qq-memory`](../qq-memory/README.md) 的镜像入口 `rememberSelf(entry, at)`，不直接改 `data/qq-memory.json`；`entry` 用它的 `RememberSelfEntry`，带正文、会话键、来源键、类别、证据与重要度，`layer` 固定 `semantic`，不新造一个平行入口。
 
-现状：已实现——`mirrorEntries()` 逐行扫三份文件，去重认来源键（文件名加序号），重复调用不会写第二条。
+现状：已实现——`mirrorEntries()` 逐行扫三份文件，去重认来源键（文件名加序号，拆开的条目按序号之前的那一段认），重复调用不会写第二条。
 
 `source=self` 的落地判据：`MemoryItem.source` 已有 `chat`、`tool`、`proactive`、`manual`、`self` 五档，镜像写 `self`，旧数据读取行为不变。
 
@@ -150,7 +150,7 @@ metadata 判据：必带四项——`self_id`（`SELF_DIR` 里的来源文件加
 
 证据判据：`evidence` 里的每个记忆 id 必须能在 `find()` 或 `store` 里查到，查不到就不写；每条镜像正文 ≤500 字（`memory_append` 的上限），超了拆成多条。
 
-现状：部分实现——证据取行内 `evidence`，没有就挂这一行的日期，不回头查记忆编号是否真实存在；正文超过 `mirrorMaxChars`（默认 500）的条目只计入 `overlong`，没有拆成多条。
+现状：已实现——证据回查走 `memoryIds()`（记忆库现役编号）与日期格式两路：编号逐字比对，日期只查年月日是否落在真实的日子上；行里给了证据却一条都查不到时整条跳过并计入 `unverified`，不拿日期顶替。正文超过 `mirrorMaxChars`（默认 500）的拆成几条写，来源键接序号（形如 `claims.jsonl#3-1`），拆开几行计入 `split`。
 
 只读判据：镜像只追加新条目，既有条目的 `text` 逐字不变；镜像写入后要把这次新增交给 `qq-memory` 自己的记忆账本入账，否则下一次核对会把这次镜像当成正文被改。
 
@@ -158,7 +158,7 @@ metadata 判据：必带四项——`self_id`（`SELF_DIR` 里的来源文件加
 
 核对判据：镜像前后跑 `qq-memory` 的记忆账本核对，报告"正文有变化的条数"必须为 0，既有条目的指纹逐条相同。
 
-现状：部分实现——没有自动的前后对照，"正文有变化的条数为 0"要手工跑一次账本核对。
+现状：已实现——每次每日维护先跑一次 `ledger('verify')`，镜像写入后再 `sync` 并 `verify` 一次，两次的对得上条数连同判据三、四的违规拼成一行写进维护日志（`data/qq-maintenance.log`，形如「镜像前 N 条一致 / 镜像后 M 条一致」）。
 
 ## 公共与私人分级
 
@@ -286,10 +286,6 @@ P5a 先做，它只决定"能不能发"，不改她怎么想、怎么说，先�
 | 公共与私人分级 | 冷却中写提议、按 `keys.jsonl` 抬级、评论与私信的模型可见工具 | 周复盘与工具面 |
 | 阶段开关 | 已实现：三类公共动作统一读阶段，P0–P2 一律拒并给码；推进只走 `advanceStage`，跳级、后退、同档与空理由都被拒，每次推进在 `stage.jsonl` 留痕 | — |
 | 暂停时的提议 | `PAUSE` 下把想做的一条写进 `projects.jsonl`，算提议不算做成 | 先定提议与做成的区分字段 |
-| 账本判据三与判据四 | `done` 不得超过 `artifact` 非空条数；每 1–2 周至少一条 `failed` | 周复盘 |
-| 镜像的证据核对 | 证据里的记忆 id 回查 `find()`，查不到就不写 | 记忆库查询接口 |
-| 镜像长文拆分 | 超过 `mirrorMaxChars` 的正文拆成多条 | 拆分口径 |
-| 镜像前后核对 | 镜像前后各跑一次账本核对并比对 | 账本命令入口 |
 | 回滚演练 | 从 `versions/` 取回上一版 | `versions/` 先做 |
 
 ## 证据索引
@@ -307,9 +303,12 @@ P5a 先做，它只决定"能不能发"，不改她怎么想、怎么说，先�
 | 三类动作的分级判定 | `packages/qq/qq-self/src/grade.ts:judgePostLevel`、`packages/qq/qq-self/src/grade.ts:judgeComment`、`packages/qq/qq-self/src/grade.ts:judgePrivate`、`packages/qq/qq-self/src/grade.ts:stageAllows`、`packages/qq/qq-self/src/grade.ts:POST_LEVELS`、`packages/qq/qq-self/src/grade.ts:ACTION_KINDS` |
 | 三类动作的状态落盘 | `packages/qq/qq-channel/src/action-store.ts:createActionStore` |
 | 两档账 | `packages/qq/qq-self/src/ledger.ts:createLedger` |
+| 账本判据三与判据四 | `packages/qq/qq-self/src/ledger.ts:auditLedger`、`packages/qq/qq-self/src/ledger.ts:createLedger`（`audit`） |
 | 行字段判据 | `packages/qq/qq-self/src/rows.ts:isDriveNeed`、`packages/qq/qq-self/src/rows.ts:toProject` |
 | 面板 | `packages/qq/qq-self/src/panel.ts:renderPanel`、`packages/qq/qq-self/src/panel.ts:panelFile`、`packages/qq/qq-self/src/panel.ts:panelBody` |
 | 镜像 | `packages/qq/qq-self/src/mirror.ts:mirrorEntries`、`packages/qq/qq-self/src/mirror.ts:MIRROR_FILES` |
+| 镜像的证据核对与长文拆分 | `packages/qq/qq-self/src/mirror.ts:mirrorEntries` |
+| 镜像前后核对与维护日志 | `packages/qq/qq-bundle/src/maintenance.ts:runMaintenance`、`packages/qq/qq-bundle/src/maintenance.ts:maintenanceLine` |
 | 注入与端口接线 | `packages/qq/qq-self/src/index.ts:apply`、`packages/qq/qq-self/src/index.ts:qqSelfOf` |
 | 记忆侧镜像入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf`、`packages/qq/qq-memory/src/mirror.ts:mirroredSelfIds` |
 | 组合包接线 | `packages/qq/qq-bundle/src/index.ts:apply` |

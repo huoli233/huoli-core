@@ -247,6 +247,8 @@
     "packages/experimental/claude-code-mods/examples/*/index.ts",
     "packages/experimental/inspector/scripts/**/*.ts",
     "packages/llm/llm-pi-ai/scripts/**/*.ts",
+    "packages/qq/qq-memory/scripts/**/*.ts",
+    "packages/qq/qq-self/scripts/**/*.ts",
     "scripts/**/*.ts",
     "website/**/*.ts",
     "website/.vitepress/**/*.ts"

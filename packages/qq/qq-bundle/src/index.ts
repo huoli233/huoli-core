@@ -14,16 +14,26 @@ import { hasWords, qqChannelOf, type ActionResult, type IncomingMessage } from '
 import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
 import { qqProactiveOf, type Candidate, type DeliverResult, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
-import { qqSelfOf } from '@huoli/huoli-qq-self'
+import { momentPort, qqSelfOf } from '@huoli/huoli-qq-self'
 import { qqVitalsOf, type MealFact, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
 import { createDecisionLog, type DecisionBlock, type DecisionRecord } from './decisions.ts'
+import { defaultMaintenanceLogFile, mirrorPortOf, runMaintenance } from './maintenance.ts'
 import { mealMetadata, mealText, mealWritten } from './meal.ts'
 import { registerToolWhitelist } from './tool-whitelist.ts'
 
 export type { DecisionBlock, DecisionLog, DecisionRecord } from './decisions.ts'
 export { createDecisionLog } from './decisions.ts'
 export { BUNDLE_DEFAULTS } from './defaults.ts'
+export {
+  appendMaintenanceLine,
+  defaultMaintenanceLogFile,
+  ledgerPart,
+  maintenanceLine,
+  mirrorPortOf,
+  runMaintenance,
+} from './maintenance.ts'
+export type { MaintenanceFacts, MaintenanceInput } from './maintenance.ts'
 export { registerToolWhitelist, TOOL_WHITELIST_OPEN } from './tool-whitelist.ts'
 
 /** 这一行接受的配置 */
@@ -38,6 +48,8 @@ export interface Config {
   seenMax?: number
   /** 轮次记录放哪，不填就用主目录下的 data */
   decisionsFile?: string
+  /** 每日维护日志放哪，不填就用主目录下的 data */
+  maintenanceLogFile?: string
   /** 入站之后隔多久才再问一次要不要主动开口 */
   proactiveThrottleMs?: number
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
@@ -498,19 +510,18 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
   }
 
-  // 每天一次：先掉重要度，再按保留度定清晰度，淡到底的清正文，最后补账；自我层没镜过的记录一并镜像
+  // 每天一次：先核定镜像前那一次账，再掉重要度、定清晰度、清正文、补账，接着镜像、入账、再核一次
   const self = qqSelfOf(ctx)
-  // 镜像只往记忆库写，接上以后每日整理才会带上它
-  if (self !== undefined) self.useMemory(memory)
+  // 镜像只往记忆库写，证据回查要用的现役编号也从记忆仓取，接上以后每日整理才会带上它
+  if (self !== undefined) self.useMemory(memory === undefined ? undefined : mirrorPortOf(memory))
+  // 面板的此刻只问身体：身体那几行压成一句再交过去
+  if (self !== undefined && vitals !== undefined) self.useVitals(momentPort(vitals))
+  const maintenanceLogFile = config.maintenanceLogFile ?? defaultMaintenanceLogFile(config.home)
   const hour = Math.max(0, Math.min(23, config.dailySweepHour ?? BUNDLE_DEFAULTS.dailySweepHour))
   const idle = setInterval(() => {
     if (new Date().getHours() !== hour) return
     try {
-      memory?.maintain(Date.now())
-      // 关着的那一层不写，镜像入口自己会返回没写
-      const mirrored = self?.mirror()
-      // 镜像写入立刻入账，下一次核对才不会把它当成正文被改
-      if ((mirrored?.written ?? 0) > 0) memory?.ledger('sync')
+      runMaintenance({ at: Date.now(), memory, self, logFile: maintenanceLogFile })
     } catch (error) {
       // 每天这一步失手就记一行，别让定时器把整个进程带走
       ctx.logger('qq-bundle').warn('每天整理没做完：%s', String(error))
