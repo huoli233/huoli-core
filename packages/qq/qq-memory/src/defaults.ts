@@ -22,6 +22,8 @@ export interface Tuning {
   shortQueryMinHits: number
   /** 长查询命中几个片段算相关 */
   longQueryMinHits: number
+  /** 向量路的相似度低于这条线不算候选 */
+  minSimilarity: number
   /** 相似度在总分里占多少 */
   weightSim: number
   /** 重要度在总分里占多少 */
@@ -46,6 +48,7 @@ export const DEFAULTS: Tuning = {
   shortQueryChars: 8,
   shortQueryMinHits: 1,
   longQueryMinHits: 2,
+  minSimilarity: 0.52,
   weightSim: 0.75,
   weightImportance: 0.15,
   weightFreshness: 0.1,

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { resolveTuning } from '../src/defaults.ts'
-import { keyGrams, recall } from '../src/recall.ts'
+import { cosineSimilarity, encodeVector, keyGrams, recall } from '../src/recall.ts'
 import { cleanupTempDirs, mount, tempFile } from './harness.ts'
 
 const NOW = new Date(2026, 10, 1, 12, 0).getTime()
@@ -84,7 +84,8 @@ describe('理由可以复算', () => {
 
     const hit = recall(seam.store, { query: '周末开黑', scope: 'group:1', now: NOW })[0]
     if (hit === undefined) throw new Error('没有找到')
-    const sim = hit.reasons.grams.length / keyGrams('周末开黑', tuning.gramSize).length
+    const keywordSim = hit.reasons.grams.length / keyGrams('周末开黑', tuning.gramSize).length
+    const sim = Math.max(keywordSim, hit.reasons.vectorSim ?? 0)
 
     expect(hit.score).toBeCloseTo(
       tuning.weightSim * sim + hit.reasons.importanceTerm + hit.reasons.freshnessTerm,
@@ -94,7 +95,8 @@ describe('理由可以复算', () => {
       tuning.weightFreshness / (1 + (NOW - hit.at) / DAY_MS / tuning.freshnessDays),
       12,
     )
-    expect(hit.reasons.vectorSim).toBeNull()
+    expect(hit.reasons.vectorSim).toBe(cosineSimilarity(encodeVector('周末开黑'), encodeVector(hit.text)))
+    expect(hit.reasons.vectorSim).toBeGreaterThanOrEqual(0)
   })
 
   it('命中片段都真的出现在正文里', () => {

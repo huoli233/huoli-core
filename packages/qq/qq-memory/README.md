@@ -33,8 +33,8 @@ kind: "package-reference"
 
 ## Known Limitations and Deferred Work
 
-- 向量检索路只有 `VectorPath` 接口，没有实现：`reasons.vectorSim` 恒为 `null`，规范里 0.52 的相似度门槛尚未生效。
-- 召回只按 2-gram 字面重合判定，换个说法说同一件事匹配不到。
+- 向量路是字面哈希编码，不带语义模型：意思相近但用字不同的两句（如「爬山」与「登山」）仍然对不上。
+- 每次召回都按需重算库内每条的向量，没有落盘缓存；条目多到几千条时要换成预先算好并持久化的索引。
 - 注入是纯函数，追加位置由消息入口保证；本包不接消息链路，也不改系统提示词。
 - 全部记忆装在一个文件里，条数多了要换存储。
 - 重要度只在写入时算一次，之后不会自动重评。
@@ -49,7 +49,9 @@ kind: "package-reference"
 来源只有五档：`chat`、`tool`、`proactive`、`manual`、`self`，写入时按 `MEMORY_SOURCES` 校验，别的值直接抛 `memory.source_unknown`；`metadata` 必须是对象且键为非空字符串，否则抛 `memory.metadata_invalid`。第五档由镜像专用入口 `rememberSelf(entry, at)` 写入：它照 `remember` 落一条，`layer` 固定 `semantic`、`source` 固定 `self`、重要度取 `selfImportanceFloor`（默认 80）与调用方给的值里较大的那个，`metadata` 由它自己拼 `self_id`、`self_kind`、`evidence`、`mirrored_at` 四项，缺来源键或证据就抛 `memory.mirror_incomplete`。同一个 `self_id` 只写一条，重复调用拿回原来那条并给出 `created: false`；`mirroredSelfIds()` 供镜像侧先查再写。
 
 
-召回在 `src/recall.ts`：`recall(store, { query, scope, limit, now, tuning })` 返回 `RecallHit[]`，每条只有 `id`、`text`、`at`、`clarity`、`score`、`reasons` 六个字段；`reasons` 是 `grams`、`vectorSim`、`importanceTerm`、`freshnessTerm`，分数按 `weightSim × 相似度 + importanceTerm + freshnessTerm` 重算得到，清晰度与时间读顶层那两个字段，保留度由两项一并重算。关键词路把两边都按 `gramSize` 切成片段，短查询命中一条、长查询命中两条才算相关；没有候选就是空数组，占位句留给渲染层。副作用只在 `touch`：召回次数加一、`lastSeenAt` 改成现在。
+召回在 `src/recall.ts`：`recall(store, { query, scope, limit, now, tuning })` 返回 `RecallHit[]`，每条只有 `id`、`text`、`at`、`clarity`、`score`、`reasons` 六个字段；`reasons` 是 `grams`、`vectorSim`、`importanceTerm`、`freshnessTerm` 四项，相似度取关键词路的片段命中比例与 `vectorSim` 里较大的一个，分数按 `weightSim × 相似度 + importanceTerm + freshnessTerm` 重算得到，清晰度与时间读顶层那两个字段，保留度由两项一并重算。关键词路把两边都按 `gramSize` 切成片段，短查询命中一条、长查询命中两条才算相关，命中之后不受相似度门槛约束。
+
+向量路把正文与查询各自编成 1024 维稀疏向量：单字与 2-gram 分别按 FNV-1a 哈希落到桶里，2-gram 另外给它覆盖的两个相邻字各记一次，最后按长度归一化，空文本是零向量。两段向量的余弦用 `cosineSimilarity` 算，它等于规范里「1 减平方距离的一半」；低于 `minSimilarity`（默认 0.52）的候选直接丢弃，任一侧是零向量时这一路整体缺席。条目只遍历一次，两路命中的同一条只产出一条结果，`grams` 与 `vectorSim` 一起留下两路的证据。编码在读取时按需计算，不落盘、不存第二份。没有候选就是空数组，占位句留给渲染层。副作用只在 `touch`：召回次数加一、`lastSeenAt` 改成现在。
 
 注入在 `src/inject.ts`：`buildInjectBlock(hits, limitChars?, limitItems?)` 按逐字模板拼出背景，整串不超过 `injectMaxChars`（默认 1200），条数不超过 `injectMaxItems`（默认 3），放不下就整条丢并在末尾标出省略条数，首条就超限时返回空串；`trace` 与 `forgotten` 不进来。`injectIntoUserText(text, block)` 只在原文之后隔一个空行接上去，`shouldInject(turnIndex, lastInjectedTurn, repeatTurns?)` 判断这一轮该不该插。
 
