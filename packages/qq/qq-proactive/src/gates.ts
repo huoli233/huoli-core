@@ -11,6 +11,8 @@ export interface GateInput {
   humanActive: boolean
   botBusy: boolean
   hasChannel: boolean
+  /** 身体给的想开口的劲，零到一，没接上身体时为空 */
+  proactiveBias?: number
 }
 
 // 时分转成当天的分钟数
@@ -22,14 +24,32 @@ function toMinutes(hhmm: string): number {
   return hour * 60 + minute
 }
 
+// 劲头夹进可用区间：没接上身体按满劲头算，接上了也不低于下限
+function biasFactor(bias: number | undefined, config: GateConfig): number {
+  if (bias === undefined || !Number.isFinite(bias)) return 1
+  return Math.min(1, Math.max(config.biasFloor, bias))
+}
+
 /**
- * 两次开口之间隔多久：冷却区间的中点，同样的配置永远得到同样的数
+ * 两次开口之间隔多久：冷却区间的中点除以劲头，同样的输入永远得到同样的数
  * @param config - 闸门配置
+ * @param bias - 身体给的想开口的劲，零到一，不给按满劲头算
  * @returns 毫秒数
  */
-export function cooldownMs(config: GateConfig): number {
+export function cooldownMs(config: GateConfig, bias?: number): number {
   const span = Math.max(0, config.gapMaxMs - config.gapMinMs)
-  return config.gapMinMs + Math.floor(span / 2)
+  const base = config.gapMinMs + Math.floor(span / 2)
+  return Math.round(base / biasFactor(bias, config))
+}
+
+/**
+ * 这一天最多开口几次：额度按劲头缩，最低留下限那么多次
+ * @param config - 闸门配置
+ * @param bias - 身体给的想开口的劲，零到一，不给按满劲头算
+ * @returns 次数
+ */
+export function dailyCapOf(config: GateConfig, bias?: number): number {
+  return Math.max(config.dailyFloor, Math.floor(config.dailyMax * biasFactor(bias, config)))
 }
 
 /**
@@ -66,11 +86,11 @@ export function runGates(input: GateInput): GateVerdict {
     return { ok: false, code: 'proactive.quiet', reason: '现在是安静时段', retryAt: endOfQuiet(input.now, config.quietEnd) }
   }
 
-  if (input.todayCount >= config.dailyMax) {
+  if (input.todayCount >= dailyCapOf(config, input.proactiveBias)) {
     return { ok: false, code: 'proactive.day_full', reason: '今天主动开口够了', retryAt: startOfNextDay(input.now) }
   }
 
-  const gap = cooldownMs(config)
+  const gap = cooldownMs(config, input.proactiveBias)
   if (input.lastSpokenAt > 0 && input.now - input.lastSpokenAt < gap) {
     return { ok: false, code: 'proactive.too_soon', reason: '上次开口还不久', retryAt: input.lastSpokenAt + gap }
   }

@@ -6,6 +6,7 @@ import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import {
   dropRepeats,
   orderByArrival,
+  PROACTIVE_DEFAULTS,
   type Candidate,
   type GateConfig,
   type GateVerdict,
@@ -16,7 +17,7 @@ import { createPendingStore, createTimingStore, PENDING_TTL_MS, type PendingStor
 
 export type { Candidate, CandidateFacts, GateConfig, GateVerdict, PendingItem } from './score.ts'
 export { orderByArrival, dropRepeats, sameThing, PROACTIVE_DEFAULTS } from './score.ts'
-export { runGates, inQuietHours, endOfQuiet, startOfNextDay, cooldownMs } from './gates.ts'
+export { runGates, inQuietHours, endOfQuiet, startOfNextDay, cooldownMs, dailyCapOf } from './gates.ts'
 export type { PendingStore, TimingStore } from './store.ts'
 export { describeWait, PENDING_TTL_MS } from './store.ts'
 
@@ -37,13 +38,29 @@ export interface ProactiveFacts {
   proactive_bias: number | null
 }
 
+/** 投递的结论：成了给那一条，没成就给码与下一步 */
+export interface DeliverResult {
+  /** 投没投出去 */
+  ok: boolean
+  /** 投出去的那一条，没投成时没有 */
+  item?: PendingItem
+  /** 失败码，形如 proactive.原因 */
+  code?: string
+  /** 人能读的一句话 */
+  reason?: string
+  /** 下一步怎么做 */
+  hint?: string
+}
+
 /** 一个应用里的主动开口 */
 export interface QqProactiveSeam {
   pending: PendingStore
   timing: TimingStore
+  /** 这一行开没开，调用方据此决定要不要来问 */
+  readonly enabled: boolean
   consider(input: ConsiderInput): ProactiveDecision
   preview(chatKey: string): PendingItem[]
-  deliver(chatKey: string, id: string): PendingItem | null
+  deliver(chatKey: string, id: string): DeliverResult
 }
 
 /** 攒理由时要看的东西 */
@@ -54,7 +71,7 @@ export interface ConsiderInput {
   humanActive: boolean
   botBusy: boolean
   hasChannel: boolean
-  /** 身体那边给的想开口的劲，零到一，只带出去给模型参考 */
+  /** 身体那边给的想开口的劲，零到一，冷却与每天额度都按它缩放 */
   proactiveBias?: number
   config?: Partial<GateConfig>
 }
@@ -69,6 +86,8 @@ export interface Config {
   enabled?: boolean
   /** 一天最多开口几次 */
   dailyMax?: number
+  /** 一天至少开口几次，劲头再低也不低于这个数 */
+  dailyFloor?: number
   /** 安静时段从几点开始 */
   quietStart?: string
   /** 安静时段到几点结束 */
@@ -77,6 +96,8 @@ export interface Config {
   gapMinMs?: number
   /** 冷却区间上限 */
   gapMaxMs?: number
+  /** 劲头低于这个数就按这个数算 */
+  biasFloor?: number
 }
 
 const seams = new WeakMap<Context, QqProactiveSeam>()
@@ -108,15 +129,19 @@ export function apply(ctx: Context, config: Config = {}): void {
   const gateConfig: Partial<GateConfig> = {
     ...config.enabled !== undefined ? { enabled: config.enabled } : {},
     ...config.dailyMax !== undefined ? { dailyMax: config.dailyMax } : {},
+    ...config.dailyFloor !== undefined ? { dailyFloor: config.dailyFloor } : {},
     ...config.quietStart !== undefined ? { quietStart: config.quietStart } : {},
     ...config.quietEnd !== undefined ? { quietEnd: config.quietEnd } : {},
     ...config.gapMinMs !== undefined ? { gapMinMs: config.gapMinMs } : {},
     ...config.gapMaxMs !== undefined ? { gapMaxMs: config.gapMaxMs } : {},
+    ...config.biasFloor !== undefined ? { biasFloor: config.biasFloor } : {},
   }
+  const enabled = config.enabled ?? PROACTIVE_DEFAULTS.enabled
 
   const seam: QqProactiveSeam = {
     pending,
     timing,
+    enabled,
     consider(input) {
       const now = Date.now()
       const facts: ProactiveFacts = { proactive_bias: input.proactiveBias ?? null }
@@ -128,13 +153,14 @@ export function apply(ctx: Context, config: Config = {}): void {
         humanActive: input.humanActive,
         botBusy: input.botBusy,
         hasChannel: input.hasChannel,
+        ...input.proactiveBias !== undefined ? { proactiveBias: input.proactiveBias } : {},
       }
-      const verdict = runGates(gateInput)
-      if (!verdict.ok) return { verdict, pending: [], considered: [], facts }
+      const gate = runGates(gateInput)
+      if (!gate.ok) return { verdict: gate, pending: [], considered: [], facts }
 
       const considered = dropRepeats(orderByArrival(input.candidates), input.history)
       if (considered.length === 0) {
-        const nothing: GateVerdict = { ok: false, code: 'proactive.nothing', reason: '没攒到能说的事' }
+        const nothing: GateVerdict = { ok: false, code: 'proactive.no_candidate', reason: '没攒到能说的事' }
         return { verdict: nothing, pending: [], considered: [], facts }
       }
 
@@ -145,9 +171,9 @@ export function apply(ctx: Context, config: Config = {}): void {
         why: candidate.why,
         facts: {
           kind: candidate.kind,
-          confidence: candidate.confidence,
-          value: candidate.value,
-          risk: candidate.risk,
+          ...candidate.confidence !== undefined ? { confidence: candidate.confidence } : {},
+          ...candidate.value !== undefined ? { value: candidate.value } : {},
+          ...candidate.risk !== undefined ? { risk: candidate.risk } : {},
           source: candidate.source,
           at: candidate.at,
         },
@@ -155,17 +181,24 @@ export function apply(ctx: Context, config: Config = {}): void {
         expiresAt: candidate.at + PENDING_TTL_MS,
       }))
       for (const item of items) pending.put(item)
-      return { verdict, pending: items, considered, facts }
+      return { verdict: { ok: true, code: 'proactive.preview_ready' }, pending: items, considered, facts }
     },
     preview(chatKey) {
-      return pending.live(chatKey)
+      const live = pending.live(chatKey)
+      pending.notePreviewed(live.map(item => item.id))
+      return live
     },
     deliver(chatKey, id) {
       const found = pending.live(chatKey).find(item => item.id === id)
-      if (found === undefined) return null
+      if (found === undefined) {
+        return { ok: false, code: 'proactive.unknown_item', reason: '待发里没有这一条', hint: '先用 preview 看一遍，拿里面的编号来投' }
+      }
+      if (!pending.isPreviewed(found.id)) {
+        return { ok: false, code: 'proactive.not_previewed', reason: '这一条还没先给人看', hint: '先调 preview 摆出来，再投这一条' }
+      }
       pending.markSent(found.id)
       timing.noteSpoken(chatKey)
-      return found
+      return { ok: true, item: found }
     },
   }
   seams.set(ctx, seam)

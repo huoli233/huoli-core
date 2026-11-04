@@ -16,6 +16,10 @@ export interface PendingStore {
   live(chatKey: string): PendingItem[]
   /** 同一个编号只留一条，重复放进来是覆盖 */
   put(item: PendingItem): void
+  /** 已经先给人看过的那几条记下来，投递只认这些 */
+  notePreviewed(ids: readonly string[]): void
+  /** 这一条是不是先给人看过了 */
+  isPreviewed(id: string): boolean
   markSent(id: string): void
   drop(id: string): void
   flush(): void
@@ -23,8 +27,9 @@ export interface PendingStore {
 
 // 文件里的样子
 interface StoredPending {
-  version: 1
+  version: 2
   items: PendingItem[]
+  previewed: string[]
   lastSpokenAt: Record<string, number>
   todayCount: Record<string, number>
 }
@@ -32,21 +37,23 @@ interface StoredPending {
 // 读盘时按可能缺失或为空的字段声明
 interface StoredPendingInput {
   items?: PendingItem[]
+  previewed?: string[] | null
   lastSpokenAt?: Record<string, number> | null
   todayCount?: Record<string, number> | null
 }
 
 // 读文件
 function load(file: string): StoredPending {
-  const empty: StoredPending = { version: 1, items: [], lastSpokenAt: {}, todayCount: {} }
+  const empty: StoredPending = { version: 2, items: [], previewed: [], lastSpokenAt: {}, todayCount: {} }
   try {
     if (!fs.existsSync(file)) return empty
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
     if (text.trim().length === 0) return empty
     const parsed = JSON.parse(text) as StoredPendingInput
     return {
-      version: 1,
+      version: 2,
       items: Array.isArray(parsed.items) ? parsed.items : [],
+      previewed: Array.isArray(parsed.previewed) ? parsed.previewed : [],
       lastSpokenAt: parsed.lastSpokenAt !== undefined && parsed.lastSpokenAt !== null ? parsed.lastSpokenAt : {},
       todayCount: parsed.todayCount !== undefined && parsed.todayCount !== null ? parsed.todayCount : {},
     }
@@ -79,11 +86,20 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
   const clean = (): void => {
     const at = now()
     const kept = data.items.filter(item => item.expiresAt > at)
-    if (kept.length !== data.items.length) {
-      data = { ...data, items: kept }
+    const lived = new Set(kept.map(item => item.id))
+    const stillPreviewed = data.previewed.filter(id => lived.has(id))
+    if (kept.length !== data.items.length || stillPreviewed.length !== data.previewed.length) {
+      data = { ...data, items: kept, previewed: stillPreviewed }
       persist()
     }
   }
+
+  // 已经不在待发里的编号不再记着看过
+  const without = (id: string): StoredPending => ({
+    ...data,
+    items: data.items.filter(item => item.id !== id),
+    previewed: data.previewed.filter(kept => kept !== id),
+  })
 
   return {
     all() {
@@ -95,15 +111,25 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
       return data.items.filter(item => item.chatKey === chatKey)
     },
     put(item) {
-      data = { ...data, items: [...data.items.filter(existing => existing.id !== item.id), item] }
+      const rest = data.items.filter(existing => existing.id !== item.id)
+      data = { ...data, items: [...rest, item] }
       persist()
     },
+    notePreviewed(ids) {
+      const seen = new Set(data.previewed)
+      for (const id of ids) seen.add(id)
+      data = { ...data, previewed: [...seen] }
+      persist()
+    },
+    isPreviewed(id) {
+      return data.previewed.includes(id)
+    },
     markSent(id) {
-      data = { ...data, items: data.items.filter(item => item.id !== id) }
+      data = without(id)
       persist()
     },
     drop(id) {
-      data = { ...data, items: data.items.filter(item => item.id !== id) }
+      data = without(id)
       persist()
     },
     flush() {

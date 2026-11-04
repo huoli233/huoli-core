@@ -2843,7 +2843,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:27`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:29`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2858,6 +2858,8 @@ export interface Config {
   seenMax?: number
   /** 轮次记录放哪，不填就用主目录下的 data */
   decisionsFile?: string
+  /** 入站之后隔多久才再问一次要不要主动开口 */
+  proactiveThrottleMs?: number
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
   /** 允许调用的工具名，空表示不限制 */
@@ -2986,6 +2988,8 @@ export interface Tuning {
   shortQueryMinHits: number
   /** 长查询命中几个片段算相关 */
   longQueryMinHits: number
+  /** 向量路的相似度低于这条线不算候选 */
+  minSimilarity: number
   /** 相似度在总分里占多少 */
   weightSim: number
   /** 重要度在总分里占多少 */
@@ -3027,7 +3031,7 @@ export interface Config {
 
 ## `@huoli/huoli-qq-proactive`
 
-- `source`: [`packages/qq/qq-proactive/src/index.ts:63`](../packages/qq/qq-proactive/src/index.ts)
+- `source`: [`packages/qq/qq-proactive/src/index.ts:80`](../packages/qq/qq-proactive/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3040,6 +3044,8 @@ export interface Config {
   enabled?: boolean
   /** 一天最多开口几次 */
   dailyMax?: number
+  /** 一天至少开口几次，劲头再低也不低于这个数 */
+  dailyFloor?: number
   /** 安静时段从几点开始 */
   quietStart?: string
   /** 安静时段到几点结束 */
@@ -3048,6 +3054,8 @@ export interface Config {
   gapMinMs?: number
   /** 冷却区间上限 */
   gapMaxMs?: number
+  /** 劲头低于这个数就按这个数算 */
+  biasFloor?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-proactive -->
@@ -3175,7 +3183,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:39`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:40`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3306,6 +3314,106 @@ export interface Tuning {
   melatoninUntil: number
   /** 水分流失的代谢倍率，默认 1.0 为基准，参与计算时夹在 0.75 到 1.7 之间 */
   metabolicRate: number
+  /** 夜睡从几点开始，本地小时 0~24，默认 23 点 */
+  sleepFrom: number
+  /** 夜睡到几点算天亮，本地小时 0~24，默认 7 点 */
+  sleepUntil: number
+  /** 睡眠压力高过这条线才睡得着，0~1 标度，默认 0.50 */
+  sleepAdenosineFrom: number
+  /** 夜睡该醒的钟点，本地小时 0~24，默认 7.5 即七点半 */
+  wakeAt: number
+  /** 该醒时刻前后抖动的分钟数，默认 40，让每天不完全一样 */
+  wakeJitterMinutes: number
+  /** 白天里睡眠压力低于这条线就自然醒，0~1 标度，默认 0.30 */
+  wakeAdenosineBelow: number
+  /** 白天最晚这个钟点必须醒，本地小时 0~24，默认 11 点 */
+  wakeLatest: number
+  /** 夜睡一小时掉多少睡眠压力，0~1 标度，默认 0.22 */
+  sleepAdenosineDrop: number
+  /** 夜睡醒后迷糊多久，分钟，默认 15 */
+  groggyMinutes: number
+  /** 午睡时段的起点，本地小时 0~24，默认 12 点 */
+  napFrom: number
+  /** 午睡时段的终点，本地小时 0~24，默认 15 点 */
+  napUntil: number
+  /** 睡眠压力高过这条线才可能睡午觉，0~1 标度，默认 0.22 */
+  napAdenosineAbove: number
+  /** 午睡时段里每分钟睡着的概率，0~1 标度，默认 0.03 */
+  napChancePerMinute: number
+  /** 午睡最短时长，分钟，默认 20 */
+  napMinMinutes: number
+  /** 午睡最长时长，分钟，默认 50 */
+  napMaxMinutes: number
+  /** 午睡一小时掉多少睡眠压力，0~1 标度，默认 0.35，短睡效率更高 */
+  napAdenosineDrop: number
+  /** 午睡醒后迷糊多久，分钟，默认 5 */
+  napGroggyMinutes: number
+  /** 被消息吵醒后还算刚醒多久，分钟，默认 15 */
+  wokenWindowMinutes: number
+  /** 每月开经日，默认 5 号；今天早于它就取上月的这一天 */
+  cycleDom: number
+  /** 经期最后一天，默认第 5 天 */
+  cycleMenstrualEnd: number
+  /** 卵泡期最后一天，默认第 12 天 */
+  cycleFollicularEnd: number
+  /** 排卵期最后一天，默认第 15 天 */
+  cycleOvulationEnd: number
+  /** 黄体期最后一天，默认第 23 天，之后到周期结束都算经前期 */
+  cycleLutealEnd: number
+  /** 经期的雌激素，0~1 标度，默认 0.18 */
+  cycleEstrogenMenstrual: number
+  /** 卵泡期起点的雌激素，0~1 标度，默认 0.25 */
+  cycleEstrogenFollicularStart: number
+  /** 卵泡期终点的雌激素，0~1 标度，默认 0.75 */
+  cycleEstrogenFollicularEnd: number
+  /** 排卵期的雌激素，0~1 标度，默认 0.86 */
+  cycleEstrogenOvulation: number
+  /** 黄体期的雌激素，0~1 标度，默认 0.62 */
+  cycleEstrogenLuteal: number
+  /** 经前期的雌激素，0~1 标度，默认 0.38 */
+  cycleEstrogenPremenstrual: number
+  /** 经期的孕激素，0~1 标度，默认 0.10 */
+  cycleProgesteroneMenstrual: number
+  /** 卵泡期的孕激素，0~1 标度，默认 0.10 */
+  cycleProgesteroneFollicular: number
+  /** 排卵期的孕激素，0~1 标度，默认 0.26 */
+  cycleProgesteroneOvulation: number
+  /** 黄体期起点的孕激素，0~1 标度，默认 0.25 */
+  cycleProgesteroneLutealStart: number
+  /** 黄体期终点的孕激素，0~1 标度，默认 0.70 */
+  cycleProgesteroneLutealEnd: number
+  /** 经前期的孕激素，0~1 标度，默认 0.55 */
+  cycleProgesteronePremenstrual: number
+  /** 经期第一天的痛经，0~1 标度，默认 0.75 */
+  cycleCrampsStart: number
+  /** 经期最后一天的痛经，0~1 标度，默认 0.15 */
+  cycleCrampsEnd: number
+  /** 经前期的痛经，0~1 标度，默认 0.05 */
+  cycleCrampsPremenstrual: number
+  /** 痛经对精力的扣减，默认 0.35 */
+  energyCrampsPenalty: number
+  /** 黄体期与经前期对精力的扣减，默认 0.06 */
+  energyLutealPenalty: number
+  /** 经期对好坏的扣减，默认 0.12 */
+  valenceMenstrualPenalty: number
+  /** 经前期对好坏的扣减，默认 0.10 */
+  valencePremenstrualPenalty: number
+  /** 卵泡期对好坏的加成，默认 0.06 */
+  valenceFollicularGain: number
+  /** 经前期对易怒的加成，默认 0.28 */
+  irritabilityPremenstrualGain: number
+  /** 经期对易怒的加成，默认 0.14 */
+  irritabilityMenstrualGain: number
+  /** 痛经对易怒的加成，默认 0.30 */
+  irritabilityCrampsGain: number
+  /** 细胞因子高过这条线，提示词里要说生病，0~1 标度，默认 0.35 */
+  promptSickCytokinesFrom: number
+  /** 发烧高过这条线也要说生病，0~1 标度，默认 0.30 */
+  promptSickFeverFrom: number
+  /** 睡眠压力高过这条线要说太困，0~1 标度，默认 0.65 */
+  promptSleepyAdenosineFrom: number
+  /** 褪黑素高过这条线也要说太困，0~1 标度，默认 0.55 */
+  promptSleepyMelatoninFrom: number
 }
 
 /** 初始值与漂移都要用到的数值字段，除体温外都是 0~1 */
@@ -3366,6 +3474,12 @@ export interface Baseline {
   cytokines: number
   /** 疼痛，0~1，默认 0.0，不疼 */
   pain: number
+  /** 雌激素，0~1，默认 0.35，之后按周期相位重算 */
+  estrogen: number
+  /** 孕激素，0~1，默认 0.20，之后按周期相位重算 */
+  progesterone: number
+  /** 痛经，0~1，默认 0.0，只在经期与前经期抬起来 */
+  cramps: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-vitals -->

@@ -27,10 +27,16 @@
       "path": "../qq-channel"
     },
     {
+      "path": "../qq-material"
+    },
+    {
       "path": "../qq-memory"
     },
     {
       "path": "../qq-pacing"
+    },
+    {
+      "path": "../qq-proactive"
     },
     {
       "path": "../qq-subject"

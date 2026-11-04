@@ -31,9 +31,11 @@ kind: "package-reference"
 
 不影响提示词前缀。
 
-#### Refusals
+##### Refusals
 
-发不出去时不改写内容、不代说，只回一个失败：错误码点号分层（`outbound.not_allowed`、`outbound.quiet`、`outbound.too_long`、`outbound.banned`、`outbound.rate`），后面跟一句可读原因和「几点之后再来」。
+```markdown
+不改写内容、不代说，只回一个失败：错误码点号分层（outbound.not_allowed、outbound.quiet、outbound.too_long、outbound.banned、outbound.rate），后面跟一句可读原因和「几点之后再来」。
+```
 
 ## Known Limitations and Deferred Work
 

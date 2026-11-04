@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   apply,
   cooldownMs,
+  dailyCapOf,
   PROACTIVE_DEFAULTS,
   qqProactiveOf,
   runGates,
@@ -193,7 +194,8 @@ describe('先给人看再发', () => {
 
     const delivered = seam.deliver('group:1', later.id)
 
-    expect(delivered?.text).toBe(CANDIDATES[1]?.text)
+    expect(delivered.ok).toBe(true)
+    expect(delivered.item?.text).toBe(CANDIDATES[1]?.text)
   })
 
   it('投递之后就不在待发里了', () => {
@@ -220,10 +222,13 @@ describe('先给人看再发', () => {
   it('不认识的编号谁也不投递', () => {
     const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
     consider(seam, 'group:1')
+    seam.preview('group:1')
 
     const delivered = seam.deliver('group:1', 'not-a-number')
 
-    expect(delivered).toBeNull()
+    expect(delivered.ok).toBe(false)
+    expect(delivered.code).toBe('proactive.unknown_item')
+    expect(delivered.hint).not.toBe('')
     expect(seam.preview('group:1')).toHaveLength(2)
     expect(seam.timing.lastSpokenAt('group:1')).toBe(0)
   })
@@ -348,7 +353,7 @@ describe('关掉再开', () => {
   })
 })
 
-describe('想开口的劲只给模型参考', () => {
+describe('想开口的劲照原样带出去', () => {
   it('把身体给的数原样带出去', () => {
     const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
 
@@ -416,5 +421,154 @@ describe('想开口的劲只给模型参考', () => {
       expect(Object.hasOwn(item, 'proactive_bias')).toBe(false)
       expect(Object.hasOwn(item, 'score')).toBe(false)
     }
+  })
+})
+
+describe('先预览再投递', () => {
+  it('没先给人看就投，被拒并给出码与下一步', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+    const first = consider(seam, 'group:1')
+    const target = first.pending[0]
+    if (target === undefined) throw new Error('没有攒住任何一条')
+
+    const delivered = seam.deliver('group:1', target.id)
+
+    expect(delivered.ok).toBe(false)
+    expect(delivered.code).toBe('proactive.not_previewed')
+    expect(delivered.reason).not.toBe('')
+    expect(delivered.hint).not.toBe('')
+    expect(seam.preview('group:1')).toHaveLength(2)
+  })
+
+  it('摆出来看过的那一条就能投出去', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+    const first = consider(seam, 'group:1')
+    const target = first.pending[0]
+    if (target === undefined) throw new Error('没有攒住任何一条')
+    seam.preview('group:1')
+
+    const delivered = seam.deliver('group:1', target.id)
+
+    expect(delivered.ok).toBe(true)
+    expect(delivered.item?.text).toBe(target.text)
+    expect(seam.timing.lastSpokenAt('group:1')).toBeGreaterThan(0)
+  })
+
+  it('投过的编号再投一次不认', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+    const first = consider(seam, 'group:1')
+    const target = first.pending[0]
+    if (target === undefined) throw new Error('没有攒住任何一条')
+    seam.preview('group:1')
+    seam.deliver('group:1', target.id)
+
+    const again = seam.deliver('group:1', target.id)
+
+    expect(again.ok).toBe(false)
+    expect(again.code).toBe('proactive.unknown_item')
+  })
+
+  it('别的会话摆出来的编号在另一处投不了', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+    const first = consider(seam, 'group:1')
+    const target = first.pending[0]
+    if (target === undefined) throw new Error('没有攒住任何一条')
+    seam.preview('group:1')
+
+    expect(seam.deliver('group:2', target.id).code).toBe('proactive.unknown_item')
+  })
+
+  it('攒到候选时给出可以投的状态码', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    expect(consider(seam, 'group:1').verdict.code).toBe('proactive.preview_ready')
+  })
+
+  it('没攒到候选时给出没候选的状态码，也带出劲头', () => {
+    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
+
+    const empty = consider(seam, 'group:1', { candidates: [] })
+
+    expect(empty.pending).toHaveLength(0)
+    expect(empty.verdict.code).toBe('proactive.no_candidate')
+    expect(seam.preview('group:1')).toHaveLength(0)
+  })
+})
+
+describe('劲头接进冷却与额度', () => {
+  const NOW = BASE
+  const OPEN = { enabled: true, quietStart: '00:00', quietEnd: '00:00' }
+
+  const verdictAt = (bias: number | undefined, overrides: { todayCount?: number; lastSpokenAt?: number } = {}) =>
+    runGates({
+      now: NOW,
+      config: OPEN,
+      lastSpokenAt: overrides.lastSpokenAt ?? NOW - 60_000,
+      todayCount: overrides.todayCount ?? 0,
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+      ...bias !== undefined ? { proactiveBias: bias } : {},
+    })
+
+  it('劲头越低，下一次能开口的时刻越晚', () => {
+    const low = verdictAt(0.3)
+    const high = verdictAt(1)
+
+    expect(low.code).toBe('proactive.too_soon')
+    expect(high.code).toBe('proactive.too_soon')
+    expect(low.retryAt).toBeGreaterThan(high.retryAt ?? 0)
+    expect(high.retryAt).toBe(NOW - 60_000 + cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 1))
+  })
+
+  it('劲头越低，每天的额度越小', () => {
+    const config = { ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 10 }
+
+    expect(dailyCapOf(config, 0.3)).toBeLessThan(dailyCapOf(config, 1))
+    expect(dailyCapOf(config, 0.3)).toBe(3)
+    expect(dailyCapOf(config, 1)).toBe(10)
+  })
+
+  it('同一个输入算两次得到同一个下次时刻', () => {
+    const first = verdictAt(0.42)
+    const second = verdictAt(0.42)
+
+    expect(first.retryAt).toBe(second.retryAt)
+  })
+
+  it('劲头低于下限就按下限算，间隔不会被拉到没边', () => {
+    const tiny = verdictAt(0.01)
+    const floor = verdictAt(PROACTIVE_DEFAULTS.biasFloor)
+
+    expect(tiny.retryAt).toBe(floor.retryAt)
+    expect(verdictAt(0.01).retryAt).toBe(NOW - 60_000 + cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, PROACTIVE_DEFAULTS.biasFloor))
+  })
+
+  it('没接上身体就按满劲头算，跟原来一样', () => {
+    expect(verdictAt(undefined).retryAt).toBe(NOW - 60_000 + cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }))
+  })
+
+  it('额度按劲头缩，低劲头先撞上今天满了', () => {
+    const config = { ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 10 }
+    const cap = dailyCapOf(config, 0.3)
+
+    const full = verdictAt(0.3, { todayCount: cap, lastSpokenAt: 0 })
+    const room = verdictAt(1, { todayCount: cap, lastSpokenAt: 0 })
+
+    expect(full.code).toBe('proactive.day_full')
+    expect(room.ok).toBe(true)
+  })
+
+  it('额度有下限，至少还能有一天一次的余地', () => {
+    const config = { ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 4 }
+
+    expect(dailyCapOf(config, 0.01)).toBe(PROACTIVE_DEFAULTS.dailyFloor)
+  })
+
+  it('劲头能改下限，改完间隔跟着变', () => {
+    const strict = { ...PROACTIVE_DEFAULTS, ...OPEN, biasFloor: 0.5 }
+
+    expect(cooldownMs(strict, 0.2)).toBe(cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 0.5))
+    expect(cooldownMs(strict, 0.2)).toBeLessThan(cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 0.2))
   })
 })

@@ -8,9 +8,11 @@ import '@huoli/huoli-system-prompt'
 import '@huoli/huoli-agent'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
+import { qqMaterialOf } from '@huoli/huoli-qq-material'
 import { qqMemoryOf } from '@huoli/huoli-qq-memory'
 import { hasWords, qqChannelOf, type IncomingMessage } from '@huoli/huoli-qq-channel'
 import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
+import { qqProactiveOf, type Candidate, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { qqSelfOf } from '@huoli/huoli-qq-self'
 import { qqVitalsOf, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
@@ -35,6 +37,8 @@ export interface Config {
   seenMax?: number
   /** 轮次记录放哪，不填就用主目录下的 data */
   decisionsFile?: string
+  /** 入站之后隔多久才再问一次要不要主动开口 */
+  proactiveThrottleMs?: number
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
   /** 允许调用的工具名，空表示不限制 */
@@ -271,6 +275,84 @@ export function apply(ctx: Context, config: Config = {}): void {
       offIncoming()
       offPoke()
       offOutbound()
+    })
+  }
+
+  // 主动开口：每轮收尾与每次入站后（按节流）问一次要不要开口，它关着就一次都不问
+  const proactive = qqProactiveOf(ctx)
+  const material = qqMaterialOf(ctx)
+  const throttleMs = Math.max(0, config.proactiveThrottleMs ?? BUNDLE_DEFAULTS.proactiveThrottleMs)
+  const lastConsidered = new Map<string, number>()
+
+  // 心里惦记着的事就是她想开口的由头，攒候选时只带原话与来源，不添任何分数
+  const candidatesOf = (chatKey: string): Candidate[] => {
+    if (material === undefined) return []
+    return material.thoughts.live(chatKey).map(thought => ({
+      id: thought.id,
+      kind: 'share' as const,
+      why: '有一件事一直惦记着',
+      text: thought.text,
+      source: 'thought',
+      at: thought.at,
+    }))
+  }
+
+  // 结果码进记录时写成 proactive:<原因>，点只留在代码里
+  const reasonOf = (code: string): string => {
+    const cut = code.indexOf('.')
+    return `proactive:${cut < 0 ? code : code.slice(cut + 1)}`
+  }
+
+  // 每考虑一次落一条：攒到、拦下、没攒到都落，事后都答得出为什么没开口
+  const noteConsidered = (chatKey: string, at: number, decision: ProactiveDecision): void => {
+    const code = decision.verdict.code ?? 'proactive.no_candidate'
+    try {
+      decisions.append({
+        at,
+        chatKey,
+        awake: false,
+        reason: reasonOf(code),
+        attempted: false,
+        sent: 0,
+        blocked: decision.verdict.ok ? null : { code, retryAt: decision.verdict.retryAt ?? null },
+      })
+    } catch (error) {
+      ctx.logger('qq-bundle').warn('主动开口的记录写不进去：%s', String(error))
+    }
+  }
+
+  const considerProactive = (chatKey: string, at: number, busy: boolean, throttled: boolean): void => {
+    if (proactive === undefined || !proactive.enabled) return
+    const last = lastConsidered.get(chatKey) ?? 0
+    if (throttled && at - last < throttleMs) return
+    lastConsidered.set(chatKey, at)
+    const body = vitals?.read()
+    const decision = proactive.consider({
+      chatKey,
+      candidates: candidatesOf(chatKey),
+      history: [],
+      humanActive: false,
+      botBusy: busy,
+      hasChannel: channel !== undefined,
+      ...body !== undefined ? { proactiveBias: body.proactive_bias } : {},
+    })
+    // 攒住的当场摆出来，投递只认摆过的那几条
+    if (decision.pending.length > 0) proactive.preview(chatKey)
+    noteConsidered(chatKey, at, decision)
+  }
+
+  // 一轮刚收尾，人和机器都没在说，这正是问她要不要开口的时候
+  ctx.on('agent/turn-stopping', ({ agent }) => {
+    considerProactive(agent.id, Date.now(), false, false)
+  })
+
+  // 入站之后按节流再问一次：消息密的时候不必每条都问
+  if (channel !== undefined) {
+    const offIncomingProactive = channel.onIncoming((message) => {
+      considerProactive(message.chatKey, Date.now(), rounds.has(message.chatKey), true)
+    })
+    ctx.effect(() => () => {
+      offIncomingProactive()
     })
   }
 
