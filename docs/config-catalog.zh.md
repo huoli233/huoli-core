@@ -2884,7 +2884,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:42`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:44`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2976,7 +2976,7 @@ export interface Config {
 
 - `inject`: `tools`
 - `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
-- `source`: [`packages/qq/qq-memory/src/index.ts:107`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:108`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2985,6 +2985,8 @@ export interface Config {
   file?: string
   /** 账本存哪，不填就用主目录下的 data */
   ledgerFile?: string
+  /** 健康日志存哪，不填就用主目录下的 data */
+  healthLogFile?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
   /** 想改哪些默认参数 */
@@ -3023,6 +3025,14 @@ export interface Tuning extends DecayParams, RecoverParams {
   freshnessDays: number
   /** 镜像写进来时重要度不低于这条线 */
   selfImportanceFloor: number
+  /** 每天那一行还写不写进健康日志，关掉就一次都不写 */
+  healthLog: boolean
+  /** 已入队还没写入的条数超过它就在健康一行末尾告警 */
+  pendingAlert: number
+  /** 受保护条数超过它就在健康一行末尾告警 */
+  pinnedAlert: number
+  /** 已退役与只剩印象的条数占未退役条数的比例超过它就在健康一行末尾告警 */
+  coldRatioAlert: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-memory -->

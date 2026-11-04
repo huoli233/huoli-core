@@ -30,6 +30,9 @@ export interface Fingerprint {
   len: number
 }
 
+/** 读账本时的三种情况：读得出来、文件还没建过、文件坏了读不出来 */
+export type LedgerReadStatus = 'ok' | 'absent' | 'broken'
+
 /** 账本文件的内容 */
 export interface LedgerBook {
   schemaVersion: number
@@ -47,6 +50,9 @@ export interface LedgerChange {
 
 /** 对账结果 */
 export interface LedgerReport {
+  /** 读账本时看到的情况，读不出来时后面的差异都不作数 */
+  read: LedgerReadStatus
+  /** 全部对上才算 true，账本读不出来一律是 false */
   ok: boolean
   /** 对得上的条数，退役的也算对上 */
   held: number
@@ -175,9 +181,10 @@ export function syncBook(book: LedgerBook, items: readonly MemoryItem[]): { book
  * 对账：账本里每条都还在、正文没被改、退役的仍退役且没有正文，现在每条也都已入账
  * @param book - 账本
  * @param items - 现在的全部记忆
+ * @param read - 读这本账本时看到的情况，账本已经读出来时按默认值算
  * @returns 对账结果
  */
-export function verifyBook(book: LedgerBook, items: readonly MemoryItem[]): LedgerReport {
+export function verifyBook(book: LedgerBook, items: readonly MemoryItem[], read: LedgerReadStatus = 'ok'): LedgerReport {
   const byId = new Map<string, MemoryItem>()
   for (const item of items) byId.set(item.id, item)
   const lost: string[] = []
@@ -208,8 +215,10 @@ export function verifyBook(book: LedgerBook, items: readonly MemoryItem[]): Ledg
     changed.push({ id, expectedLen: entry.len, actualLen: now.len })
   }
   const unrecorded = items.filter(item => book.entries[item.id] === undefined).map(item => item.id)
+  const matched = lost.length === 0 && changed.length === 0 && unrecorded.length === 0
   return {
-    ok: lost.length === 0 && changed.length === 0 && unrecorded.length === 0,
+    read,
+    ok: read === 'ok' && matched,
     held,
     retired,
     lost,
@@ -224,6 +233,8 @@ export function verifyBook(book: LedgerBook, items: readonly MemoryItem[]): Ledg
  * @returns 拼好的话
  */
 export function describeLedger(report: LedgerReport): string {
+  // 读不出来时一条都没核对上，先说这一句，免得把空账本当成对得上
+  if (report.read === 'broken') return '账本读不出来，一条都没核对上'
   const retiredPart = `已退役 ${report.retired} 条`
   if (report.ok) return `账本对得上，${report.held} 条，其中${retiredPart}`
   const parts: string[] = []
@@ -237,14 +248,14 @@ export function describeLedger(report: LedgerReport): string {
   return parts.join('；')
 }
 
-// 读账本，读不出来就当还没建过，靠随后的对账把话说清
-function readBook(file: string): LedgerBook {
+// 读账本，读不出来要分两种：文件还没建过，与文件坏了读不出来
+function readBook(file: string): { book: LedgerBook; status: LedgerReadStatus } {
   try {
-    if (!fs.existsSync(file)) return emptyBook()
+    if (!fs.existsSync(file)) return { book: emptyBook(), status: 'absent' }
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
-    if (text.trim() === '') return emptyBook()
+    if (text.trim() === '') return { book: emptyBook(), status: 'absent' }
     const parsed: unknown = JSON.parse(text)
-    if (!isRecord(parsed)) return emptyBook()
+    if (!isRecord(parsed)) return { book: emptyBook(), status: 'broken' }
     const entries: Record<string, LedgerEntry> = {}
     if (isRecord(parsed.entries)) {
       for (const [id, value] of Object.entries(parsed.entries)) {
@@ -253,9 +264,10 @@ function readBook(file: string): LedgerBook {
     }
     const version = parsed.schemaVersion
     const schemaVersion = typeof version === 'number' && Number.isInteger(version) && version >= 1 ? version : 1
-    return { schemaVersion, entries }
+    return { book: { schemaVersion, entries }, status: 'ok' }
   } catch {
-    return emptyBook()
+    // 读不动的账本连同解析失败一起报成坏账本，由调用方按 ERROR 处理
+    return { book: emptyBook(), status: 'broken' }
   }
 }
 
@@ -281,11 +293,15 @@ function countEntries(book: LedgerBook): number {
 export function runLedger(action: LedgerAction, options: LedgerRunOptions): LedgerRunResult {
   const current = readBook(options.file)
   if (action === 'verify') {
-    return { action, report: verifyBook(current, options.items), added: [], entries: countEntries(current) }
+    return { action, report: verifyBook(current.book, options.items, current.status), added: [], entries: countEntries(current.book) }
+  }
+  // 坏账本一个字都不覆盖：补新或重建都会把原有指纹抹掉，等人工处理
+  if (current.status === 'broken') {
+    return { action, report: verifyBook(current.book, options.items, current.status), added: [], entries: countEntries(current.book) }
   }
   const next = action === 'init'
     ? { book: initBook(options.items), added: options.items.map(item => item.id) }
-    : syncBook(current, options.items)
+    : syncBook(current.book, options.items)
   writeBook(options.file, next.book)
   return { action, report: verifyBook(next.book, options.items), added: next.added, entries: countEntries(next.book) }
 }

@@ -10,7 +10,7 @@ import { recall, type RecallHit } from './recall.ts'
 import { registerMemoryTools } from './tools.ts'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { defaultLedgerFile, runLedger, type LedgerAction, type LedgerRunResult } from './ledger.ts'
-import { healthLine, localDay } from './health.ts'
+import { appendHealthLine, defaultHealthLogFile, healthLine, localDay } from './health.ts'
 import { clampImportance, metadataOr, sourceOr } from './guard.ts'
 import { mirroredBy, mirroredSelfIds } from './mirror.ts'
 import {
@@ -41,7 +41,7 @@ export { cosineSimilarity, encodeVector, keyGrams, recall, renderRecall } from '
 export { buildInjectBlock, injectIntoUserText, shouldInject } from './inject.ts'
 export { decayAll, promoteAll, sweepOnce, touch } from './sweep.ts'
 export { DEFAULTS, resolveTuning } from './defaults.ts'
-export type { Tuning } from './defaults.ts'
+export type { AlertThresholds, Tuning } from './defaults.ts'
 export {
   defaultLedgerFile,
   describeLedger,
@@ -60,12 +60,13 @@ export type {
   LedgerChange,
   LedgerEntry,
   LedgerEntryState,
+  LedgerReadStatus,
   LedgerReport,
   LedgerRunOptions,
   LedgerRunResult,
 } from './ledger.ts'
-export { healthCounts, healthLine, localDay } from './health.ts'
-export type { HealthCounts, HealthInput } from './health.ts'
+export { appendHealthLine, defaultHealthLogFile, healthAlerts, healthCounts, healthLine, ledgerLevel, localDay } from './health.ts'
+export type { HealthAlert, HealthCounts, HealthInput, LedgerLevel } from './health.ts'
 
 /** 每天跑完一遍之后的交代 */
 export interface MaintainResult {
@@ -109,6 +110,8 @@ export interface Config {
   file?: string
   /** 账本存哪，不填就用主目录下的 data */
   ledgerFile?: string
+  /** 健康日志存哪，不填就用主目录下的 data */
+  healthLogFile?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
   /** 想改哪些默认参数 */
@@ -147,6 +150,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const tuning = resolveTuning(config.tuning)
   const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-memory.json')
   const ledgerFile = config.ledgerFile ?? defaultLedgerFile(config.home)
+  const healthLogFile = config.healthLogFile ?? defaultHealthLogFile(config.home)
   const store = createMemoryStore({ file })
   const scopeOf = (chatKey: string): string => chatKey
   const run = (action: LedgerAction): LedgerRunResult => runLedger(action, { file: ledgerFile, items: store.all() })
@@ -254,14 +258,17 @@ export function apply(ctx: Context, config: Config = {}): void {
       const swept = sweepOnce(store, now)
       // 补账在退役之后，账本才记得住这次退的是哪条
       const synced = run('sync')
-      store.setState({ lastMaintainedDay: day })
       const line = healthLine({
         items: store.all(),
         now,
         injectMaxChars: tuning.injectMaxChars,
         protectLine: tuning.protectLine,
         ledger: synced.report,
+        thresholds: tuning,
       })
+      // 整理日先记账再写日志：写日志失手时这一天不会因为重跑而多衰减一次
+      store.setState({ lastMaintainedDay: day })
+      if (tuning.healthLog) appendHealthLine(healthLogFile, line)
       return {
         didWork: true,
         lastMaintainedDay: day,

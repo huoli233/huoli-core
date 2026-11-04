@@ -7,7 +7,7 @@ kind: "package-reference"
 
 ## Summary
 
-记事情：刚发生、这段经历、长期印象、私下的事，四层。会慢慢变淡，一次只降一档，淡到底就先退役再清掉正文，只留编号与退役时刻。被找出来会重新变清楚。重要度每天按显著度、召回次数与情绪掉一点，到保护线以上就不再掉。每条另记一份指纹进账本，每天只整理一次、顺手补新账并写一行健康记录。
+记事情：刚发生、这段经历、长期印象、私下的事，四层。会慢慢变淡，一次只降一档，淡到底就先退役再清掉正文，只留编号与退役时刻。被找出来会重新变清楚。重要度每天按显著度、召回次数与情绪掉一点，到保护线以上就不再掉。每条另记一份指纹进账本，每天只整理一次、顺手补新账并把一行健康记录追加进日志。
 
 ## Table of Contents
 
@@ -39,6 +39,7 @@ kind: "package-reference"
 - 全部记忆装在一个文件里，条数多了要换存储。
 - 重要度只在写入时算一次，之后只由每日衰减与召回回升改，没有按内容重评。
 - `maintain` 一天只跑一次由本包的整理日兜底，真正的每日定时触发在组合包里，本包没有自己的调度。
+- 健康一行的 `pending` 恒为 0：写入是当场落盘，本包没有排队等写入的一层，队列出现之前它不反映任何积压。
 - 镜像按来源键（`metadata.self_id`）去重，同一个来源换了来源键仍会各写一条：去重认的是来源位置，不是正文。
 
 <a id="dev-note"></a>
@@ -57,4 +58,4 @@ kind: "package-reference"
 
 注入在 `src/inject.ts`：`buildInjectBlock(hits, limitChars?, limitItems?)` 按逐字模板拼出背景，整串不超过 `injectMaxChars`（默认 1200），条数不超过 `injectMaxItems`（默认 3），放不下就整条丢并在末尾标出省略条数，首条就超限时返回空串；`trace` 与 `forgotten` 不进来。`injectIntoUserText(text, block)` 只在原文之后隔一个空行接上去，`shouldInject(turnIndex, lastInjectedTurn, repeatTurns?)` 判断这一轮该不该插。
 
-账本在 `src/ledger.ts`：`init` 给现有全部记忆建账，`sync` 只补没记过的编号，`verify` 要求账本里每条都还在、正文没被改、现在每条也都已入账；`describeLedger` 把差异点成编号。文件头带 `schemaVersion`（现在是 1，缺这个字段的旧账本按 1 读，读回不报错），每条记 `sha256`、`len` 与 `state`，`state` 取 `held` 或 `retired`，退役的另带 `retiredAt`。淡到底的那条由整理先标退役再清正文，`sync` 把账本里这条的 `state` 换成 `retired` 而指纹与字数保持入账时的样子，对账仍算对得上；退役之后又长回正文、或把状态改回 `active` 又改写正文，都算正文被改。报告除丢了、被改、还没入账三类之外另给 `retired` 条数，`describeLedger` 一并写出。健康一行在 `src/health.ts`，字段顺序固定，`inject_cap` 与保护线从配置读。三件事由 `maintain(now)` 一次做完：先掉一遍重要度、再按新的重要度变淡、最后补账并拼一行，返回里 `decayed` 是这次掉了分的条数，`didWork` 说明这次是不是真的做了，`lastMaintainedDay` 与 `previousMaintainedDay` 给出这次记下的整理日与上一次的整理日。一天只整理一次：整理日按本地日期存进记忆文件的 `lastMaintainedDay`，同一天再调直接返回 `didWork: false`、计数归零与空行，不衰减、不清理、不补账；跨天第一次照常跑，隔了多天也只按一天的量衰减。旧文件由 `src/store.ts` 读入时补字段：缺的 `metadata` 取 `{}`、`source` 取 `chat`、`lastSeenAt` 取 `at`、`recallCount`、`recoverDay`、`recoverTimes` 与 `emotional` 取 0（大于 1 的按 24 分制折算），旧的 `forgotten` 布尔折成 `state` 并按写入时刻补 `retiredAt`，缺的 `lastMaintainedDay` 取空串，不认识的顶层字段原样留着。
+账本在 `src/ledger.ts`：`init` 给现有全部记忆建账，`sync` 只补没记过的编号，`verify` 要求账本里每条都还在、正文没被改、现在每条也都已入账；`describeLedger` 把差异点成编号。文件头带 `schemaVersion`（现在是 1，缺这个字段的旧账本按 1 读，读回不报错），每条记 `sha256`、`len` 与 `state`，`state` 取 `held` 或 `retired`，退役的另带 `retiredAt`。淡到底的那条由整理先标退役再清正文，`sync` 把账本里这条的 `state` 换成 `retired` 而指纹与字数保持入账时的样子，对账仍算对得上；退役之后又长回正文、或把状态改回 `active` 又改写正文，都算正文被改。报告除丢了、被改、还没入账三类之外另给 `retired` 条数与读账本时的 `read`（`ok`、`absent`、`broken`），`describeLedger` 一并写出，账本读不出来时只说这一件事、`ok` 一律为 `false`。健康一行在 `src/health.ts`，字段顺序固定为 `total`、`pinned`、`cold`、`inject_cap`、`ledger`、`pending`，其中 `inject_cap`、保护线与三个告警阈值从配置读：`total` 只数还没退役的条目，`cold` 数已退役的加上清晰度落在 `trace` 的，`pending` 数已入队还没写进文件的条数（现在没有队列，恒为 0）。`ledger` 的四档只由对账结果折出来——`OK` 是全部对上；`DRIFT` 是有正文被改、或有条目还没入账，但一条没丢；`MISSING` 是账本还没建过、或有条目丢了；`ERROR` 是账本读不出来，坏账本连 `sync` 都不覆盖，留着等人工处理。`pending`、`pinned`、`cold / total` 三项各自超过 `pendingAlert`（默认 50）、`pinnedAlert`（默认 30）、`coldRatioAlert`（默认 0.5）时，以及 `ledger` 不是 `OK` 时，在行尾挂一个 `alert=` 标记，多个原因用逗号接在同一个标记里（形如 `alert=ledger,pinned`），没命中就没有这个标记、也不多写一行。整理完把这一行追加进健康日志：默认 `<主目录>/data/qq-memory-health.log`，`healthLogFile` 可改，`tuning.healthLog` 关掉就一次都不写；一行一次 `appendFileSync`，靠操作系统的追加重排不改历史行，写不进去当场抛出带路径的错误。三件事由 `maintain(now)` 一次做完：先掉一遍重要度、再按新的重要度变淡、最后补账并拼一行，返回里 `decayed` 是这次掉了分的条数，`didWork` 说明这次是不是真的做了，`lastMaintainedDay` 与 `previousMaintainedDay` 给出这次记下的整理日与上一次的整理日。一天只整理一次：整理日按本地日期存进记忆文件的 `lastMaintainedDay`，同一天再调直接返回 `didWork: false`、计数归零与空行，不衰减、不清理、不补账；跨天第一次照常跑，隔了多天也只按一天的量衰减。旧文件由 `src/store.ts` 读入时补字段：缺的 `metadata` 取 `{}`、`source` 取 `chat`、`lastSeenAt` 取 `at`、`recallCount`、`recoverDay`、`recoverTimes` 与 `emotional` 取 0（大于 1 的按 24 分制折算），旧的 `forgotten` 布尔折成 `state` 并按写入时刻补 `retiredAt`，缺的 `lastMaintainedDay` 取空串，不认识的顶层字段原样留着。

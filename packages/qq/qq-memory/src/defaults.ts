@@ -40,7 +40,18 @@ export interface Tuning extends DecayParams, RecoverParams {
   freshnessDays: number
   /** 镜像写进来时重要度不低于这条线 */
   selfImportanceFloor: number
+  /** 每天那一行还写不写进健康日志，关掉就一次都不写 */
+  healthLog: boolean
+  /** 已入队还没写入的条数超过它就在健康一行末尾告警 */
+  pendingAlert: number
+  /** 受保护条数超过它就在健康一行末尾告警 */
+  pinnedAlert: number
+  /** 已退役与只剩印象的条数占未退役条数的比例超过它就在健康一行末尾告警 */
+  coldRatioAlert: number
 }
+
+/** 健康一行末尾用的三个告警阈值 */
+export type AlertThresholds = Pick<Tuning, 'pendingAlert' | 'pinnedAlert' | 'coldRatioAlert'>
 
 /** 全包唯一的默认值表 */
 export const DEFAULTS: Tuning = {
@@ -63,6 +74,10 @@ export const DEFAULTS: Tuning = {
   freshnessDays: 7,
   // 镜像进来的事是自我层认定要记住的，落在保护线之上
   selfImportanceFloor: 80,
+  healthLog: true,
+  pendingAlert: 50,
+  pinnedAlert: 30,
+  coldRatioAlert: 0.5,
 }
 
 /** 截断时清晰度的分量，越清楚越靠前 */

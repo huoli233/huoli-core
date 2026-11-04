@@ -93,7 +93,7 @@ async function mount(patch: { banned?: readonly string[] } = {}): Promise<Mounte
   await ctx.plugin(SystemPrompt, {})
   applyAttention(ctx, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyMemory(ctx, { file: path.join(dir, 'memory.json') })
+  applyMemory(ctx, { file: path.join(dir, 'memory.json'), healthLogFile: path.join(dir, 'health.log') })
   applyChannel(ctx, {
     url: 'ws://127.0.0.1:6700',
     selfId: '999',

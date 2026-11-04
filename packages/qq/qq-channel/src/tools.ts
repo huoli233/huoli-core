@@ -12,7 +12,10 @@ export interface ChannelToolDeps {
   status: () => ChannelStatus
   send: (text: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
   react: (messageId: string, emoji: string) => Promise<{ ok: boolean; code?: string; reason?: string }>
-  split: (text: string) => { parts: string[]; gapsMs: number[] }
+  /** 按这一轮的条数上限把一段话切成几条，连着条与条之间的间隔 */
+  split: (text: string, maxParts: number) => { parts: string[]; gapsMs: number[] }
+  /** 这一轮最多几条，拿不到上限时是最紧的一档 */
+  cap: () => number
   spend: (text: string) => void
   allow: (text: string) => { ok: boolean; code?: string; reason?: string; hint?: string }
   /** 发之前过一遍出站体检 */
@@ -96,12 +99,16 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
         refuse(code, verdict.reason ?? '现在不能发', nextStep(verdict))
       }
 
-      const planned = deps.split(text)
+      const planned = deps.split(text, deps.cap())
       const sent: string[] = []
       for (const [at, part] of planned.parts.entries()) {
         const result = await deps.send(part, chatKey)
         if (!result.ok) {
-          refuse(result.code ?? 'channel.send_failed', result.reason ?? '发送失败', '换一句短点的，或者等一下再发')
+          // 已经发出去的不撤也不再发一遍，只把发了几条、卡在第几条报出去
+          if (sent.length > 0) deps.report({ kind: 'sent', at: Date.now(), chatKey, count: sent.length })
+          deps.report({ kind: 'blocked', at: Date.now(), chatKey, count: 0, code: result.code ?? 'channel.send_failed' })
+          const stuck = `已发 ${sent.length} 条，卡在第 ${at + 1} 条：${result.reason ?? '发送失败'}`
+          refuse(result.code ?? 'channel.send_failed', stuck, '换一句短点的，或者等一下再发')
         }
         const moment = Date.now()
         deps.spend(part)

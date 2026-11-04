@@ -126,9 +126,14 @@ function sleepFactsOf(state: VitalsState): { asleep: boolean; wakeAfter: number;
 const NEUTRAL_FACTS: ReplyFacts = { tired: 0.5, annoyed: 0.5, energy: 0.5, clingy: 0.5, lonely: 0.5 }
 
 // 这一段只说这一轮最多几句，不说该不该回；动态那一路也照这条走
-function budgetLine(vitals: QqVitalsSeam | undefined): string {
+function budgetOf(vitals: QqVitalsSeam | undefined): number {
   const facts = vitals === undefined ? NEUTRAL_FACTS : replyFactsOf(vitals.read())
-  return `【这一轮的条数】这一轮最多说 ${replyBudget(facts)} 条，说完就停，不追问，也不凑满。想发动态时把这条交给发布入口。`
+  return replyBudget(facts)
+}
+
+// 提示词里那一句与发送路径读的是同一个数，两处不会对不上
+function budgetLine(vitals: QqVitalsSeam | undefined): string {
+  return `【这一轮的条数】这一轮最多说 ${budgetOf(vitals)} 条，说完就停，不追问，也不凑满。想发动态时把这条交给发布入口。`
 }
 
 /**
@@ -395,6 +400,8 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 停手时动态一条都不发：发布入口只认这一句
   channel?.usePause(() => self?.isPaused() ?? false)
+  // 提示词里那条条数上限同时交给发送路径，按它把一段话切成几条发
+  channel?.useReplyCap(() => budgetOf(vitals))
 
   // 记忆注入：每轮带原话的那一步召回一次，命中就接在用户原话之后，系统提示词一个字不动
   if (config.memoryInject ?? BUNDLE_DEFAULTS.memoryInject) {

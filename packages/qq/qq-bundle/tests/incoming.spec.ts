@@ -92,7 +92,7 @@ async function mount(): Promise<Mounted> {
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
   applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
   applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999' })
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4 })
+  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   const socket = FakeSocket.opened.at(-1)
   const seam = qqVitalsOf(ctx)
   if (socket === undefined || seam === undefined) throw new Error('没装起来')

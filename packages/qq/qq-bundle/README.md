@@ -62,7 +62,7 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 
 每天那一步也顺带镜像：装配时把 `qq-memory` 接给 `qq-self` 的 `useMemory(port)` 端口，整点检查落在整理那一小时时，先 `promote()`、再 `sweep()`，然后 `mirror()` 把自我层没镜过的三类记录写进记忆库，写入条数大于零就立刻 `ledger('sync')` 入账，免得下一次核对把镜像当成正文被改；自我层默认关着，关着时 `mirror()` 自己回 `disabled`，一条都不写。这一步里任何一处抛错都只记一行告警，不让定时器把进程带走。
 
-条数那一段的接线：`replyFactsOf` 把累（`adenosine`）、烦（`irritability`）、精力、黏、孤独照抄成 `ReplyFacts`，交给 `replyBudget` 取上限；身体没装上时用一份中性事实，上限照样是一个数。发送链路没有改动。
+条数那一段的接线：`replyFactsOf` 把累（`adenosine`）、烦（`irritability`）、精力、黏、孤独照抄成 `ReplyFacts`，交给 `replyBudget` 取上限；身体没装上时用一份中性事实，上限照样是一个数。同一个数既渲染成提示词里那句「这一轮最多说几条」，也经 `qq-channel` 的 `useReplyCap(provide)` 交给发送路径，两处读的是同一个函数，不会对不上。
 
 停手那一路的接线：装配时把 `qq-self` 的 `isPaused()` 接到 `qq-channel` 的 `usePause(check)` 端口，摆着停手开关时发布入口只回 `post.paused`，一条动态都不发；自我层没装上也接，接到的是一个恒为假的判断。
 

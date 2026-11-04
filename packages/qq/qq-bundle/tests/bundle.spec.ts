@@ -51,8 +51,8 @@ async function mount(dir: string): Promise<Mounted> {
   applyPacing(ctx, { file: path.join(dir, 'pacing.json') })
   applyAttention(ctx, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyMemory(ctx, { file: path.join(dir, 'memory.json') })
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4 })
+  applyMemory(ctx, { file: path.join(dir, 'memory.json'), healthLogFile: path.join(dir, 'health.log') })
+  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return { ctx, tools }
 }
 
@@ -79,7 +79,7 @@ async function mountWithBody(dir: string, body: Partial<VitalsState> = {}): Prom
   await ctx.plugin(SystemPrompt, {})
   applyPacing(ctx, { file: path.join(dir, 'pacing.json') })
   applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4 })
+  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return ctx
 }
 
@@ -127,7 +127,7 @@ async function mountWithChannel(dir: string): Promise<Context> {
   })
   FakeSocket.opened.at(-1)?.open()
   applySelf(ctx, { dir: path.join(dir, 'self'), enabled: false })
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4 })
+  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return ctx
 }
 

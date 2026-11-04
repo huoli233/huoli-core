@@ -3,7 +3,7 @@
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
-import { qqPacingOf, splitSpeech } from '@huoli/huoli-qq-pacing'
+import { qqPacingOf, REPLY_DEFAULTS, speechGaps, splitByBudget } from '@huoli/huoli-qq-pacing'
 import { createWsChannel, type WsChannel } from './ws.ts'
 import { toIncoming, toPoke, type ChannelStatus, type IncomingMessage, type IncomingPoke, type OutboundEvent } from './events.ts'
 import { createOutboundCheck, OUTBOUND_DEFAULTS, type OutboundTuning } from './outbound.ts'
@@ -36,6 +36,8 @@ export interface QqChannelSeam {
   publishPost(text: string, facts: PostFacts): Promise<PostResult>
   /** 接上停手开关，为真时一条动态都不发 */
   usePause(check: (() => boolean) | undefined): void
+  /** 接上这一轮的条数上限，不接就只发一条 */
+  useReplyCap(provide: (() => number) | undefined): void
 }
 
 /** 这一行接受的配置 */
@@ -174,6 +176,12 @@ export function apply(ctx: Context, config: Config): void {
 
   // 动态自己的状态与闸门，账不与发言额度共用
   let pauseCheck: () => boolean = () => false
+  // 条数上限由组合包每轮给一次，没接上就按分档表的下限发一条
+  let replyCap: (() => number) | undefined
+  const capNow = (): number => {
+    const cap = replyCap?.()
+    return cap === undefined ? REPLY_DEFAULTS.minCap : Math.max(REPLY_DEFAULTS.minCap, Math.floor(cap))
+  }
   const postFile = config.postsFile ?? path.join(resolveHuoliHome(), 'data', 'qq-posts.json')
   const posts = createPostGate({
     tuning: resolvePost(config),
@@ -210,6 +218,9 @@ export function apply(ctx: Context, config: Config): void {
     usePause(check) {
       pauseCheck = check ?? (() => false)
     },
+    useReplyCap(provide) {
+      replyCap = provide
+    },
   }
   seams.set(ctx, seam)
 
@@ -224,7 +235,12 @@ export function apply(ctx: Context, config: Config): void {
     status: () => channel.status(),
     send: (text, chatKey) => channel.send(text, chatKey),
     react: (messageId, emoji) => channel.react(messageId, emoji),
-    split: text => splitSpeech(text),
+    // 单条的字数口径与出站体检的长度闸取同一个数，切出来的每条都过得了那道闸
+    split: (text, maxParts) => {
+      const parts = splitByBudget(text, { maxParts, maxCharsPerPart: tuning.maxChars })
+      return { parts, gapsMs: speechGaps(parts) }
+    },
+    cap: () => capNow(),
     spend: (text) => {
       pacing?.spend(text)
     },

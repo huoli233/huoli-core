@@ -35,7 +35,7 @@ kind: "package-reference"
 
 - 额度按小时和按天各一个上限，没有按群分别设。
 - 间隔是按时长估的，没考虑对方正在打字。
-- 条数上限只给到数，把一段话切成几条去发还没接回来。
+- 切分只认标点与字数，读不懂句子的意思，讲到一半被切开时不会重新组织说法。
 
 <a id="dev-note"></a>
 ### Dev Note
@@ -54,3 +54,7 @@ kind: "package-reference"
 | 其余 | 2 |
 
 阈值全在 `REPLY_DEFAULTS`：`annoyedFrom` 0.62、`tiredFrom` 0.70、`energyEagerFrom` 0.60、`clingyFrom` 0.62、`clingyStrongFrom` 0.78、`lonelyFrom` 0.50，上下限是 `minCap` 1 与 `maxCap` 4。
+
+切分是纯函数 `splitByBudget(text, budget)`：`budget` 是这一轮的条数上限与单条字数上限两项，先按句末标点与换行断句，一句长过单条上限再退到逗号与换行，都没有才按字数硬切；断出来的条数超过上限时把相邻几段并按字数平分进前几条，顺序不动、一个字不丢。同样的输入与同样的上限得到同一份切分，没有随机与时间依赖。条与条之间的间隔由 `speechGaps(parts)` 给，`splitSpeech` 是两者合起来的入口。
+
+间隔按每条的字数估：`minGapMs` 打底，每条字数乘 `gapPerCharMs` 后封顶 `gapCapMs`，再按序号加 `gapStepMs`，整体不超过 `maxGapMs`；这几个数只在 `PACING_DEFAULTS` 出现一次。

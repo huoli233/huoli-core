@@ -43,7 +43,11 @@ async function mountWith(patch: Partial<Config> = {}, items: readonly string[] =
   const ctx = new Context()
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
-  applyMemory(ctx, { file: path.join(dir, 'memory.json'), ledgerFile: path.join(dir, 'ledger.json') })
+  applyMemory(ctx, {
+    file: path.join(dir, 'memory.json'),
+    ledgerFile: path.join(dir, 'ledger.json'),
+    healthLogFile: path.join(dir, 'health.log'),
+  })
   applyBundle(ctx, {
     maxSteps: 5,
     dailySweepHour: 4,

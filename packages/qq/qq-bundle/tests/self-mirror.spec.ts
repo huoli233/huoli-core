@@ -31,9 +31,13 @@ async function mount(dir: string, selfEnabled: boolean, withBundle = true): Prom
     }),
   })
   await ctx.plugin(SystemPrompt, {})
-  applyMemory(ctx, { file: path.join(dir, 'memory.json'), ledgerFile: path.join(dir, 'ledger-book.json') })
+  applyMemory(ctx, {
+    file: path.join(dir, 'memory.json'),
+    ledgerFile: path.join(dir, 'ledger-book.json'),
+    healthLogFile: path.join(dir, 'health.log'),
+  })
   applySelf(ctx, { enabled: selfEnabled, dir: path.join(dir, 'self'), mainChatKey: 'group:1' })
-  if (withBundle) applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4 })
+  if (withBundle) applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   const memory = qqMemoryOf(ctx)
   const self = qqSelfOf(ctx)
   if (memory === undefined || self === undefined) throw new Error('零件没有装配')
@@ -102,7 +106,7 @@ describe('镜像接进了记忆库', () => {
     writeRows(dir, 'claims.jsonl', [{ at: AT, id: 'c1', text: '周五爬山那次她更想待在家里' }])
     // 钟拨到整理前半小时，组合包在这一刻挂上，下一次整点检查就落在四点
     vi.useFakeTimers({ now: new Date(2026, 10, 3, 3, 30, 0).getTime() })
-    applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4 })
+    applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
 
     vi.advanceTimersByTime(60 * 60_000)
 
