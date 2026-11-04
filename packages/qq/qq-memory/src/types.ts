@@ -20,6 +20,8 @@ export interface MemoryItem {
   forgotten: boolean
   source: 'chat' | 'tool' | 'proactive' | 'manual'
   personId?: string
+  /** 话题、地点、人物等附加事实，不参与打分，留给自我层镜像 */
+  metadata?: Record<string, unknown>
 }
 
 /** 写一条记忆时能给的选项 */
@@ -33,6 +35,8 @@ export interface RememberOptions {
   directed?: boolean
   source?: MemoryItem['source']
   at?: number
+  /** 跟着这条一起存的附加事实 */
+  metadata?: Record<string, unknown>
 }
 
 /** 层的中文说法 */

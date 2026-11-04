@@ -3,6 +3,7 @@
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
 import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
+import { DEFAULTS } from './defaults.ts'
 import type { MemoryStore } from './store.ts'
 import { newId, type MemoryItem, type MemoryLayer } from './types.ts'
 import { recall, renderRecall } from './recall.ts'
@@ -97,7 +98,7 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
     description: '找以前记过的事。给关键词比较准；找不到就是真没记过，别编。',
     parameters: {
       query: { type: 'string', description: '想找的关键词，可不填。' },
-      limit: { type: 'number', description: '最多几条，默认 5。' },
+      limit: { type: 'number', description: '最多几条，默认 3。' },
     },
     output: {
       schema: { type: 'object', additionalProperties: true },
@@ -107,15 +108,17 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
       const chatKey = chatKeyOf(exec)
       const now = Date.now()
       const scope = deps.scopeOf(chatKey)
-      const limit = Number.isInteger(args.limit) && args.limit !== undefined ? Math.max(1, args.limit) : 5
+      const limit = Number.isInteger(args.limit) && args.limit !== undefined
+        ? Math.max(1, args.limit)
+        : DEFAULTS.recallLimit
       const query = typeof args.query === 'string' ? args.query : ''
       const hits = recall(store, { query, scope, limit, now })
       // 被找出来的记忆算被提起一次，可能重新变清楚
-      for (const hit of hits) touch(store, hit.item.id, now)
+      for (const hit of hits) touch(store, hit.id, now)
       return Promise.resolve({
         count: hits.length,
         text: renderRecall(hits),
-        items: hits.map(hit => ({ id: hit.item.id, text: hit.item.text, clarity: hit.item.clarity, at: hit.item.at })),
+        items: hits.map(hit => ({ id: hit.id, text: hit.text, clarity: hit.clarity, at: hit.at })),
       })
     },
   }))

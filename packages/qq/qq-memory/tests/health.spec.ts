@@ -30,11 +30,11 @@ const COLD = make('id-cold', '', 75, { forgotten: true, clarity: 'forgotten' })
 const KEPT: readonly MemoryItem[] = [WARM, LIGHT, COLD]
 const PASSED: LedgerReport = verifyBook(initBook(KEPT), KEPT)
 
-function lineOf(ledger: LedgerReport, extra: { injectCap?: number; protectLine?: number } = {}): string {
+function lineOf(ledger: LedgerReport, extra: { injectMaxChars?: number; protectLine?: number } = {}): string {
   return healthLine({
     items: KEPT,
     now: NOW,
-    injectCap: extra.injectCap ?? 1200,
+    injectMaxChars: extra.injectMaxChars ?? 1200,
     protectLine: extra.protectLine ?? 60,
     ledger,
   })
@@ -73,7 +73,7 @@ describe('每天一行', () => {
 
 describe('这两个数从配置来', () => {
   it('注入上限跟着配置走', () => {
-    const { seam } = mount({ file: tempFile(), tuning: { injectCap: 800 } })
+    const { seam } = mount({ file: tempFile(), tuning: { injectMaxChars: 800 } })
     seam.remember('记下的一句', 'group:1')
 
     const kept = seam.maintain(NOW)

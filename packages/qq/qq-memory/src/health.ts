@@ -9,8 +9,8 @@ export interface HealthInput {
   items: readonly MemoryItem[]
   /** 现在的时间 */
   now: number
-  /** 每次召回注入的正文上限，从配置读 */
-  injectCap: number
+  /** 注入整串的字数上限，从配置读 */
+  injectMaxChars: number
   /** 重要度到这条线以上算受保护 */
   protectLine: number
   /** 这次的对账结果 */
@@ -73,7 +73,7 @@ export function healthLine(input: HealthInput): string {
     `total=${counts.total}`,
     `pinned=${counts.pinned}`,
     `cold=${counts.cold}`,
-    `inject_cap=${input.injectCap}`,
+    `inject_cap=${input.injectMaxChars}`,
     `ledger=${input.ledger.ok ? 'OK' : 'FAIL'}`,
     `pending=${counts.pending}`,
   ]

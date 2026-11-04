@@ -21,11 +21,11 @@ kind: "package-reference"
 
 #### What the model sees
 
-两个工具 `memory_append` 与 `memory_query`。记的时候要说明这话是不是直接对她说的、里面情绪有多重；找的时候返回日期、内容、还有多清楚。
+两个工具 `memory_append` 与 `memory_query`。记的时候要说明这话是不是直接对她说的、里面情绪有多重；找的时候返回日期、内容、还有多清楚，默认三条。
 
 #### Token effect
 
-只把找到的那几条带进上下文，条数有上限，可以不填关键词。
+只把找到的那几条带进上下文，条数默认上限 3，可以不填关键词；注入整串另有 1200 字上限。
 
 #### KV Cache effect
 
@@ -33,7 +33,9 @@ kind: "package-reference"
 
 ## Known Limitations and Deferred Work
 
-- 找记忆只按字面重合和重要度排，没有向量检索。
+- 向量检索路只有 `VectorPath` 接口，没有实现：`reasons.vectorSim` 恒为 `null`，规范里 0.52 的相似度门槛尚未生效。
+- 召回只按 2-gram 字面重合判定，换个说法说同一件事匹配不到。
+- 注入是纯函数，追加位置由消息入口保证；本包不接消息链路，也不改系统提示词。
 - 全部记忆装在一个文件里，条数多了要换存储。
 - 重要度只在写入时算一次，之后不会自动重评。
 - `maintain` 已经导出，按天调用还没接到组合包里。
@@ -41,6 +43,10 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`：记忆文件、账本文件、主目录覆盖，以及 `tuning` 里的保护线与注入上限，默认值只在 `src/defaults.ts` 的 `DEFAULTS` 出现一次。默认落在主目录的 data 下（`data/qq-memory.json` 与 `data/qq-memory-ledger.json`）；往上挪一层与每天变淡分别由 `promoteAll` 和 `sweepOnce` 做，半衰期与清晰度档位取自 `@huoli/huoli-qq-policy`。
+配置项在 `src/index.ts` 的 `Config`：记忆文件、账本文件、主目录覆盖，以及 `tuning` 里的一整组参数，默认值只在 `src/defaults.ts` 的 `DEFAULTS` 出现一次。默认落在主目录的 data 下（`data/qq-memory.json` 与 `data/qq-memory-ledger.json`）；往上挪一层与每天变淡分别由 `promoteAll` 和 `sweepOnce` 做，半衰期与清晰度档位取自 `@huoli/huoli-qq-policy`。
 
-账本在 `src/ledger.ts`：`init` 给现有全部记忆建账，`sync` 只补没记过的编号，`verify` 要求账本里每条都还在、正文没被改、现在每条也都已入账；`describeLedger` 把差异点成编号。淡到底清掉正文的那条按遗忘对待，不算正文被改。健康一行在 `src/health.ts`，字段顺序固定，`inject_cap` 与保护线从配置读。两件事由 `maintain(now)` 一次做完：变淡、补账、拼一行。
+召回在 `src/recall.ts`：`recall(store, { query, scope, limit, now, tuning })` 返回 `RecallHit[]`，每条只有 `id`、`text`、`at`、`clarity`、`score`、`reasons` 六个字段；`reasons` 是 `grams`、`vectorSim`、`importanceTerm`、`freshnessTerm`，分数按 `weightSim × 相似度 + importanceTerm + freshnessTerm` 重算得到，清晰度与时间读顶层那两个字段，保留度由两项一并重算。关键词路把两边都按 `gramSize` 切成片段，短查询命中一条、长查询命中两条才算相关；没有候选就是空数组，占位句留给渲染层。副作用只在 `touch`：召回次数加一、`lastSeenAt` 改成现在。
+
+注入在 `src/inject.ts`：`buildInjectBlock(hits, limitChars?, limitItems?)` 按逐字模板拼出背景，整串不超过 `injectMaxChars`（默认 1200），条数不超过 `injectMaxItems`（默认 3），放不下就整条丢并在末尾标出省略条数，首条就超限时返回空串；`trace` 与 `forgotten` 不进来。`injectIntoUserText(text, block)` 只在原文之后隔一个空行接上去，`shouldInject(turnIndex, lastInjectedTurn, repeatTurns?)` 判断这一轮该不该插。
+
+账本在 `src/ledger.ts`：`init` 给现有全部记忆建账，`sync` 只补没记过的编号，`verify` 要求账本里每条都还在、正文没被改、现在每条也都已入账；`describeLedger` 把差异点成编号。淡到底清掉正文的那条按遗忘对待，不算正文被改。健康一行在 `src/health.ts`，字段顺序固定，`inject_cap` 与保护线从配置读。两件事由 `maintain(now)` 一次做完：变淡、补账、拼一行。旧文件由 `src/store.ts` 读入时补字段：缺的 `metadata` 取 `{}`、`source` 取 `chat`、`lastSeenAt` 取 `at`、`recallCount` 与 `emotional` 取 0（大于 1 的按 24 分制折算），不认识的顶层字段原样留着。

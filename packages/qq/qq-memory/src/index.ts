@@ -16,8 +16,9 @@ import { CLARITY_LABEL, LAYER_LABEL, newId, type MemoryItem, type MemoryLayer, t
 export type { MemoryItem, MemoryLayer, RememberOptions } from './types.ts'
 export { CLARITY_LABEL, LAYER_LABEL, LAYER_ORDER } from './types.ts'
 export type { MemoryStore, MemoryStoreOptions } from './store.ts'
-export type { RecallHit, RecallInput } from './recall.ts'
-export { recall, renderRecall } from './recall.ts'
+export type { RecallHit, RecallInput, RecallReasons, VectorPath } from './recall.ts'
+export { keyGrams, recall, renderRecall } from './recall.ts'
+export { buildInjectBlock, injectIntoUserText, shouldInject } from './inject.ts'
 export { promoteAll, sweepOnce, touch } from './sweep.ts'
 export { DEFAULTS, resolveTuning } from './defaults.ts'
 export type { Tuning } from './defaults.ts'
@@ -138,12 +139,18 @@ export function apply(ctx: Context, config: Config = {}): void {
         lastSeenAt: at,
         forgotten: false,
         source: options.source ?? 'chat',
+        ...options.metadata !== undefined ? { metadata: options.metadata } : {},
       }
       store.add(item)
       return item
     },
     find(query, chatKey, limit) {
-      return recall(store, { query, scope: scopeOf(chatKey), ...limit !== undefined ? { limit } : {} })
+      return recall(store, {
+        query,
+        scope: scopeOf(chatKey),
+        tuning,
+        ...limit !== undefined ? { limit } : {},
+      })
     },
     promote() {
       return promoteAll(store, Date.now())
@@ -157,7 +164,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       const line = healthLine({
         items: store.all(),
         now,
-        injectCap: tuning.injectCap,
+        injectMaxChars: tuning.injectMaxChars,
         protectLine: tuning.protectLine,
         ledger: synced.report,
       })
