@@ -1,11 +1,11 @@
 // 闸门：只回答"现在能不能开口"，不能就告诉它下次什么时候再来
 
-import { PROACTIVE_DEFAULTS, type GateVerdict } from './score.ts'
+import { PROACTIVE_DEFAULTS, type GateConfig, type GateVerdict } from './score.ts'
 
 /** 闸门看的东西 */
 export interface GateInput {
   now: number
-  config?: Partial<typeof PROACTIVE_DEFAULTS>
+  config?: Partial<GateConfig>
   lastSpokenAt: number
   todayCount: number
   humanActive: boolean
@@ -20,6 +20,16 @@ function toMinutes(hhmm: string): number {
   const minute = Number(parts[1])
   if (!Number.isFinite(hour) || !Number.isFinite(minute)) return -1
   return hour * 60 + minute
+}
+
+/**
+ * 两次开口之间隔多久：冷却区间的中点，同样的配置永远得到同样的数
+ * @param config - 闸门配置
+ * @returns 毫秒数
+ */
+export function cooldownMs(config: GateConfig): number {
+  const span = Math.max(0, config.gapMaxMs - config.gapMinMs)
+  return config.gapMinMs + Math.floor(span / 2)
 }
 
 /**
@@ -41,14 +51,16 @@ export function inQuietHours(now: number, start: string, end: string): boolean {
 /**
  * 一道道过闸门，第一道不过就返回，并告诉它下次什么时候
  * @param input - 传进来的东西
- * @returns 处理结果
+ * @returns 闸门结论
  */
 export function runGates(input: GateInput): GateVerdict {
-  const config = { ...PROACTIVE_DEFAULTS, ...(input.config ?? {}) }
+  const config: GateConfig = { ...PROACTIVE_DEFAULTS, ...(input.config ?? {}) }
 
   if (!config.enabled) return { ok: false, code: 'proactive.off', reason: '主动开口没开' }
   if (!input.hasChannel) return { ok: false, code: 'proactive.no_channel', reason: '没有能发出去的通道' }
-  if (input.botBusy) return { ok: false, code: 'proactive.busy', reason: '正在说话', retryAt: input.now + 60_000 }
+  if (input.botBusy) {
+    return { ok: false, code: 'proactive.busy', reason: '正在说话', retryAt: input.now + config.busyRetryMs }
+  }
 
   if (inQuietHours(input.now, config.quietStart, config.quietEnd)) {
     return { ok: false, code: 'proactive.quiet', reason: '现在是安静时段', retryAt: endOfQuiet(input.now, config.quietEnd) }
@@ -58,13 +70,13 @@ export function runGates(input: GateInput): GateVerdict {
     return { ok: false, code: 'proactive.day_full', reason: '今天主动开口够了', retryAt: startOfNextDay(input.now) }
   }
 
-  const gap = config.gapMinMs + Math.floor(Math.random() * Math.max(1, config.gapMaxMs - config.gapMinMs))
+  const gap = cooldownMs(config)
   if (input.lastSpokenAt > 0 && input.now - input.lastSpokenAt < gap) {
     return { ok: false, code: 'proactive.too_soon', reason: '上次开口还不久', retryAt: input.lastSpokenAt + gap }
   }
 
   if (input.humanActive) {
-    return { ok: false, code: 'proactive.people_talking', reason: '有人在聊，先听', retryAt: input.now + 5 * 60_000 }
+    return { ok: false, code: 'proactive.people_talking', reason: '有人在聊，先听', retryAt: input.now + config.talkingRetryMs }
   }
 
   return { ok: true }

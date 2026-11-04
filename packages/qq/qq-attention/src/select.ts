@@ -13,11 +13,10 @@ export interface SignalMessage {
   replyToBot?: boolean
 }
 
-/** 一条候选动作，只是建议 */
+/** 一条候选动作，只有种类与理由 */
 export interface Candidate {
   kind: 'reply' | 'join' | 'observe' | 'wait' | 'close'
   why: string
-  weight: number
 }
 
 /** 一个会话的事实集合 */
@@ -26,7 +25,7 @@ export interface AttentionSignals {
   ambient: { humanCount: number; lastHumanAgeMs: number | null; speakingRate: number }
   addressee: { named: boolean; confidence: number; evidence: readonly string[] }
   novelty: { newTopic: boolean; repeated: boolean }
-  fun: { score: number; evidence: readonly string[] }
+  fun: { evidence: string; signals: string[] }
   fatigue: { level: number; reason: string }
   candidates: readonly Candidate[]
 }
@@ -44,6 +43,15 @@ export interface CollectInput {
 
 // 默认活跃窗口
 const DEFAULT_ACTIVE_WINDOW_MS = 10 * 60_000
+
+// 长消息的门槛字数
+const LONG_MESSAGE_CHARS = 60
+
+// 中长消息的门槛字数
+const MEDIUM_MESSAGE_CHARS = 16
+
+// 多久没人说话就算冷场
+const QUIET_ROOM_MS = 30 * 60_000
 
 // 去掉零宽字符并折叠全角，名字才比得准
 function normalize(text: string): string {
@@ -95,36 +103,35 @@ export function collectSignals(input: CollectInput): AttentionSignals {
     && normalizedTexts[normalizedTexts.length - 1] !== normalizedTexts[normalizedTexts.length - 2]
   const newTopic = humans.length === 0 || firstOfGroup
 
-  const funEvidence: string[] = []
-  let funScore = 0
+  const funSignals: string[] = []
   if (latest !== undefined) {
     const text = latest.text
-    if (/[?？]/.test(text)) { funScore += 0.35; funEvidence.push('带问号') }
-    if (/[!！…～]/.test(text)) { funScore += 0.25; funEvidence.push('带情绪标点') }
-    if (text.length >= 60) { funScore += 0.3; funEvidence.push('是长消息') }
-    else if (text.length >= 16) { funScore += 0.15; funEvidence.push('是中长消息') }
+    if (/[?？]/.test(text)) funSignals.push('带问号')
+    if (/[!！…～]/.test(text)) funSignals.push('带情绪标点')
+    if (text.length >= LONG_MESSAGE_CHARS) funSignals.push('是长消息')
+    else if (text.length >= MEDIUM_MESSAGE_CHARS) funSignals.push('是中长消息')
   }
 
   const speakingRate = recentHumans.length === 0 ? 0 : recentHumans.length / (windowMs / 60_000)
 
   const candidates: Candidate[] = []
   if (directed.at || directed.poke || directed.replyToBot || directed.isPrivate) {
-    candidates.push({ kind: 'reply', why: '对方直接叫了机器人', weight: 1 })
+    candidates.push({ kind: 'reply', why: '对方直接叫了机器人' })
   }
   if (!directed.at && named) {
-    candidates.push({ kind: 'reply', why: '文本里出现名字，可能在叫它', weight: 0.55 })
+    candidates.push({ kind: 'reply', why: '文本里出现名字，可能在叫它' })
   }
   if (recentHumans.length >= 2 && !directed.at) {
-    candidates.push({ kind: 'join', why: `近 ${Math.round(windowMs / 60_000)} 分钟有 ${recentHumans.length} 条真人发言`, weight: 0.45 })
+    candidates.push({ kind: 'join', why: `近 ${Math.round(windowMs / 60_000)} 分钟有 ${recentHumans.length} 条真人发言` })
   }
   if (repeated) {
-    candidates.push({ kind: 'observe', why: '最近三条内容重复，像在刷屏', weight: 0.2 })
+    candidates.push({ kind: 'observe', why: '最近三条内容重复，像在刷屏' })
   }
-  if (lastHumanAgeMs !== null && lastHumanAgeMs >= 30 * 60_000) {
-    candidates.push({ kind: 'join', why: `群里已经 ${Math.round(lastHumanAgeMs / 60_000)} 分钟没人说话`, weight: 0.3 })
+  if (lastHumanAgeMs !== null && lastHumanAgeMs >= QUIET_ROOM_MS) {
+    candidates.push({ kind: 'join', why: `群里已经 ${Math.round(lastHumanAgeMs / 60_000)} 分钟没人说话` })
   }
   if (directed.at || directed.poke) {
-    candidates.push({ kind: 'close', why: '已经回应过，这段可以收尾', weight: 0.15 })
+    candidates.push({ kind: 'close', why: '已经回应过，这段可以收尾' })
   }
 
   return {
@@ -132,7 +139,7 @@ export function collectSignals(input: CollectInput): AttentionSignals {
     ambient: { humanCount: recentHumans.length, lastHumanAgeMs, speakingRate },
     addressee: { named, confidence: named ? 0.5 : 0, evidence },
     novelty: { newTopic, repeated },
-    fun: { score: Math.min(1, funScore), evidence: funEvidence },
+    fun: { evidence: funSignals.length === 0 ? '没有特别之处' : funSignals.join('、'), signals: funSignals },
     fatigue: { level: Math.min(1, Math.max(0, input.fatigueLevel ?? 0)), reason: input.fatigueReason ?? '' },
     candidates,
   }

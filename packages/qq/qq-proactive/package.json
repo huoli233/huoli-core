@@ -1,6 +1,6 @@
 {
   "name": "@huoli/huoli-qq-proactive",
-  "description": "主动开口：攒理由、打分、过闸门、先给你看再发",
+  "description": "主动开口：攒理由、过闸门、先给你看，说不说由模型定",
   "version": "0.2.2-alpha.2",
   "private": true,
   "type": "module",

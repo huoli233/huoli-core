@@ -1,32 +1,32 @@
-// 主动开口装配入口：攒理由、打分、过闸门、先给你看，再发
+// 主动开口装配入口：攒理由、过闸门、先给你看，说不说由模型定
 
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import {
   dropRepeats,
-  rankCandidates,
-  PROACTIVE_DEFAULTS,
+  orderByArrival,
   type Candidate,
-  type Drives,
+  type GateConfig,
   type GateVerdict,
   type PendingItem,
-  type ScoredCandidate,
 } from './score.ts'
 import { runGates, type GateInput } from './gates.ts'
 import { createPendingStore, createTimingStore, PENDING_TTL_MS, type PendingStore, type TimingStore } from './store.ts'
 
-export type { Candidate, Drives, GateVerdict, PendingItem, ScoredCandidate } from './score.ts'
-export { rankCandidates, scoreCandidate, dropRepeats, sameThing, PROACTIVE_DEFAULTS } from './score.ts'
-export { runGates, inQuietHours, endOfQuiet, startOfNextDay } from './gates.ts'
+export type { Candidate, CandidateFacts, GateConfig, GateVerdict, PendingItem } from './score.ts'
+export { orderByArrival, dropRepeats, sameThing, PROACTIVE_DEFAULTS } from './score.ts'
+export { runGates, inQuietHours, endOfQuiet, startOfNextDay, cooldownMs } from './gates.ts'
 export type { PendingStore, TimingStore } from './store.ts'
 export { describeWait, PENDING_TTL_MS } from './store.ts'
 
 /** 一次主动开口的判断结果 */
 export interface ProactiveDecision {
-  pick: PendingItem | null
   verdict: GateVerdict
-  considered: ScoredCandidate[]
+  /** 这一趟攒住的全部候选，挑哪条由调用方决定 */
+  pending: PendingItem[]
+  /** 过了去重之后剩下的候选 */
+  considered: Candidate[]
 }
 
 /** 一个应用里的主动开口 */
@@ -35,19 +35,18 @@ export interface QqProactiveSeam {
   timing: TimingStore
   consider(input: ConsiderInput): ProactiveDecision
   preview(chatKey: string): PendingItem[]
-  deliver(chatKey: string): PendingItem | null
+  deliver(chatKey: string, id: string): PendingItem | null
 }
 
 /** 攒理由时要看的东西 */
 export interface ConsiderInput {
   chatKey: string
   candidates: readonly Candidate[]
-  drives: Drives
   history: readonly string[]
   humanActive: boolean
   botBusy: boolean
   hasChannel: boolean
-  config?: Partial<typeof PROACTIVE_DEFAULTS>
+  config?: Partial<GateConfig>
 }
 
 /** 这一行接受的配置 */
@@ -64,6 +63,10 @@ export interface Config {
   quietStart?: string
   /** 安静时段到几点结束 */
   quietEnd?: string
+  /** 冷却区间下限 */
+  gapMinMs?: number
+  /** 冷却区间上限 */
+  gapMaxMs?: number
 }
 
 const seams = new WeakMap<Context, QqProactiveSeam>()
@@ -92,11 +95,13 @@ export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-proactive.json')
   const pending = createPendingStore({ file })
   const timing = createTimingStore({ file })
-  const gateConfig: Partial<typeof PROACTIVE_DEFAULTS> = {
+  const gateConfig: Partial<GateConfig> = {
     ...config.enabled !== undefined ? { enabled: config.enabled } : {},
     ...config.dailyMax !== undefined ? { dailyMax: config.dailyMax } : {},
     ...config.quietStart !== undefined ? { quietStart: config.quietStart } : {},
     ...config.quietEnd !== undefined ? { quietEnd: config.quietEnd } : {},
+    ...config.gapMinMs !== undefined ? { gapMinMs: config.gapMinMs } : {},
+    ...config.gapMaxMs !== undefined ? { gapMaxMs: config.gapMaxMs } : {},
   }
 
   const seam: QqProactiveSeam = {
@@ -114,36 +119,42 @@ export function apply(ctx: Context, config: Config = {}): void {
         hasChannel: input.hasChannel,
       }
       const verdict = runGates(gateInput)
-      if (!verdict.ok) return { pick: null, verdict, considered: [] }
+      if (!verdict.ok) return { verdict, pending: [], considered: [] }
 
-      const ranked = dropRepeats(rankCandidates(input.candidates, input.drives), input.history)
-      const best = ranked[0]
-      if (best === undefined) {
-        return { pick: null, verdict: { ok: false, code: 'proactive.nothing', reason: '没攒到值得说的事' }, considered: [] }
+      const considered = dropRepeats(orderByArrival(input.candidates), input.history)
+      if (considered.length === 0) {
+        const nothing: GateVerdict = { ok: false, code: 'proactive.nothing', reason: '没攒到能说的事' }
+        return { verdict: nothing, pending: [], considered: [] }
       }
 
-      const item: PendingItem = {
-        id: `${now.toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      const items: PendingItem[] = considered.map(candidate => ({
+        id: `${input.chatKey}:${candidate.at.toString(36)}-${candidate.id}`,
         chatKey: input.chatKey,
-        text: best.text,
-        why: best.why,
-        score: best.score,
-        createdAt: now,
-        expiresAt: now + PENDING_TTL_MS,
-      }
-      pending.put(item)
-      return { pick: item, verdict, considered: ranked }
+        text: candidate.text,
+        why: candidate.why,
+        facts: {
+          kind: candidate.kind,
+          confidence: candidate.confidence,
+          value: candidate.value,
+          risk: candidate.risk,
+          source: candidate.source,
+          at: candidate.at,
+        },
+        createdAt: candidate.at,
+        expiresAt: candidate.at + PENDING_TTL_MS,
+      }))
+      for (const item of items) pending.put(item)
+      return { verdict, pending: items, considered }
     },
     preview(chatKey) {
       return pending.live(chatKey)
     },
-    deliver(chatKey) {
-      const items = pending.live(chatKey)
-      const first = items[0]
-      if (first === undefined) return null
-      pending.markSent(first.id)
+    deliver(chatKey, id) {
+      const found = pending.live(chatKey).find(item => item.id === id)
+      if (found === undefined) return null
+      pending.markSent(found.id)
       timing.noteSpoken(chatKey)
-      return first
+      return found
     },
   }
   seams.set(ctx, seam)

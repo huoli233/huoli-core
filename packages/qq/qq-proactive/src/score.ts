@@ -1,6 +1,6 @@
-// 主动开口：先攒理由，再打分，再过闸门，最后**先给你看**再发
+// 主动开口：只把候选的理由与原始事实摆出来，说不说、说哪条由模型定
 
-/** 一个想说话的理由 */
+/** 一条想说话的理由，字段都是候选自己带上来的事实 */
 export interface Candidate {
   id: string
   kind: 'share' | 'ask' | 'join' | 'greet'
@@ -10,11 +10,18 @@ export interface Candidate {
   value: number
   risk: number
   source: string
+  /** 到达时刻，只用来排先后 */
+  at: number
 }
 
-/** 打分后的样子 */
-export interface ScoredCandidate extends Candidate {
-  score: number
+/** 候选带上来的原始事实，原样存着给模型看 */
+export interface CandidateFacts {
+  kind: Candidate['kind']
+  confidence: number
+  value: number
+  risk: number
+  source: string
+  at: number
 }
 
 /** 闸门给的结果 */
@@ -25,22 +32,15 @@ export interface GateVerdict {
   retryAt?: number
 }
 
-/** 一次主动开口的完整样子 */
+/** 攒住的一条，等模型决定要不要说 */
 export interface PendingItem {
   id: string
   chatKey: string
   text: string
   why: string
-  score: number
+  facts: CandidateFacts
   createdAt: number
   expiresAt: number
-}
-
-/** 打分时用的当下的劲头 */
-export interface Drives {
-  bored: number
-  curious: number
-  lonely: number
 }
 
 /** 闸门要看的配置 */
@@ -49,8 +49,14 @@ export interface GateConfig {
   quietStart: string
   quietEnd: string
   dailyMax: number
+  /** 冷却区间下限 */
   gapMinMs: number
+  /** 冷却区间上限，下一次可开口时刻取区间中点 */
   gapMaxMs: number
+  /** 正忙时多久再看 */
+  busyRetryMs: number
+  /** 有人在聊时多久再看 */
+  talkingRetryMs: number
   pendingTtlMs: number
 }
 
@@ -62,31 +68,18 @@ export const PROACTIVE_DEFAULTS: GateConfig = {
   dailyMax: 4,
   gapMinMs: 150 * 60_000,
   gapMaxMs: 300 * 60_000,
+  busyRetryMs: 60_000,
+  talkingRetryMs: 5 * 60_000,
   pendingTtlMs: 14 * 86_400_000,
 }
 
 /**
- * 打分：把握大、有用、风险小的分高
- * @param candidate - 一条候选
- * @param drives - 当下的劲头
- * @returns 算出来的数
- */
-export function scoreCandidate(candidate: Candidate, drives: Drives): number {
-  const base = 0.55 + 0.7 * candidate.confidence + 0.35 * candidate.value - 0.25 * candidate.risk
-  const driveBoost = 0.65 + 0.55 * Math.max(drives.bored, drives.curious, drives.lonely)
-  return Math.max(0, base * driveBoost)
-}
-
-/**
- * 把候选按分排好
+ * 按到达时间排先后，同一时刻保持传进来的顺序
  * @param candidates - 若干候选
- * @param drives - 当下的劲头
- * @returns 处理结果
+ * @returns 排好的候选
  */
-export function rankCandidates(candidates: readonly Candidate[], drives: Drives): ScoredCandidate[] {
-  return candidates
-    .map(candidate => ({ ...candidate, score: scoreCandidate(candidate, drives) }))
-    .sort((a, b) => b.score - a.score)
+export function orderByArrival(candidates: readonly Candidate[]): Candidate[] {
+  return [...candidates].sort((a, b) => a.at - b.at)
 }
 
 /**
@@ -106,13 +99,13 @@ export function sameThing(a: string, b: string): boolean {
 }
 
 /**
- * 去掉说过的和重复的
+ * 去掉说过的和重复的，只删不加
  * @param candidates - 若干候选
  * @param history - 说过的话
- * @returns 处理结果
+ * @returns 剩下的候选
  */
-export function dropRepeats(candidates: readonly ScoredCandidate[], history: readonly string[]): ScoredCandidate[] {
-  const kept: ScoredCandidate[] = []
+export function dropRepeats(candidates: readonly Candidate[], history: readonly string[]): Candidate[] {
+  const kept: Candidate[] = []
   for (const candidate of candidates) {
     if (history.some(old => sameThing(old, candidate.text))) continue
     if (kept.some(already => sameThing(already.text, candidate.text))) continue

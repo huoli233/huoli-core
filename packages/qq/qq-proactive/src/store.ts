@@ -14,6 +14,7 @@ export interface PendingStoreOptions {
 export interface PendingStore {
   all(): PendingItem[]
   live(chatKey: string): PendingItem[]
+  /** 同一个编号只留一条，重复放进来是覆盖 */
   put(item: PendingItem): void
   markSent(id: string): void
   drop(id: string): void
@@ -94,7 +95,7 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
       return data.items.filter(item => item.chatKey === chatKey)
     },
     put(item) {
-      data = { ...data, items: [...data.items, item] }
+      data = { ...data, items: [...data.items.filter(existing => existing.id !== item.id), item] }
       persist()
     },
     markSent(id) {

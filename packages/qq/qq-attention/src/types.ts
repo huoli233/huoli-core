@@ -7,7 +7,6 @@ export interface WakeTriggers {
   question?: boolean
   poke?: boolean
   anyMessage?: boolean
-  probability?: number
   speakerIds?: readonly string[]
 }
 
@@ -44,7 +43,7 @@ export function emptyAttention(): AttentionState {
     nextOpening: '',
     wakeMode: 'infinite',
     wakeUntil: null,
-    triggers: { atMention: true, nameMention: true, question: true, poke: true, anyMessage: false, probability: 0.05 },
+    triggers: { atMention: true, nameMention: true, question: true, poke: true, anyMessage: false },
     lastSeenAt: 0,
   }
 }

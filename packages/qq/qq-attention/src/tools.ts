@@ -37,14 +37,13 @@ function chatKeyOf(exec: { agent?: { id: string } }): string {
 }
 
 // 返回前拷一份唤醒条件，值都按能直接当 JSON 的写，改返回值不会动到存着的状态
-function copyTriggers(triggers: WakeTriggers): Record<string, boolean | number | string[]> {
-  const value: Record<string, boolean | number | string[]> = {}
+function copyTriggers(triggers: WakeTriggers): Record<string, boolean | string[]> {
+  const value: Record<string, boolean | string[]> = {}
   if (triggers.atMention !== undefined) value.atMention = triggers.atMention
   if (triggers.nameMention !== undefined) value.nameMention = triggers.nameMention
   if (triggers.question !== undefined) value.question = triggers.question
   if (triggers.poke !== undefined) value.poke = triggers.poke
   if (triggers.anyMessage !== undefined) value.anyMessage = triggers.anyMessage
-  if (triggers.probability !== undefined) value.probability = triggers.probability
   if (triggers.speakerIds !== undefined) value.speakerIds = [...triggers.speakerIds]
   return value
 }
@@ -186,14 +185,14 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
 
   ctx.tools.register(defineTool({
     name: 'set_wake_config',
-    description: '决定下次什么时候叫醒你：每条都醒、睡一会儿、或只在这几种情况醒。推荐被叫、被点名、有提问，普通消息低概率。',
+    description: '决定下次什么时候叫醒你：每条都醒、睡一会儿、或只在这几种情况醒。推荐被叫、被点名、有提问。',
     parameters: {
       infinite: { type: 'boolean', description: '每条消息都醒。' },
       sleepMs: { type: 'number', description: '睡这么久再醒，与 infinite 二选一。' },
       triggers: {
         type: 'object',
         additionalProperties: true,
-        description: '唤醒条件：atMention、nameMention、question、poke、anyMessage、probability、speakerIds。',
+        description: '唤醒条件：atMention、nameMention、question、poke、anyMessage、speakerIds。',
       },
       throughSeq: { type: 'number', description: '顺便把水位推到这条。' },
     },
@@ -237,13 +236,6 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
       }
 
       const triggers: WakeTriggers = { ...state.triggers, ...(args.triggers as WakeTriggers | undefined ?? {}) }
-      if (triggers.probability !== undefined) {
-        const probability = triggers.probability
-        if (typeof probability !== 'number' || !Number.isFinite(probability) || probability < 0 || probability > 1) {
-          refuse('attention.bad_probability', 'probability 必须在 0 到 1 之间', '给一个 0 到 1 的小数')
-        }
-        triggers.probability = probability
-      }
 
       store.append({ type: 'wake', chatKey, wakeMode, wakeUntil, triggers, at: now })
       if (throughSeq !== undefined) store.append({ type: 'read', chatKey, throughSeq, at: now })

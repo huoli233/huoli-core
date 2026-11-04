@@ -7,7 +7,7 @@ kind: "package-reference"
 
 ## Summary
 
-一个群里的注意力：看消息、等消息、划走、收尾、设唤醒，五个动作。状态存在自己的文件里，重启不丢。工具只读事实、只发事件，不替模型决定要不要说话。
+一个群里的注意力：看消息、等消息、划走、收尾、设唤醒，五个动作。状态存在自己的文件里，重启不丢。工具只读事实、只发事件，不替模型决定要不要说话；采集到的候选只有种类与理由，不带权重，也不参与排序与阈值。
 
 ## Table of Contents
 
@@ -40,4 +40,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`，状态文件位置、主目录覆盖与机器人自己的称呼三项；状态默认落在主目录的 data 下（`data/qq-attention.json`），每次变化整体原子写回，卸载时再落一次盘。
+配置项在 `src/index.ts` 的 `Config`，状态文件位置、主目录覆盖与机器人自己的称呼三项；状态默认落在主目录的 data 下（`data/qq-attention.json`），每次变化整体原子写回，卸载时再落一次盘。唤醒条件是布尔开关与发言人白名单，没有概率；有趣的判断只报勾到了哪些事实（`src/select.ts` 的 `fun.evidence` 与 `fun.signals`）。

@@ -195,4 +195,66 @@ describe('采集到的事实', () => {
     expect(Array.isArray(signals.candidates)).toBe(true)
     expect(signals.candidates.length).toBeGreaterThan(0)
   })
+
+  it('候选只有种类与理由，没有权重', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '@小岸 你在吗？' })
+
+    const signals = seam.signals('group:1')
+
+    for (const candidate of signals.candidates) {
+      expect(Object.keys(candidate).sort()).toEqual(['kind', 'why'])
+      expect(Object.hasOwn(candidate, 'weight')).toBe(false)
+      expect(Object.hasOwn(candidate, 'score')).toBe(false)
+    }
+  })
+
+  it('候选里没有数，排不了序也比不了阈值', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '@小岸 你在吗？' })
+
+    const signals = seam.signals('group:1')
+
+    for (const candidate of signals.candidates) {
+      for (const value of Object.values(candidate)) expect(typeof value).toBe('string')
+    }
+  })
+
+  it('有趣只报勾到了什么，不给分', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '这谁啊？！' })
+
+    const signals = seam.signals('group:1')
+
+    expect(Object.hasOwn(signals.fun, 'score')).toBe(false)
+    expect(Object.keys(signals.fun).sort()).toEqual(['evidence', 'signals'])
+    expect(typeof signals.fun.evidence).toBe('string')
+    expect(signals.fun.evidence.length).toBeGreaterThan(0)
+    expect(signals.fun.signals).toContain('带问号')
+    expect(signals.fun.signals).toContain('带情绪标点')
+  })
+
+  it('没有特别之处时也只说一句事实', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '嗯' })
+
+    const signals = seam.signals('group:1')
+
+    expect(signals.fun.signals).toEqual([])
+    expect(signals.fun.evidence.length).toBeGreaterThan(0)
+  })
+
+  it('唤醒条件里没有概率', async () => {
+    const { seam, tool } = mount(tempFile())
+    const wake = tool('set_wake_config')
+
+    expect(JSON.stringify(wake.parameters)).not.toContain('probability')
+
+    const set = await call<{ triggers: Record<string, unknown> }>(
+      wake, { triggers: { atMention: true } }, execOf('group:1'),
+    )
+
+    expect(Object.hasOwn(set.triggers, 'probability')).toBe(false)
+    expect(Object.hasOwn(seam.store.of('group:1').triggers, 'probability')).toBe(false)
+  })
 })
