@@ -160,6 +160,8 @@ export interface VitalsState extends Baseline {
   threat_applied_at: number
   /** 道歉写回的时刻，毫秒时间戳，兼作道歉的冷却起点 */
   apology_applied_at: number
+  /** 遗书产出的时刻，毫秒时间戳，兼作同一天只产一次的幂等标记 */
+  farewell_applied_at: number
   /** 上一顿饭写回的时刻，毫秒时间戳，零表示还没记过，兼作两顿饭之间的冷却起点 */
   meal_applied_at: number
   last_drink_name: string

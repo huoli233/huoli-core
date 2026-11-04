@@ -15,9 +15,10 @@ import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
 import { qqProactiveOf, type Candidate, type DeliverResult, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { momentPort, qqSelfOf } from '@huoli/huoli-qq-self'
-import { qqVitalsOf, type MealFact, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
+import { qqVitalsOf, type FarewellFact, type MealFact, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
 import { createDecisionLog, type DecisionBlock, type DecisionRecord } from './decisions.ts'
+import { farewellMetadata, farewellText, farewellWritten } from './farewell.ts'
 import { defaultMaintenanceLogFile, mirrorPortOf, runMaintenance } from './maintenance.ts'
 import { mealMetadata, mealText, mealWritten } from './meal.ts'
 import { registerToolWhitelist } from './tool-whitelist.ts'
@@ -25,6 +26,7 @@ import { registerToolWhitelist } from './tool-whitelist.ts'
 export type { DecisionBlock, DecisionLog, DecisionRecord } from './decisions.ts'
 export { createDecisionLog } from './decisions.ts'
 export { BUNDLE_DEFAULTS } from './defaults.ts'
+export { FAREWELL_NEUTRAL, farewellMetadata, farewellText, farewellWritten } from './farewell.ts'
 export {
   appendMaintenanceLine,
   defaultMaintenanceLogFile,
@@ -72,6 +74,12 @@ export interface Config {
   mealMemory?: boolean
   /** 一顿饭写成一条记忆时的重要度 */
   mealMemoryImportance?: number
+  /** 遗书写不写进记忆 */
+  farewellMemory?: boolean
+  /** 遗书写成一条记忆时的重要度 */
+  farewellMemoryImportance?: number
+  /** 调用方给的模型文本，遗书正文用它，不给就写一句中性的话 */
+  farewellText?: string
 }
 
 /** 一次投递的结论：没投出去的码与发布入口回来的那一段都摆在这里 */
@@ -398,6 +406,42 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
     ctx.effect(() => () => {
       offMeal()
+    })
+  }
+
+  // 遗书写一条记忆：会话取当前活跃的那个，同一天同一个人只写一条
+  const farewellImportance = config.farewellMemoryImportance ?? BUNDLE_DEFAULTS.farewellMemoryImportance
+
+  // 这一条写成一条记忆：正文用调用方给的模型文本，去重看记忆里已有的条
+  const writeFarewell = (fact: FarewellFact): void => {
+    if (memory === undefined) return
+    const chatKey = subject?.store.read().lastActive ?? ''
+    if (chatKey === '') {
+      ctx.logger('qq-bundle').warn('遗书没有落点：还没有活跃会话')
+      return
+    }
+    if (farewellWritten(memory.store.all(), chatKey, fact.at)) return
+    memory.write(farewellText(config.farewellText), chatKey, {
+      layer: 'semantic',
+      source: 'chat',
+      importance: farewellImportance,
+      at: fact.at,
+      metadata: farewellMetadata(fact),
+    })
+  }
+
+  // 关着时一个监听都不注册，到线那天连回调都不会进来
+  if ((config.farewellMemory ?? BUNDLE_DEFAULTS.farewellMemory) && vitals !== undefined) {
+    // 写不进去不影响消息路径：只记一行，回调照常返回
+    const offFarewell = vitals.onFarewell((fact) => {
+      try {
+        writeFarewell(fact)
+      } catch (error) {
+        ctx.logger('qq-bundle').warn('遗书没写进去：%s', String(error))
+      }
+    })
+    ctx.effect(() => () => {
+      offFarewell()
     })
   }
 

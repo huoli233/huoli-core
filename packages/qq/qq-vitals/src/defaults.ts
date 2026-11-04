@@ -382,6 +382,8 @@ export const DEFAULTS: Tuning = {
   mortalityTargetCrisis: 1.0,
   mortalityRisePerBeat: 0.15,
   mortalityFallPerBeat: 0.03,
+  // 遗书：死亡威胁到这条线算高位，一天最多产出一次
+  farewellMortalityFrom: 0.85,
 }
 
 /** 落盘时按数值读回来的字段 */
@@ -406,6 +408,7 @@ export const STAMP_FIELDS = [
   'last_update', 'last_msg', 'last_meal', 'last_drink', 'last_drink_at', 'last_taste_at',
   'drink_mem_at', 'fluid_applied_at', 'praise_applied_at', 'anger_applied_at', 'meal_applied_at',
   'fear_applied_at', 'worry_applied_at', 'dread_applied_at', 'threat_applied_at', 'apology_applied_at',
+  'farewell_applied_at',
   'wake_after', 'groggy_until', 'woken_at', 'nap_at',
 ] as const
 
@@ -478,6 +481,7 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     dread_applied_at: 0,
     threat_applied_at: 0,
     apology_applied_at: 0,
+    farewell_applied_at: 0,
     meal_applied_at: 0,
     last_drink_name: '',
     last_taste: null,

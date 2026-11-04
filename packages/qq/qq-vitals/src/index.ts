@@ -7,6 +7,7 @@ import '@huoli/huoli-system-prompt'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { derive } from './derive.ts'
 import { drift } from './drift.ts'
+import { farewellOf, type FarewellFact } from './mortality.ts'
 import { react as reactToText } from './react.ts'
 import { renderPrompt } from './render.ts'
 import { createVitalsStore } from './store.ts'
@@ -18,7 +19,8 @@ export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
 export { cycleOf } from './clock.ts'
 export { derive } from './derive.ts'
 export { drift } from './drift.ts'
-export { mortalityTarget } from './mortality.ts'
+export { farewellOf, farewellReason, mortalityTarget } from './mortality.ts'
+export type { FarewellFact } from './mortality.ts'
 export { peakOf } from './peak.ts'
 export type { PeakKind } from './peak.ts'
 export { postLevel } from './post.ts'
@@ -50,6 +52,8 @@ export interface QqVitalsSeam {
   setBalance(level: number | undefined): void
   /** 接住每一顿的写回，取消时用返回的那个函数 */
   onMeal(listener: (fact: MealFact) => void): () => void
+  /** 接住遗书事实：死亡威胁到线那天只通知一次，取消时用返回的那个函数 */
+  onFarewell(listener: (fact: FarewellFact) => void): () => void
 }
 
 /** 这一行接受的配置 */
@@ -92,19 +96,36 @@ export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? join(resolveHuoliHome(config.huoliHome), 'data', 'qq-vitals.json')
   const store = createVitalsStore({ file, tuning })
   const meals = new Set<(fact: MealFact) => void>()
+  const farewells = new Set<(fact: FarewellFact) => void>()
   let variant = 0
   let balance: number | undefined
 
   // 读之前先把这段时间的漂移结掉，但落盘留给心跳；余额档位一起带进去
-  const current = (): VitalsState => derive(drift(store.read(), Date.now(), tuning, undefined, balance), tuning)
+  const current = (at = Date.now()): VitalsState => derive(drift(store.read(), at, tuning, undefined, balance), tuning)
 
-  // 心跳一次：结算、写盘；出错只记一笔，不让循环停掉
+  // 遗书只在事实产出那一刻通知一次，某个订阅者失手不影响别人
+  const notifyFarewell = (fact: FarewellFact): void => {
+    for (const listener of farewells) {
+      try {
+        listener(fact)
+      } catch (error) {
+        ctx.logger('qq-vitals').warn('遗书回调失败：%s', String(error))
+      }
+    }
+  }
+
+  // 心跳一次：结算、写盘；到线的先落盘再通知，出错只记一笔，不让循环停掉
   const beat = (): void => {
+    const at = Date.now()
+    const next = current(at)
+    const farewell = farewellOf(next, balance, at, tuning)
     try {
-      store.write(current())
+      store.write(farewell === undefined ? next : { ...next, farewell_applied_at: farewell.at })
     } catch (error) {
       ctx.logger('qq-vitals').warn('心跳写盘失败：%s', String(error))
+      return
     }
+    if (farewell !== undefined) notifyFarewell(farewell)
   }
 
   // 一顿饭只有真写回的那次才通知，重复进入的同一条消息不通知
@@ -151,6 +172,12 @@ export function apply(ctx: Context, config: Config = {}): void {
         meals.delete(listener)
       }
     },
+    onFarewell(listener) {
+      farewells.add(listener)
+      return () => {
+        farewells.delete(listener)
+      }
+    },
   }
   seams.set(ctx.root, seam)
 
@@ -177,6 +204,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (timer !== undefined) clearInterval(timer)
     store.write(current())
     meals.clear()
+    farewells.clear()
     seams.delete(ctx.root)
   })
 }

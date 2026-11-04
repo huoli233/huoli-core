@@ -30,4 +30,8 @@ export const BUNDLE_DEFAULTS = {
   mealMemory: true,
   /** 一顿饭写成一条记忆时的重要度，例行的一顿比事件轻，但要过记忆的写入门槛 */
   mealMemoryImportance: 30,
+  /** 遗书写不写进记忆，关掉就一次都不订阅 */
+  farewellMemory: true,
+  /** 遗书写成一条记忆时的重要度，一辈子只留一句，压在保护线以上 */
+  farewellMemoryImportance: 95,
 }
