@@ -93,11 +93,12 @@ describe('每天一行', () => {
     expect(healthCounts(many, 70).cold).toBe(3)
   })
 
-  it('待写入按已入队未写入算，现在没有队列就是 0', () => {
+  it('待写入只认队列给的数，没给就是 0', () => {
     const short = verifyBook(initBook([WARM, LIGHT]), KEPT)
 
     expect(short.unrecorded).toEqual([COLD.id])
     expect(healthCounts(KEPT, 70).pending).toBe(0)
+    expect(healthCounts(KEPT, 70, 7).pending).toBe(7)
   })
 })
 

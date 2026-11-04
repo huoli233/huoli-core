@@ -1,6 +1,17 @@
 // 写入前的两道校验：来源只认五档，metadata 只收键为字符串的对象
 
-import { MEMORY_SOURCES, type MemorySource } from './types.ts'
+import { MEMORY_SOURCES, type MemoryLayer, type MemorySource } from './types.ts'
+
+/**
+ * 层名只认四个合法值，别的值给 undefined 由调用方回落到默认
+ * @param value - 调用方给的值
+ * @returns 合法的层，认不出时是 undefined
+ */
+export function layerOr(value: unknown): MemoryLayer | undefined {
+  const body = typeof value === 'string' ? value.trim() : ''
+  if (body === 'ephemeral' || body === 'episodic' || body === 'semantic' || body === 'private') return body
+  return undefined
+}
 
 /**
  * 来源只认五档，别的一概拒写

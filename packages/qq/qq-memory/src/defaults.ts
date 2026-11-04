@@ -40,6 +40,22 @@ export interface Tuning extends DecayParams, RecoverParams {
   freshnessDays: number
   /** 镜像写进来时重要度不低于这条线 */
   selfImportanceFloor: number
+  /** 一条待写的正文短过这几个字当噪声，不入队 */
+  minTextChars: number
+  /** 一条正文长过这几个字要求拆分，不入队 */
+  maxTextChars: number
+  /** 待写队列最多压几条，满了先丢最旧的 */
+  queueMax: number
+  /** 每几轮把队列排空一次 */
+  flushEveryTurns: number
+  /** 每几轮反思一次 */
+  reflectEveryTurns: number
+  /** 一次反思最多拿最近几条合成 */
+  reflectWindow: number
+  /** 反思至少要有几条才值得合成 */
+  reflectMinItems: number
+  /** 两条正文的相似度到这条线以上算近似重复 */
+  nearDuplicateRatio: number
   /** 每天那一行还写不写进健康日志，关掉就一次都不写 */
   healthLog: boolean
   /** 已入队还没写入的条数超过它就在健康一行末尾告警 */
@@ -74,6 +90,14 @@ export const DEFAULTS: Tuning = {
   freshnessDays: 7,
   // 镜像进来的事是自我层认定要记住的，落在保护线之上
   selfImportanceFloor: 80,
+  minTextChars: 4,
+  maxTextChars: 500,
+  queueMax: 200,
+  flushEveryTurns: 4,
+  reflectEveryTurns: 10,
+  reflectWindow: 6,
+  reflectMinItems: 2,
+  nearDuplicateRatio: 0.92,
   healthLog: true,
   pendingAlert: 50,
   pinnedAlert: 30,

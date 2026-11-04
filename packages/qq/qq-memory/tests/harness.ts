@@ -21,6 +21,7 @@ export interface MountOptions {
   file: string
   ledgerFile?: string
   healthLogFile?: string
+  queueFile?: string
   tuning?: Partial<Tuning>
 }
 
@@ -53,6 +54,11 @@ export function healthLogBeside(file: string): string {
   return path.join(path.dirname(file), 'qq-memory-health.log')
 }
 
+// 跟记忆文件放一起的待写队列
+export function queueBeside(file: string): string {
+  return path.join(path.dirname(file), 'qq-memory-queue.json')
+}
+
 export function mount(options: MountOptions): Mounted {
   const ctx = new Context()
   const registered = new Map<string, ToolDefinition>()
@@ -67,8 +73,9 @@ export function mount(options: MountOptions): Mounted {
   apply(ctx, {
     file: options.file,
     ledgerFile: options.ledgerFile ?? ledgerBeside(options.file),
-    // 日志总是落在临时目录里，用例不会写到真实的 data 下
+    // 日志与队列总是落在临时目录里，用例不会写到真实的 data 下
     healthLogFile: options.healthLogFile ?? healthLogBeside(options.file),
+    queueFile: options.queueFile ?? queueBeside(options.file),
     ...options.tuning !== undefined ? { tuning: options.tuning } : {},
   })
   const seam = qqMemoryOf(ctx)

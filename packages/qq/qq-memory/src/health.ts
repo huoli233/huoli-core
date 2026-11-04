@@ -25,6 +25,8 @@ export interface HealthInput {
   protectLine: number
   /** 这次的对账结果 */
   ledger: LedgerReport
+  /** 已入队还没写进文件的条数，由装配层从队列取 */
+  pending?: number
   /** 三个告警阈值，从配置读 */
   thresholds: AlertThresholds
 }
@@ -66,9 +68,10 @@ export function localDay(now: number): string {
  * 数一遍这一行要的几个数
  * @param items - 现在的全部记忆
  * @param protectLine - 保护线
+ * @param pending - 已入队还没写进文件的条数
  * @returns 数出来的数
  */
-export function healthCounts(items: readonly MemoryItem[], protectLine: number): HealthCounts {
+export function healthCounts(items: readonly MemoryItem[], protectLine: number, pending: number = 0): HealthCounts {
   let total = 0
   let pinned = 0
   let cold = 0
@@ -81,8 +84,8 @@ export function healthCounts(items: readonly MemoryItem[], protectLine: number):
     if (item.importance >= protectLine) pinned += 1
     if (item.clarity === 'trace') cold += 1
   }
-  // 写入是当场落盘、没有排队等待的一层，所以待写入恒为 0；将来有了队列再从队列取长度
-  return { total, pinned, cold, pending: 0 }
+  // 待写入不由这一页数出来，它只认队列的长度，队列有多少就照实写多少
+  return { total, pinned, cold, pending }
 }
 
 /**
@@ -126,7 +129,7 @@ export function healthAlerts(
  * @returns 拼好的话
  */
 export function healthLine(input: HealthInput): string {
-  const counts = healthCounts(input.items, input.protectLine)
+  const counts = healthCounts(input.items, input.protectLine, input.pending)
   const level = ledgerLevel(input.ledger)
   const fields = [
     `[memory] ${stamp(input.now)}`,

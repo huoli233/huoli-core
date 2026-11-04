@@ -14,6 +14,16 @@ import { appendHealthLine, defaultHealthLogFile, healthLine, localDay } from './
 import { clampImportance, metadataOr, sourceOr } from './guard.ts'
 import { mirroredBy, mirroredSelfIds } from './mirror.ts'
 import {
+  createWriteQueue,
+  defaultQueueFile,
+  writeFact,
+  type EnqueueOutcome,
+  type FlushOutcome,
+  type ReflectOutcome,
+  type TurnOutcome,
+  type WriteOutcome,
+} from './write.ts'
+import {
   CLARITY_LABEL,
   LAYER_LABEL,
   newId,
@@ -67,6 +77,18 @@ export type {
 } from './ledger.ts'
 export { appendHealthLine, defaultHealthLogFile, healthAlerts, healthCounts, healthLine, ledgerLevel, localDay } from './health.ts'
 export type { HealthAlert, HealthCounts, HealthInput, LedgerLevel } from './health.ts'
+export { createWriteQueue, defaultQueueFile, nearDuplicateOf, writeFact } from './write.ts'
+export type {
+  EnqueueOutcome,
+  FlushOutcome,
+  NearDuplicate,
+  QueuedFact,
+  ReflectOutcome,
+  TurnOutcome,
+  WriteOutcome,
+  WriteQueue,
+  WriteQueueOptions,
+} from './write.ts'
 
 /** 每天跑完一遍之后的交代 */
 export interface MaintainResult {
@@ -92,6 +114,20 @@ export interface MaintainResult {
 export interface QqMemorySeam {
   store: MemoryStore
   remember(text: string, chatKey: string, options?: RememberOptions): MemoryItem
+  /** 写一条：与同 scope 的旧条够像就并进旧条，返回里 merged 说明走了哪条路 */
+  write(text: string, chatKey: string, options?: RememberOptions): WriteOutcome
+  /** 只做轻校验就进队列，不写库；排空时才真正写进去 */
+  enqueue(text: string, chatKey: string, options?: RememberOptions): EnqueueOutcome
+  /** 把队列里的写进记忆，写不进去的留在队列里 */
+  flushQueue(now: number): FlushOutcome
+  /** 把最近几条同类内容合成一条长期印象 */
+  reflect(now: number): ReflectOutcome
+  /** 一轮过去：到点就排空与反思 */
+  tick(now: number): TurnOutcome
+  /** 已入队还没写进去的条数 */
+  pending(): number
+  /** 累计丢掉的最旧条数 */
+  dropped(): number
   /** 自我层镜像一条：只加来源与重要度下限，别处照 remember */
   rememberSelf(entry: RememberSelfEntry, at: number): RememberSelfResult
   /** 已经镜过的来源键，按镜像顺序 */
@@ -112,6 +148,8 @@ export interface Config {
   ledgerFile?: string
   /** 健康日志存哪，不填就用主目录下的 data */
   healthLogFile?: string
+  /** 待写队列存哪，不填就用主目录下的 data */
+  queueFile?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
   /** 想改哪些默认参数 */
@@ -151,40 +189,76 @@ export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-memory.json')
   const ledgerFile = config.ledgerFile ?? defaultLedgerFile(config.home)
   const healthLogFile = config.healthLogFile ?? defaultHealthLogFile(config.home)
+  const queueFile = config.queueFile ?? defaultQueueFile(config.home)
   const store = createMemoryStore({ file })
   const scopeOf = (chatKey: string): string => chatKey
   const run = (action: LedgerAction): LedgerRunResult => runLedger(action, { file: ledgerFile, items: store.all() })
 
+  // 拼一条待写的记忆，显式路径与排空路径共用这一处，字段不会两处对不上
+  const itemOf = (text: string, chatKey: string, options: RememberOptions, at: number): MemoryItem => {
+    const layer = options.layer ?? 'episodic'
+    const emotional = options.emotional ?? 0
+    const metadata = metadataOr(options.metadata)
+    return {
+      id: newId(at),
+      text,
+      layer,
+      scope: scopeOf(chatKey),
+      importance: options.importance ?? initialImportance({
+        scene: sceneOf(layer, chatKey),
+        directed: options.directed ?? false,
+        emotional,
+      }),
+      emotional,
+      clarity: 'vivid',
+      recallCount: 0,
+      recoverDay: 0,
+      recoverTimes: 0,
+      at,
+      lastSeenAt: at,
+      state: 'active',
+      source: sourceOr(options.source, 'chat'),
+      ...metadata === undefined ? {} : { metadata },
+    }
+  }
+
+  const queue = createWriteQueue({
+    file: queueFile,
+    tuning,
+    store,
+    // 排空写的都是聊天里攒下的事实，来源没点名就按聊天记，其余几项照入队时给的
+    write(fact) {
+      writeFact(store, itemOf(fact.text, fact.chatKey, fact.options, fact.enqueuedAt), tuning)
+    },
+  })
+
   const seam: QqMemorySeam = {
     store,
     remember(text, chatKey, options = {}) {
-      const at = options.at ?? Date.now()
-      const layer = options.layer ?? 'episodic'
-      const emotional = options.emotional ?? 0
-      const metadata = metadataOr(options.metadata)
-      const item: MemoryItem = {
-        id: newId(at),
-        text,
-        layer,
-        scope: scopeOf(chatKey),
-        importance: options.importance ?? initialImportance({
-          scene: sceneOf(layer, chatKey),
-          directed: options.directed ?? false,
-          emotional,
-        }),
-        emotional,
-        clarity: 'vivid',
-        recallCount: 0,
-        recoverDay: 0,
-        recoverTimes: 0,
-        at,
-        lastSeenAt: at,
-        state: 'active',
-        source: sourceOr(options.source, 'chat'),
-        ...metadata === undefined ? {} : { metadata },
-      }
+      const item = itemOf(text, chatKey, options, options.at ?? Date.now())
       store.add(item)
       return item
+    },
+    write(text, chatKey, options = {}) {
+      return writeFact(store, itemOf(text, chatKey, options, options.at ?? Date.now()), tuning)
+    },
+    enqueue(text, chatKey, options) {
+      return queue.enqueue(text, chatKey, options)
+    },
+    flushQueue(now) {
+      return queue.flush(now)
+    },
+    reflect(now) {
+      return queue.reflect(now)
+    },
+    tick(now) {
+      return queue.advanceTurn(now)
+    },
+    pending() {
+      return queue.pending()
+    },
+    dropped() {
+      return queue.dropped()
     },
     rememberSelf(entry, at) {
       const selfId = entry.selfId.trim()
@@ -253,6 +327,8 @@ export function apply(ctx: Context, config: Config = {}): void {
           line: '',
         }
       }
+      // 排空在衰减之前：这一轮攒下的事先落库，健康一行的 pending 才是排空之后的真实积压
+      queue.flush(now)
       // 先掉重要度，再按新的重要度算清晰度，最后才清正文
       const decayed = decayAll(store, tuning)
       const swept = sweepOnce(store, now)
@@ -264,6 +340,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         injectMaxChars: tuning.injectMaxChars,
         protectLine: tuning.protectLine,
         ledger: synced.report,
+        pending: queue.pending(),
         thresholds: tuning,
       })
       // 整理日先记账再写日志：写日志失手时这一天不会因为重跑而多衰减一次
@@ -299,8 +376,9 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   registerMemoryTools(ctx, { store, scopeOf, sceneOf, tuning })
 
-  // 卸载时落一次盘
+  // 卸载时排空队列再落一次盘，攒着的那几条不会跟着进程一起没
   ctx.effect(() => () => {
+    queue.flush(Date.now())
     store.flush()
     seams.delete(ctx)
   })

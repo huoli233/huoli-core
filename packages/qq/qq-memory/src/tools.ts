@@ -4,6 +4,7 @@ import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
 import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
 import { DEFAULTS, type Tuning } from './defaults.ts'
+import { layerOr } from './guard.ts'
 import type { MemoryStore } from './store.ts'
 import { newId, type MemoryItem, type MemoryLayer } from './types.ts'
 import { recall, renderRecall } from './recall.ts'
@@ -30,11 +31,9 @@ function chatKeyOf(exec: { agent?: { id: string } }): string {
   return id
 }
 
-// 把传进来的层名换成正名
+// 把传进来的层名换成正名，认不出就按这段经历算
 function layerOf(raw: unknown): MemoryLayer {
-  const value = typeof raw === 'string' ? raw.trim() : ''
-  if (value === 'ephemeral' || value === 'episodic' || value === 'semantic' || value === 'private') return value
-  return 'episodic'
+  return layerOr(raw) ?? 'episodic'
 }
 
 /**
