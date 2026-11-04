@@ -14003,6 +14003,9 @@ importers:
       '@huoli/huoli-qq-proactive':
         specifier: workspace:*
         version: link:../qq-proactive
+      '@huoli/huoli-qq-self':
+        specifier: workspace:*
+        version: link:../qq-self
       '@huoli/huoli-qq-subject':
         specifier: workspace:*
         version: link:../qq-subject
@@ -14095,6 +14098,22 @@ importers:
       '@huoli/huoli-home-paths':
         specifier: workspace:*
         version: link:../../util/home-paths
+
+  packages/qq/qq-self:
+    dependencies:
+      '@huoli/huoli-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
+    devDependencies:
+      '@huoli/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@huoli/huoli-agent':
+        specifier: workspace:*
+        version: link:../../core/agent
+      '@huoli/huoli-system-prompt':
+        specifier: workspace:*
+        version: link:../../core/system-prompt
 
   packages/qq/qq-subject:
     dependencies:

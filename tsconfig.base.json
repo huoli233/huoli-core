@@ -511,6 +511,7 @@
       "@huoli/huoli-qq-pacing": ["./packages/qq/qq-pacing/src"],
       "@huoli/huoli-qq-policy": ["./packages/qq/qq-policy/src"],
       "@huoli/huoli-qq-proactive": ["./packages/qq/qq-proactive/src"],
+      "@huoli/huoli-qq-self": ["./packages/qq/qq-self/src"],
       "@huoli/huoli-qq-subject": ["./packages/qq/qq-subject/src"],
       "@huoli/huoli-qq-vitals": ["./packages/qq/qq-vitals/src"],
       "@huoli/huoli-remote-mock": ["./packages/test-support/remote-mock/src"],

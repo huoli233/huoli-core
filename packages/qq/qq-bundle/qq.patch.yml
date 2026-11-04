@@ -33,6 +33,11 @@
     - id: qq-vitals
       name: '@huoli/huoli-qq-vitals'
 
+    - id: qq-self
+      name: '@huoli/huoli-qq-self'
+      config:
+        enabled: false
+
     - id: qq-bundle
       name: '@huoli/huoli-qq-bundle'
       config:

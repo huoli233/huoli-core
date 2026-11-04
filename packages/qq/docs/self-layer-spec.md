@@ -216,7 +216,7 @@ Go/No-Go：P2 结束前，"连续 7 天不别扭""说过一次我不知道""拒�
 | 阶段 | 交付 | 退出条件 |
 |---|---|---|
 | P0 | `constitution.md` 八条、`panel.md` 草稿、一次 10 问基线访谈（人工） | 人工读完判"像她"；这一阶段不注册任何提示词段，`data/self` 之外零写入 |
-| P1 | 离线生成器 `node --import tsx packages/qq/qq-self/scripts/panel.ts`，只写 `panel.md` | 连续 3 天面板内容无变化；盲评 ≥4/5（人工）；提示词里抓不到这一段 |
+| P1 | 离线生成面板：一条命令产出 `panel.md`，只写文件不注入 | 连续 3 天面板内容无变化；盲评 ≥4/5（人工）；提示词里抓不到这一段 |
 | P2 | 只读注入：`Config.enabled` 默认 `false`，段名 `qq:self-layer`，只在主会话首轮定稿 | 7 天内面板报错计数为 0；同一会话面板逐字不变；关掉开关后下一次装配不含该段；提示词新增 ≤320 字符；语气盲评 ≥4/5（人工） |
 | P3 | `day.jsonl` 与 `questions.jsonl`，只追加，不进记忆库，可跳过并记原因 | 7 天里至少 5 天有 `day.jsonl` 行；至少一条 `questions.jsonl`；跳过的天带 `skipped: true` 与 `why`；她说过一次"我不知道"（人工） |
 | P4 | `projects.jsonl` 一个 1–2 周项目、`ledger.jsonl` 两档分记、记忆镜像上线 | 项目能记成 `failed` 并有一条 `errors.jsonl` 复盘；两档行数分别统计正确；镜像写入后读回 `importance` ≥80 且四项元信息齐全；至少 1/3 项目不为用户做 |

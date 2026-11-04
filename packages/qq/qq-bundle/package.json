@@ -39,6 +39,7 @@
     "@huoli/huoli-qq-pacing": "workspace:*",
     "@huoli/huoli-qq-policy": "workspace:*",
     "@huoli/huoli-qq-proactive": "workspace:*",
+    "@huoli/huoli-qq-self": "workspace:*",
     "@huoli/huoli-qq-subject": "workspace:*",
     "@huoli/huoli-qq-vitals": "workspace:*"
   },
