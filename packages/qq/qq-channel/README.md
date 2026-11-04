@@ -21,11 +21,11 @@ kind: "package-reference"
 
 #### What the model sees
 
-三个工具：`qq_send_message` 与 `qq_send_reaction` 管会话里说话，`qq_publish_post` 管发动态。前两个的说明里讲了长话会被拆开、说完就结束这一轮；发布那个只收正文与级别（`routine` 或 `public`），说明里写了什么时候该用、什么时候别用、被拒之后怎么办，判级与额度一行都不在说明里定。
+六个工具：`qq_send_message` 与 `qq_send_reaction` 管会话里说话，`qq_publish_post` 管发动态，`qq_comment_post` 管公开评论，`qq_send_private` 管私信，`qq_request_confirm` 与 `qq_confirm_action` 管发评论与私信之前的那张确认票。每一条说明都写了什么时候该用、什么时候别用、被拒之后怎么办；评论与私信那两条还写清了公开可见与只有对方看得见的差别，以及先要票、再盖章、最后才发送的顺序。判级、额度与冷却一行都不在说明里定。
 
 #### Token effect
 
-发出去的内容不留在上下文里；工具只回一个成功标志和条数。
+发出去的内容不留在上下文里；说话那个回成功标志与条数，发布、评论、私信回成功标志、时刻与消息编号，要票回票号与失效时刻。
 
 #### KV Cache effect
 
@@ -37,6 +37,8 @@ kind: "package-reference"
 不改写内容、不代说，只回一个失败：错误码点号分层（outbound.not_allowed、outbound.quiet、outbound.too_long、outbound.banned、outbound.rate），后面跟一句可读原因和「几点之后再来」。
 公共动作那一路另有自己的码（动态是 post.empty、post.level、post.topic_required、post.not_routine、post.needs_keys、post.paused、post.duplicate、post.cooling、post.day_full，评论与私信把前缀换成 comment / private），同样只给原因与下次时刻。
 评论与私信还要过一次确认：comment.needs_confirm、comment.confirm_expired、comment.confirm_duplicate 与 private 上同名的三条；私信另有 private.stage_blocked、private.peer_required、private.peer_not_allowed。
+
+要票与盖章这两个工具把沿路的码原样抛出（confirm.unknown、*.confirm_duplicate、*.confirm_expired）；*.needs_confirm 那一类拒绝的下一步里会指名先调 qq_request_confirm 拿票、再调 qq_confirm_action 盖章。
 ```
 
 ## Known Limitations and Deferred Work
@@ -53,7 +55,8 @@ kind: "package-reference"
 - 每条只过一遍体检，切出来的几条共用装配前那一次判定。
 - 状态是读一次写一次，两个调用方同时发时以最后写进去的那一份为准。
 - 待确认项要在状态文件里留到有人点头，正文因此跟着待确认项短存一段；放行、丢掉或过期之后只剩指纹。
-- 评论与私信只有装配层入口，没有对应的工具，模型现在调不到这两类动作。
+- 评论与私信的两把钥匙由工具在发起时声明（用户那把由这张确认票背书、她自己那把由这次调用背书），判级、查名单与阶段仍由发布入口做，工具自己不判。
+- 票只认品类与正文指纹，不绑话题与对象，话题与对象要在发送那一步重新报，报得不一致就按发布入口给的码拒。
 
 <a id="dev-note"></a>
 ### Dev Note
@@ -73,5 +76,7 @@ kind: "package-reference"
 状态在 `src/action-store.ts`：`data/qq-actions.json` 里 `version` 是 2，`kinds` 分 `post` / `comment` / `private` 三格，各存 `dayStart`、`dayCount`、`lastAt` 与正文的 sha256 指纹表，`pending` 是等着点头的那几条（编号、品类、指纹、正文、提出时刻、失效时刻与点头时刻）；做过的正文不落盘，只有待确认项短存正文。写盘先写同目录临时文件再改名，并先把上一份留成 `.bak`，正式文件读不出时按备份、再按默认值逐级回退。
 
 接线在 `apply` 里：发送工具真正发之前调 `inspect`，每发出一条调 `account` 把这一刻记进分钟窗口；拒了就抛错，让内核统一包装成失败结果。发送这一路的 `attempt` / `sent` / `blocked` 由 `seam.onOutbound` 报给装配层，只带码、条数与时刻，不带正文；三类动作都走同一个出口，所以发布工具一次调用照样先报 `attempt`，发出去报 `sent`，被闸门拦下报 `blocked`，工具自己不再补一遍。名单空着等于不限制，装配时各打印一次提示。停手开关、条数上限、自我层的阶段分别由 `seam.usePause` / `useReplyCap` / `useStage` 接进来。
+
+评论、私信与确认票这三个工具也在 `src/tools.ts`：`qq_comment_post` 只把正文、话题与当前会话键交给 `publish('comment', …)`；`qq_send_private` 把对象拼成 `private:编号` 当会话键交给 `publish('private', …)`，没报对象就带一个空号，让发布入口按缺对象拒；`qq_request_confirm` 与 `qq_confirm_action` 分别调 `requestConfirm(kind, text, at)` 与 `confirm(confirmId, at)`。四个工具都不判该不该发，拒绝原样抛出，只把 `*.needs_confirm` 那一条的下一步改写为「先调 qq_request_confirm 再调 qq_confirm_action」；要票的品类清单 `CONFIRM_KINDS` 从 `ACTION_DEFAULTS` 里 `confirmRequired` 为真的那几项取，别处不写第二份。
 
 分条发在 `src/tools.ts` 里：体检与额度这两道先过，再用这一轮的条数上限调 `qq-pacing` 的 `splitByBudget`，条与条之间按 `speechGaps` 给的间隔停一下再发下一条。上限由装配层通过 `seam.useReplyCap(provide)` 接进来，读的是组合包每轮算出的那个数；没接上就按 `REPLY_DEFAULTS.minCap` 发一条。单条的字数口径与长度那道闸是同一个 `maxChars`，切出来的每条都过得了它。中途某条没发出去就停在那儿：已经发出去的不撤也不再重发，抛出的失败里写明已发几条、卡在第几条，发送这一路先报已发的条数再报 `blocked`。

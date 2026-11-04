@@ -18,7 +18,7 @@ export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, t
 export type { OutboundCheck, OutboundInput, OutboundTuning, OutboundVerdict } from './outbound.ts'
 export { createOutboundCheck, OUTBOUND_DEFAULTS } from './outbound.ts'
 export type { ActionDelivery, ActionFacts, ActionGate, ActionKind, ActionResult, ActionTuning, ActionTunings } from './actions.ts'
-export { ACTION_DEFAULTS, CONFIRM_DEFAULTS, POLICY_DEFAULTS } from './actions.ts'
+export { ACTION_DEFAULTS, CONFIRM_DEFAULTS, CONFIRM_KINDS, POLICY_DEFAULTS } from './actions.ts'
 export type { ActionGateOptions } from './action-gate.ts'
 export { createActionGate } from './action-gate.ts'
 export type { ActionFingerprint, ActionKindState, ActionState, ActionStore, ActionStoreOptions, PendingAction } from './action-store.ts'
@@ -333,7 +333,9 @@ export function apply(ctx: Context, config: Config): void {
     report: (event) => {
       for (const handler of outboundEvents) handler(event)
     },
-    publish: (text, facts) => seam.publish('post', text, facts),
+    publish: (kind, text, facts) => seam.publish(kind, text, facts),
+    requestConfirm: (kind, text, at) => seam.requestConfirm(kind, text, at),
+    confirm: (confirmId, at) => seam.confirm(confirmId, at),
   })
 
   channel.start()

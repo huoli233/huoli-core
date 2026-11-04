@@ -31,6 +31,10 @@ export const ACTION_DEFAULTS: ActionTunings = {
   private: { coolDownMs: PUBLIC_WINDOW_MS, repeatWindowMs: PUBLIC_WINDOW_MS, dailyMax: 3, fingerprintMax: 64, confirmRequired: true },
 }
 
+/** 要过一次确认才发得出去的那几类动作，清单只从默认值表里取 */
+export const CONFIRM_KINDS: readonly ActionKind[] = (Object.keys(ACTION_DEFAULTS) as ActionKind[])
+  .filter(kind => ACTION_DEFAULTS[kind].confirmRequired)
+
 /** 一次确认的默认值表 */
 export const CONFIRM_DEFAULTS = {
   /** 待确认项放多久没人点头就失效 */
