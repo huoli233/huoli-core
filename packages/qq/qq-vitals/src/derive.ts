@@ -215,6 +215,11 @@ function suppress(scores: Map<string, number>, s: VitalsState, tuning: Tuning): 
     scale('安心', 1 - tuning.suppressSalienceCalm * s.mortalitySalience)
     scale('满足', 1 - tuning.suppressSalienceContent * s.mortalitySalience)
   }
+  // 疤在高位时，安心与幸福都算不高：那不是当下的状态，是留在身上的东西
+  if (s.scar > tuning.scarHighFrom) {
+    scale('安心', tuning.scarSuppressCalm)
+    scale('幸福', tuning.scarSuppressJoy)
+  }
 }
 
 /**

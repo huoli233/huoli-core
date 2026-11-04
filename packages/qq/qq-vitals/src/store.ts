@@ -93,6 +93,14 @@ function sanitize(raw: unknown, fallback: VitalsState): VitalsState {
   state.asleep = state.sleep_state === 'sleeping'
   const sleepKind = record.sleep_kind
   if (sleepKind === '' || sleepKind === 'night' || sleepKind === 'nap') state.sleep_kind = sleepKind
+  const dreamKind = record.dream_kind
+  if (dreamKind === '' || dreamKind === 'sweet' || dreamKind === 'nightmare' || dreamKind === 'plain') {
+    state.dream_kind = dreamKind
+  }
+  const dreamPlace = record.dream_place
+  if (typeof dreamPlace === 'string') state.dream_place = dreamPlace
+  const dreamRepeat = record.dream_repeat
+  if (typeof dreamRepeat === 'boolean') state.dream_repeat = dreamRepeat
   const phase = toPhase(record.cycle_phase)
   if (phase !== undefined) state.cycle_phase = phase
   const level = record.emotion_level

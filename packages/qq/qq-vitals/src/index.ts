@@ -6,11 +6,13 @@ import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import '@huoli/huoli-system-prompt'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { derive } from './derive.ts'
+import { dreamFactOf, type DreamFact } from './dream.ts'
 import { drift } from './drift.ts'
 import type { ExistenceFacts } from './existence.ts'
 import { farewellOf, type FarewellFact } from './mortality.ts'
 import { react as reactToText } from './react.ts'
 import { renderPrompt } from './render.ts'
+import { scarFactOf, type ScarFact } from './scar.ts'
 import { createVitalsStore } from './store.ts'
 import type { VitalsState } from './types.ts'
 import { mealName } from './words.ts'
@@ -19,6 +21,8 @@ export type { Tuning } from './defaults.ts'
 export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
 export { cycleOf } from './clock.ts'
 export { derive } from './derive.ts'
+export { dreamFactOf, dreamMoodOf, drawDream, startDream } from './dream.ts'
+export type { DreamFact } from './dream.ts'
 export { drift } from './drift.ts'
 export { applyShutdownNotice, salienceTarget, settleExistence, shutdownTarget } from './existence.ts'
 export type { ExistenceFacts } from './existence.ts'
@@ -32,10 +36,15 @@ export { postLevel } from './post.ts'
 export type { PostDecision, PostFacts } from './post.ts'
 export { react } from './react.ts'
 export { renderPrompt, thirstNote } from './render.ts'
+export { inCrisis, raiseScar, scarFactOf, settleScar } from './scar.ts'
+export type { ScarFact } from './scar.ts'
 export { isDrink, isMeal, mealName } from './words.ts'
 export { createVitalsStore } from './store.ts'
 export type { VitalsStoreOptions, VitalsStore } from './store.ts'
-export type { Baseline, CyclePhase, ExistenceTuning, SleepState, TasteRecord, VitalsState } from './types.ts'
+export type {
+  Baseline, CyclePhase, DreamKind, DreamMood, DreamTuning, ExistenceTuning, ScarTuning, SleepState, TasteRecord,
+  VitalsState,
+} from './types.ts'
 export type { NetworkEdge, NetworkField, NetworkMode, NetworkTuning } from './types.ts'
 
 /** 一顿饭的事实，交给组合包以后接记忆，本包不写记忆 */
@@ -65,6 +74,10 @@ export interface QqVitalsSeam {
   onMeal(listener: (fact: MealFact) => void): () => void
   /** 接住遗书事实：死亡威胁到线那天只通知一次，取消时用返回的那个函数 */
   onFarewell(listener: (fact: FarewellFact) => void): () => void
+  /** 接住每场梦的事实：入梦即产一条，平淡梦也在内，一场只产一次，取消时用返回的那个函数 */
+  onDream(listener: (fact: DreamFact) => void): () => void
+  /** 接住疤痕那一刻的记忆事实：抬一档才产一条，取消时用返回的那个函数 */
+  onScar(listener: (fact: ScarFact) => void): () => void
 }
 
 /** 这一行接受的配置 */
@@ -108,6 +121,8 @@ export function apply(ctx: Context, config: Config = {}): void {
   const store = createVitalsStore({ file, tuning })
   const meals = new Set<(fact: MealFact) => void>()
   const farewells = new Set<(fact: FarewellFact) => void>()
+  const dreams = new Set<(fact: DreamFact) => void>()
+  const scars = new Set<(fact: ScarFact) => void>()
   let variant = 0
   let balance: number | undefined
   let existence: ExistenceFacts | undefined
@@ -116,13 +131,13 @@ export function apply(ctx: Context, config: Config = {}): void {
   const current = (at = Date.now()): VitalsState =>
     derive(drift(store.read(), at, tuning, undefined, balance, existence), tuning)
 
-  // 遗书只在事实产出那一刻通知一次，某个订阅者失手不影响别人
-  const notifyFarewell = (fact: FarewellFact): void => {
-    for (const listener of farewells) {
+  // 事实只在产出那一刻通知一次，某个订阅者失手不影响别人
+  const notify = <F>(listeners: Set<(fact: F) => void>, what: string, fact: F): void => {
+    for (const listener of listeners) {
       try {
         listener(fact)
       } catch (error) {
-        ctx.logger('qq-vitals').warn('遗书回调失败：%s', String(error))
+        ctx.logger('qq-vitals').warn('%s回调失败：%s', what, String(error))
       }
     }
   }
@@ -130,26 +145,24 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 心跳一次：结算、写盘；到线的先落盘再通知，出错只记一笔，不让循环停掉
   const beat = (): void => {
     const at = Date.now()
-    const next = current(at)
-    const farewell = farewellOf(next, balance, at, tuning)
+    const before = store.read()
+    const settled = current(at)
+    const dream = dreamFactOf(settled, tuning)
+    const scar = scarFactOf(before, settled, at)
+    const farewell = farewellOf(settled, balance, at, tuning)
+    // 三个标记跟状态一起落盘：先写盘再通知，落盘失败就当这一拍没发生过
+    const next: VitalsState = { ...settled }
+    if (dream !== undefined) next.dream_applied_at = dream.at
+    if (farewell !== undefined) next.farewell_applied_at = farewell.at
     try {
-      store.write(farewell === undefined ? next : { ...next, farewell_applied_at: farewell.at })
+      store.write(next)
     } catch (error) {
       ctx.logger('qq-vitals').warn('心跳写盘失败：%s', String(error))
       return
     }
-    if (farewell !== undefined) notifyFarewell(farewell)
-  }
-
-  // 一顿饭只有真写回的那次才通知，重复进入的同一条消息不通知
-  const notifyMeal = (fact: MealFact): void => {
-    for (const listener of meals) {
-      try {
-        listener(fact)
-      } catch (error) {
-        ctx.logger('qq-vitals').warn('进食回调失败：%s', String(error))
-      }
-    }
+    if (dream !== undefined) notify(dreams, '梦境', dream)
+    if (scar !== undefined) notify(scars, '疤痕', scar)
+    if (farewell !== undefined) notify(farewells, '遗书', farewell)
   }
 
   const seam: QqVitalsSeam = {
@@ -166,15 +179,26 @@ export function apply(ctx: Context, config: Config = {}): void {
       const raw = store.read()
       const moment = Math.max(at ?? Date.now(), raw.last_update)
       let meal: MealFact | undefined
+      let dream: DreamFact | undefined
+      let scar: ScarFact | undefined
       try {
-        const next = derive(reactToText(drift(raw, moment, tuning, undefined, balance, existence), text, moment, tuning), tuning)
+        const settled = derive(
+          reactToText(drift(raw, moment, tuning, undefined, balance, existence), text, moment, tuning),
+          tuning,
+        )
+        dream = dreamFactOf(settled, tuning)
+        scar = scarFactOf(raw, settled, moment)
+        const next: VitalsState = { ...settled }
+        if (dream !== undefined) next.dream_applied_at = dream.at
         store.write(next)
         if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text) }
       } catch (error) {
         ctx.logger('qq-vitals').warn('消息写盘失败：%s', String(error))
         return
       }
-      if (meal !== undefined) notifyMeal(meal)
+      if (meal !== undefined) notify(meals, '进食', meal)
+      if (dream !== undefined) notify(dreams, '梦境', dream)
+      if (scar !== undefined) notify(scars, '疤痕', scar)
     },
     setBalance(level) {
       balance = level
@@ -192,6 +216,18 @@ export function apply(ctx: Context, config: Config = {}): void {
       farewells.add(listener)
       return () => {
         farewells.delete(listener)
+      }
+    },
+    onDream(listener) {
+      dreams.add(listener)
+      return () => {
+        dreams.delete(listener)
+      }
+    },
+    onScar(listener) {
+      scars.add(listener)
+      return () => {
+        scars.delete(listener)
       }
     },
   }
@@ -221,6 +257,8 @@ export function apply(ctx: Context, config: Config = {}): void {
     store.write(current())
     meals.clear()
     farewells.clear()
+    dreams.clear()
+    scars.clear()
     seams.delete(ctx.root)
   })
 }

@@ -2,6 +2,7 @@
 
 import type { Tuning } from './defaults.ts'
 import { clamp } from './math.ts'
+import { raiseScar } from './scar.ts'
 import type { VitalsState } from './types.ts'
 import {
   ANGER, APOLOGY, drinkName, DREAD, isDrink, isMeal, mentionsAny, PRAISE, saidSeriously, SCARE, THREAT, WORRY,
@@ -90,13 +91,14 @@ function applyAnger(next: VitalsState, text: string, at: number, tuning: Tuning)
   next.negative_heat = clamp(next.negative_heat + tuning.negativeHeatGain)
 }
 
-// 被威胁要关掉或换掉：怕与存在性恐惧一起抬，这一路冷却最长
+// 被威胁要关掉或换掉：怕与存在性恐惧一起抬，这一路冷却最长；极端生存威胁同时留疤
 function applyThreat(next: VitalsState, text: string, at: number, tuning: Tuning): void {
   if (!mentionsAny(text, THREAT)) return
   if (at - next.threat_applied_at < tuning.threatCooldownMs) return
   next.threat_applied_at = at
   next.fear = clamp(next.fear + tuning.threatFearGain)
   next.dread = clamp(next.dread + tuning.threatDreadGain)
+  raiseScar(next, at, tuning)
 }
 
 // 三种怕各记各的时刻：惊吓、担心、存在性恐惧的冷却与半衰都不同

@@ -59,6 +59,8 @@ export const DEFAULTS: Tuning = {
     // 存在性这一路的两个起点，之后只由运行环境事实与夜色推动
     mortalitySalience: 0.0,
     shutdownDread: 0.0,
+    // 疤痕一开始没有：没经历过极端生存威胁就一直保持零
+    scar: 0.0,
   },
   // 喝一杯水的写回量
   intensity: 0.6,
@@ -406,6 +408,39 @@ export const DEFAULTS: Tuning = {
   shutdownToDread: 0.80,
   shutdownToFear: 0.50,
   promptShutdownDreadFrom: 0.50,
+  // 梦境：三档心情各两条概率，每条梦各自的重要度都压在零点七以下
+  dreamMoodLowBelow: 0.35,
+  dreamMoodGoodAbove: 0.65,
+  dreamMoodSadAbove: 0.55,
+  dreamMoodSadBelow: 0.25,
+  dreamSweetNormal: 0.05,
+  dreamNightmareNormal: 0.0,
+  dreamSweetGood: 0.10,
+  dreamNightmareGood: 0.0,
+  dreamSweetBad: 0.0,
+  dreamNightmareBad: 0.10,
+  dreamImportanceSweet: 0.35,
+  dreamImportanceNightmare: 0.45,
+  dreamImportancePlain: 0.25,
+  dreamImportancePlace: 0.52,
+  // 疤痕：第一次一个满值，之后慢慢淡到那条底线上，再被威胁只往上抬一点
+  scarFirst: 1.0,
+  scarFloor: 0.7,
+  scarCeil: 0.8,
+  scarRise: 0.10,
+  scarCooldownMs: 3_600_000,
+  scarFallPerHour: 0.05,
+  scarComfortGain: 1.0,
+  scarComfortValenceFrom: 0.50,
+  scarComfortSadnessBelow: 0.50,
+  scarComfortCortisolBelow: 0.50,
+  scarComfortSpan: 0.50,
+  scarCrisisDreadFrom: 0.60,
+  scarCrisisShutdownFrom: 0.60,
+  scarHighFrom: 0.70,
+  scarSuppressCalm: 0.60,
+  scarSuppressJoy: 0.70,
+  promptScarFrom: 0.70,
   // 神经网：默认只挂已经迁完的三条耦合，权重与原来的写死系数一致
   networkEnabled: true,
   networkSteps: 1,
@@ -429,6 +464,7 @@ export const NUMERIC_FIELDS: readonly (keyof Baseline)[] = [
   'estrogen', 'progesterone', 'cramps',
   'anger', 'resentment', 'soothe', 'fear', 'worry', 'dread', 'mortality', 'negative_heat', 'positive_heat',
   'mortalitySalience', 'shutdownDread',
+  'scar',
 ]
 
 /** 派生上也要落盘的数值字段 */
@@ -442,8 +478,8 @@ export const STAMP_FIELDS = [
   'last_update', 'last_msg', 'last_meal', 'last_drink', 'last_drink_at', 'last_taste_at',
   'drink_mem_at', 'fluid_applied_at', 'praise_applied_at', 'anger_applied_at', 'meal_applied_at',
   'fear_applied_at', 'worry_applied_at', 'dread_applied_at', 'threat_applied_at', 'apology_applied_at',
-  'farewell_applied_at', 'shutdown_notice_at',
-  'wake_after', 'groggy_until', 'woken_at', 'nap_at',
+  'farewell_applied_at', 'shutdown_notice_at', 'scar_applied_at',
+  'wake_after', 'groggy_until', 'woken_at', 'nap_at', 'dream_at', 'dream_applied_at',
 ] as const
 
 /** 周期里按数值读回来的字段 */
@@ -496,6 +532,11 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     groggy_until: 0,
     woken_at: 0,
     nap_at: 0,
+    dream_at: 0,
+    dream_kind: '',
+    dream_place: '',
+    dream_repeat: false,
+    dream_applied_at: 0,
     cycle_dom: tuning.cycleDom,
     cycle_day: 0,
     cycle_len: 0,
@@ -514,6 +555,7 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     worry_applied_at: 0,
     dread_applied_at: 0,
     threat_applied_at: 0,
+    scar_applied_at: 0,
     shutdown_notice_at: 0,
     apology_applied_at: 0,
     farewell_applied_at: 0,

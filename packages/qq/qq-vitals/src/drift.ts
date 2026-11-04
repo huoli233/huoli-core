@@ -6,9 +6,11 @@ import {
   localPoint, melatoninTarget, nightness, nightWakeAt, noradrenalineBaseline,
 } from './clock.ts'
 import { applyShutdownNotice, settleExistence, type ExistenceFacts } from './existence.ts'
+import { startDream } from './dream.ts'
 import { above, clamp, clampRange, decay, follow } from './math.ts'
 import { mortalityTarget } from './mortality.ts'
 import { deltaOf, propagate } from './network.ts'
+import { inCrisis, raiseScar, settleScar } from './scar.ts'
 import type { CyclePhase, VitalsState } from './types.ts'
 
 // 递质回基线：皮质醇不在这里，它只由 HPA 轴管
@@ -175,12 +177,13 @@ function nappedToday(next: VitalsState, at: number): boolean {
   return localPoint(next.nap_at).midnight === localPoint(at).midnight
 }
 
-// 入睡：夜里睡眠压力够了就睡，午后按每分钟的概率眯一会
+// 入睡：夜里睡眠压力够了就睡，午后按每分钟的概率眯一会；每一次入睡都算入一次梦
 function startSleep(next: VitalsState, at: number, hour: number, hours: number, tuning: Tuning, random: () => number): void {
   if (inSleepWindow(hour, tuning) && next.adenosine > tuning.sleepAdenosineFrom) {
     next.sleep_state = 'sleeping'
     next.sleep_kind = 'night'
     next.wake_after = nightWakeAt(at, tuning, random)
+    startDream(next, at, random, tuning)
     return
   }
   if (!inNapWindow(hour, tuning)) return
@@ -192,6 +195,7 @@ function startSleep(next: VitalsState, at: number, hour: number, hours: number, 
   next.sleep_kind = 'nap'
   next.nap_at = at
   next.wake_after = at + Math.round((tuning.napMinMinutes + random() * span) * 60_000)
+  startDream(next, at, random, tuning)
 }
 
 // 醒来：留一段迷糊窗口，睡的是哪一种决定迷糊多久
@@ -373,5 +377,8 @@ export function drift(
   settleMortality(next, balance, tuning)
   settleExistence(next, hours, night, existence, tuning)
   settleMood(next, at, hours, night, tuning)
+  settleScar(next, hours, tuning)
+  // 危机里也算极端生存威胁：一小时最多抬一档，抬完之后仍由下一拍的变淡管
+  if (inCrisis(next, tuning)) raiseScar(next, at, tuning)
   return next
 }

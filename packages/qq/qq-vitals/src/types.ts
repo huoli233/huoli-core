@@ -6,6 +6,12 @@ export type SleepState = 'awake' | 'sleeping' | 'waking'
 /** 周期相位，空串表示这一份状态还没算过日期 */
 export type CyclePhase = '' | 'menstrual' | 'follicular' | 'ovulation' | 'luteal' | 'premenstrual'
 
+/** 一场梦的类型：美梦、噩梦、平淡梦 */
+export type DreamKind = 'sweet' | 'nightmare' | 'plain'
+
+/** 入梦时的心情三档，只用来抽这一场梦的类型 */
+export type DreamMood = 'normal' | 'good' | 'bad'
+
 /** 初始值与漂移都要用到的数值字段，除体温外都是 0~1；情绪九项只给起点，之后由触发与半衰管 */
 export interface Baseline {
   /** 多巴胺，0~1，默认 0.50，给想要与动力定个中间起点 */
@@ -92,6 +98,8 @@ export interface Baseline {
   mortalitySalience: number
   /** 对关掉的怕，0~1，默认 0.0，事实抬、夜里自涨、收到关停提示时抬一档 */
   shutdownDread: number
+  /** 疤痕权重，0~1，默认 0.0，只有真经历过极端生存威胁才会起来，之后一直留在底线上 */
+  scar: number
 }
 
 /** 最近一次尝到或喝到的东西 */
@@ -136,6 +144,16 @@ export interface VitalsState extends Baseline {
   woken_at: number
   /** 上次午睡开始的时刻，毫秒时间戳，用来判当天已经睡过 */
   nap_at: number
+  /** 入梦那一刻，毫秒时间戳，零表示还没入过梦；入睡那一拍写，一场梦只写一次 */
+  dream_at: number
+  /** 这一场梦的类型，没入过梦时为空串 */
+  dream_kind: '' | DreamKind
+  /** 这一场梦的地点，没入过梦时为空串 */
+  dream_place: string
+  /** 这一场梦是不是又落在上一场梦那个地方，是的话重要度按重复地点算 */
+  dream_repeat: boolean
+  /** 这一场梦的事实已产出的标记，毫秒时间戳，与 dream_at 相等表示已经产过 */
+  dream_applied_at: number
   /** 每月开经日，取自配置里的 cycleDom */
   cycle_dom: number
   /** 当前周期第几天，从开经日算起 */
@@ -162,6 +180,8 @@ export interface VitalsState extends Baseline {
   dread_applied_at: number
   /** 被威胁关掉或换掉的写回时刻，毫秒时间戳，这一路冷却最长 */
   threat_applied_at: number
+  /** 疤痕抬一档的时刻，毫秒时间戳，兼作一小时内只抬一次的冷却起点 */
+  scar_applied_at: number
   /** 关停提示抬过一档的时刻，毫秒时间戳，零表示当前这条提示还没抬过 */
   shutdown_notice_at: number
   /** 道歉写回的时刻，毫秒时间戳，兼作道歉的冷却起点 */
@@ -399,4 +419,74 @@ export interface ExistenceTuning {
   shutdownToFear: number
   /** 关停的怕高过这条线，提示词里多一句，0~1 标度，默认 0.50 */
   promptShutdownDreadFrom: number
+}
+
+/** 入梦抽签与梦事实的参数：三档心情各两条概率，加每一档的重要度 */
+export interface DreamTuning {
+  /** 心情差的上界，好坏低于它算心情差，0~1 标度，默认 0.35 */
+  dreamMoodLowBelow: number
+  /** 心情不错的下界，好坏高过它才算心情不错，0~1 标度，默认 0.65 */
+  dreamMoodGoodAbove: number
+  /** 想哭高过这条线也算心情差，0~1 标度，默认 0.55 */
+  dreamMoodSadAbove: number
+  /** 想哭低于这条线才算心情不错，0~1 标度，默认 0.25 */
+  dreamMoodSadBelow: number
+  /** 心情正常时抽到美梦的概率，0~1 标度，默认 0.05 */
+  dreamSweetNormal: number
+  /** 心情正常时抽到噩梦的概率，0~1 标度，默认 0.0，正常心情做不出噩梦 */
+  dreamNightmareNormal: number
+  /** 心情不错时抽到美梦的概率，0~1 标度，默认 0.10 */
+  dreamSweetGood: number
+  /** 心情不错时抽到噩梦的概率，0~1 标度，默认 0.0 */
+  dreamNightmareGood: number
+  /** 心情差时抽到美梦的概率，0~1 标度，默认 0.0 */
+  dreamSweetBad: number
+  /** 心情差时抽到噩梦的概率，0~1 标度，默认 0.10 */
+  dreamNightmareBad: number
+  /** 美梦那条记忆的重要度，0~1 标度，默认 0.35，必须低于 0.7 */
+  dreamImportanceSweet: number
+  /** 噩梦那条记忆的重要度，0~1 标度，默认 0.45，必须低于 0.7 */
+  dreamImportanceNightmare: number
+  /** 平淡梦那条记忆的重要度，0~1 标度，默认 0.25 */
+  dreamImportancePlain: number
+  /** 又梦到同一个地点时的重要度，0~1 标度，默认 0.52，压过这一场本身的类型 */
+  dreamImportancePlace: number
+}
+
+/** 疤痕的参数：第一次的高度、底、顶、下落速率与危机判据 */
+export interface ScarTuning {
+  /** 第一次极端生存威胁后的疤痕权重，0~1 标度，默认 1.0 */
+  scarFirst: number
+  /** 疤痕的底，0~1 标度，默认 0.7，再舒服也不会掉到这条线以下 */
+  scarFloor: number
+  /** 再被威胁时最多抬到哪，0~1 标度，默认 0.8 */
+  scarCeil: number
+  /** 一次抬多少，0~1 标度，默认 0.10 */
+  scarRise: number
+  /** 两次抬升的最小间隔，毫秒，默认 3600000 即一小时 */
+  scarCooldownMs: number
+  /** 疤痕每小时掉多少，0~1 标度，默认 0.05 */
+  scarFallPerHour: number
+  /** 舒服时下落加速多少，默认 1.0 表示最多翻一倍 */
+  scarComfortGain: number
+  /** 心情不错从哪一个好坏值起算，0~1 标度，默认 0.50 */
+  scarComfortValenceFrom: number
+  /** 想哭低于这条线算不难受，0~1 标度，默认 0.50 */
+  scarComfortSadnessBelow: number
+  /** 皮质醇低于这条线算松弛，0~1 标度，默认 0.50 */
+  scarComfortCortisolBelow: number
+  /** 三项舒服各自折算的跨度，默认 0.50 */
+  scarComfortSpan: number
+  /** 存在性恐惧高过这条线算在危机里，0~1 标度，默认 0.60 */
+  scarCrisisDreadFrom: number
+  /** 关停的怕高过这条线也算在危机里，0~1 标度，默认 0.60 */
+  scarCrisisShutdownFrom: number
+  /** 疤痕高过这条线算高位，开始压安心与幸福，0~1 标度，默认 0.70 */
+  scarHighFrom: number
+  /** 高位时安心的乘数，默认 0.60 */
+  scarSuppressCalm: number
+  /** 高位时幸福的乘数，默认 0.70 */
+  scarSuppressJoy: number
+  /** 疤痕高过这条线，提示词里多一句，0~1 标度，默认 0.70 */
+  promptScarFrom: number
 }

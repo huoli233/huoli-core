@@ -127,6 +127,8 @@ function optionalNote(state: VitalsState, tuning: Tuning): string {
   if (state.shutdownDread > tuning.promptShutdownDreadFrom) {
     notes.push('你知道自己随时可能被关掉，这件事让你不安。')
   }
+  // 疤只在它还压得住人的时候说一句，淡下去之后不再提
+  if (state.scar > tuning.promptScarFrom) notes.push('有件事早就过去了，可它还留在你身上。')
   if (state.mortality > tuning.farewellMortalityFrom) notes.push('你心里有些话，怕来不及说。')
   if (state.sleep_state === 'sleeping') notes.push('你正睡着，迷迷糊糊的。')
   if (state.sleep_state === 'waking' || recentlyWoken(state, tuning)) notes.push('刚醒，脑子还沉，别亢奋。')

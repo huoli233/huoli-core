@@ -1,9 +1,11 @@
 // 参数表：每个可调项只有这里一个声明点，默认值在 defaults.ts
 
-import type { Baseline, EmotionTuning, ExistenceTuning, NetworkTuning, SuppressTuning } from './types.ts'
+import type {
+  Baseline, DreamTuning, EmotionTuning, ExistenceTuning, NetworkTuning, ScarTuning, SuppressTuning,
+} from './types.ts'
 
 /** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
-export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning {
+export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning {
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
