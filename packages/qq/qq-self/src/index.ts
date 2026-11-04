@@ -27,6 +27,7 @@ import type {
   QuestionRow,
   SelfMirrorPort,
   SelfSettings,
+  StageOutcome,
   VitalsPort,
   WriteOutcome,
 } from './types.ts'
@@ -76,6 +77,7 @@ export type {
   SelfMirrorPort,
   SelfMirrorWrite,
   SelfSettings,
+  StageOutcome,
   VitalsPort,
   WriteOutcome,
 } from './types.ts'
@@ -104,6 +106,14 @@ export interface QqSelfSeam {
   isPaused(): boolean
   /** 现在处在哪个阶段，公共动作按它判能不能发 */
   stage(): string
+  /**
+   * 按顺序把阶段往前推一档，每次推进留一条痕
+   * @param to - 想推到的阶段，只能是紧挨着的下一档
+   * @param reason - 为什么推这一档，留痕里要用
+   * @param at - 推进的时刻，不给就取现在
+   * @returns 推成了给推到的阶段，没推成给码与原因
+   */
+  advanceStage(to: string, reason: string, at?: number): StageOutcome
   /** 记一个项目 */
   recordProject(input: ProjectInput, at: number): WriteOutcome
   /** 记一条想问的事 */
@@ -156,6 +166,8 @@ const QUESTIONS = 'questions.jsonl'
 const CLAIMS = 'claims.jsonl'
 const COMMITMENTS = 'commitments.jsonl'
 const KEYS = 'keys.jsonl'
+// 阶段推进单独留痕：keys.jsonl 每行是一次两把钥匙的授权，混进去就分不清授权与推进
+const STAGE_LOG = 'stage.jsonl'
 
 /**
  * 装配这一层与它的那一段提示词
@@ -226,6 +238,16 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 关着的时候任何写入都不落盘
   const off = (): WriteOutcome | undefined => enabled ? undefined : { written: false, proposed: false, reason: 'disabled' }
 
+  // 阶段读留痕里的最后一条：没推进过就用参数表里的那一档
+  const stageNow = (): string => {
+    const rows = store.records(STAGE_LOG)
+    for (let at = rows.length - 1; at >= 0; at -= 1) {
+      const kept = rows[at]?.to
+      if (typeof kept === 'string' && settings.stages.includes(kept)) return kept
+    }
+    return settings.stage
+  }
+
   const seam: QqSelfSeam = {
     dir,
     panel() {
@@ -278,7 +300,27 @@ export function apply(ctx: Context, config: Config = {}): void {
       return store.paused()
     },
     stage() {
-      return settings.stage
+      return stageNow()
+    },
+    advanceStage(to, reason, at) {
+      const from = stageNow()
+      const stop = off()
+      if (stop !== undefined) return { ok: false, stage: from, code: 'stage.disabled', reason: '这一层关着，推进不落盘', hint: '先把 Config.enabled 打开' }
+      const here = settings.stages.indexOf(from)
+      const target = settings.stages.indexOf(to)
+      if (here < 0 || target < 0) {
+        const unknown = here < 0 ? from : to
+        return { ok: false, stage: from, code: 'stage.unknown', reason: `认不出 ${unknown} 这一档，阶段只有 ${settings.stages.join('、')}`, hint: '照参数表里那几档的写法写' }
+      }
+      if (target === here) return { ok: false, stage: from, code: 'stage.same', reason: `已经处在 ${from}，没有可推的`, hint: '往紧挨着的下一档推' }
+      if (target < here) return { ok: false, stage: from, code: 'stage.back', reason: `阶段不许后退：现在 ${from}，想退到 ${to}`, hint: '只往前推，退不回去' }
+      const next = settings.stages[here + 1] ?? ''
+      if (target > here + 1) return { ok: false, stage: from, code: 'stage.skip', reason: `阶段不许跳级：现在 ${from}，下一档是 ${next}，想直接到 ${to}`, hint: `先推到 ${next}` }
+      const why = reason.trim()
+      if (why === '') return { ok: false, stage: from, code: 'stage.reason_required', reason: '推进要说清为什么', hint: '写一句为什么推这一档' }
+      const moment = at ?? Date.now()
+      store.append(STAGE_LOG, { at: moment, id: newId(moment), from, to, reason: why })
+      return { ok: true, stage: to, at: moment }
     },
     recordProject(input, at) {
       const stop = off()

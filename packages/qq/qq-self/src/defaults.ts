@@ -51,6 +51,7 @@ export const DEFAULTS: SelfSettings = {
   driveNeeds: DRIVE_NEEDS,
   identityActions: IDENTITY_ACTIONS,
   stage: 'P0',
+  publicMinStage: 'P3',
   privateMinStage: 'P3',
   stages: STAGES,
   sectionName: 'qq:self-layer',

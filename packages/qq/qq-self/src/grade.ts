@@ -17,6 +17,13 @@ const COMMENT_ACTION = 'public.comment'
 // 私信在身份级清单里的名字，与清单里那一项逐字相同
 const PRIVATE_ACTION = 'public.direct'
 
+// 三类动作在拒绝话里的叫法，只给人读，不参与判断
+const KIND_LABELS: Readonly<Record<ActionKind, string>> = {
+  post: '公开动态',
+  comment: '公开评论',
+  private: '私信',
+}
+
 /**
  * 判一个阶段够不够做那一档动作
  * @param stage - 现在处在哪个阶段
@@ -31,12 +38,25 @@ export function stageAllows(stage: string, minStage: string, stages: readonly st
   return here >= floor
 }
 
+// 阶段不够时别的事实一律不看：只回码、当前与所需阶段，以及怎么推进
+function stageBlocked(kind: ActionKind, stage: string, minStage: string): GradeDecision {
+  return {
+    ok: false,
+    code: `${kind}.stage_blocked`,
+    reason: `现在处在 ${stage}，当前阶段只读，${KIND_LABELS[kind]}要等阶段推到 ${minStage}`,
+    hint: `等阶段推到 ${minStage} 再说：这一步由人按顺序推进，跳级与后退都不算`,
+  }
+}
+
 /**
  * 判一条动态按它报上来的级别能不能发
- * @param facts - 级别与两把钥匙
+ * @param facts - 阶段、级别与两把钥匙
  * @returns 放行结论，没放行时带码与一句原因
  */
 export function judgePostLevel(facts: PostLevelFacts): GradeDecision {
+  const stage = facts.stage ?? DEFAULTS.stage
+  const minStage = facts.minStage ?? DEFAULTS.publicMinStage
+  if (!stageAllows(stage, minStage, facts.stages ?? DEFAULTS.stages)) return stageBlocked('post', stage, minStage)
   if (!POST_LEVELS.includes(facts.level)) {
     return { ok: false, code: 'post.level', reason: '这一条还不到能公开的级别' }
   }
@@ -56,10 +76,13 @@ export function judgePostLevel(facts: PostLevelFacts): GradeDecision {
 
 /**
  * 判一条公开评论能不能发
- * @param facts - 话题、预授权清单与两把钥匙
+ * @param facts - 阶段、话题、预授权清单与两把钥匙
  * @returns 放行结论，没放行时带码与一句原因
  */
 export function judgeComment(facts: CommentFacts): GradeDecision {
+  const stage = facts.stage ?? DEFAULTS.stage
+  const minStage = facts.minStage ?? DEFAULTS.publicMinStage
+  if (!stageAllows(stage, minStage, facts.stages ?? DEFAULTS.stages)) return stageBlocked('comment', stage, minStage)
   const decision = requireKeys(COMMENT_ACTION, facts.userOk, facts.selfOk, facts.actions)
   if (!decision.allowed) {
     const reason = decision.reason === 'unknown_action' ? '公开评论不在身份级清单里' : '公开评论要两把钥匙同时点头'
@@ -82,9 +105,7 @@ export function judgePrivate(facts: PrivateFacts): GradeDecision {
   const stage = facts.stage ?? DEFAULTS.stage
   const minStage = facts.minStage ?? DEFAULTS.privateMinStage
   // 阶段不够时连钥匙都不看：这一档在最前面的几个阶段一律禁止
-  if (!stageAllows(stage, minStage, facts.stages ?? DEFAULTS.stages)) {
-    return { ok: false, code: 'private.stage_blocked', reason: `现在这个阶段（${stage}）还不许发私信` }
-  }
+  if (!stageAllows(stage, minStage, facts.stages ?? DEFAULTS.stages)) return stageBlocked('private', stage, minStage)
   const peer = facts.peer ?? ''
   if (peer === '') return { ok: false, code: 'private.peer_required', reason: '私信要说清写给谁' }
   if (!facts.allowPeers.includes(peer)) {

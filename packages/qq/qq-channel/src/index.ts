@@ -4,7 +4,7 @@ import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqPacingOf, REPLY_DEFAULTS, speechGaps, splitByBudget } from '@huoli/huoli-qq-pacing'
-import type { ActionKind } from '@huoli/huoli-qq-self'
+import { DEFAULTS, type ActionKind } from '@huoli/huoli-qq-self'
 import { createWsChannel, type WsChannel } from './ws.ts'
 import { toIncoming, toPoke, type ChannelStatus, type IncomingMessage, type IncomingPoke, type OutboundEvent } from './events.ts'
 import { createOutboundCheck, OUTBOUND_DEFAULTS, type OutboundTuning } from './outbound.ts'
@@ -48,7 +48,7 @@ export interface QqChannelSeam {
   usePause(check: (() => boolean) | undefined): void
   /** 接上这一轮的条数上限，不接就只发一条 */
   useReplyCap(provide: (() => number) | undefined): void
-  /** 接上自我层现在的阶段，私信按它判能不能发 */
+  /** 接上自我层现在的阶段，三类公共动作都按它判能不能发 */
   useStage(provide: (() => string) | undefined): void
 }
 
@@ -110,6 +110,10 @@ export interface Config {
   privateAllowPeers?: readonly string[]
   /** 待确认项多久没人点头就失效 */
   confirmTtlMs?: number
+  /** 公开动态与公开评论最早从哪个阶段开始，不给就用自我层默认值表 */
+  publicMinStage?: string
+  /** 私信最早从哪个阶段开始，不给就用自我层默认值表 */
+  privateMinStage?: string
   /** 三类动作的状态文件放哪，不填就落在数据根目录下的 data */
   actionsFile?: string
 }
@@ -157,6 +161,14 @@ function tuneAction(base: ActionTuning, over: ActionOverrides): ActionTuning {
     repeatWindowMs: Math.max(0, over.repeatWindowMs ?? base.repeatWindowMs),
     dailyMax: Math.max(0, over.dailyMax ?? base.dailyMax),
     fingerprintMax: Math.max(1, over.fingerprintMax ?? base.fingerprintMax),
+  }
+}
+
+// 阶段下限只在自我层的默认值表里定，这里只做逐项覆盖
+function resolveStageFloors(config: Config): { publicMinStage: string; privateMinStage: string } {
+  return {
+    publicMinStage: config.publicMinStage ?? DEFAULTS.publicMinStage,
+    privateMinStage: config.privateMinStage ?? DEFAULTS.privateMinStage,
   }
 }
 
@@ -250,6 +262,7 @@ export function apply(ctx: Context, config: Config): void {
     confirmTtlMs: Math.max(0, config.confirmTtlMs ?? CONFIRM_DEFAULTS.ttlMs),
     topics: config.routineTopics ?? POLICY_DEFAULTS.routineTopics,
     allowPeers: config.privateAllowPeers ?? POLICY_DEFAULTS.allowPeers,
+    ...resolveStageFloors(config),
     store: createActionStore({ file: actionsFile }),
     outbound,
     send: (text, chatKey) => channel.send(text, chatKey),

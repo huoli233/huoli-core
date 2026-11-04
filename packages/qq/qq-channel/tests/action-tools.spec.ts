@@ -100,6 +100,8 @@ function mount(patch: Partial<Config> = {}): Mounted {
   socket?.open()
   const seam = qqChannelOf(ctx)
   if (seam === undefined) throw new Error('通道没装配上')
+  // 这一组用例看的是工具与确认票，阶段统一停在能放行的那一档
+  seam.useStage(() => 'P3')
   const tool = (name: string): ToolDefinition => {
     const found = tools.get(name)
     if (found === undefined) throw new Error(`没有注册工具 ${name}`)
@@ -239,6 +241,7 @@ describe('公开评论', () => {
 describe('私信', () => {
   it('P0 阶段一条都发不出，码是 private.stage_blocked', async () => {
     const { tool, seam } = mount()
+    seam.useStage(() => 'P0')
     nodded(seam, 'private', '问你一件事')
 
     const message = await failure(tool('qq_send_private').execute({ peer: PEER, text: '问你一件事' }, execOf(`private:${PEER}`)))

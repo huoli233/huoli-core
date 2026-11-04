@@ -1,8 +1,8 @@
-// 三类公共动作共用的入口：先判级，再过确认、去重、冷却与额度，最后仍走出站体检
+// 三类公共动作共用的入口：先判阶段与分级，再过确认、去重、冷却与额度，最后仍走出站体检
 
 import { createHash } from 'node:crypto'
 import { startOfNextDay } from '@huoli/huoli-qq-proactive'
-import { judgeComment, judgePostLevel, judgePrivate, type ActionKind, type GradeDecision } from '@huoli/huoli-qq-self'
+import { DEFAULTS, judgeComment, judgePostLevel, judgePrivate, type ActionKind, type GradeDecision } from '@huoli/huoli-qq-self'
 import { ACTION_STATE_VERSION, emptyActionState, type ActionKindState, type ActionState, type ActionStore, type PendingAction } from './action-store.ts'
 import type { ActionDelivery, ActionFacts, ActionGate, ActionResult, ActionTunings } from './actions.ts'
 import type { OutboundCheck } from './outbound.ts'
@@ -17,6 +17,10 @@ export interface ActionGateOptions {
   topics: readonly string[]
   /** 允许私信的对象 */
   allowPeers: readonly string[]
+  /** 公开动态与公开评论最早从哪个阶段开始 */
+  publicMinStage: string
+  /** 私信最早从哪个阶段开始 */
+  privateMinStage: string
   /** 状态在哪 */
   store: ActionStore
   /** 出站体检，发送前仍要过一遍 */
@@ -25,7 +29,7 @@ export interface ActionGateOptions {
   send: (text: string, chatKey: string) => Promise<ActionDelivery>
   /** 停手开关，为真时一条都不发 */
   paused?: () => boolean
-  /** 自我层现在的阶段，没接上就按自我层的默认值表 */
+  /** 自我层现在的阶段，没接上就按自我层默认值表里最保守的一档 */
   stage?: () => string | undefined
   /** 现在几点，用例里换成固定时钟 */
   now?: () => number
@@ -75,9 +79,11 @@ function withKind(
  * @returns 动作入口
  */
 export function createActionGate(options: ActionGateOptions): ActionGate {
-  const { tunings, confirmTtlMs, topics, allowPeers, store, outbound, send } = options
+  const { tunings, confirmTtlMs, topics, allowPeers, publicMinStage, privateMinStage, store, outbound, send } = options
   const now = options.now ?? (() => Date.now())
   const paused = options.paused ?? (() => false)
+  // 阶段取不到就按默认值表里那一档，也就是最保守的 P0
+  const stageNow = (): string => options.stage?.() ?? DEFAULTS.stage
 
   // 判级只问自我层的纯函数，这里不自己算该不该发
   const gradeOf = (kind: ActionKind, facts: ActionFacts): GradeDecision => {
@@ -89,6 +95,8 @@ export function createActionGate(options: ActionGateOptions): ActionGate {
           topics,
           userOk: facts.userOk === true,
           selfOk: facts.selfOk === true,
+          stage: stageNow(),
+          minStage: publicMinStage,
         })
       case 'comment':
         return judgeComment({
@@ -96,17 +104,18 @@ export function createActionGate(options: ActionGateOptions): ActionGate {
           topics,
           userOk: facts.userOk === true,
           selfOk: facts.selfOk === true,
+          stage: stageNow(),
+          minStage: publicMinStage,
         })
-      case 'private': {
-        const stage = options.stage?.()
+      case 'private':
         return judgePrivate({
           ...facts.peer === undefined ? {} : { peer: facts.peer },
           allowPeers,
           userOk: facts.userOk === true,
           selfOk: facts.selfOk === true,
-          ...stage === undefined ? {} : { stage },
+          stage: stageNow(),
+          minStage: privateMinStage,
         })
-      }
     }
   }
 
@@ -117,7 +126,10 @@ export function createActionGate(options: ActionGateOptions): ActionGate {
       if (body === '') return refuse(`${kind}.empty`, '没有要发的正文', '想发就写点东西', at)
       const tuning = tunings[kind]
       const graded = gradeOf(kind, facts)
-      if (!graded.ok) return refuse(graded.code ?? `${kind}.level`, graded.reason ?? '这一条不能发', '换个写法，或者先把该有的许可拿到', at)
+      if (!graded.ok) {
+        const hint = graded.hint ?? '换个写法，或者先把该有的许可拿到'
+        return refuse(graded.code ?? `${kind}.level`, graded.reason ?? '这一条不能发', hint, at)
+      }
       if (paused()) return refuse(`${kind}.paused`, '现在停着手', '等人把停手开关拿掉再说', at)
 
       const inspection = outbound.check({ chatKey: facts.chatKey, text: body })

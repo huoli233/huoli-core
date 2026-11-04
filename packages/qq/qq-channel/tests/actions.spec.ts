@@ -78,6 +78,8 @@ function mount(patch: Partial<Config> = {}): Mounted {
   FakeSocket.opened.at(-1)?.open()
   const seam = qqChannelOf(ctx)
   if (seam === undefined) throw new Error('通道没装配上')
+  // 这一组用例看的是额度、冷却与确认票，阶段统一停在能放行的那一档
+  seam.useStage(() => 'P3')
   const events: OutboundEvent[] = []
   seam.onOutbound(event => events.push(event))
   return { seam, events, file }
@@ -192,6 +194,7 @@ describe('私信', () => {
 
   it('没接上阶段时按最保守的那一档拒', async () => {
     const { seam } = mount()
+    seam.useStage(undefined)
 
     const result = await seam.publish('private', '问你一件事', PRIVATE)
 

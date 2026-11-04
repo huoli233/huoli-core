@@ -187,6 +187,12 @@ export interface CommentFacts {
   userOk: boolean
   /** 她自己那把钥匙 */
   selfOk: boolean
+  /** 现在处在哪个阶段，不给就用默认值表 */
+  stage?: string
+  /** 公开评论最早从哪个阶段开始，不给就用默认值表 */
+  minStage?: string
+  /** 阶段的先后顺序，不给就用默认值表 */
+  stages?: readonly string[]
   /** 身份级动作清单，不给就用默认值表 */
   actions?: readonly string[]
 }
@@ -223,6 +229,12 @@ export interface PostLevelFacts {
   userOk: boolean
   /** 她自己那把钥匙 */
   selfOk: boolean
+  /** 现在处在哪个阶段，不给就用默认值表 */
+  stage?: string
+  /** 公开动态最早从哪个阶段开始，不给就用默认值表 */
+  minStage?: string
+  /** 阶段的先后顺序，不给就用默认值表 */
+  stages?: readonly string[]
   /** 身份级动作清单，不给就用默认值表 */
   actions?: readonly string[]
 }
@@ -235,6 +247,24 @@ export interface GradeDecision {
   code?: string
   /** 一句可读原因 */
   reason?: string
+  /** 下一步怎么做的提示，不给时由调用方按通用话术补 */
+  hint?: string
+}
+
+/** 一次阶段推进的结果 */
+export interface StageOutcome {
+  /** 推成了没有 */
+  ok: boolean
+  /** 推进之后处在哪一档，没推成时是原来那一档 */
+  stage: string
+  /** 留痕落盘的时刻，没推成时不给 */
+  at?: number
+  /** 没推成时的码，形如 stage.skip */
+  code?: string
+  /** 一句可读原因 */
+  reason?: string
+  /** 没推成时的下一步提示 */
+  hint?: string
 }
 
 /** 判级加留痕之后的结果 */
@@ -350,6 +380,8 @@ export interface SelfSettings {
   identityActions: readonly string[]
   /** 现在处在哪个阶段，形如 P2 */
   stage: string
+  /** 公开展示（动态与评论）最早从哪个阶段开始 */
+  publicMinStage: string
   /** 私信最早从哪个阶段开始 */
   privateMinStage: string
   /** 阶段的先后顺序，比高低只看这张表的次序 */

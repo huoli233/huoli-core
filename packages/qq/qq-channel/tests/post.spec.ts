@@ -77,6 +77,8 @@ function mount(patch: Partial<Config> = {}): Mounted {
   FakeSocket.opened.at(-1)?.open()
   const seam = qqChannelOf(ctx)
   if (seam === undefined) throw new Error('通道没装配上')
+  // 这一组用例看的是级别与后面的闸门，阶段统一停在能放行的那一档
+  seam.useStage(() => 'P3')
   const events: OutboundEvent[] = []
   seam.onOutbound(event => events.push(event))
   return { seam, events, file }

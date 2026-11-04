@@ -3,15 +3,17 @@ import { ACTION_KINDS, DEFAULTS, judgeComment, judgePostLevel, judgePrivate, POS
 
 describe('动态的级别', () => {
   const TOPICS = ['日常', '吃喝']
+  // 级别与钥匙这些用例都在 P3 上跑，阶段那一道另有专门的用例
+  const P3 = { stage: 'P3' }
 
   it('例行那一级话题在清单里就放行，不要钥匙', () => {
-    const decision = judgePostLevel({ level: 'routine', topic: '吃喝', topics: TOPICS, userOk: false, selfOk: false })
+    const decision = judgePostLevel({ ...P3, level: 'routine', topic: '吃喝', topics: TOPICS, userOk: false, selfOk: false })
 
     expect(decision.ok).toBe(true)
   })
 
   it('例行动态没报话题就拒，码是 post.topic_required', () => {
-    const decision = judgePostLevel({ level: 'routine', topics: TOPICS, userOk: false, selfOk: false })
+    const decision = judgePostLevel({ ...P3, level: 'routine', topics: TOPICS, userOk: false, selfOk: false })
 
     expect(decision.ok).toBe(false)
     expect(decision.code).toBe('post.topic_required')
@@ -19,14 +21,14 @@ describe('动态的级别', () => {
   })
 
   it('例行话题不在清单里就拒，码是 post.not_routine', () => {
-    const decision = judgePostLevel({ level: 'routine', topic: '工作', topics: TOPICS, userOk: false, selfOk: false })
+    const decision = judgePostLevel({ ...P3, level: 'routine', topic: '工作', topics: TOPICS, userOk: false, selfOk: false })
 
     expect(decision.code).toBe('post.not_routine')
     expect(decision.reason).toBeTruthy()
   })
 
   it('还没到能发的级别就拒，并给出码与原因', () => {
-    const decision = judgePostLevel({ level: 'none', userOk: true, selfOk: true })
+    const decision = judgePostLevel({ ...P3, level: 'none', userOk: true, selfOk: true })
 
     expect(decision.ok).toBe(false)
     expect(decision.code).toBe('post.level')
@@ -34,18 +36,20 @@ describe('动态的级别', () => {
   })
 
   it('两张级别之外的写法一样拒', () => {
-    expect(judgePostLevel({ level: 'identity', userOk: true, selfOk: true }).code).toBe('post.level')
+    expect(judgePostLevel({ ...P3, level: 'identity', userOk: true, selfOk: true }).code).toBe('post.level')
     expect(POST_LEVELS).toEqual(['routine', 'public'])
   })
 })
 
 describe('公开那一级的钥匙', () => {
+  const P3 = { stage: 'P3' }
+
   it('两把都在才放行', () => {
-    expect(judgePostLevel({ level: 'public', userOk: true, selfOk: true }).ok).toBe(true)
+    expect(judgePostLevel({ ...P3, level: 'public', userOk: true, selfOk: true }).ok).toBe(true)
   })
 
   it('只有用户那把就拒，码是 post.needs_keys', () => {
-    const decision = judgePostLevel({ level: 'public', userOk: true, selfOk: false })
+    const decision = judgePostLevel({ ...P3, level: 'public', userOk: true, selfOk: false })
 
     expect(decision.ok).toBe(false)
     expect(decision.code).toBe('post.needs_keys')
@@ -53,13 +57,13 @@ describe('公开那一级的钥匙', () => {
   })
 
   it('只有她自己那把也拒', () => {
-    const decision = judgePostLevel({ level: 'public', userOk: false, selfOk: true })
+    const decision = judgePostLevel({ ...P3, level: 'public', userOk: false, selfOk: true })
 
     expect(decision.code).toBe('post.needs_keys')
   })
 
   it('清单里没有这个名字也算没有钥匙', () => {
-    const decision = judgePostLevel({ level: 'public', userOk: true, selfOk: true, actions: [] })
+    const decision = judgePostLevel({ ...P3, level: 'public', userOk: true, selfOk: true, actions: [] })
 
     expect(decision.code).toBe('post.needs_keys')
   })
@@ -73,15 +77,17 @@ describe('三类动作', () => {
 
 describe('评论', () => {
   const TOPICS = ['日常', '吃喝']
+  // 与动态那几组一样，这些用例都在 P3 上跑
+  const P3 = { stage: 'P3' }
 
   it('两把钥匙都在、话题在清单里就放行', () => {
-    const decision = judgeComment({ topic: '吃喝', topics: TOPICS, userOk: true, selfOk: true })
+    const decision = judgeComment({ ...P3, topic: '吃喝', topics: TOPICS, userOk: true, selfOk: true })
 
     expect(decision.ok).toBe(true)
   })
 
   it('缺一把钥匙就拒，码是 comment.needs_keys', () => {
-    const decision = judgeComment({ topic: '吃喝', topics: TOPICS, userOk: true, selfOk: false })
+    const decision = judgeComment({ ...P3, topic: '吃喝', topics: TOPICS, userOk: true, selfOk: false })
 
     expect(decision.ok).toBe(false)
     expect(decision.code).toBe('comment.needs_keys')
@@ -89,21 +95,21 @@ describe('评论', () => {
   })
 
   it('没报话题就拒，码是 comment.topic_required', () => {
-    const decision = judgeComment({ topics: TOPICS, userOk: true, selfOk: true })
+    const decision = judgeComment({ ...P3, topics: TOPICS, userOk: true, selfOk: true })
 
     expect(decision.code).toBe('comment.topic_required')
     expect(decision.reason).toBeTruthy()
   })
 
   it('话题不在清单里就拒，码是 comment.topic_not_allowed', () => {
-    const decision = judgeComment({ topic: '工作', topics: TOPICS, userOk: true, selfOk: true })
+    const decision = judgeComment({ ...P3, topic: '工作', topics: TOPICS, userOk: true, selfOk: true })
 
     expect(decision.code).toBe('comment.topic_not_allowed')
     expect(decision.reason).toBeTruthy()
   })
 
   it('清单换掉之后按新清单判', () => {
-    expect(judgeComment({ topic: '工作', topics: ['工作'], userOk: true, selfOk: true }).ok).toBe(true)
+    expect(judgeComment({ ...P3, topic: '工作', topics: ['工作'], userOk: true, selfOk: true }).ok).toBe(true)
   })
 })
 

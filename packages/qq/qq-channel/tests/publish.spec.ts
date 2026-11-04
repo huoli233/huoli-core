@@ -4,7 +4,7 @@ import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { apply, type Config } from '../src/index.ts'
+import { apply, qqChannelOf, type Config } from '../src/index.ts'
 
 type SocketHandler = (event: { data?: string }) => void
 
@@ -89,6 +89,8 @@ function mount(patch: Partial<Config> = {}): Mounted {
     ...patch,
   })
   FakeSocket.opened.at(-1)?.open()
+  // 这一组用例看的是工具与级别，阶段统一停在能放行的那一档
+  qqChannelOf(ctx)?.useStage(() => 'P3')
   const tool = (name: string): ToolDefinition => {
     const found = tools.get(name)
     if (found === undefined) throw new Error(`没有注册工具 ${name}`)

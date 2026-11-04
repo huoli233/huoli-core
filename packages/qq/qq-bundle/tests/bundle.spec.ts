@@ -137,7 +137,8 @@ async function mountWithChannel(dir: string): Promise<Context> {
     actionsFile: path.join(dir, 'actions.json'),
   })
   FakeSocket.opened.at(-1)?.open()
-  applySelf(ctx, { dir: path.join(dir, 'self'), enabled: false })
+  // 阶段停在能放行的那一档，这一组才看得到停手开关那一道
+  applySelf(ctx, { dir: path.join(dir, 'self'), enabled: false, settings: { stage: 'P3' } })
   applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return ctx
 }
