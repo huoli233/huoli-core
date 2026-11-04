@@ -15,12 +15,16 @@ import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
 import { qqProactiveOf, type Candidate, type DeliverResult, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { momentPort, qqSelfOf } from '@huoli/huoli-qq-self'
-import { qqVitalsOf, type FarewellFact, type MealFact, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
+import {
+  qqVitalsOf, type DreamFact, type FarewellFact, type MealFact, type QqVitalsSeam, type ScarFact, type VitalsState,
+} from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
 import { createDecisionLog, type DecisionBlock, type DecisionRecord } from './decisions.ts'
+import { dreamImportance, dreamKey, dreamMetadata, dreamText, dreamWritten } from './dream.ts'
 import { farewellMetadata, farewellText, farewellWritten } from './farewell.ts'
 import { defaultMaintenanceLogFile, mirrorPortOf, runMaintenance } from './maintenance.ts'
 import { mealMetadata, mealText, mealWritten } from './meal.ts'
+import { SCAR_TEXT, scarImportance, scarMetadata, scarWritten } from './scar.ts'
 import { registerToolWhitelist } from './tool-whitelist.ts'
 
 export type { DecisionBlock, DecisionLog, DecisionRecord } from './decisions.ts'
@@ -79,6 +83,12 @@ export interface Config {
   farewellMemory?: boolean
   /** 遗书写成一条记忆时的重要度 */
   farewellMemoryImportance?: number
+  /** 一场梦写不写进记忆 */
+  dreamMemory?: boolean
+  /** 美梦与噩梦发不发出去，平淡梦一律不发 */
+  dreamPublish?: boolean
+  /** 疤写不写进记忆 */
+  scarMemory?: boolean
   /** 调用方给的模型文本，模型自己没写过时遗书正文用它，再没有就写一句中性的话 */
   farewellText?: string
   /** 遗书正文的暂存槽放哪，要与通道那一份是同一个文件 */
@@ -457,6 +467,98 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
     ctx.effect(() => () => {
       offFarewell()
+    })
+  }
+
+  // 一场梦写一条记忆，美梦与噩梦再发一次：会话取当前活跃的那个，同一天同一场只写一条、只发一次
+  const dreamMemory = config.dreamMemory ?? BUNDLE_DEFAULTS.dreamMemory
+  const dreamPublish = config.dreamPublish ?? BUNDLE_DEFAULTS.dreamPublish
+  // 已经试过的那几场：事实本身一辈子只产一次，进程里记一份就够，同一条不会连发两遍
+  const publishedDreams = new Set<string>()
+
+  // 这一场写成一条记忆：正文与重要度都取事实里的，去重看记忆里已有的条
+  const writeDream = (fact: DreamFact, chatKey: string): void => {
+    if (memory === undefined) return
+    if (dreamWritten(memory.store.all(), chatKey, fact)) return
+    memory.write(dreamText(fact), chatKey, {
+      layer: 'episodic',
+      source: 'chat',
+      importance: dreamImportance(fact),
+      at: fact.at,
+      metadata: dreamMetadata(fact),
+    })
+  }
+
+  // 发出去这一步：正文原样交给发布入口，分级、体检、冷却与额度都归它判
+  const publishDream = async (fact: DreamFact, chatKey: string): Promise<void> => {
+    if (channel === undefined) {
+      ctx.logger('qq-bundle').warn('梦境没有发布入口：通道那一行没装上')
+      return
+    }
+    const key = dreamKey(fact)
+    if (publishedDreams.has(key)) return
+    publishedDreams.add(key)
+    try {
+      await channel.publish('post', dreamText(fact), { chatKey })
+    } catch (error) {
+      ctx.logger('qq-bundle').warn('梦境没发出去：%s', String(error))
+    }
+  }
+
+  // 两个开关都关着时一个监听都不注册，一场梦连回调都不会进来
+  if ((dreamMemory || dreamPublish) && vitals !== undefined) {
+    // 写与发各走各的：一条失手只记一行，另一条与别的订阅者都不受影响
+    const offDream = vitals.onDream((fact) => {
+      const chatKey = subject?.store.read().lastActive ?? ''
+      if (chatKey === '') {
+        ctx.logger('qq-bundle').warn('梦境没有落点：还没有活跃会话')
+        return
+      }
+      if (dreamMemory) {
+        try {
+          writeDream(fact, chatKey)
+        } catch (error) {
+          ctx.logger('qq-bundle').warn('梦境记忆没写进去：%s', String(error))
+        }
+      }
+      // 平淡梦一律不发，只有事实说可发布的那两档才走发布入口
+      if (dreamPublish && fact.publishable) void publishDream(fact, chatKey)
+    })
+    ctx.effect(() => () => {
+      offDream()
+    })
+  }
+
+  // 疤写成一条长期印象：同一小时里只写一次，写不进去只记一行
+  const writeScar = (fact: ScarFact): void => {
+    if (memory === undefined) return
+    const chatKey = subject?.store.read().lastActive ?? ''
+    if (chatKey === '') {
+      ctx.logger('qq-bundle').warn('疤痕记忆没有落点：还没有活跃会话')
+      return
+    }
+    if (scarWritten(memory.store.all(), chatKey, fact.at)) return
+    memory.write(SCAR_TEXT, chatKey, {
+      layer: 'semantic',
+      source: 'chat',
+      importance: scarImportance(fact),
+      at: fact.at,
+      metadata: scarMetadata(fact),
+    })
+  }
+
+  // 关着时一个监听都不注册，抬起来的疤连回调都不会进来
+  if ((config.scarMemory ?? BUNDLE_DEFAULTS.scarMemory) && vitals !== undefined) {
+    // 记不住这道疤不影响这一拍：写记忆失手只记一行，回调照常返回
+    const offScar = vitals.onScar((fact) => {
+      try {
+        writeScar(fact)
+      } catch (error) {
+        ctx.logger('qq-bundle').warn('疤痕没写进去：%s', String(error))
+      }
+    })
+    ctx.effect(() => () => {
+      offScar()
     })
   }
 

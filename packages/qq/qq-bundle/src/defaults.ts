@@ -32,6 +32,12 @@ export const BUNDLE_DEFAULTS = {
   mealMemoryImportance: 30,
   /** 遗书写不写进记忆，关掉就一次都不订阅 */
   farewellMemory: true,
+  /** 一场梦写不写进记忆 */
+  dreamMemory: true,
+  /** 美梦与噩梦发不发出去，关掉就一条动态都不发 */
+  dreamPublish: true,
+  /** 疤写不写进记忆，关掉就一次都不订阅 */
+  scarMemory: true,
   /** 遗书写成一条记忆时的重要度，一辈子只留一句，压在保护线以上 */
   farewellMemoryImportance: 95,
 }

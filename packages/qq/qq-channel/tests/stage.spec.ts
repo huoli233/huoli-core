@@ -192,6 +192,8 @@ describe('阶段推进之后放行', () => {
     expect((await seam.publish('post', '今天吃了面', ROUTINE)).code).toBe('post.stage_blocked')
     expect(self.advanceStage('P2', '面板连着三天没变', 2_000).ok).toBe(true)
     expect((await seam.publish('post', '今天吃了面', ROUTINE)).code).toBe('post.stage_blocked')
+    // 推到公开级要先有两把钥匙的留痕
+    expect(self.approveStageAdvance(true, true, 2_900).allowed).toBe(true)
     expect(self.advanceStage('P3', '面板报错计数为 0', 3_000).ok).toBe(true)
 
     const allowed = await seam.publish('post', '今天吃了面', ROUTINE)
