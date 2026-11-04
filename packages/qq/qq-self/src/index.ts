@@ -146,7 +146,7 @@ const seams = new WeakMap<Context, QqSelfSeam>()
  * @returns 装配好的接口
  */
 export function qqSelfOf(ctx: Context): QqSelfSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -382,7 +382,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       return { written: true, proposed: false }
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   // 只给主会话注入这一段，其它会话拿到空串
   if (enabled) {
@@ -407,6 +407,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
 
   ctx.effect(() => () => {
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

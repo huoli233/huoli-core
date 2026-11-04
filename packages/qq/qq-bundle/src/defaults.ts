@@ -26,4 +26,8 @@ export const BUNDLE_DEFAULTS = {
   addPostWantFrom: 0.30,
   /** 同一个会话一天最多攒几条动态候选，攒到就不再看读数 */
   postCandidateDailyMax: 1,
+  /** 一顿饭写不写进记忆，关掉就一次都不订阅 */
+  mealMemory: true,
+  /** 一顿饭写成一条记忆时的重要度，例行的一顿比事件轻，但要过记忆的写入门槛 */
+  mealMemoryImportance: 30,
 }

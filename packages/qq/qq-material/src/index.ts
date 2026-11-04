@@ -34,7 +34,7 @@ const seams = new WeakMap<Context, QqMaterialSeam>()
  * @returns 处理结果
  */
 export function qqMaterialOf(ctx: Context): QqMaterialSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -63,13 +63,13 @@ export function apply(ctx: Context, config: Config = {}): void {
       return renderMaterial(material)
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   registerMaterialTools(ctx, { thoughts })
 
   // 卸载时落一次盘
   ctx.effect(() => () => {
     thoughts.flush()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

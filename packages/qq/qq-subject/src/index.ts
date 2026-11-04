@@ -39,7 +39,7 @@ const seams = new WeakMap<Context, QqSubjectSeam>()
  * @returns 处理结果
  */
 export function qqSubjectOf(ctx: Context): QqSubjectSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -80,7 +80,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       return renderSelfSnapshot(input)
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   ctx.systemPrompt.section({
     name: 'qq:self',
@@ -104,6 +104,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 卸载时把状态写一次盘
   ctx.effect(() => () => {
     store.flush()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

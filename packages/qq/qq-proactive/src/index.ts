@@ -124,7 +124,7 @@ function gatheredCandidates(input: ConsiderInput): Candidate[] {
  * @returns 处理结果
  */
 export function qqProactiveOf(ctx: Context): QqProactiveSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -222,11 +222,11 @@ export function apply(ctx: Context, config: Config = {}): void {
       return { ok: true, item: found }
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   // 卸载时落一次盘
   ctx.effect(() => () => {
     pending.flush()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

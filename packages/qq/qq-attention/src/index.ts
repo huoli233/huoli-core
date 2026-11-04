@@ -41,7 +41,7 @@ const seams = new WeakMap<Context, QqAttentionSeam>()
  * @returns 处理结果
  */
 export function qqAttentionOf(ctx: Context): QqAttentionSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -85,7 +85,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       })
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   registerAttentionTools(ctx, {
     inbox,
@@ -97,6 +97,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 卸载时落一次盘，正常退出不丢最后一次设置
   ctx.effect(() => () => {
     store.flush()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

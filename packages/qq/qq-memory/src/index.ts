@@ -166,7 +166,7 @@ const seams = new WeakMap<Context, QqMemorySeam>()
  * @returns 处理结果
  */
 export function qqMemoryOf(ctx: Context): QqMemorySeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -424,7 +424,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       return `记下了 ${items.length} 条（${summary}）\n${lines.join('\n')}`
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   registerMemoryTools(ctx, { store, scopeOf, sceneOf, tuning })
 
@@ -432,6 +432,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   ctx.effect(() => () => {
     queue.flush(Date.now())
     store.flush()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

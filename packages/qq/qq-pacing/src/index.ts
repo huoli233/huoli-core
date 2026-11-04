@@ -43,7 +43,7 @@ const seams = new WeakMap<Context, QqPacingSeam>()
  * @returns 处理结果
  */
 export function qqPacingOf(ctx: Context): QqPacingSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -81,7 +81,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       store.resetTurn()
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   // 每轮开始时把这一轮已经说了几条清零
   ctx.on('agent/pre-step', (payload, next) => {
@@ -92,6 +92,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 卸载时落一次盘
   ctx.effect(() => () => {
     store.flush()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

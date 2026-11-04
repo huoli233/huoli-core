@@ -126,7 +126,7 @@ const seams = new WeakMap<Context, QqChannelSeam>()
  * @returns 处理结果
  */
 export function qqChannelOf(ctx: Context): QqChannelSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -313,7 +313,7 @@ export function apply(ctx: Context, config: Config): void {
       stageCheck = provide
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   // 名单空着等于不管，但要说一次，免得以为已经在管了
   if (tuning.allowGroups.length === 0) ctx.logger('qq-channel').info('群白名单为空，所有群都能发')
@@ -356,6 +356,6 @@ export function apply(ctx: Context, config: Config): void {
   // 卸载时断开
   ctx.effect(() => () => {
     channel.stop()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

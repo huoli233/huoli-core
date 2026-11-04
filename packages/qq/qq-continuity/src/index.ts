@@ -36,7 +36,7 @@ const seams = new WeakMap<Context, QqContinuitySeam>()
  * @returns 处理结果
  */
 export function qqContinuityOf(ctx: Context): QqContinuitySeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -75,13 +75,13 @@ export function apply(ctx: Context, config: Config = {}): void {
       return store.reflections(chatKey, limit)
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   registerContinuityTools(ctx, { store })
 
   // 卸载时落一次盘
   ctx.effect(() => () => {
     store.flush()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

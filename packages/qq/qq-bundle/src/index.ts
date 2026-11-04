@@ -15,9 +15,10 @@ import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
 import { qqProactiveOf, type Candidate, type DeliverResult, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { qqSelfOf } from '@huoli/huoli-qq-self'
-import { qqVitalsOf, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
+import { qqVitalsOf, type MealFact, type QqVitalsSeam, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
 import { createDecisionLog, type DecisionBlock, type DecisionRecord } from './decisions.ts'
+import { mealMetadata, mealText, mealWritten } from './meal.ts'
 import { registerToolWhitelist } from './tool-whitelist.ts'
 
 export type { DecisionBlock, DecisionLog, DecisionRecord } from './decisions.ts'
@@ -55,6 +56,10 @@ export interface Config {
   addPostWantFrom?: number
   /** 同一个会话一天最多攒几条动态候选 */
   postCandidateDailyMax?: number
+  /** 一顿饭写不写进记忆 */
+  mealMemory?: boolean
+  /** 一顿饭写成一条记忆时的重要度 */
+  mealMemoryImportance?: number
 }
 
 /** 一次投递的结论：没投出去的码与发布入口回来的那一段都摆在这里 */
@@ -96,7 +101,7 @@ const seams = new WeakMap<Context, QqBundleSeam>()
  * @returns 排查用的接口
  */
 export function qqBundleOf(ctx: Context): QqBundleSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 // 规则文件的位置
@@ -212,7 +217,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       }
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   // 收一轮：追加一行，收完就从表里拿掉，同一轮不会写两次
   const flush = (chatKey: string): void => {
@@ -345,6 +350,42 @@ export function apply(ctx: Context, config: Config = {}): void {
       offIncoming()
       offPoke()
       offOutbound()
+    })
+  }
+
+  // 一顿饭写一条记忆：会话取当前活跃的那个，同一天同一顿只写一条
+  const mealImportance = config.mealMemoryImportance ?? BUNDLE_DEFAULTS.mealMemoryImportance
+
+  // 这一顿写成一条记忆：去重看记忆里已有的条，不另建文件；写不进去只抛给上面那层记一行
+  const writeMeal = (fact: MealFact): void => {
+    if (memory === undefined) return
+    const chatKey = subject?.store.read().lastActive ?? ''
+    if (chatKey === '') {
+      ctx.logger('qq-bundle').warn('进食记忆没有落点：还没有活跃会话')
+      return
+    }
+    if (mealWritten(memory.store.all(), chatKey, fact.at)) return
+    memory.write(mealText(fact), chatKey, {
+      layer: 'episodic',
+      source: 'chat',
+      importance: mealImportance,
+      at: fact.at,
+      metadata: mealMetadata(fact),
+    })
+  }
+
+  // 关着时一个监听都不注册，一顿饭连回调都不会进来
+  if ((config.mealMemory ?? BUNDLE_DEFAULTS.mealMemory) && vitals !== undefined) {
+    // 记不住这一顿不影响这一轮：写记忆失手只记一行，回调照常返回
+    const offMeal = vitals.onMeal((fact) => {
+      try {
+        writeMeal(fact)
+      } catch (error) {
+        ctx.logger('qq-bundle').warn('进食记忆没写进去：%s', String(error))
+      }
+    })
+    ctx.effect(() => () => {
+      offMeal()
     })
   }
 
@@ -528,6 +569,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 卸载时把手上这一轮也落下去，别丢
   ctx.effect(() => () => {
     for (const chatKey of [...rounds.keys()]) flush(chatKey)
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }
