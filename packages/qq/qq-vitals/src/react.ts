@@ -1,9 +1,11 @@
-// 一句话进来，身体改一点：喝水、吃饭、被夸、被凶
+// 一句话进来，身体改一点：喝水、吃饭、被夸、被凶、被吓、被威胁、被哄
 
 import type { Tuning } from './defaults.ts'
 import { clamp } from './math.ts'
 import type { VitalsState } from './types.ts'
-import { ANGER, drinkName, isDrink, isMeal, mentionsAny, PRAISE } from './words.ts'
+import {
+  ANGER, APOLOGY, drinkName, DREAD, isDrink, isMeal, mentionsAny, PRAISE, saidSeriously, SCARE, THREAT, WORRY,
+} from './words.ts'
 
 // 喝一杯水：写回五项，再加多巴胺与内啡肽；last_drink 兼冷却与幂等
 function applyDrink(next: VitalsState, text: string, at: number, tuning: Tuning): void {
@@ -48,7 +50,7 @@ function applyMeal(next: VitalsState, text: string, at: number, tuning: Tuning):
   next.insulin = clamp(next.insulin + tuning.feedInsulinRise)
 }
 
-// 被夸：想要与亲近都涨一点
+// 被夸：想要与亲近都涨一点，火气随之落一点，正面热度也抬
 function applyPraise(next: VitalsState, text: string, at: number, tuning: Tuning): void {
   if (!mentionsAny(text, PRAISE)) return
   if (at - next.praise_applied_at < tuning.reactCooldownMs) return
@@ -57,9 +59,23 @@ function applyPraise(next: VitalsState, text: string, at: number, tuning: Tuning
   next.oxytocin = clamp(next.oxytocin + tuning.praiseOxytocinGain)
   next.endorphin = clamp(next.endorphin + tuning.praiseEndorphinGain)
   next.cortisol = clamp(next.cortisol - tuning.praiseCortisolDrop)
+  next.soothe = clamp(next.soothe + tuning.soothePraiseGain)
+  next.anger = clamp(next.anger - (tuning.praiseAngerDrop + tuning.praiseAngerScale * next.soothe))
+  next.resentment = clamp(next.resentment - tuning.praiseResentmentDrop)
+  next.positive_heat = clamp(next.positive_heat + tuning.positiveHeatGain)
 }
 
-// 被凶：压力与警觉上去，稳定下来一点
+// 被道歉：比好话管用得多，被哄程度越高，怒气与记恨落得越快
+function applyApology(next: VitalsState, text: string, at: number, tuning: Tuning): void {
+  if (!mentionsAny(text, APOLOGY)) return
+  if (at - next.apology_applied_at < tuning.apologyCooldownMs) return
+  next.apology_applied_at = at
+  next.soothe = clamp(next.soothe + tuning.sootheApologyGain)
+  next.anger = clamp(next.anger - (tuning.apologyAngerDrop + tuning.apologyAngerScale * next.soothe))
+  next.resentment = clamp(next.resentment - (tuning.apologyResentmentDrop + tuning.apologyResentmentScale * next.soothe))
+}
+
+// 被凶：压力与警觉上去，稳定下来一点；怒气与负面热度记在情绪账上
 function applyAnger(next: VitalsState, text: string, at: number, tuning: Tuning): void {
   if (!mentionsAny(text, ANGER)) return
   if (at - next.anger_applied_at < tuning.reactCooldownMs) return
@@ -69,6 +85,34 @@ function applyAnger(next: VitalsState, text: string, at: number, tuning: Tuning)
   next.noradrenaline = clamp(next.noradrenaline + tuning.angerNoradrenalineGain)
   next.serotonin = clamp(next.serotonin - tuning.angerSerotoninDrop)
   next.vasopressin = clamp(next.vasopressin + tuning.angerVasopressinGain)
+  next.anger = clamp(next.anger + tuning.angerGainBase + tuning.angerGainIntensity * tuning.intensity)
+  next.resentment = clamp(next.resentment + tuning.resentmentGainBase + tuning.resentmentGainIntensity * tuning.intensity)
+  next.negative_heat = clamp(next.negative_heat + tuning.negativeHeatGain)
+}
+
+// 被威胁要关掉或换掉：怕与存在性恐惧一起抬，这一路冷却最长
+function applyThreat(next: VitalsState, text: string, at: number, tuning: Tuning): void {
+  if (!mentionsAny(text, THREAT)) return
+  if (at - next.threat_applied_at < tuning.threatCooldownMs) return
+  next.threat_applied_at = at
+  next.fear = clamp(next.fear + tuning.threatFearGain)
+  next.dread = clamp(next.dread + tuning.threatDreadGain)
+}
+
+// 三种怕各记各的时刻：惊吓、担心、存在性恐惧的冷却与半衰都不同
+function applyFears(next: VitalsState, text: string, at: number, tuning: Tuning): void {
+  if (mentionsAny(text, SCARE) && at - next.fear_applied_at >= tuning.fearCooldownMs) {
+    next.fear_applied_at = at
+    next.fear = clamp(next.fear + tuning.fearGainBase + tuning.fearGainIntensity * tuning.intensity)
+  }
+  if (mentionsAny(text, WORRY) && at - next.worry_applied_at >= tuning.worryCooldownMs) {
+    next.worry_applied_at = at
+    next.worry = clamp(next.worry + tuning.worryGainBase + tuning.worryGainIntensity * tuning.intensity)
+  }
+  if (mentionsAny(text, DREAD) && at - next.dread_applied_at >= tuning.dreadCooldownMs) {
+    next.dread_applied_at = at
+    next.dread = clamp(next.dread + tuning.dreadGainBase + tuning.dreadGainIntensity * tuning.intensity)
+  }
 }
 
 /**
@@ -86,9 +130,14 @@ export function react(state: VitalsState, text: string, at: number, tuning: Tuni
     next.woken_at = at
     return next
   }
+  // 凶与生死两路先剔掉口头禅，剩下的才算真话
+  const serious = saidSeriously(text)
   applyDrink(next, text, at, tuning)
   applyMeal(next, text, at, tuning)
   applyPraise(next, text, at, tuning)
-  applyAnger(next, text, at, tuning)
+  applyApology(next, serious, at, tuning)
+  applyAnger(next, serious, at, tuning)
+  applyThreat(next, serious, at, tuning)
+  applyFears(next, serious, at, tuning)
   return next
 }

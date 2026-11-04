@@ -1,10 +1,10 @@
 // 所有默认参数只在这里出现一次，别处一律从 Tuning 里取
 
-import type { Baseline, VitalsState } from './types.ts'
+import type { Baseline, EmotionTuning, SuppressTuning, VitalsState } from './types.ts'
 import { clamp, clampRange } from './math.ts'
 
 /** 可被 Config 覆盖的参数集合 */
-export interface Tuning {
+export interface Tuning extends EmotionTuning, SuppressTuning {
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -277,6 +277,16 @@ export const DEFAULTS: Tuning = {
     estrogen: 0.35,
     progesterone: 0.20,
     cramps: 0.0,
+    // 情绪九项的起点，之后由触发与半衰管
+    anger: 0.0,
+    resentment: 0.0,
+    soothe: 0.0,
+    fear: 0.0,
+    worry: 0.0,
+    dread: 0.0,
+    mortality: 0.0,
+    negative_heat: 0.0,
+    positive_heat: 0.0,
   },
   // 喝一杯水的写回量
   intensity: 0.6,
@@ -336,6 +346,32 @@ export const DEFAULTS: Tuning = {
   promptMaxChars: 300,
   labelThreshold: 0.40,
   labelCount: 3,
+  // 反向压制：每条触发线的阈值与乘数
+  suppressFearFrom: 0.45,
+  suppressFearCalm: 0.55,
+  suppressFearJoy: 0.80,
+  suppressWorryFrom: 0.45,
+  suppressWorryCalm: 0.55,
+  suppressWorryHappy: 0.30,
+  suppressWorryJoy: 0.35,
+  suppressDreadFrom: 0.50,
+  suppressDreadCalm: 0.50,
+  suppressDreadJoy: 0.70,
+  suppressAngerFrom: 0.35,
+  suppressAngerCalm: 0.60,
+  suppressAngerContent: 0.40,
+  suppressThirstFrom: 0.45,
+  suppressThirstCalm: 0.35,
+  suppressThirstContent: 0.25,
+  suppressSickCytokinesFrom: 0.35,
+  suppressSickFeverFrom: 0.30,
+  suppressSickCalm: 0.65,
+  suppressSickJoy: 0.75,
+  suppressMortalityFrom: 0.25,
+  suppressMortalityDread: 0.50,
+  suppressMortalityFear: 0.20,
+  suppressMortalityCalm: 0.60,
+  suppressMortalityJoy: 0.45,
   // 昼夜与时段
   nightDarkFrom: 22,
   nightDarkUntil: 7,
@@ -392,6 +428,56 @@ export const DEFAULTS: Tuning = {
   irritabilityPremenstrualGain: 0.28,
   irritabilityMenstrualGain: 0.14,
   irritabilityCrampsGain: 0.30,
+  // 情绪状态机：被凶、被吓、被威胁、被哄各自的写回量与半衰
+  angerGainBase: 0.45,
+  angerGainIntensity: 0.35,
+  angerHalfHours: 0.5,
+  resentmentGainBase: 0.12,
+  resentmentGainIntensity: 0.10,
+  resentmentHalfHours: 48,
+  resentFrom: 0.15,
+  resentIdleHours: 2,
+  resentBumpRate: 0.05,
+  resentBumpMax: 0.06,
+  resentNightFactor: 1.5,
+  sootheHalfHours: 2,
+  sootheApologyGain: 0.45,
+  soothePraiseGain: 0.15,
+  apologyAngerDrop: 0.40,
+  apologyAngerScale: 0.25,
+  apologyResentmentDrop: 0.30,
+  apologyResentmentScale: 0.25,
+  apologyCooldownMs: 300_000,
+  praiseAngerDrop: 0.10,
+  praiseAngerScale: 0.25,
+  praiseResentmentDrop: 0.06,
+  negativeHeatGain: 0.35,
+  negativeHeatHalfHours: 6,
+  positiveHeatGain: 0.30,
+  positiveHeatHalfHours: 12,
+  fearGainBase: 0.45,
+  fearGainIntensity: 0.35,
+  fearHalfHours: 1 / 12,
+  fearCooldownMs: 300_000,
+  worryGainBase: 0.35,
+  worryGainIntensity: 0.25,
+  worryHalfHours: 0.8,
+  worryCooldownMs: 600_000,
+  dreadGainBase: 0.40,
+  dreadGainIntensity: 0.30,
+  dreadHalfHours: 8,
+  dreadCooldownMs: 1_800_000,
+  dreadNightRise: 0.02,
+  threatFearGain: 0.30,
+  threatDreadGain: 0.55,
+  threatCooldownMs: 1_800_000,
+  nightFullFrom: 0.6,
+  promptFearFrom: 0.50,
+  promptWorryFrom: 0.50,
+  promptDreadFrom: 0.50,
+  promptAngerFrom: 0.45,
+  promptResentFrom: 0.40,
+  promptMortalityFrom: 0.25,
   // 提示词里的可选段落
   promptSickCytokinesFrom: 0.35,
   promptSickFeverFrom: 0.30,
@@ -408,6 +494,7 @@ export const NUMERIC_FIELDS: readonly (keyof Baseline)[] = [
   'osmolality', 'blood_volume', 'angiotensin', 'fluid_queue',
   'adenosine', 'core_temp', 'fever', 'cytokines', 'pain',
   'estrogen', 'progesterone', 'cramps',
+  'anger', 'resentment', 'soothe', 'fear', 'worry', 'dread', 'mortality', 'negative_heat', 'positive_heat',
 ]
 
 /** 派生上也要落盘的数值字段 */
@@ -420,6 +507,7 @@ export const DERIVED_FIELDS = [
 export const STAMP_FIELDS = [
   'last_update', 'last_msg', 'last_meal', 'last_drink', 'last_drink_at', 'last_taste_at',
   'drink_mem_at', 'fluid_applied_at', 'praise_applied_at', 'anger_applied_at', 'meal_applied_at',
+  'fear_applied_at', 'worry_applied_at', 'dread_applied_at', 'threat_applied_at', 'apology_applied_at',
   'wake_after', 'groggy_until', 'woken_at', 'nap_at',
 ] as const
 
@@ -485,6 +573,11 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     fluid_applied_at: 0,
     praise_applied_at: 0,
     anger_applied_at: 0,
+    fear_applied_at: 0,
+    worry_applied_at: 0,
+    dread_applied_at: 0,
+    threat_applied_at: 0,
+    apology_applied_at: 0,
     meal_applied_at: 0,
     last_drink_name: '',
     last_taste: null,

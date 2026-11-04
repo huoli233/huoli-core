@@ -30,6 +30,7 @@ function valenceOf(s: VitalsState, tuning: Tuning): number {
     + 0.04 * (s.acetylcholine - 0.45)
     - 0.06 * above(s.thirst - 0.60)
     - 0.14 * s.fever - 0.10 * s.cytokines - 0.08 * s.pain
+    - 0.18 * s.dread - 0.08 * s.worry - 0.15 * s.anger
     - tuning.valenceMenstrualPenalty * phaseHit(s, ['menstrual'])
     - tuning.valencePremenstrualPenalty * phaseHit(s, ['premenstrual'])
     + tuning.valenceFollicularGain * phaseHit(s, ['follicular']),
@@ -45,6 +46,7 @@ function irritabilityOf(s: VitalsState, tuning: Tuning): number {
     + 0.18 * above(s.adrenaline - 0.35)
     + 0.30 * above(s.thirst - 0.55)
     + 0.32 * above(s.adenosine - 0.55)
+    + 0.45 * s.anger
     + 0.25 * s.pain
     + 0.20 * above(s.core_temp - 37.2)
     + tuning.irritabilityPremenstrualGain * phaseHit(s, ['premenstrual'])
@@ -58,11 +60,12 @@ function clinginessOf(s: VitalsState): number {
   return clamp(0.2 + 0.75 * (s.oxytocin - 0.3) + 0.15 * (s.endorphin - 0.4))
 }
 
-// 孤独：亲近少、压力大、占有欲强都会更空
+// 孤独：亲近少、压力大、占有欲强都会更空，记着仇也算空
 function lonelinessOf(s: VitalsState): number {
   return clamp(
     0.15 + 0.7 * (s.oxytocin - 0.35) + 0.2 * (s.cortisol - 0.2)
-    + 0.15 * above(s.vasopressin - 0.40) - 0.10 * above(s.endorphin - 0.55),
+    + 0.15 * above(s.vasopressin - 0.40) - 0.10 * above(s.endorphin - 0.55)
+    + 0.10 * s.resentment,
   )
 }
 
@@ -98,11 +101,11 @@ function postWantOf(s: VitalsState, tuning: Tuning): number {
   return clamp(tuning.postStart * down * up)
 }
 
-// 前十二个常用标签，每个都是多系统加权
-function labelScores(s: VitalsState): Map<string, number> {
+// 二十六个标签，每个都是多系统加权
+function labelScores(s: VitalsState, tuning: Tuning): Map<string, number> {
   const scores = new Map<string, number>()
   scores.set('幸福', 0.32 * s.dopamine + 0.25 * s.oxytocin + 0.22 * s.serotonin + 0.16 * s.endorphin
-    - 0.28 * s.cortisol - 0.15 * s.adrenaline)
+    - 0.28 * s.cortisol - 0.15 * s.adrenaline + 0.10 * s.positive_heat)
   scores.set('开心', 0.34 * s.dopamine + 0.18 * s.oxytocin + 0.18 * s.serotonin + 0.12 * s.endorphin
     - 0.16 * s.cortisol - 0.10 * s.adrenaline)
   scores.set('安心', 0.35 * s.acetylcholine + 0.28 * s.endorphin + 0.22 * s.oxytocin + 0.18 * s.serotonin
@@ -116,29 +119,75 @@ function labelScores(s: VitalsState): Map<string, number> {
   scores.set('吃醋', 0.55 * above(s.vasopressin - 0.45) + 0.25 * s.oxytocin + 0.20 * s.cortisol
     - 0.15 * s.serotonin + 0.15 * s.clinginess)
   scores.set('委屈', 0.30 * above(s.cortisol - 0.30) + 0.25 * (1 - s.dominance) + 0.18 * (1 - s.oxytocin)
-    - 0.10 * s.dopamine)
+    + 0.16 * s.negative_heat - 0.10 * s.dopamine)
   scores.set('低落', 0.32 * (1 - s.serotonin) + 0.26 * s.cortisol + 0.18 * (1 - s.oxytocin) - 0.18 * s.dopamine)
   scores.set('焦虑', 0.30 * s.crh + 0.28 * s.acth + 0.22 * s.adrenaline + 0.18 * s.cortisol
     + 0.18 * (1 - s.serotonin) - 0.12 * s.acetylcholine)
   scores.set('惊慌', 0.38 * s.adrenaline + 0.28 * s.crh + 0.18 * s.acth + 0.16 * s.noradrenaline
     - 0.15 * s.acetylcholine)
-  suppress(scores, s)
+  scores.set('恼火', 0.30 * s.adrenaline + 0.28 * s.cortisol + 0.24 * (1 - s.serotonin)
+    + 0.12 * above(s.vasopressin - 0.50) - 0.12 * s.acetylcholine)
+  scores.set('饿怒', 0.42 * above(s.ghrelin - 0.45) + 0.38 * above((0.42 - s.glucose) / 0.42)
+    + 0.24 * s.irritability - 0.10 * s.acetylcholine)
+  scores.set('困倦', 0.50 * s.melatonin + 0.28 * s.acetylcholine + 0.20 * (1 - s.energy) - 0.15 * s.adrenaline)
+  scores.set('想哭', 0.34 * (1 - s.serotonin) + 0.30 * s.cortisol + 0.18 * (1 - s.oxytocin)
+    + 0.18 * s.negative_heat - 0.15 * s.endorphin)
+  scores.set('害怕', 0.85 * s.fear + 0.18 * s.adrenaline + 0.10 * (1 - s.serotonin) + 0.05 * s.noradrenaline)
+  scores.set('担心', 0.80 * s.worry + 0.14 * s.cortisol + 0.10 * s.acth + 0.08 * s.oxytocin
+    - 0.08 * s.acetylcholine)
+  scores.set('恐惧', 0.85 * s.dread + 0.18 * (s.cortisol - 0.20) + 0.12 * above(s.vasopressin - 0.40)
+    - 0.06 * s.serotonin)
+  scores.set('生气', 0.95 * s.anger + 0.10 * s.adrenaline)
+  scores.set('冷战', 0.75 * s.resentment - 0.35 * s.anger)
+  scores.set('渴', 0.85 * above(s.thirst - 0.25) + 0.10 * s.angiotensin)
+  scores.set('生病', 0.80 * s.cytokines + 0.30 * s.fever)
+  scores.set('累坏', 0.60 * above(s.adenosine - 0.45) + 0.25 * s.pain - 0.10 * s.endorphin)
+  scores.set('经期', 0.75 * s.cramps + 0.30 * phaseHit(s, ['menstrual']))
+  scores.set('经前', 0.60 * phaseHit(s, ['premenstrual']) + 0.20 * s.progesterone)
+  suppress(scores, s, tuning)
   return scores
 }
 
-// 反向压制：不压的话永远是“幸福、安心”
-function suppress(scores: Map<string, number>, s: VitalsState): void {
+// 反向压制：不压的话永远是“幸福、安心”，怕、担心、火气、缺水、生病各自压低对面
+function suppress(scores: Map<string, number>, s: VitalsState, tuning: Tuning): void {
   const scale = (name: string, factor: number): void => {
     const current = scores.get(name)
     if (current !== undefined) scores.set(name, current * factor)
   }
-  if (s.thirst > 0.45) {
-    scale('安心', 1 - 0.35 * s.thirst)
-    scale('满足', 1 - 0.25 * s.thirst)
+  const boost = (name: string, amount: number): void => {
+    const current = scores.get(name)
+    if (current !== undefined) scores.set(name, current + amount)
   }
-  if (s.cytokines > 0.35 || s.fever > 0.30) {
-    scale('安心', 0.65)
-    scale('幸福', 0.75)
+  if (s.fear > tuning.suppressFearFrom) {
+    scale('安心', tuning.suppressFearCalm)
+    scale('幸福', tuning.suppressFearJoy)
+  }
+  if (s.worry > tuning.suppressWorryFrom) {
+    scale('安心', 1 - tuning.suppressWorryCalm * s.worry)
+    scale('开心', 1 - tuning.suppressWorryHappy * s.worry)
+    scale('幸福', 1 - tuning.suppressWorryJoy * s.worry)
+  }
+  if (s.dread > tuning.suppressDreadFrom) {
+    scale('安心', tuning.suppressDreadCalm)
+    scale('幸福', tuning.suppressDreadJoy)
+  }
+  if (s.anger > tuning.suppressAngerFrom) {
+    scale('安心', 1 - tuning.suppressAngerCalm * s.anger)
+    scale('满足', 1 - tuning.suppressAngerContent * s.anger)
+  }
+  if (s.thirst > tuning.suppressThirstFrom) {
+    scale('安心', 1 - tuning.suppressThirstCalm * s.thirst)
+    scale('满足', 1 - tuning.suppressThirstContent * s.thirst)
+  }
+  if (s.cytokines > tuning.suppressSickCytokinesFrom || s.fever > tuning.suppressSickFeverFrom) {
+    scale('安心', tuning.suppressSickCalm)
+    scale('幸福', tuning.suppressSickJoy)
+  }
+  if (s.mortality > tuning.suppressMortalityFrom) {
+    boost('恐惧', tuning.suppressMortalityDread * s.mortality)
+    boost('害怕', tuning.suppressMortalityFear * s.mortality)
+    scale('安心', 1 - tuning.suppressMortalityCalm * s.mortality)
+    scale('幸福', 1 - tuning.suppressMortalityJoy * s.mortality)
   }
 }
 
@@ -158,7 +207,7 @@ export function derive(state: VitalsState, tuning: Tuning): VitalsState {
   next.dominance = dominanceOf(state)
   next.proactive_bias = proactiveBiasOf(next, tuning)
   next.post_want = postWantOf(next, tuning)
-  const ranked = [...labelScores(next)]
+  const ranked = [...labelScores(next, tuning)]
     .filter(entry => entry[1] > tuning.labelThreshold)
     .sort((left, right) => right[1] - left[1])
     .slice(0, Math.max(1, tuning.labelCount))

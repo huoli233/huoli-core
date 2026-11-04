@@ -228,6 +228,34 @@ function drainFluid(next: VitalsState, at: number, tuning: Tuning): void {
   next.fluid_applied_at = at
 }
 
+// 情绪回落：怒气、记恨、被哄各按自己的半衰，怕与担心三类各有各的常数
+function settleDecay(next: VitalsState, hours: number, tuning: Tuning): void {
+  next.anger = clamp(decay(next.anger, hours, tuning.angerHalfHours))
+  next.resentment = clamp(decay(next.resentment, hours, tuning.resentmentHalfHours))
+  next.soothe = clamp(decay(next.soothe, hours, tuning.sootheHalfHours))
+  next.fear = clamp(decay(next.fear, hours, tuning.fearHalfHours))
+  next.worry = clamp(decay(next.worry, hours, tuning.worryHalfHours))
+  next.dread = clamp(decay(next.dread, hours, tuning.dreadHalfHours))
+  next.negative_heat = clamp(decay(next.negative_heat, hours, tuning.negativeHeatHalfHours))
+  next.positive_heat = clamp(decay(next.positive_heat, hours, tuning.positiveHeatHalfHours))
+}
+
+// 越想越气：已经记着、又被晾着就慢慢涨，夜里涨得更快
+function settleResentment(next: VitalsState, at: number, hours: number, night: number, tuning: Tuning): void {
+  if (next.resentment <= tuning.resentFrom) return
+  if (at - next.last_msg <= tuning.resentIdleHours * 3_600_000) return
+  const bump = Math.min(tuning.resentBumpMax, hours * tuning.resentBumpRate)
+  next.resentment = clamp(next.resentment + bump * (night >= tuning.nightFullFrom ? tuning.resentNightFactor : 1))
+}
+
+// 情绪结算三件事：先各自回落，再算越想越气，最后夜里独自涨的那一点
+function settleMood(next: VitalsState, at: number, hours: number, night: number, tuning: Tuning): void {
+  settleDecay(next, hours, tuning)
+  settleResentment(next, at, hours, night, tuning)
+  // 死亡威胁只由外部余额驱动，这一包没有那一路来源
+  next.dread = clamp(next.dread + tuning.dreadNightRise * night * hours)
+}
+
 /**
  * 按距上次结算的时长漂移一次
  * @param state - 当前状态
@@ -255,5 +283,6 @@ export function drift(state: VitalsState, at: number, tuning: Tuning, random: ()
   settleWater(next, hours, hour, tuning)
   settleGlucose(next, hours)
   settleInner(next, hours, hour, night, tuning)
+  settleMood(next, at, hours, night, tuning)
   return next
 }

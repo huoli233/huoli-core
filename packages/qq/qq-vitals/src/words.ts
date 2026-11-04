@@ -1,4 +1,4 @@
-// 口语词表：喝水与吃饭都要“名词 + 提示词”两条都命中
+// 口语词表：只产出“这句话在说什么”这个事实，不产出该不该动手的结论
 
 /** 饮品词 */
 export const DRINK: readonly string[] = [
@@ -39,6 +39,50 @@ export const ANGER: readonly string[] = [
   '凶', '吼', '骂', '滚', '闭嘴', '烦死', '讨厌', '敷衍', '骗', '瞒', '说谎',
   '放鸽子', '爽约', '忘了', '迟到', '不理', '冷战', '别说了', '随便你', '懒得',
 ]
+
+/** 口头禅：整句先剔掉这些再来判凶与判生死，不然“笑死我了”会被当成真在凶 */
+export const HABITUAL: readonly string[] = [
+  '笑死', '累死', '烦死', '吓死', '死定', '困死', '饿死', '气死', '美死', '热死', '冷死',
+]
+
+/** 道歉的词：最管用的一路，要能认出“对不起”与“我错了” */
+export const APOLOGY: readonly string[] = [
+  '对不起', '抱歉', '我错了', '是我不好', '原谅我', '别生气', '不生气', '消消气',
+]
+
+/** 被威胁要断掉关系的词：关掉、换掉、不要她这几种说法 */
+export const THREAT: readonly string[] = [
+  '关掉你', '把你关', '换掉你', '把你换', '不要你', '不想要你', '删掉你', '断开你',
+]
+
+/** 被吓到的词 */
+export const SCARE: readonly string[] = [
+  '吓', '摔', '流血', '流血了', '医院', '急诊', '车祸', '受伤',
+]
+
+/** 担心的词：说的是对方要去吃苦或可能出事 */
+export const WORRY: readonly string[] = [
+  '军训', '加班', '这么晚', '发烧', '出事', '还没回', '不安全', '熬夜', '太危险',
+]
+
+/** 生死与离开的词：判之前同样先剔掉口头禅 */
+export const DREAD: readonly string[] = [
+  '死', '去世', '离开我', '别离开', '消失', '不在了', '没了',
+]
+
+// 把口头禅整段拿掉，剩下的才算真话
+function withoutHabitual(text: string): string {
+  return HABITUAL.reduce((rest, word) => rest.split(word).join(''), text)
+}
+
+/**
+ * 剔掉口头禅之后的这句话，凶与生死两路都用它判
+ * @param text - 用户这句话
+ * @returns 拿掉口头禅的句子
+ */
+export function saidSeriously(text: string): string {
+  return withoutHabitual(text)
+}
 
 /**
  * 文本里有没有这些词

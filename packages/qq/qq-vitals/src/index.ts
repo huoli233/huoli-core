@@ -65,7 +65,7 @@ const seams = new WeakMap<Context, QqVitalsSeam>()
  * @returns 装配好的接口
  */
 export function qqVitalsOf(ctx: Context): QqVitalsSeam | undefined {
-  return seams.get(ctx)
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /** 插件的行名 */
@@ -143,7 +143,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       }
     },
   }
-  seams.set(ctx, seam)
+  seams.set(ctx.root, seam)
 
   // 身体这一段排在状态快照后面，压住前面的通用话术
   ctx.systemPrompt.section({
@@ -168,6 +168,6 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (timer !== undefined) clearInterval(timer)
     store.write(current())
     meals.clear()
-    seams.delete(ctx)
+    seams.delete(ctx.root)
   })
 }

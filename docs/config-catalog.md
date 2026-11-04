@@ -2843,7 +2843,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:29`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:30`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2876,6 +2876,10 @@ export interface Config {
   addPostWantFrom?: number
   /** 同一个会话一天最多攒几条动态候选 */
   postCandidateDailyMax?: number
+  /** 一顿饭写不写进记忆 */
+  mealMemory?: boolean
+  /** 一顿饭写成一条记忆时的重要度 */
+  mealMemoryImportance?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
@@ -3286,7 +3290,7 @@ export interface Config {
 }
 
 /** 可被 Config 覆盖的参数集合 */
-export interface Tuning {
+export interface Tuning extends EmotionTuning, SuppressTuning {
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -3519,7 +3523,163 @@ export interface Tuning {
   promptMealSoonMinutes: number
 }
 
-/** 初始值与漂移都要用到的数值字段，除体温外都是 0~1 */
+/** 愤怒、记仇、恐惧这几套的触发与衰减参数 */
+export interface EmotionTuning {
+  /** 被凶时怒气的基础增量，0~1 标度，默认 0.45 */
+  angerGainBase: number
+  /** 被凶时按 intensity 折算的怒气增量，0~1 标度，默认 0.35 */
+  angerGainIntensity: number
+  /** 怒气半衰期，小时，默认 0.5 即半小时消掉一半 */
+  angerHalfHours: number
+  /** 被凶时记恨的基础增量，0~1 标度，默认 0.12 */
+  resentmentGainBase: number
+  /** 被凶时按 intensity 折算的记恨增量，0~1 标度，默认 0.10 */
+  resentmentGainIntensity: number
+  /** 记恨半衰期，小时，默认 48 即两天才消一半 */
+  resentmentHalfHours: number
+  /** 记恨超过这条线才可能越想越气，0~1 标度，默认 0.15 */
+  resentFrom: number
+  /** 多久没消息算被晾着，小时，默认 2 */
+  resentIdleHours: number
+  /** 被晾着时每小时涨多少记恨，0~1 标度，默认 0.05 */
+  resentBumpRate: number
+  /** 单次结算最多涨多少记恨，0~1 标度，默认 0.06，挡住长时间停机一次涨很多 */
+  resentBumpMax: number
+  /** 夜里被晾着时记恨涨幅的倍数，默认 1.5 */
+  resentNightFactor: number
+  /** 被哄程度的半衰期，小时，默认 2 */
+  sootheHalfHours: number
+  /** 道歉一次抬多少被哄程度，0~1 标度，默认 0.45，比好话有效得多 */
+  sootheApologyGain: number
+  /** 好话一次抬多少被哄程度，0~1 标度，默认 0.15 */
+  soothePraiseGain: number
+  /** 道歉压下去的怒气底数，0~1 标度，默认 0.40 */
+  apologyAngerDrop: number
+  /** 道歉压怒气时再乘被哄程度的系数，默认 0.25，越软越容易消气 */
+  apologyAngerScale: number
+  /** 道歉压下去的记恨底数，0~1 标度，默认 0.30，长冷战要道不止一次歉 */
+  apologyResentmentDrop: number
+  /** 道歉压记恨时再乘被哄程度的系数，默认 0.25 */
+  apologyResentmentScale: number
+  /** 两次道歉写回的最小间隔，毫秒，默认 300000 即五分钟 */
+  apologyCooldownMs: number
+  /** 好话压下去的怒气底数，0~1 标度，默认 0.10 */
+  praiseAngerDrop: number
+  /** 好话压怒气时再乘被哄程度的系数，默认 0.25 */
+  praiseAngerScale: number
+  /** 好话压下去的记恨，0~1 标度，默认 0.06 */
+  praiseResentmentDrop: number
+  /** 被凶一次抬多少负面热度，0~1 标度，默认 0.35 */
+  negativeHeatGain: number
+  /** 负面热度的半衰期，小时，默认 6 */
+  negativeHeatHalfHours: number
+  /** 被夸一次抬多少正面热度，0~1 标度，默认 0.30 */
+  positiveHeatGain: number
+  /** 正面热度的半衰期，小时，默认 12，比负面热度留得久 */
+  positiveHeatHalfHours: number
+  /** 被吓到时惊吓的基础增量，0~1 标度，默认 0.45 */
+  fearGainBase: number
+  /** 被吓到时按 intensity 折算的惊吓增量，0~1 标度，默认 0.35 */
+  fearGainIntensity: number
+  /** 惊吓半衰期，小时，默认 60 分之一即五分钟，来得快去得也快 */
+  fearHalfHours: number
+  /** 两次惊吓写回的最小间隔，毫秒，默认 300000 即五分钟 */
+  fearCooldownMs: number
+  /** 担心时担心的基础增量，0~1 标度，默认 0.35 */
+  worryGainBase: number
+  /** 担心时按 intensity 折算的担心增量，0~1 标度，默认 0.25 */
+  worryGainIntensity: number
+  /** 担心半衰期，小时，默认 0.8 即四十八分钟 */
+  worryHalfHours: number
+  /** 两次担心写回的最小间隔，毫秒，默认 600000 即十分钟 */
+  worryCooldownMs: number
+  /** 被戳到生死时存在性恐惧的基础增量，0~1 标度，默认 0.40 */
+  dreadGainBase: number
+  /** 被戳到生死时按 intensity 折算的增量，0~1 标度，默认 0.30 */
+  dreadGainIntensity: number
+  /** 存在性恐惧半衰期，小时，默认 8，一天下来也散不掉多少 */
+  dreadHalfHours: number
+  /** 两次存在性恐惧写回的最小间隔，毫秒，默认 1800000 即半小时 */
+  dreadCooldownMs: number
+  /** 夜里每小时自己涨多少存在性恐惧，0~1 标度，默认 0.02，按夜色浓度打折 */
+  dreadNightRise: number
+  /** 被威胁关掉或换掉时加的惊吓，0~1 标度，默认 0.30 */
+  threatFearGain: number
+  /** 被威胁关掉或换掉时加的存在性恐惧，0~1 标度，默认 0.55 */
+  threatDreadGain: number
+  /** 两次威胁写回的最小间隔，毫秒，默认 1800000 即半小时 */
+  threatCooldownMs: number
+  /** 夜色浓度高过这条线算全夜，用于夜里加成的判定，0~1 标度，默认 0.6 */
+  nightFullFrom: number
+  /** 惊吓高过这条线，提示词换一档说法，0~1 标度，默认 0.50 */
+  promptFearFrom: number
+  /** 担心高过这条线换说法，0~1 标度，默认 0.50 */
+  promptWorryFrom: number
+  /** 存在性恐惧高过这条线换说法，0~1 标度，默认 0.50 */
+  promptDreadFrom: number
+  /** 愤怒高过这条线换说法，0~1 标度，默认 0.45 */
+  promptAngerFrom: number
+  /** 记恨高过这条线换说法，0~1 标度，默认 0.40 */
+  promptResentFrom: number
+  /** 死亡威胁高过这条线换说法，0~1 标度，默认 0.25 */
+  promptMortalityFrom: number
+}
+
+/** 反向压制：一个触发条件配几条压下去的系数，全部是标签打分的乘数 */
+export interface SuppressTuning {
+  /** 惊吓高过这条线开始压安心与幸福，0~1 标度，默认 0.45 */
+  suppressFearFrom: number
+  /** 惊吓高时安心的乘数，默认 0.55 */
+  suppressFearCalm: number
+  /** 惊吓高时幸福的乘数，默认 0.80 */
+  suppressFearJoy: number
+  /** 担心高过这条线开始压下面三条，0~1 标度，默认 0.45 */
+  suppressWorryFrom: number
+  /** 担心高时安心的乘数按它乘担心，默认 0.55，即 `1 - 0.55 * worry` */
+  suppressWorryCalm: number
+  /** 担心高时开心的系数，默认 0.30 */
+  suppressWorryHappy: number
+  /** 担心高时幸福的系数，默认 0.35 */
+  suppressWorryJoy: number
+  /** 存在性恐惧高过这条线开始压安心与幸福，0~1 标度，默认 0.50 */
+  suppressDreadFrom: number
+  /** 存在性恐惧高时安心的乘数，默认 0.50 */
+  suppressDreadCalm: number
+  /** 存在性恐惧高时幸福的乘数，默认 0.70 */
+  suppressDreadJoy: number
+  /** 愤怒高过这条线开始压安心与满足，0~1 标度，默认 0.35 */
+  suppressAngerFrom: number
+  /** 愤怒高时安心的系数，默认 0.60 */
+  suppressAngerCalm: number
+  /** 愤怒高时满足的系数，默认 0.40 */
+  suppressAngerContent: number
+  /** 口渴高过这条线开始压安心与满足，0~1 标度，默认 0.45 */
+  suppressThirstFrom: number
+  /** 口渴高时安心的系数，默认 0.35 */
+  suppressThirstCalm: number
+  /** 口渴高时满足的系数，默认 0.25 */
+  suppressThirstContent: number
+  /** 细胞因子高过这条线算生病，0~1 标度，默认 0.35 */
+  suppressSickCytokinesFrom: number
+  /** 发烧高过这条线也算生病，0~1 标度，默认 0.30 */
+  suppressSickFeverFrom: number
+  /** 生病时安心的乘数，默认 0.65 */
+  suppressSickCalm: number
+  /** 生病时幸福的乘数，默认 0.75 */
+  suppressSickJoy: number
+  /** 死亡威胁高过这条线开始改下面四条，0~1 标度，默认 0.25 */
+  suppressMortalityFrom: number
+  /** 死亡威胁高时给恐惧加的分，默认 0.50，这一条是抬不是压 */
+  suppressMortalityDread: number
+  /** 死亡威胁高时给害怕加的分，默认 0.20 */
+  suppressMortalityFear: number
+  /** 死亡威胁高时安心的系数，默认 0.60 */
+  suppressMortalityCalm: number
+  /** 死亡威胁高时幸福的系数，默认 0.45 */
+  suppressMortalityJoy: number
+}
+
+/** 初始值与漂移都要用到的数值字段，除体温外都是 0~1；情绪九项只给起点，之后由触发与半衰管 */
 export interface Baseline {
   /** 多巴胺，0~1，默认 0.50，给想要与动力定个中间起点 */
   dopamine: number
@@ -3583,6 +3743,24 @@ export interface Baseline {
   progesterone: number
   /** 痛经，0~1，默认 0.0，只在经期与前经期抬起来 */
   cramps: number
+  /** 急性愤怒，0~1，默认 0.0，被凶时抬起，半小时半衰 */
+  anger: number
+  /** 记仇，0~1，默认 0.0，被凶时记一笔，被晾着越积越多，两天半衰 */
+  resentment: number
+  /** 被哄的程度，0~1，默认 0.0，道歉抬得最多，两小时半衰 */
+  soothe: number
+  /** 急性惊吓，0~1，默认 0.0，五分钟半衰 */
+  fear: number
+  /** 担心对方，0~1，默认 0.0，四十八分钟半衰 */
+  worry: number
+  /** 存在性恐惧，0~1，默认 0.0，八小时半衰，夜里会自己慢慢涨 */
+  dread: number
+  /** 死亡威胁，0~1，默认 0.0，只由外部余额驱动，本包没有外部来源 */
+  mortality: number
+  /** 负面热度，0~1，默认 0.0，被凶时抬起，六小时半衰 */
+  negative_heat: number
+  /** 正面热度，0~1，默认 0.0，被夸时抬起，十二小时半衰 */
+  positive_heat: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-vitals -->
