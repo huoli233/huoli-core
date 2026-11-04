@@ -364,7 +364,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
   }
 
-  // 每天一次：把记忆往上挪一层、该淡的淡一档，再把自我层没镜过的记录镜像进来
+  // 每天一次：先掉重要度，再按保留度定清晰度，淡到底的清正文，最后补账；自我层没镜过的记录一并镜像
   const memory = qqMemoryOf(ctx)
   const self = qqSelfOf(ctx)
   // 镜像只往记忆库写，接上以后每日整理才会带上它
@@ -373,8 +373,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const idle = setInterval(() => {
     if (new Date().getHours() !== hour) return
     try {
-      memory?.promote()
-      memory?.sweep()
+      memory?.maintain(Date.now())
       // 关着的那一层不写，镜像入口自己会返回没写
       const mirrored = self?.mirror()
       // 镜像写入立刻入账，下一次核对才不会把它当成正文被改

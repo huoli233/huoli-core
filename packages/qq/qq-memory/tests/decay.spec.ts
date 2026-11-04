@@ -170,6 +170,7 @@ describe('被召回时回升', () => {
     expect(seam.store.all()).toHaveLength(0)
   })
 })
+
 describe('先掉重要度，再算清晰度，最后清正文', () => {
   // 年龄扣分把保留度压到清晰度线上，只有先掉的那一分能把它推过线
   const OLD = NOW - 87 * DAY
