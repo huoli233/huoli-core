@@ -26,6 +26,9 @@ const IDENTITY_ACTIONS: readonly string[] = [
   'public.direct',
 ]
 
+// 阶段的先后：比高低只看这张表的次序，认不出的写法按不到下限算
+const STAGES: readonly string[] = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5a', 'P5b', 'P5c']
+
 /** 默认值都在这张表里，改默认值只改这里 */
 export const DEFAULTS: SelfSettings = {
   panelMaxChars: 300,
@@ -47,6 +50,9 @@ export const DEFAULTS: SelfSettings = {
   mirrorScope: 'self:layer',
   driveNeeds: DRIVE_NEEDS,
   identityActions: IDENTITY_ACTIONS,
+  stage: 'P0',
+  privateMinStage: 'P3',
+  stages: STAGES,
   sectionName: 'qq:self-layer',
   variableName: 'qq_self_panel',
   sectionOrder: 360,

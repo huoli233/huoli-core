@@ -400,6 +400,8 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 停手时动态一条都不发：发布入口只认这一句
   channel?.usePause(() => self?.isPaused() ?? false)
+  // 阶段只由自我层说：私信那一档按它判能不能发，没接上就按那一层默认值表里最保守的一档
+  if (self !== undefined) channel?.useStage(() => self.stage())
   // 提示词里那条条数上限同时交给发送路径，按它把一段话切成几条发
   channel?.useReplyCap(() => budgetOf(vitals))
 

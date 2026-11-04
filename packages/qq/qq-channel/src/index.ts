@@ -4,21 +4,25 @@ import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqPacingOf, REPLY_DEFAULTS, speechGaps, splitByBudget } from '@huoli/huoli-qq-pacing'
+import type { ActionKind } from '@huoli/huoli-qq-self'
 import { createWsChannel, type WsChannel } from './ws.ts'
 import { toIncoming, toPoke, type ChannelStatus, type IncomingMessage, type IncomingPoke, type OutboundEvent } from './events.ts'
 import { createOutboundCheck, OUTBOUND_DEFAULTS, type OutboundTuning } from './outbound.ts'
-import { createPostGate, POST_DEFAULTS, type PostFacts, type PostResult, type PostTuning } from './post.ts'
-import { createPostStore } from './post-store.ts'
+import { ACTION_DEFAULTS, CONFIRM_DEFAULTS, POLICY_DEFAULTS, type ActionFacts, type ActionResult, type ActionTuning, type ActionTunings } from './actions.ts'
+import { createActionGate } from './action-gate.ts'
+import { createActionStore } from './action-store.ts'
 import { registerChannelTools } from './tools.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
 export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
 export type { OutboundCheck, OutboundInput, OutboundTuning, OutboundVerdict } from './outbound.ts'
 export { createOutboundCheck, OUTBOUND_DEFAULTS } from './outbound.ts'
-export type { PostDelivery, PostFacts, PostGate, PostGateOptions, PostResult, PostTuning } from './post.ts'
-export { createPostGate, POST_DEFAULTS } from './post.ts'
-export type { PostFingerprint, PostState, PostStore, PostStoreOptions } from './post-store.ts'
-export { createPostStore, emptyPostState, POST_STATE_VERSION } from './post-store.ts'
+export type { ActionDelivery, ActionFacts, ActionGate, ActionKind, ActionResult, ActionTuning, ActionTunings } from './actions.ts'
+export { ACTION_DEFAULTS, CONFIRM_DEFAULTS, POLICY_DEFAULTS } from './actions.ts'
+export type { ActionGateOptions } from './action-gate.ts'
+export { createActionGate } from './action-gate.ts'
+export type { ActionFingerprint, ActionKindState, ActionState, ActionStore, ActionStoreOptions, PendingAction } from './action-store.ts'
+export { ACTION_STATE_VERSION, createActionStore, emptyActionState } from './action-store.ts'
 export type { WsChannel, WsHandlers, WsOptions } from './ws.ts'
 export { createWsChannel } from './ws.ts'
 
@@ -32,12 +36,20 @@ export interface QqChannelSeam {
   onPoke(handler: (poke: IncomingPoke) => void): () => void
   /** 看发送这一路发生了什么，返回注销函数 */
   onOutbound(handler: (event: OutboundEvent) => void): () => void
-  /** 发一条动态，先过级别与动态自己的闸门，再走出站体检 */
-  publishPost(text: string, facts: PostFacts): Promise<PostResult>
+  /** 发一次公共动作，先过级别与这一类动作自己的闸门，再走出站体检 */
+  publish(kind: ActionKind, text: string, facts: ActionFacts): Promise<ActionResult>
+  /** 把一段正文放进待确认队列，返回编号 */
+  requestConfirm(kind: ActionKind, text: string, at: number): ActionResult
+  /** 点头放行一条待确认的正文 */
+  confirm(confirmId: string, at: number): ActionResult
+  /** 丢掉一条待确认的正文 */
+  reject(confirmId: string): ActionResult
   /** 接上停手开关，为真时一条动态都不发 */
   usePause(check: (() => boolean) | undefined): void
   /** 接上这一轮的条数上限，不接就只发一条 */
   useReplyCap(provide: (() => number) | undefined): void
+  /** 接上自我层现在的阶段，私信按它判能不能发 */
+  useStage(provide: (() => string) | undefined): void
 }
 
 /** 这一行接受的配置 */
@@ -78,8 +90,28 @@ export interface Config {
   postFingerprintMax?: number
   /** 预授权的话题类别，命中才算例行 */
   routineTopics?: readonly string[]
-  /** 动态状态文件放哪，不填就落在数据根目录下的 data */
-  postsFile?: string
+  /** 评论两条之间至少隔多久 */
+  commentCoolDownMs?: number
+  /** 同一段评论隔多久才许再发 */
+  commentRepeatWindowMs?: number
+  /** 一天最多发几条评论 */
+  commentDailyMax?: number
+  /** 评论指纹表最多留几条 */
+  commentFingerprintMax?: number
+  /** 私信两条之间至少隔多久 */
+  privateCoolDownMs?: number
+  /** 同一段私信隔多久才许再发 */
+  privateRepeatWindowMs?: number
+  /** 一天最多发几条私信 */
+  privateDailyMax?: number
+  /** 私信指纹表最多留几条 */
+  privateFingerprintMax?: number
+  /** 允许私信的对象，空表示谁都不行 */
+  privateAllowPeers?: readonly string[]
+  /** 待确认项多久没人点头就失效 */
+  confirmTtlMs?: number
+  /** 三类动作的状态文件放哪，不填就落在数据根目录下的 data */
+  actionsFile?: string
 }
 
 const seams = new WeakMap<Context, QqChannelSeam>()
@@ -114,16 +146,44 @@ function resolveOutbound(config: Config): OutboundTuning {
   }
 }
 
-// 把配置摊成动态参数，没给的按默认值表走
-function resolvePost(config: Config): PostTuning {
+// 一类动作允许从配置里覆盖的那几项
+type ActionOverrides = Partial<Pick<ActionTuning, 'coolDownMs' | 'repeatWindowMs' | 'dailyMax' | 'fingerprintMax'>>
+
+// 一类动作的参数按默认值表摊开，配置给了就覆盖，没给就用表里的
+function tuneAction(base: ActionTuning, over: ActionOverrides): ActionTuning {
   return {
-    coolDownMs: Math.max(0, config.postCoolDownMs ?? POST_DEFAULTS.coolDownMs),
-    repeatWindowMs: Math.max(0, config.postRepeatWindowMs ?? POST_DEFAULTS.repeatWindowMs),
-    dailyMax: Math.max(0, config.postDailyMax ?? POST_DEFAULTS.dailyMax),
-    fingerprintMax: Math.max(1, config.postFingerprintMax ?? POST_DEFAULTS.fingerprintMax),
-    routineTopics: config.routineTopics ?? POST_DEFAULTS.routineTopics,
+    ...base,
+    coolDownMs: Math.max(0, over.coolDownMs ?? base.coolDownMs),
+    repeatWindowMs: Math.max(0, over.repeatWindowMs ?? base.repeatWindowMs),
+    dailyMax: Math.max(0, over.dailyMax ?? base.dailyMax),
+    fingerprintMax: Math.max(1, over.fingerprintMax ?? base.fingerprintMax),
   }
 }
+
+// 三类动作各摊一套参数，三类之间的数互不影响
+function resolveActions(config: Config): ActionTunings {
+  return {
+    post: tuneAction(ACTION_DEFAULTS.post, {
+      ...config.postCoolDownMs === undefined ? {} : { coolDownMs: config.postCoolDownMs },
+      ...config.postRepeatWindowMs === undefined ? {} : { repeatWindowMs: config.postRepeatWindowMs },
+      ...config.postDailyMax === undefined ? {} : { dailyMax: config.postDailyMax },
+      ...config.postFingerprintMax === undefined ? {} : { fingerprintMax: config.postFingerprintMax },
+    }),
+    comment: tuneAction(ACTION_DEFAULTS.comment, {
+      ...config.commentCoolDownMs === undefined ? {} : { coolDownMs: config.commentCoolDownMs },
+      ...config.commentRepeatWindowMs === undefined ? {} : { repeatWindowMs: config.commentRepeatWindowMs },
+      ...config.commentDailyMax === undefined ? {} : { dailyMax: config.commentDailyMax },
+      ...config.commentFingerprintMax === undefined ? {} : { fingerprintMax: config.commentFingerprintMax },
+    }),
+    private: tuneAction(ACTION_DEFAULTS.private, {
+      ...config.privateCoolDownMs === undefined ? {} : { coolDownMs: config.privateCoolDownMs },
+      ...config.privateRepeatWindowMs === undefined ? {} : { repeatWindowMs: config.privateRepeatWindowMs },
+      ...config.privateDailyMax === undefined ? {} : { dailyMax: config.privateDailyMax },
+      ...config.privateFingerprintMax === undefined ? {} : { fingerprintMax: config.privateFingerprintMax },
+    }),
+  }
+}
+
 
 /**
  * 装配通道与发送工具
@@ -174,21 +234,27 @@ export function apply(ctx: Context, config: Config): void {
   const tuning = resolveOutbound(config)
   const outbound = createOutboundCheck(tuning)
 
-  // 动态自己的状态与闸门，账不与发言额度共用
+  // 三类动作共用一份状态与一个入口，账不与发言额度共用
   let pauseCheck: () => boolean = () => false
   // 条数上限由组合包每轮给一次，没接上就按分档表的下限发一条
   let replyCap: (() => number) | undefined
+  // 自我层现在的阶段由组合包接进来，没接上就按那一层默认值表里最保守的一档判
+  let stageCheck: (() => string) | undefined
   const capNow = (): number => {
     const cap = replyCap?.()
     return cap === undefined ? REPLY_DEFAULTS.minCap : Math.max(REPLY_DEFAULTS.minCap, Math.floor(cap))
   }
-  const postFile = config.postsFile ?? path.join(resolveHuoliHome(), 'data', 'qq-posts.json')
-  const posts = createPostGate({
-    tuning: resolvePost(config),
-    store: createPostStore({ file: postFile }),
+  const actionsFile = config.actionsFile ?? path.join(resolveHuoliHome(), 'data', 'qq-actions.json')
+  const actions = createActionGate({
+    tunings: resolveActions(config),
+    confirmTtlMs: Math.max(0, config.confirmTtlMs ?? CONFIRM_DEFAULTS.ttlMs),
+    topics: config.routineTopics ?? POLICY_DEFAULTS.routineTopics,
+    allowPeers: config.privateAllowPeers ?? POLICY_DEFAULTS.allowPeers,
+    store: createActionStore({ file: actionsFile }),
     outbound,
     send: (text, chatKey) => channel.send(text, chatKey),
     paused: () => pauseCheck(),
+    stage: () => stageCheck?.(),
   })
 
   const seam: QqChannelSeam = {
@@ -205,21 +271,33 @@ export function apply(ctx: Context, config: Config): void {
     onOutbound(handler) {
       return listen(outboundEvents, handler)
     },
-    async publishPost(text, facts) {
+    async publish(kind, text, facts) {
       const openedAt = Date.now()
       for (const handler of outboundEvents) handler({ kind: 'attempt', at: openedAt, chatKey: facts.chatKey, count: 0 })
-      const result = await posts.publish(text, facts)
+      const result = await actions.publish(kind, text, facts)
       for (const handler of outboundEvents) {
         if (result.ok) handler({ kind: 'sent', at: result.at ?? openedAt, chatKey: facts.chatKey, count: 1 })
         else handler({ kind: 'blocked', at: Date.now(), chatKey: facts.chatKey, count: 0, ...result.code === undefined ? {} : { code: result.code }, ...result.retryAt === undefined ? {} : { retryAt: result.retryAt } })
       }
       return result
     },
+    requestConfirm(kind, text, at) {
+      return actions.requestConfirm(kind, text, at)
+    },
+    confirm(confirmId, at) {
+      return actions.confirm(confirmId, at)
+    },
+    reject(confirmId) {
+      return actions.reject(confirmId)
+    },
     usePause(check) {
       pauseCheck = check ?? (() => false)
     },
     useReplyCap(provide) {
       replyCap = provide
+    },
+    useStage(provide) {
+      stageCheck = provide
     },
   }
   seams.set(ctx, seam)
@@ -255,7 +333,7 @@ export function apply(ctx: Context, config: Config): void {
     report: (event) => {
       for (const handler of outboundEvents) handler(event)
     },
-    publish: (text, facts) => seam.publishPost(text, facts),
+    publish: (text, facts) => seam.publish('post', text, facts),
   })
 
   channel.start()

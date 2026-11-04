@@ -2884,7 +2884,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:44`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:56`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2925,8 +2925,28 @@ export interface Config {
   postFingerprintMax?: number
   /** 预授权的话题类别，命中才算例行 */
   routineTopics?: readonly string[]
-  /** 动态状态文件放哪，不填就落在数据根目录下的 data */
-  postsFile?: string
+  /** 评论两条之间至少隔多久 */
+  commentCoolDownMs?: number
+  /** 同一段评论隔多久才许再发 */
+  commentRepeatWindowMs?: number
+  /** 一天最多发几条评论 */
+  commentDailyMax?: number
+  /** 评论指纹表最多留几条 */
+  commentFingerprintMax?: number
+  /** 私信两条之间至少隔多久 */
+  privateCoolDownMs?: number
+  /** 同一段私信隔多久才许再发 */
+  privateRepeatWindowMs?: number
+  /** 一天最多发几条私信 */
+  privateDailyMax?: number
+  /** 私信指纹表最多留几条 */
+  privateFingerprintMax?: number
+  /** 允许私信的对象，空表示谁都不行 */
+  privateAllowPeers?: readonly string[]
+  /** 待确认项多久没人点头就失效 */
+  confirmTtlMs?: number
+  /** 三类动作的状态文件放哪，不填就落在数据根目录下的 data */
+  actionsFile?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-channel -->
@@ -2976,7 +2996,7 @@ export interface Config {
 
 - `inject`: `tools`
 - `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
-- `source`: [`packages/qq/qq-memory/src/index.ts:108`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:144`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2987,6 +3007,8 @@ export interface Config {
   ledgerFile?: string
   /** 健康日志存哪，不填就用主目录下的 data */
   healthLogFile?: string
+  /** 待写队列存哪，不填就用主目录下的 data */
+  queueFile?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
   /** 想改哪些默认参数 */
@@ -3025,6 +3047,22 @@ export interface Tuning extends DecayParams, RecoverParams {
   freshnessDays: number
   /** 镜像写进来时重要度不低于这条线 */
   selfImportanceFloor: number
+  /** 一条待写的正文短过这几个字当噪声，不入队 */
+  minTextChars: number
+  /** 一条正文长过这几个字要求拆分，不入队 */
+  maxTextChars: number
+  /** 待写队列最多压几条，满了先丢最旧的 */
+  queueMax: number
+  /** 每几轮把队列排空一次 */
+  flushEveryTurns: number
+  /** 每几轮反思一次 */
+  reflectEveryTurns: number
+  /** 一次反思最多拿最近几条合成 */
+  reflectWindow: number
+  /** 反思至少要有几条才值得合成 */
+  reflectMinItems: number
+  /** 两条正文的相似度到这条线以上算近似重复 */
+  nearDuplicateRatio: number
   /** 每天那一行还写不写进健康日志，关掉就一次都不写 */
   healthLog: boolean
   /** 已入队还没写入的条数超过它就在健康一行末尾告警 */
@@ -3101,7 +3139,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:113`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:118`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3158,6 +3196,12 @@ export interface SelfSettings {
   driveNeeds: readonly DriveNeed[]
   /** 身份级动作清单，逐字匹配 */
   identityActions: readonly string[]
+  /** 现在处在哪个阶段，形如 P2 */
+  stage: string
+  /** 私信最早从哪个阶段开始 */
+  privateMinStage: string
+  /** 阶段的先后顺序，比高低只看这张表的次序 */
+  stages: readonly string[]
   /** 提示词里的段落名 */
   sectionName: string
   /** 提示词里的占位名 */

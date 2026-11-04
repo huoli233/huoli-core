@@ -123,7 +123,7 @@ async function mountWithChannel(dir: string): Promise<Context> {
     selfId: '999',
     quietStart: '00:00',
     quietEnd: '00:00',
-    postsFile: path.join(dir, 'posts.json'),
+    actionsFile: path.join(dir, 'actions.json'),
   })
   FakeSocket.opened.at(-1)?.open()
   applySelf(ctx, { dir: path.join(dir, 'self'), enabled: false })
@@ -256,7 +256,7 @@ describe('动态的发布入口', () => {
     fs.writeFileSync(path.join(dir, 'self', 'PAUSE'), '')
     const ctx = await mountWithChannel(dir)
 
-    const result = await qqChannelOf(ctx)?.publishPost('今天吃了面', { chatKey: 'group:1', level: 'routine', topic: '吃喝' })
+    const result = await qqChannelOf(ctx)?.publish('post', '今天吃了面', { chatKey: 'group:1', level: 'routine', topic: '吃喝' })
 
     expect(result?.code).toBe('post.paused')
   })

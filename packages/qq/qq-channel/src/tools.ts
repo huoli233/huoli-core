@@ -5,7 +5,7 @@ import { defineTool } from '@huoli/huoli-tools'
 import { POST_LEVELS } from '@huoli/huoli-qq-self'
 import type { ChannelStatus, OutboundEvent } from './events.ts'
 import type { OutboundVerdict } from './outbound.ts'
-import type { PostFacts, PostResult } from './post.ts'
+import type { ActionFacts, ActionResult } from './actions.ts'
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
@@ -25,7 +25,7 @@ export interface ChannelToolDeps {
   /** 把这一路发生的事报给外面，只报事实 */
   report: (event: OutboundEvent) => void
   /** 发一条动态，级别、体检、冷却与额度全由发布入口那边判 */
-  publish: (text: string, facts: PostFacts) => Promise<PostResult>
+  publish: (text: string, facts: ActionFacts) => Promise<ActionResult>
 }
 
 // 拒绝时抛错

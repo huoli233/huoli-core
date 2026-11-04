@@ -85,7 +85,7 @@ function mount(patch: Partial<Config> = {}): Mounted {
     url: 'ws://127.0.0.1:6700',
     selfId: '999',
     ...OPEN_HOURS,
-    postsFile: path.join(tempDir(), 'posts.json'),
+    actionsFile: path.join(tempDir(), 'actions.json'),
     ...patch,
   })
   FakeSocket.opened.at(-1)?.open()

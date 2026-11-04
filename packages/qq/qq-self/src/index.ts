@@ -33,7 +33,7 @@ import type {
 
 export { CLAUSES, renderConstitution } from './constitution.ts'
 export { DEFAULTS, DIR_NAME, resolveSettings } from './defaults.ts'
-export { judgePostLevel, POST_LEVELS } from './grade.ts'
+export { ACTION_KINDS, judgeComment, judgePostLevel, judgePrivate, POST_LEVELS, stageAllows } from './grade.ts'
 export { requireKeys } from './keys.ts'
 export { createLedger } from './ledger.ts'
 export type { LedgerOptions, SelfLedger } from './ledger.ts'
@@ -44,11 +44,13 @@ export { DRIVE_NEEDS, isDriveNeed } from './rows.ts'
 export { createSelfStore, newId } from './store.ts'
 export type { SelfStore, SelfStoreOptions } from './store.ts'
 export type {
+  ActionKind,
   AgencyDetail,
   AgencyEntry,
   AgencyOutcome,
   ClaimInput,
   ClaimRow,
+  CommentFacts,
   CommitmentInput,
   CommitmentRow,
   ConstitutionClause,
@@ -65,6 +67,7 @@ export type {
   PanelInput,
   PanelLabels,
   PostLevelFacts,
+  PrivateFacts,
   ProjectInput,
   ProjectOutcome,
   ProjectRow,
@@ -99,6 +102,8 @@ export interface QqSelfSeam {
   requireKeys(action: string, userOk: boolean, selfOk: boolean, at?: number): KeysOutcome
   /** 停手开关在不在 */
   isPaused(): boolean
+  /** 现在处在哪个阶段，公共动作按它判能不能发 */
+  stage(): string
   /** 记一个项目 */
   recordProject(input: ProjectInput, at: number): WriteOutcome
   /** 记一条想问的事 */
@@ -271,6 +276,9 @@ export function apply(ctx: Context, config: Config = {}): void {
     },
     isPaused() {
       return store.paused()
+    },
+    stage() {
+      return settings.stage
     },
     recordProject(input, at) {
       const stop = off()

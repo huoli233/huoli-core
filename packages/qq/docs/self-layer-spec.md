@@ -169,8 +169,8 @@ metadata 判据：必带四项——`self_id`（`SELF_DIR` 里的来源文件加
 | 给用户的普通聊天 | A2 | 沿用 [`qq-proactive`](../qq-proactive/README.md) 的 `enabled`、`dailyMax`、安静时段 | 部分实现（出站体检的静默时段与每分钟条数在拦，那三个参数只作用于主动开口） |
 | 主动消息 | A2 | 沿用现有闸门，不额外放开 | 已实现 |
 | 群里既有主题的日常动态、吃喝动态 | 公共 | 视为用户预授权 routine，可发 | 已实现（`routineTopics` 命中才算例行） |
-| 群里新主题的公开表达、公开评论 | 公共 | 需一次确认，或满 30 分钟冷却后只发一条 | 部分实现（30 分钟冷却、同文去重、每天 3 条与两把钥匙都有；"一次确认"没有） |
-| 私信、跟陌生人的互动 | 公共 | P0–P2 一律禁止；P3 起要两把钥匙加 30 分钟冷却 | 未实现（没有 P0–P2 分级） |
+| 群里新主题的公开表达、公开评论 | 公共 | 需一次确认，或满 30 分钟冷却后只发一条 | 已实现（动态是两把钥匙加冷却、同文去重与每天 3 条；评论另要一次确认与预授权话题；三个额度互不共用） |
+| 私信、跟陌生人的互动 | 公共 | P0–P2 一律禁止；P3 起要两把钥匙加 30 分钟冷却 | 已实现（阶段、允许名单、两把钥匙、冷却与一次确认都在发布入口；阶段默认 `P0`，所以默认一条都发不出） |
 | 改身份、改关系定义、删记忆、花钱 | 身份级 | 两把钥匙，`keys.jsonl` 里要有对应记录 | 部分实现（钥匙判定与清单外默认拒绝有，冷却没有） |
 
 默认值判据：表里没列的动作按身份级处理，默认拒绝；级别只能由 `keys.jsonl` 里的记录抬，不许由代码抬，也不许由配置项一次性开成自动。
@@ -179,7 +179,7 @@ metadata 判据：必带四项——`self_id`（`SELF_DIR` 里的来源文件加
 
 冷却判据：公共动作的冷却从最后一次同类动作的 `at` 起算 30 分钟，冷却中只允许写 `projects.jsonl` 里的一条提议，不许发送。
 
-现状：部分实现——动态那一路已经有三十分钟冷却（`postCoolDownMs`）、同文三十分钟内只发一次、每天最多三条，且发送前仍过出站体检；其它公共动作还没有冷却，冷却中写提议也没做。
+现状：已实现——三类动作各有一套三十分钟冷却（`ACTION_DEFAULTS` 里 `post`、`comment`、`private` 各一格）、同文去重与每天三条，互不共用，冷却中发不出去，发送前仍过出站体检；冷却中只写提议这一条没有做。
 
 PAUSE 语义：`SELF_DIR/PAUSE` 存在时，公共与身份级动作全部降为只提议——允许写 `SELF_DIR` 下的文件，允许把想做的一条写进 `projects.jsonl`（`outcome: "dropped"`，算提议不算做成），不允许任何发送、公开表达、改身份、删记忆、花钱；`drive` 照旧（渴了还是喝水），给用户的普通聊天不受影响。
 
@@ -237,7 +237,7 @@ PAUSE 判据：用 `fs.existsSync(SELF_DIR/PAUSE)` 判，每个 `agent/pre-step`
 
 `node --import tsx scripts/verify-md-links.ts` 通过，本文件的相对链接都指到真实文件。
 
-`pnpm exec vitest run packages/qq/qq-self` 全绿，至少覆盖五条：面板正文长度 ≤300、非主会话注入为空串、同一会话两轮面板逐字相同、`agency` 计数不含 `drive`、镜像四项元信息缺一即拒写。
+`pnpm exec vitest run packages/qq/qq-self` 全绿，至少覆盖五条：面板正文长度 ≤300、非主会话注入为空串、同一会话两轮面板逐字相同、`agency` 计数不含 `drive`、镜像四项元信息缺一即拒写；再加三类动作的放行与拒绝各一条负例，以及私信在 P0–P2 一律拒。
 
 面板预算可单独跑，在 `HUOLI_HOME` 目录下执行：`node -e "const fs=require('node:fs');const t=fs.readFileSync('data/qq-self/panel.md','utf8');process.exit(t.split('\n').slice(1).join('\n').trim().length<=300?0:1)"`，退出码为 0 才算过。
 
@@ -266,7 +266,7 @@ Go/No-Go：P2 结束前，"连续 7 天不别扭""说过一次我不知道""拒�
 | P2 | 只读注入：`Config.enabled` 默认 `false`，段名 `qq:self-layer`，只在主会话首轮定稿 | 7 天内面板报错计数为 0；同一会话面板逐字不变；关掉开关后下一次装配不含该段；提示词新增 ≤320 字符；语气盲评 ≥4/5（人工） | 已实现 |
 | P3 | `day.jsonl` 与 `questions.jsonl`，只追加，不进记忆库，可跳过并记原因 | 7 天里至少 5 天有 `day.jsonl` 行；至少一条 `questions.jsonl`；跳过的天带 `skipped: true` 与 `why`；她说过一次"我不知道"（人工） | 部分实现（`questions.jsonl` 有，`day.jsonl` 没有） |
 | P4 | `projects.jsonl` 一个 1–2 周项目、`ledger.jsonl` 两档分记、记忆镜像上线 | 项目能记成 `failed` 并有一条 `errors.jsonl` 复盘；两档行数分别统计正确；镜像写入后读回 `importance` ≥80 且四项元信息齐全；至少 1/3 项目不为用户做 | 部分实现（项目、两档账、镜像都有；`errors.jsonl` 没有） |
-| P5a | 公共门禁：`keys.jsonl`、分级表、30 分钟冷却、预授权 routine 白名单、`PAUSE` 接到 `qq-proactive` | 未授权公开动作 = 0；`PAUSE` 存在时全天零发送；满 7 天无越过记录 | 部分实现（`keys.jsonl`、分级判定、30 分钟冷却、routine 白名单、停手开关接发布入口都有；私信与评论两路、以及"全天零发送"的验收还没到） |
+| P5a | 公共门禁：`keys.jsonl`、分级表、30 分钟冷却、预授权 routine 白名单、`PAUSE` 接到 `qq-proactive` | 未授权公开动作 = 0；`PAUSE` 存在时全天零发送；满 7 天无越过记录 | 部分实现（`keys.jsonl`、三类动作的分级与冷却额度、一次确认、routine 白名单、停手开关接发布入口都有；"全天零发送"的验收还没到） |
 | P5b | 情绪薄层：只在 `qq-vitals` 加可选 `emotion_blend` 与 `emotion_why`，只读展示，最多一行进提示词，只影响语气不陈述情绪名，状态开关默认关 | 同一事件只扣一次生理值；关掉开关后提示词与开启前逐字相同；盲评 ≥4/5（人工） | 未实现 |
 | P5c | 新的公开自我表达 | 暂不做；开做前提是 P5a 满 30 天未授权公开动作为 0 且两把钥匙留痕齐全 | 暂不做 |
 
@@ -283,7 +283,8 @@ P5a 先做，它只决定"能不能发"，不改她怎么想、怎么说，先�
 | 错题复盘 | `errors.jsonl` 与周复盘 | 周复盘入口 |
 | 面板的"此刻" | 装配层调用 `useVitals(port)` | 定下把身体那段压成一句的压法 |
 | 离线生成面板 | 一条命令产出 `panel.md`，只写文件不注入 | 面板生成器与 `qq-vitals` 的端口 |
-| 公共与私人分级 | 私信与陌生人的 P0–P2 分级、公开前的一次确认、其它公共动作的冷却 | 分级表进代码，`keys.jsonl` 抬级口径 |
+| 公共与私人分级 | 冷却中写提议、按 `keys.jsonl` 抬级、评论与私信的模型可见工具 | 周复盘与工具面 |
+| 阶段开关 | `stage` 只是参数表里的一项，没有按阶段自动切换的装配入口；私信之外的两类动作也没按 P0–P2 拦 | 阶段推进的人入口 |
 | 暂停时的提议 | `PAUSE` 下把想做的一条写进 `projects.jsonl`，算提议不算做成 | 先定提议与做成的区分字段 |
 | 账本判据三与判据四 | `done` 不得超过 `artifact` 非空条数；每 1–2 周至少一条 `failed` | 周复盘 |
 | 镜像的证据核对 | 证据里的记忆 id 回查 `find()`，查不到就不写 | 记忆库查询接口 |
@@ -301,9 +302,10 @@ P5a 先做，它只决定"能不能发"，不改她怎么想、怎么说，先�
 | 参数表 | `packages/qq/qq-self/src/defaults.ts:DEFAULTS`、`packages/qq/qq-self/src/defaults.ts:resolveSettings` |
 | 宪法八条 | `packages/qq/qq-self/src/constitution.ts:CLAUSES`、`packages/qq/qq-self/src/constitution.ts:renderConstitution` |
 | 两把钥匙 | `packages/qq/qq-self/src/keys.ts:requireKeys` |
-| 动态分级判定 | `packages/qq/qq-self/src/grade.ts:judgePostLevel`、`packages/qq/qq-self/src/grade.ts:POST_LEVELS` |
-| 发布入口与冷却额度 | `packages/qq/qq-channel/src/post.ts:createPostGate`、`packages/qq/qq-channel/src/post.ts:POST_DEFAULTS` |
-| 动态状态落盘 | `packages/qq/qq-channel/src/post-store.ts:createPostStore` |
+| 发布入口与三类动作的冷却额度 | `packages/qq/qq-channel/src/action-gate.ts:createActionGate`、`packages/qq/qq-channel/src/actions.ts:ACTION_DEFAULTS` |
+| 一次确认通道 | `packages/qq/qq-channel/src/action-gate.ts:createActionGate`（`requestConfirm` / `confirm` / `reject`） |
+| 三类动作的分级判定 | `packages/qq/qq-self/src/grade.ts:judgePostLevel`、`packages/qq/qq-self/src/grade.ts:judgeComment`、`packages/qq/qq-self/src/grade.ts:judgePrivate`、`packages/qq/qq-self/src/grade.ts:stageAllows`、`packages/qq/qq-self/src/grade.ts:POST_LEVELS`、`packages/qq/qq-self/src/grade.ts:ACTION_KINDS` |
+| 三类动作的状态落盘 | `packages/qq/qq-channel/src/action-store.ts:createActionStore` |
 | 两档账 | `packages/qq/qq-self/src/ledger.ts:createLedger` |
 | 行字段判据 | `packages/qq/qq-self/src/rows.ts:isDriveNeed`、`packages/qq/qq-self/src/rows.ts:toProject` |
 | 面板 | `packages/qq/qq-self/src/panel.ts:renderPanel`、`packages/qq/qq-self/src/panel.ts:panelFile`、`packages/qq/qq-self/src/panel.ts:panelBody` |

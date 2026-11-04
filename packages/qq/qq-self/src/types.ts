@@ -174,10 +174,51 @@ export interface KeysDecision {
   reason?: 'unknown_action' | 'user_key' | 'self_key'
 }
 
+/** 三类公共动作，键与发布那一侧的状态分格逐字相同 */
+export type ActionKind = 'post' | 'comment' | 'private'
+
+/** 一条评论报上来的分级事实 */
+export interface CommentFacts {
+  /** 评论挂在哪个话题上，不报就按缺话题拒 */
+  topic?: string
+  /** 预授权话题清单，逐字匹配 */
+  topics: readonly string[]
+  /** 用户那把钥匙 */
+  userOk: boolean
+  /** 她自己那把钥匙 */
+  selfOk: boolean
+  /** 身份级动作清单，不给就用默认值表 */
+  actions?: readonly string[]
+}
+
+/** 一条私信报上来的分级事实 */
+export interface PrivateFacts {
+  /** 写给谁，不报就按缺对象拒 */
+  peer?: string
+  /** 允许私信的对象名单，逐字匹配 */
+  allowPeers: readonly string[]
+  /** 用户那把钥匙 */
+  userOk: boolean
+  /** 她自己那把钥匙 */
+  selfOk: boolean
+  /** 现在处在哪个阶段，不给就用默认值表 */
+  stage?: string
+  /** 私信最早从哪个阶段开始，不给就用默认值表 */
+  minStage?: string
+  /** 阶段的先后顺序，不给就用默认值表 */
+  stages?: readonly string[]
+  /** 身份级动作清单，不给就用默认值表 */
+  actions?: readonly string[]
+}
+
 /** 一条动态报上来的分级事实 */
 export interface PostLevelFacts {
   /** 她自己说的级别：none、routine、public */
   level: string
+  /** 话题类别，例行动态必须落在预授权清单里 */
+  topic?: string
+  /** 预授权话题清单，不给就当清单是空的 */
+  topics?: readonly string[]
   /** 用户那把钥匙 */
   userOk: boolean
   /** 她自己那把钥匙 */
@@ -307,6 +348,12 @@ export interface SelfSettings {
   driveNeeds: readonly DriveNeed[]
   /** 身份级动作清单，逐字匹配 */
   identityActions: readonly string[]
+  /** 现在处在哪个阶段，形如 P2 */
+  stage: string
+  /** 私信最早从哪个阶段开始 */
+  privateMinStage: string
+  /** 阶段的先后顺序，比高低只看这张表的次序 */
+  stages: readonly string[]
   /** 提示词里的段落名 */
   sectionName: string
   /** 提示词里的占位名 */
