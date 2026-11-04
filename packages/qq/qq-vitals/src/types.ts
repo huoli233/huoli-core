@@ -337,6 +337,38 @@ export interface SuppressTuning {
   suppressSalienceContent: number
 }
 
+/** 图上的节点：零到一标度的数值字段，体温与可正可负的掌控不在其中 */
+export type NetworkField = Exclude<keyof Baseline, 'core_temp'>
+  | 'energy' | 'valence' | 'irritability' | 'clinginess' | 'loneliness'
+  | 'happiness' | 'sadness' | 'proactive_bias' | 'post_want'
+
+/** 边的作用方向：push 抬目标，pull 压目标 */
+export type NetworkMode = 'push' | 'pull'
+
+/** 图上的一条边 */
+export interface NetworkEdge {
+  /** 源字段，影响从这里出 */
+  from: NetworkField
+  /** 目标字段，影响叠加到它下一拍的目标值上 */
+  to: NetworkField
+  /** 权重，非负，乘在源的当前值上；抬还是压由 mode 定 */
+  weight: number
+  /** 抬还是压 */
+  mode: NetworkMode
+  /** 单拍最大影响，权重配大也只走这么多 */
+  cap: number
+}
+
+/** 神经网的开关、传播轮数与边表 */
+export interface NetworkTuning {
+  /** 是否走图，默认 true，关掉就完全回退到写死耦合的旧路径 */
+  networkEnabled: boolean
+  /** 每次传播几轮，默认 1 */
+  networkSteps: number
+  /** 边表，默认只挂已经迁完的那几条；覆盖它等于整张换掉 */
+  networkEdges: readonly NetworkEdge[]
+}
+
 /** 运行环境那几条事实到两个状态字段的参数，全部是系数与阈值 */
 export interface ExistenceTuning {
   /** 显著度的底数，0~1 标度，默认 0.10，没有事实推动时也留一点在 */

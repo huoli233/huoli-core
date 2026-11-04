@@ -24,6 +24,8 @@ export { applyShutdownNotice, salienceTarget, settleExistence, shutdownTarget } 
 export type { ExistenceFacts } from './existence.ts'
 export { farewellOf, farewellReason, mortalityTarget } from './mortality.ts'
 export type { FarewellFact } from './mortality.ts'
+export { deltaOf, describeNetwork, propagate } from './network.ts'
+export type { NetworkPass } from './network.ts'
 export { peakOf } from './peak.ts'
 export type { PeakKind } from './peak.ts'
 export { postLevel } from './post.ts'
@@ -34,6 +36,7 @@ export { isDrink, isMeal, mealName } from './words.ts'
 export { createVitalsStore } from './store.ts'
 export type { VitalsStoreOptions, VitalsStore } from './store.ts'
 export type { Baseline, CyclePhase, ExistenceTuning, SleepState, TasteRecord, VitalsState } from './types.ts'
+export type { NetworkEdge, NetworkField, NetworkMode, NetworkTuning } from './types.ts'
 
 /** 一顿饭的事实，交给组合包以后接记忆，本包不写记忆 */
 export interface MealFact {

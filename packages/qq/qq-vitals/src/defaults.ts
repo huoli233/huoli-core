@@ -406,6 +406,17 @@ export const DEFAULTS: Tuning = {
   shutdownToDread: 0.80,
   shutdownToFear: 0.50,
   promptShutdownDreadFrom: 0.50,
+  // 神经网：默认只挂已经迁完的三条耦合，权重与原来的写死系数一致
+  networkEnabled: true,
+  networkSteps: 1,
+  networkEdges: [
+    // 皮质醇推易怒，原来写在易怒的派生式里，0.2 起点已折进常数
+    { from: 'cortisol', to: 'irritability', weight: 0.9, mode: 'push', cap: 0.9 },
+    // 皮质醇压精力，原来写在精力的派生式里
+    { from: 'cortisol', to: 'energy', weight: 0.14, mode: 'pull', cap: 0.14 },
+    // 瘦素抬副交感，原来写在乙酰胆碱的目标里，系数与 parasympatheticLeptinGain 一致
+    { from: 'leptin', to: 'acetylcholine', weight: 0.22, mode: 'push', cap: 0.22 },
+  ],
 }
 
 /** 落盘时按数值读回来的字段 */

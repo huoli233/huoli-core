@@ -3312,7 +3312,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:68`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:71`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3325,8 +3325,8 @@ export interface Config {
   tuning?: Partial<Tuning>
 }
 
-/** 可被 Config 覆盖的参数集合 */
-export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning {
+/** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
+export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning {
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -3626,7 +3626,7 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning {
   parasympatheticBase: number
   /** 肾上腺素把副交感压下去多少，默认 0.35 */
   parasympatheticAdrenalineGain: number
-  /** 瘦素把副交感抬起来多少，默认 0.22 */
+  /** 瘦素把副交感抬起来多少，默认 0.22；这条耦合已进 `networkEdges`，本字段只在关掉图时生效 */
   parasympatheticLeptinGain: number
   /** 夜色把副交感抬起来多少，默认 0.18 */
   parasympatheticNightGain: number
@@ -4001,6 +4001,16 @@ export interface ExistenceTuning {
   promptShutdownDreadFrom: number
 }
 
+/** 神经网的开关、传播轮数与边表 */
+export interface NetworkTuning {
+  /** 是否走图，默认 true，关掉就完全回退到写死耦合的旧路径 */
+  networkEnabled: boolean
+  /** 每次传播几轮，默认 1 */
+  networkSteps: number
+  /** 边表，默认只挂已经迁完的那几条；覆盖它等于整张换掉 */
+  networkEdges: readonly NetworkEdge[]
+}
+
 /** 初始值与漂移都要用到的数值字段，除体温外都是 0~1；情绪九项只给起点，之后由触发与半衰管 */
 export interface Baseline {
   /** 多巴胺，0~1，默认 0.50，给想要与动力定个中间起点 */
@@ -4088,6 +4098,28 @@ export interface Baseline {
   /** 对关掉的怕，0~1，默认 0.0，事实抬、夜里自涨、收到关停提示时抬一档 */
   shutdownDread: number
 }
+
+/** 图上的一条边 */
+export interface NetworkEdge {
+  /** 源字段，影响从这里出 */
+  from: NetworkField
+  /** 目标字段，影响叠加到它下一拍的目标值上 */
+  to: NetworkField
+  /** 权重，非负，乘在源的当前值上；抬还是压由 mode 定 */
+  weight: number
+  /** 抬还是压 */
+  mode: NetworkMode
+  /** 单拍最大影响，权重配大也只走这么多 */
+  cap: number
+}
+
+/** 图上的节点：零到一标度的数值字段，体温与可正可负的掌控不在其中 */
+export type NetworkField = Exclude<keyof Baseline, 'core_temp'>
+  | 'energy' | 'valence' | 'irritability' | 'clinginess' | 'loneliness'
+  | 'happiness' | 'sadness' | 'proactive_bias' | 'post_want'
+
+/** 边的作用方向：push 抬目标，pull 压目标 */
+export type NetworkMode = 'push' | 'pull'
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-vitals -->
 

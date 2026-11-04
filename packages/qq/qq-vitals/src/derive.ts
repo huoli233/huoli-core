@@ -2,6 +2,7 @@
 
 import { biasUnit, type Tuning } from './defaults.ts'
 import { above, clamp, clampRange } from './math.ts'
+import { deltaOf, propagate, type NetworkPass } from './network.ts'
 import type { CyclePhase, VitalsState } from './types.ts'
 
 // 相位命中其一就给一，其余给零
@@ -9,11 +10,17 @@ function phaseHit(state: VitalsState, phases: readonly CyclePhase[]): number {
   return phases.includes(state.cycle_phase) ? 1 : 0
 }
 
+// 皮质醇压精力这一条走图，关掉图按冻结的旧系数算，改边不动它
+function cortisolToEnergy(s: VitalsState, net: NetworkPass | undefined): number {
+  return net === undefined ? -0.14 * s.cortisol : deltaOf(net, 'energy')
+}
+
 // 精力：递质抬，皮质醇、褪黑素、口渴、睡眠压力、生病、痛经往下压
-function energyOf(s: VitalsState, tuning: Tuning): number {
+function energyOf(s: VitalsState, tuning: Tuning, net: NetworkPass | undefined): number {
   return clamp(
     0.20 + 0.50 * s.noradrenaline + 0.25 * s.adrenaline + 0.10 * s.dopamine + 0.08 * s.acetylcholine
-    - 0.14 * s.cortisol - 0.45 * s.melatonin
+    + cortisolToEnergy(s, net) - 0.45 * s.melatonin
+    // 待迁：口渴带 0.40 阈值，图里只有线性边
     - 0.10 * above(s.thirst - 0.40) - 0.22 * above(s.adenosine - 0.45)
     - 0.20 * s.fever - 0.16 * s.cytokines - 0.15 * s.pain
     - tuning.energyCrampsPenalty * s.cramps
@@ -37,10 +44,15 @@ function valenceOf(s: VitalsState, tuning: Tuning): number {
   )
 }
 
-// 易怒：压力、低血糖、渴、睡不够、疼、体温高、经期前后都往里加
-function irritabilityOf(s: VitalsState, tuning: Tuning): number {
+// 皮质醇推易怒这一条走图，关掉图按冻结的旧系数算，改边不动它
+function cortisolToIrritability(s: VitalsState, net: NetworkPass | undefined): number {
+  return net === undefined ? 0.9 * s.cortisol : deltaOf(net, 'irritability')
+}
+
+// 易怒：压力、低血糖、渴、睡不够、疼、体温高、经期前后都往里加；皮质醇那条原来的 0.2 起点并进了常数
+function irritabilityOf(s: VitalsState, tuning: Tuning, net: NetworkPass | undefined): number {
   return clamp(
-    0.08 + 0.9 * (s.cortisol - 0.2) - 0.2 * (s.serotonin - 0.65)
+    -0.10 + cortisolToIrritability(s, net) - 0.2 * (s.serotonin - 0.65)
     + 0.30 * above((0.35 - s.glucose) / 0.35)
     + 0.15 * above(s.vasopressin - 0.50)
     + 0.18 * above(s.adrenaline - 0.35)
@@ -106,7 +118,7 @@ function proactiveBiasOf(s: VitalsState, tuning: Tuning): number {
   return biasUnit(clampRange(bias, tuning.biasMin, tuning.biasMax), tuning)
 }
 
-// 想发动态的劲：心里有火就缩，孤独就涨一点，最后夹到零到一
+// 想发动态的劲：心里有火就缩，孤独就涨一点，最后夹到零到一；待迁：这两条是倍率不是加法，图里表达不了
 function postWantOf(s: VitalsState, tuning: Tuning): number {
   const down = s.irritability > tuning.postDownAbove ? tuning.postDown : 1
   const up = s.loneliness > tuning.postWantsAbove ? tuning.postWants : 1
@@ -158,7 +170,7 @@ function labelScores(s: VitalsState, tuning: Tuning): Map<string, number> {
   return scores
 }
 
-// 反向压制：不压的话永远是“幸福、安心”，怕、担心、火气、缺水、生病各自压低对面
+// 反向压制：不压的话永远是“幸福、安心”，怕、担心、火气、缺水、生病各自压低对面；待迁：这些是乘数，图里只有加分
 function suppress(scores: Map<string, number>, s: VitalsState, tuning: Tuning): void {
   const scale = (name: string, factor: number): void => {
     const current = scores.get(name)
@@ -213,12 +225,13 @@ function suppress(scores: Map<string, number>, s: VitalsState, tuning: Tuning): 
  */
 export function derive(state: VitalsState, tuning: Tuning): VitalsState {
   const next: VitalsState = { ...state }
+  const net = tuning.networkEnabled ? propagate(state, tuning, tuning.networkSteps) : undefined
   // 怕关掉这件事给存在性恐惧与惊吓托个底：只往上托，托到多少由系数定，封顶仍是一
   next.dread = clamp(Math.max(next.dread, tuning.shutdownToDread * state.shutdownDread))
   next.fear = clamp(Math.max(next.fear, tuning.shutdownToFear * state.shutdownDread))
-  next.energy = energyOf(state, tuning)
+  next.energy = energyOf(state, tuning, net)
   next.valence = valenceOf(state, tuning)
-  next.irritability = irritabilityOf(state, tuning)
+  next.irritability = irritabilityOf(state, tuning, net)
   next.clinginess = clinginessOf(state)
   next.loneliness = lonelinessOf(state)
   next.dominance = dominanceOf(state)

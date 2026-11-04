@@ -8,6 +8,7 @@ import {
 import { applyShutdownNotice, settleExistence, type ExistenceFacts } from './existence.ts'
 import { above, clamp, clampRange, decay, follow } from './math.ts'
 import { mortalityTarget } from './mortality.ts'
+import { deltaOf, propagate } from './network.ts'
 import type { CyclePhase, VitalsState } from './types.ts'
 
 // 递质回基线：皮质醇不在这里，它只由 HPA 轴管
@@ -32,7 +33,7 @@ function hpaLoadOf(next: VitalsState, tuning: Tuning): number {
     + tuning.hpaLoadHunger * highHunger)
 }
 
-// 负反馈：皮质醇越高越压 crh，压回去的那部分按自己的跨度折算
+// 负反馈：皮质醇越高越压 crh，压回去的那部分按自己的跨度折算；待迁：这是乘法闭环，图里只有一处加总
 function hpaFeedbackOf(next: VitalsState, tuning: Tuning): number {
   return 1 - tuning.hpaFeedbackGain * clamp((next.cortisol - tuning.hpaFeedbackFrom) / tuning.hpaFeedbackSpan)
 }
@@ -54,13 +55,16 @@ function settleHpa(next: VitalsState, hours: number, tuning: Tuning): number {
   return load
 }
 
-// 交感与副交感
+// 交感与副交感；瘦素抬副交感这一条走图，关掉图按冻结的旧系数算，改边不动它
 function settleAutonomic(next: VitalsState, hours: number, night: number, load: number, tuning: Tuning): void {
   const adrenalineTarget = clamp(tuning.adrenalineBase + tuning.adrenalineLoadGain * load)
   next.adrenaline = clamp(follow(next.adrenaline, adrenalineTarget, tuning.adrenalineHalfHours, hours))
+  const leptinUptake = tuning.networkEnabled
+    ? deltaOf(propagate(next, tuning, tuning.networkSteps), 'acetylcholine')
+    : tuning.parasympatheticLeptinGain * next.leptin
   const paraTarget = clamp(tuning.parasympatheticBase
     + tuning.parasympatheticAdrenalineGain * (1 - next.adrenaline)
-    + tuning.parasympatheticLeptinGain * next.leptin
+    + leptinUptake
     + tuning.parasympatheticNightGain * night)
   next.acetylcholine = clamp(follow(next.acetylcholine, paraTarget, tuning.parasympatheticHalfHours, hours))
 }
@@ -99,7 +103,7 @@ function settleHunger(next: VitalsState, hours: number, hour: number, meal: numb
   next.hunger = clamp(next.hunger + hours * hungerRateOf(next, hour, meal, tuning))
 }
 
-// 活动量：警觉高、急性应激高都算在动
+// 活动量：警觉高、急性应激高都算在动；待迁：两条都带阈值，图里只有线性边
 function activityOf(next: VitalsState, tuning: Tuning): number {
   return tuning.waterActivityBase
     + tuning.waterActivityNoradrenalineGain * above(next.noradrenaline - tuning.waterActivityNoradrenalineFrom)
