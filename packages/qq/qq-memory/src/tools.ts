@@ -2,7 +2,7 @@
 
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
-import { initialImportance } from '@huoli/huoli-qq-policy'
+import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
 import type { MemoryStore } from './store.ts'
 import { newId, type MemoryItem, type MemoryLayer } from './types.ts'
 import { recall, renderRecall } from './recall.ts'
@@ -12,6 +12,7 @@ import { touch } from './sweep.ts'
 export interface MemoryToolDeps {
   store: MemoryStore
   scopeOf: (chatKey: string) => string
+  sceneOf: (layer: MemoryLayer, chatKey: string) => ImportanceInput['scene']
 }
 
 // 拒绝时抛错，交给内核当工具失败
@@ -48,6 +49,8 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
       text: { type: 'string', description: '要记住的那句话。' },
       layer: { type: 'string', description: '放哪一层：ephemeral 刚发生、episodic 这段经历、semantic 长期印象、private 私下的事。' },
       personId: { type: 'string', description: '跟谁有关的，可不填。' },
+      directed: { type: 'boolean', description: '这话是不是直接对她说的，是就填 true。' },
+      emotional: { type: 'number', description: '这话里的情绪有多重，0 到 24，听着平常就填 0。' },
     },
     output: {
       schema: { type: 'object', additionalProperties: true },
@@ -65,18 +68,17 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
 
       const layer = layerOf(args.layer)
       const personId = typeof args.personId === 'string' ? args.personId.trim() : ''
+      const directed = args.directed === true
+      const rawEmotional = typeof args.emotional === 'number' && Number.isFinite(args.emotional) ? args.emotional : 0
+      const emotional = Math.max(0, rawEmotional)
       const now = Date.now()
       const item: MemoryItem = {
         id: newId(now),
         text,
         layer,
         scope,
-        importance: initialImportance({
-          scene: layer === 'private' ? 'private' : chatKey.startsWith('private:') ? 'private' : 'group',
-          directed: false,
-          emotional: 0,
-        }),
-        emotional: 0,
+        importance: initialImportance({ scene: deps.sceneOf(layer, chatKey), directed, emotional }),
+        emotional,
         clarity: 'vivid',
         recallCount: 0,
         at: now,

@@ -1,28 +1,69 @@
-// 记忆装配入口：两个工具 + 往上挪 + 每天变淡
+// 记忆装配入口：两个工具 + 往上挪 + 每天变淡 + 每天的账与健康一行
 
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
+import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
 import { createMemoryStore, type MemoryStore } from './store.ts'
 import { promoteAll, sweepOnce } from './sweep.ts'
 import { recall, type RecallHit } from './recall.ts'
 import { registerMemoryTools } from './tools.ts'
-import { CLARITY_LABEL, LAYER_LABEL, type MemoryItem } from './types.ts'
+import { resolveTuning, type Tuning } from './defaults.ts'
+import { defaultLedgerFile, runLedger, type LedgerAction, type LedgerRunResult } from './ledger.ts'
+import { healthLine } from './health.ts'
+import { CLARITY_LABEL, LAYER_LABEL, newId, type MemoryItem, type MemoryLayer, type RememberOptions } from './types.ts'
 
-export type { MemoryItem, MemoryLayer, RememberInput } from './types.ts'
+export type { MemoryItem, MemoryLayer, RememberOptions } from './types.ts'
 export { CLARITY_LABEL, LAYER_LABEL, LAYER_ORDER } from './types.ts'
 export type { MemoryStore, MemoryStoreOptions } from './store.ts'
 export type { RecallHit, RecallInput } from './recall.ts'
 export { recall, renderRecall } from './recall.ts'
 export { promoteAll, sweepOnce, touch } from './sweep.ts'
+export { DEFAULTS, resolveTuning } from './defaults.ts'
+export type { Tuning } from './defaults.ts'
+export {
+  defaultLedgerFile,
+  describeLedger,
+  emptyBook,
+  fingerprint,
+  initBook,
+  runLedger,
+  syncBook,
+  verifyBook,
+} from './ledger.ts'
+export type {
+  LedgerAction,
+  LedgerBook,
+  LedgerChange,
+  LedgerEntry,
+  LedgerReport,
+  LedgerRunOptions,
+  LedgerRunResult,
+} from './ledger.ts'
+export { healthCounts, healthLine } from './health.ts'
+export type { HealthCounts, HealthInput } from './health.ts'
+
+/** 每天跑完一遍之后的交代 */
+export interface MaintainResult {
+  /** 这次降了一档的条数 */
+  stepped: number
+  /** 这次淡到底的条数 */
+  forgotten: number
+  /** 这次新入账的条数 */
+  added: number
+  /** 当天那行健康记录 */
+  line: string
+}
 
 /** 一个应用里的记忆仓 */
 export interface QqMemorySeam {
   store: MemoryStore
-  remember(text: string, chatKey: string, layer?: MemoryItem['layer']): MemoryItem
+  remember(text: string, chatKey: string, options?: RememberOptions): MemoryItem
   find(query: string, chatKey: string, limit?: number): RecallHit[]
   promote(): number
   sweep(): { stepped: number; forgotten: number }
+  maintain(now: number): MaintainResult
+  ledger(action: LedgerAction): LedgerRunResult
   outline(chatKey: string): string
 }
 
@@ -30,8 +71,12 @@ export interface QqMemorySeam {
 export interface Config {
   /** 记忆存哪，不填就用主目录下的 data */
   file?: string
+  /** 账本存哪，不填就用主目录下的 data */
+  ledgerFile?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
+  /** 想改哪些默认参数 */
+  tuning?: Partial<Tuning>
 }
 
 const seams = new WeakMap<Context, QqMemorySeam>()
@@ -51,33 +96,48 @@ export const name = 'qq-memory'
 /** 要用的内核接口 */
 export const inject = ['tools']
 
+// 私下聊的记在私下，群里说的记在群里
+function sceneOf(layer: MemoryLayer, chatKey: string): ImportanceInput['scene'] {
+  if (layer === 'private' || chatKey.startsWith('private:')) return 'private'
+  return 'group'
+}
+
 /**
  * 装配记忆仓与两个工具
  * @param ctx - 运行环境
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
+  const tuning = resolveTuning(config.tuning)
   const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-memory.json')
+  const ledgerFile = config.ledgerFile ?? defaultLedgerFile(config.home)
   const store = createMemoryStore({ file })
   const scopeOf = (chatKey: string): string => chatKey
+  const run = (action: LedgerAction): LedgerRunResult => runLedger(action, { file: ledgerFile, items: store.all() })
 
   const seam: QqMemorySeam = {
     store,
-    remember(text, chatKey, layer) {
-      const now = Date.now()
+    remember(text, chatKey, options = {}) {
+      const at = options.at ?? Date.now()
+      const layer = options.layer ?? 'episodic'
+      const emotional = options.emotional ?? 0
       const item: MemoryItem = {
-        id: `${now.toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        id: newId(at),
         text,
-        layer: layer ?? 'episodic',
+        layer,
         scope: scopeOf(chatKey),
-        importance: 40,
-        emotional: 0,
+        importance: options.importance ?? initialImportance({
+          scene: sceneOf(layer, chatKey),
+          directed: options.directed ?? false,
+          emotional,
+        }),
+        emotional,
         clarity: 'vivid',
         recallCount: 0,
-        at: now,
-        lastSeenAt: now,
+        at,
+        lastSeenAt: at,
         forgotten: false,
-        source: 'chat',
+        source: options.source ?? 'chat',
       }
       store.add(item)
       return item
@@ -90,6 +150,21 @@ export function apply(ctx: Context, config: Config = {}): void {
     },
     sweep() {
       return sweepOnce(store, Date.now())
+    },
+    maintain(now) {
+      const swept = sweepOnce(store, now)
+      const synced = run('sync')
+      const line = healthLine({
+        items: store.all(),
+        now,
+        injectCap: tuning.injectCap,
+        protectLine: tuning.protectLine,
+        ledger: synced.report,
+      })
+      return { stepped: swept.stepped, forgotten: swept.forgotten, added: synced.added.length, line }
+    },
+    ledger(action) {
+      return run(action)
     },
     outline(chatKey) {
       const items = store.all().filter(item => !item.forgotten && item.scope === scopeOf(chatKey))
@@ -105,7 +180,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
   seams.set(ctx, seam)
 
-  registerMemoryTools(ctx, { store, scopeOf })
+  registerMemoryTools(ctx, { store, scopeOf, sceneOf })
 
   // 卸载时落一次盘
   ctx.effect(() => () => {

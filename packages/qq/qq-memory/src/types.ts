@@ -22,15 +22,16 @@ export interface MemoryItem {
   personId?: string
 }
 
-/** 写一条记忆时给的东西 */
-export interface RememberInput {
-  text: string
-  scope: string
+/** 写一条记忆时能给的选项 */
+export interface RememberOptions {
   layer?: MemoryLayer
+  /** 调用方算好的重要度，给了就用它，不再自己算 */
   importance?: number
+  /** 这话里的情绪强度，0 到 24 */
   emotional?: number
+  /** 这话是不是直接冲着她说的 */
+  directed?: boolean
   source?: MemoryItem['source']
-  personId?: string
   at?: number
 }
 

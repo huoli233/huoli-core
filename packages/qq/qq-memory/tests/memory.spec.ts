@@ -1,65 +1,14 @@
-import fs from 'node:fs'
-import os from 'node:os'
-import path from 'node:path'
-import { Context } from '@huoli/cordis'
-import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
+import { initialImportance } from '@huoli/huoli-qq-policy'
 import { afterEach, describe, expect, it } from 'vitest'
-import { apply, qqMemoryOf, type QqMemorySeam } from '../src/index.ts'
-
-// 工具体只读会话编号，其余执行字段由内核在真实调用时注入
-function execOf(chatKey: string): ToolRunContext {
-  return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal: new AbortController().signal })
-}
-
-interface Mounted {
-  ctx: Context
-  seam: QqMemorySeam
-  tool: (name: string) => ToolDefinition
-}
-
-const tempDirs: string[] = []
-
-function tempFile(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qq-memory-'))
-  tempDirs.push(dir)
-  return path.join(dir, 'memory.json')
-}
-
-function mount(file: string): Mounted {
-  const ctx = new Context()
-  const registered = new Map<string, ToolDefinition>()
-  ctx.accessor('tools', {
-    get: () => ({
-      register: (definition: ToolDefinition) => {
-        registered.set(definition.name, definition)
-        return () => {}
-      },
-    }),
-  })
-  apply(ctx, { file })
-  const seam = qqMemoryOf(ctx)
-  if (seam === undefined) throw new Error('记忆没有装配')
-  const tool = (name: string): ToolDefinition => {
-    const found = registered.get(name)
-    if (found === undefined) throw new Error(`没有注册工具 ${name}`)
-    return found
-  }
-  return { ctx, seam, tool }
-}
-
-async function call<T>(tool: ToolDefinition, args: Record<string, unknown>, exec: ToolRunContext): Promise<T> {
-  return await tool.execute(args, exec) as T
-}
+import { call, cleanupTempDirs, execOf, mount, tempFile } from './harness.ts'
 
 const SENTENCE = '他说周末要开黑，我还想问是哪个游戏'
 
-afterEach(() => {
-  for (const dir of tempDirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true })
-})
+afterEach(cleanupTempDirs)
 
 describe('记得住', () => {
   it('记一条会拿到编号', async () => {
-    const { tool } = mount(tempFile())
+    const { tool } = mount({ file: tempFile() })
 
     const added = await call<{ id: string }>(tool('memory_append'), { text: SENTENCE }, execOf('group:1'))
 
@@ -68,14 +17,14 @@ describe('记得住', () => {
   })
 
   it('同一句再记一次会被拦住', async () => {
-    const { tool } = mount(tempFile())
+    const { tool } = mount({ file: tempFile() })
     await tool('memory_append').execute({ text: SENTENCE }, execOf('group:1'))
 
     await expect(tool('memory_append').execute({ text: SENTENCE }, execOf('group:1'))).rejects.toThrow(/memory\.duplicate/)
   })
 
   it('太短的内容不记', async () => {
-    const { tool } = mount(tempFile())
+    const { tool } = mount({ file: tempFile() })
 
     await expect(tool('memory_append').execute({ text: '嗯' }, execOf('group:1'))).rejects.toThrow(/memory\.too_short/)
   })
@@ -83,7 +32,7 @@ describe('记得住', () => {
 
 describe('找得回', () => {
   it('按关键词找得回来', async () => {
-    const { tool } = mount(tempFile())
+    const { tool } = mount({ file: tempFile() })
     await tool('memory_append').execute({ text: SENTENCE }, execOf('group:1'))
 
     const found = await call<{ count: number; text: string }>(tool('memory_query'), { query: '开黑' }, execOf('group:1'))
@@ -93,7 +42,7 @@ describe('找得回', () => {
   })
 
   it('关键词对不上时如实说没想起来', async () => {
-    const { tool } = mount(tempFile())
+    const { tool } = mount({ file: tempFile() })
     await tool('memory_append').execute({ text: SENTENCE }, execOf('group:1'))
 
     const missing = await call<{ count: number; text: string }>(
@@ -105,7 +54,7 @@ describe('找得回', () => {
   })
 
   it('被找出来的那条算被提起过一次', async () => {
-    const { seam, tool } = mount(tempFile())
+    const { seam, tool } = mount({ file: tempFile() })
     await tool('memory_append').execute({ text: SENTENCE }, execOf('group:1'))
     await tool('memory_query').execute({ query: '开黑' }, execOf('group:1'))
 
@@ -115,7 +64,7 @@ describe('找得回', () => {
   })
 
   it('已经淡忘的内容不会再被翻出来', async () => {
-    const { seam, tool } = mount(tempFile())
+    const { seam, tool } = mount({ file: tempFile() })
     const doomed = seam.remember('会彻底忘掉的事', 'group:1')
     seam.store.update(doomed.id, { at: 0, lastSeenAt: 0 })
     for (let at = 0; at < 5; at += 1) seam.sweep()
@@ -128,8 +77,8 @@ describe('找得回', () => {
 
 describe('一层层往上挪', () => {
   it('刚发生的事不会立刻往上挪', () => {
-    const { seam } = mount(tempFile())
-    const early = seam.remember('刚发生的一件小事', 'group:1', 'ephemeral')
+    const { seam } = mount({ file: tempFile() })
+    const early = seam.remember('刚发生的一件小事', 'group:1', { layer: 'ephemeral' })
 
     seam.promote()
 
@@ -137,8 +86,8 @@ describe('一层层往上挪', () => {
   })
 
   it('过半小时之后往上挪一层', () => {
-    const { seam } = mount(tempFile())
-    const early = seam.remember('刚发生的一件小事', 'group:1', 'ephemeral')
+    const { seam } = mount({ file: tempFile() })
+    const early = seam.remember('刚发生的一件小事', 'group:1', { layer: 'ephemeral' })
     seam.store.update(early.id, { at: Date.now() - 40 * 60_000 })
 
     seam.promote()
@@ -149,7 +98,7 @@ describe('一层层往上挪', () => {
 
 describe('慢慢变淡', () => {
   it('跑一次只降一档', () => {
-    const { seam } = mount(tempFile())
+    const { seam } = mount({ file: tempFile() })
     const doomed = seam.remember('会彻底忘掉的事', 'group:1')
     seam.store.update(doomed.id, { at: 0, lastSeenAt: 0 })
 
@@ -159,7 +108,7 @@ describe('慢慢变淡', () => {
   })
 
   it('淡到底只留个空位', () => {
-    const { seam } = mount(tempFile())
+    const { seam } = mount({ file: tempFile() })
     const doomed = seam.remember('会彻底忘掉的事', 'group:1')
     seam.store.update(doomed.id, { at: 0, lastSeenAt: 0 })
     for (let at = 0; at < 5; at += 1) seam.sweep()
@@ -171,18 +120,95 @@ describe('慢慢变淡', () => {
   })
 })
 
+describe('重要度照着实情算', () => {
+  it('同一句话直接说与随口提到算出来的不一样', () => {
+    const { seam } = mount({ file: tempFile() })
+
+    const told = seam.remember(SENTENCE, 'group:1', { directed: true, emotional: 12 })
+    const overheard = seam.remember(SENTENCE, 'group:1', { directed: false, emotional: 0 })
+
+    expect(told.importance).toBeGreaterThan(overheard.importance)
+    expect(told.emotional).toBe(12)
+    expect(overheard.emotional).toBe(0)
+  })
+
+  it('算出来的是公式的值，不是一个定数', () => {
+    const { seam } = mount({ file: tempFile() })
+
+    const item = seam.remember(SENTENCE, 'group:1', { directed: true, emotional: 20 })
+
+    expect(item.importance).toBe(initialImportance({ scene: 'group', directed: true, emotional: 20 }))
+    expect(item.importance).not.toBe(40)
+  })
+
+  it('不给情绪也不给直接说，就走默认的两项零', () => {
+    const { seam } = mount({ file: tempFile() })
+
+    const item = seam.remember(SENTENCE, 'group:1')
+
+    expect(item.importance).toBe(initialImportance({ scene: 'group', directed: false, emotional: 0 }))
+    expect(item.emotional).toBe(0)
+  })
+
+  it('调用方算好的重要度不会再被覆盖', () => {
+    const { seam } = mount({ file: tempFile() })
+
+    const item = seam.remember(SENTENCE, 'group:1', { importance: 88 })
+
+    expect(item.importance).toBe(88)
+  })
+
+  it('工具记的时候按传进来的两项算', async () => {
+    const { tool } = mount({ file: tempFile() })
+
+    const plain = await call<{ importance: number }>(tool('memory_append'), { text: SENTENCE }, execOf('group:1'))
+    const warm = await call<{ importance: number }>(
+      tool('memory_append'), { text: '同一件事换个说法再讲一遍', directed: true, emotional: 24 }, execOf('group:1'),
+    )
+
+    expect(plain.importance).toBe(initialImportance({ scene: 'group', directed: false, emotional: 0 }))
+    expect(warm.importance).toBe(initialImportance({ scene: 'group', directed: true, emotional: 24 }))
+    expect(warm.importance).toBeGreaterThan(plain.importance)
+  })
+})
+
+describe('每天跑一次', () => {
+  it('变淡、入账、写出一行健康记录', () => {
+    const { seam } = mount({ file: tempFile() })
+    seam.remember(SENTENCE, 'group:1')
+
+    const kept = seam.maintain(new Date(2026, 9, 30, 18, 39).getTime())
+
+    expect(kept.added).toBe(1)
+    expect(kept.line).toContain('ledger=OK')
+    expect(kept.line).toContain('pending=0')
+    expect(seam.ledger('verify').report.ok).toBe(true)
+  })
+
+  it('再跑一次不会重复入账', () => {
+    const { seam } = mount({ file: tempFile() })
+    seam.remember(SENTENCE, 'group:1')
+    seam.maintain(Date.now())
+
+    const again = seam.maintain(Date.now())
+
+    expect(again.added).toBe(0)
+    expect(again.line).toContain('total=1')
+  })
+})
+
 describe('关掉再开', () => {
   it('记下的条数还在', () => {
     const file = tempFile()
-    const first = mount(file)
+    const first = mount({ file })
     first.seam.remember(SENTENCE, 'group:1')
     const beforeRestart = first.seam.store.all().length
 
-    expect(mount(file).seam.store.all().length).toBe(beforeRestart)
+    expect(mount({ file }).seam.store.all().length).toBe(beforeRestart)
   })
 
   it('能给出一页记忆概要', () => {
-    const { seam } = mount(tempFile())
+    const { seam } = mount({ file: tempFile() })
     seam.remember(SENTENCE, 'group:1')
 
     const outline = seam.outline('group:1')
