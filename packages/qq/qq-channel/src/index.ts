@@ -41,6 +41,8 @@ export interface QqChannelSeam {
   onOutbound(handler: (event: OutboundEvent) => void): () => void
   /** 发一次公共动作，先过级别与这一类动作自己的闸门，再走出站体检 */
   publish(kind: ActionKind, text: string, facts: ActionFacts): Promise<ActionResult>
+  /** 往某个会话发一段普通消息，只过出站体检、频控与切分，不碰公共动作的级别 */
+  send(text: string, chatKey: string): Promise<ActionResult>
   /** 把一段正文放进待确认队列，返回编号 */
   requestConfirm(kind: ActionKind, text: string, at: number): ActionResult
   /** 点头放行一条待确认的正文 */
@@ -285,6 +287,9 @@ export function apply(ctx: Context, config: Config): void {
   // 遗书正文的暂存槽与三类动作的状态各一份文件，互不影响
   const farewell = createFarewellSlotStore({ file: config.farewellFile ?? defaultFarewellSlotFile() })
 
+  // 拆句直接用说话规矩里的纯函数，不依赖它有没有先装好
+  const pacing = qqPacingOf(ctx)
+
   const seam: QqChannelSeam = {
     channel,
     status() {
@@ -309,10 +314,59 @@ export function apply(ctx: Context, config: Config): void {
       }
       return result
     },
+    // 普通消息只过出站体检、频控与切分，不碰公共动作那套级别与钥匙
+    async send(text, chatKey) {
+      const body = text.trim()
+      const at = Date.now()
+      if (body === '') return { ok: false, code: 'channel.empty', reason: '没话可说', hint: '要发就写点东西', at }
+      if (!channel.status().connected) return { ok: false, code: 'channel.offline', reason: '现在没连上 QQ', hint: '等连上再发', at }
+      const inspection = outbound.check({ chatKey, text: body })
+      if (!inspection.ok) {
+        for (const handler of outboundEvents) handler({ kind: 'blocked', at, chatKey, count: 0, ...inspection.code === undefined ? {} : { code: inspection.code } })
+        return {
+          ok: false,
+          at,
+          ...inspection.code === undefined ? {} : { code: inspection.code },
+          ...inspection.reason === undefined ? {} : { reason: inspection.reason },
+          ...inspection.hint === undefined ? {} : { hint: inspection.hint },
+          ...inspection.retryAt === undefined ? {} : { retryAt: inspection.retryAt },
+        }
+      }
+      const verdict = pacing?.allow(body)
+      if (verdict !== undefined && !verdict.ok) {
+        for (const handler of outboundEvents) handler({ kind: 'blocked', at, chatKey, count: 0, ...verdict.code === undefined ? {} : { code: verdict.code } })
+        return {
+          ok: false,
+          at,
+          ...verdict.code === undefined ? {} : { code: verdict.code },
+          ...verdict.reason === undefined ? {} : { reason: verdict.reason },
+        }
+      }
+      const parts = splitByBudget(body, { maxParts: capNow(), maxCharsPerPart: tuning.maxChars })
+      const ids: string[] = []
+      for (const [index, part] of parts.entries()) {
+        const sent = await channel.send(part, chatKey)
+        if (!sent.ok) {
+          if (ids.length > 0) for (const handler of outboundEvents) handler({ kind: 'sent', at: Date.now(), chatKey, count: ids.length })
+          for (const handler of outboundEvents) handler({ kind: 'blocked', at: Date.now(), chatKey, count: 0, ...sent.code === undefined ? {} : { code: sent.code } })
+          return {
+            ok: false,
+            at: Date.now(),
+            ...sent.code === undefined ? {} : { code: sent.code },
+            reason: `已发 ${ids.length} 条，卡在第 ${index + 1} 条：${sent.reason ?? '发送失败'}`,
+            hint: '换一句短点的，或者等一下再发',
+          }
+        }
+        pacing?.spend(part)
+        outbound.record(Date.now())
+        ids.push(sent.messageId ?? '')
+      }
+      for (const handler of outboundEvents) handler({ kind: 'sent', at: Date.now(), chatKey, count: parts.length })
+      return { ok: true, at: Date.now(), messageId: ids[0] ?? '' }
+    },
     requestConfirm(kind, text, at) {
       return actions.requestConfirm(kind, text, at)
-    },
-    confirm(confirmId, at) {
+    },    confirm(confirmId, at) {
       return actions.confirm(confirmId, at)
     },
     reject(confirmId) {
@@ -333,9 +387,6 @@ export function apply(ctx: Context, config: Config): void {
   // 名单空着等于不管，但要说一次，免得以为已经在管了
   if (tuning.allowGroups.length === 0) ctx.logger('qq-channel').info('群白名单为空，所有群都能发')
   if (tuning.allowPeople.length === 0) ctx.logger('qq-channel').info('人白名单为空，所有人都能发')
-
-  // 拆句直接用说话规矩里的纯函数，不依赖它有没有先装好
-  const pacing = qqPacingOf(ctx)
 
   registerChannelTools(ctx, {
     status: () => channel.status(),

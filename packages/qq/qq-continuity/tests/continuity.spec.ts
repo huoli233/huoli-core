@@ -5,6 +5,7 @@ import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqContinuityOf, type QqContinuitySeam } from '../src/index.ts'
+import { NOTE_MAX_CHARS, closeFacts, renderContinuityFacts } from '../src/close.ts'
 
 // 工具体只读会话编号，其余执行字段由内核在真实调用时注入
 function execOf(chatKey: string): ToolRunContext {
@@ -128,10 +129,48 @@ describe('事后想一想', () => {
     expect(history[0]?.text).toContain('别抢话')
   })
 
-  it('太短的不记', async () => {
+  it('太长的事后想法会被拒绝，这是越界负例', async () => {
     const { tool } = mount(tempFile())
 
-    await expect(tool('note_reflection').execute({ text: '嗯' }, execOf('group:1'))).rejects.toThrow(/continuity\.too_short/)
+    await expect(tool('note_reflection').execute({ text: '长'.repeat(NOTE_MAX_CHARS + 1) }, execOf('group:1')))
+      .rejects.toThrow(/continuity\.too_long/)
+  })
+})
+
+describe('装配层可直接取的收尾事实', () => {
+  it('纯函数截出的收尾与仓里落盘的那条一致', () => {
+    const { seam } = mount(tempFile())
+    const at = Date.now()
+
+    const note = closeFacts({ chatKey: 'group:1', summary: '聊到周末开黑', nextOpening: '问是哪个游戏', throughSeq: 4, at })
+    const stored = seam.close({ chatKey: 'group:1', summary: '聊到周末开黑', nextOpening: '问是哪个游戏', throughSeq: 4, at })
+
+    expect(note).toEqual(stored)
+  })
+
+  it('收尾、成色与回想一起渲染成事实，不替模型下结论', () => {
+    const { seam } = mount(tempFile())
+    const note = seam.close({ chatKey: 'group:1', summary: '聊到周末开黑', nextOpening: '问是哪个游戏' })
+    const outcome = seam.judge([{ self: true, at: Date.now() - 60_000 }])
+    const reflections = [{ id: 'r1', chatKey: 'group:1', at: Date.now(), kind: 'good' as const, text: '下次别抢话' }]
+
+    const text = renderContinuityFacts({ note, outcome, reflections })
+
+    expect(text).toContain('周末开黑')
+    expect(text).toContain('下次可以')
+    expect(text).toContain('事后想过')
+    expect(text).not.toMatch(/该不该|建议说|应该回/)
+  })
+
+  it('什么都不给时不硬编一句，这是负例', () => {
+    expect(renderContinuityFacts()).toBe('')
+    expect(renderContinuityFacts({ reflections: [] })).toBe('')
+  })
+
+  it('收尾摘要超出上限会被截住，不会把超长文本交给模型，这是越界负例', () => {
+    const note = closeFacts({ chatKey: 'group:1', summary: '长'.repeat(NOTE_MAX_CHARS + 10), nextOpening: '', at: Date.now() })
+
+    expect(note.summary.length).toBeLessThanOrEqual(NOTE_MAX_CHARS)
   })
 })
 

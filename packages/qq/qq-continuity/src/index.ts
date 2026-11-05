@@ -7,8 +7,10 @@ import { evaluateOutcome, type CloseInput, type CloseNote, type Outcome, type Re
 import { createContinuityStore, type ContinuityStore } from './store.ts'
 import { registerContinuityTools } from './tools.ts'
 
-export type { CloseInput, CloseNote, Outcome, Reflection } from './close.ts'
-export { describeOutcome, evaluateOutcome, suggestNote, MIN_RUN_MS, NOTE_MAX_CHARS } from './close.ts'
+export type { CloseInput, CloseFactsInput, CloseNote, ContinuityFactsInput, Outcome, Reflection } from './close.ts'
+export {
+  describeOutcome, evaluateOutcome, suggestNote, closeFacts, renderContinuityFacts, MIN_RUN_MS, NOTE_MAX_CHARS,
+} from './close.ts'
 export type { ContinuityStore, ContinuityStoreOptions } from './store.ts'
 
 /** 一个应用里的收尾 */

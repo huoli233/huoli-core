@@ -3,12 +3,12 @@
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
-import { collectMaterial, renderMaterial, type CollectInput, type Material } from './collect.ts'
+import { collectMaterialFacts, renderMaterial, type CollectInput, type Material } from './collect.ts'
 import { createThoughtStore, type ThoughtStore } from './thought.ts'
 import { registerMaterialTools } from './tools.ts'
 
-export type { Addressee, CollectInput, Material, Motive, Situation, Thought, Topic } from './collect.ts'
-export { collectMaterial, renderMaterial, THOUGHT_TTL_MS } from './collect.ts'
+export type { Addressee, CollectInput, MaterialFactsInput, Material, Motive, Situation, Thought, Topic } from './collect.ts'
+export { collectMaterial, collectMaterialFacts, renderMaterial, renderMaterialFacts, THOUGHT_TTL_MS } from './collect.ts'
 export type { ThoughtStore, ThoughtStoreOptions } from './thought.ts'
 
 /** 一个应用里的素材仓 */
@@ -55,9 +55,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const seam: QqMaterialSeam = {
     thoughts,
     gather(input) {
-      const material = collectMaterial({ ...input, now: Date.now() })
-      const live = thoughts.live(input.chatKey)
-      return { ...material, thoughts: live }
+      return collectMaterialFacts({ ...input, now: Date.now(), thoughts: thoughts.live(input.chatKey) })
     },
     render(material) {
       return renderMaterial(material)

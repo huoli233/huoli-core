@@ -5,6 +5,7 @@ import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqAttentionOf, type QqAttentionSeam } from '../src/index.ts'
+import { renderAttentionFacts } from '../src/facts.ts'
 
 // 工具体只读会话编号与取消信号，其余执行字段由内核在真实调用时注入
 function execOf(chatKey: string, signal: AbortSignal = new AbortController().signal): ToolRunContext {
@@ -256,5 +257,83 @@ describe('采集到的事实', () => {
 
     expect(Object.hasOwn(set.triggers, 'probability')).toBe(false)
     expect(Object.hasOwn(seam.store.of('group:1').triggers, 'probability')).toBe(false)
+  })
+})
+
+describe('推消息时带来的指向事实', () => {
+  it('atMe 为真时 directed.at 跟着变，且事实段说这几条在叫你', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '@小岸 你在吗', atMe: true })
+
+    const signals = seam.signals('group:1')
+
+    expect(signals.directed.at).toBe(true)
+    expect(renderAttentionFacts({ signals })).toContain('这几条在叫你')
+  })
+
+  it('没带 atMe 时不硬说被叫，这是负例', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '随便聊一句' })
+
+    const signals = seam.signals('group:1')
+
+    expect(signals.directed.at).toBe(false)
+    expect(renderAttentionFacts({ signals })).not.toContain('这几条在叫你')
+  })
+
+  it('isPoke 与 replyToBot 也能从推消息一路读到事实', () => {
+    const { seam } = mount(tempFile())
+    seam.inbox.push('group:1', { senderId: 'u3', text: '接着刚才那句说', isPoke: true, replyToBot: true })
+
+    const signals = seam.signals('group:1')
+
+    expect(signals.directed.poke).toBe(true)
+    expect(signals.directed.replyToBot).toBe(true)
+    expect(renderAttentionFacts({ signals })).toContain('有人在戳你')
+    expect(renderAttentionFacts({ signals })).toContain('有人在回你刚说过的话')
+  })
+})
+
+describe('提示词里的注意力事实', () => {
+  it('把唤醒偏好写成一句事实，不写该不该醒', () => {
+    const { seam } = mount(tempFile())
+    const signals = seam.signals('group:1')
+
+    const text = renderAttentionFacts({ signals, wake: { wakeMode: 'infinite', triggers: { atMention: true } } })
+
+    expect(text).toContain('你设了每条消息都醒')
+    expect(text).toContain('你设了只在这几种情况醒：被直接点到')
+    expect(text).not.toMatch(/该不该|要不要|建议醒|应该醒/)
+  })
+
+  it('定时唤醒与白名单也只报读数', () => {
+    const { seam } = mount(tempFile())
+    const signals = seam.signals('group:1')
+    const wakeUntil = Date.now() + 60_000
+
+    const text = renderAttentionFacts({ signals, wake: { wakeMode: 'timed', wakeUntil, triggers: { speakerIds: ['u9'] } }, now: Date.now() })
+
+    expect(text).toContain('你设了睡到')
+    expect(text).toContain('那个时刻还没到')
+    expect(text).toContain('指定的人发言')
+  })
+
+  it('偏好为空时不多说一句，这是负例', () => {
+    const { seam } = mount(tempFile())
+    const signals = seam.signals('group:1')
+    const plain = renderAttentionFacts({ signals })
+
+    expect(renderAttentionFacts({ signals, wake: {} })).toBe(plain)
+    expect(renderAttentionFacts({ signals, wake: { triggers: {} } })).toBe(plain)
+    expect(plain).not.toContain('你设了')
+  })
+
+  it('状态可直接当偏好传入，工具设过的条件能渲染出来', async () => {
+    const { seam, tool } = mount(tempFile())
+    await tool('set_wake_config').execute({ triggers: { poke: true } }, execOf('group:1'))
+
+    const text = renderAttentionFacts({ signals: seam.signals('group:1'), wake: seam.store.of('group:1') })
+
+    expect(text).toContain('被戳一下')
   })
 })

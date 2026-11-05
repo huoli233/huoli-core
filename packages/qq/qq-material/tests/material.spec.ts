@@ -5,6 +5,7 @@ import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqMaterialOf, type QqMaterialSeam } from '../src/index.ts'
+import { collectMaterialFacts, renderMaterialFacts } from '../src/collect.ts'
 
 // 工具体只读会话编号，其余执行字段由内核在真实调用时注入
 function execOf(chatKey: string): ToolRunContext {
@@ -162,5 +163,32 @@ describe('惦记的事', () => {
     const again = mount(file)
 
     expect(again.seam.thoughts.live('group:1').some(item => item.id === kept.id)).toBe(true)
+  })
+})
+
+describe('装配层可直接取的素材事实', () => {
+  it('纯函数与运行件采到同一份现场，且能带上惦记的事', () => {
+    const { seam } = mount(tempFile())
+    const thoughts = seam.thoughts.live('group:1')
+
+    const material = collectMaterialFacts({ chatKey: 'group:1', messages: MESSAGES, selfNames: ['小岸'], now: NOW, thoughts })
+    const gathered = seam.gather({ chatKey: 'group:1', messages: MESSAGES, selfNames: ['小岸'] })
+
+    expect(material.topic.active).toBe(gathered.topic.active)
+    expect(material.thoughts).toEqual([])
+  })
+
+  it('纯函数直接渲染出给模型看的中文事实', () => {
+    const text = renderMaterialFacts({ chatKey: 'group:1', messages: MESSAGES, selfNames: ['小岸'], now: NOW })
+
+    expect(text).toContain('群里在聊')
+    expect(text).not.toMatch(/该不该|建议说|应该回/)
+  })
+
+  it('没有现场时不硬编话题，这是负例', () => {
+    const text = renderMaterialFacts({ chatKey: 'group:404', messages: [], now: NOW })
+
+    expect(text).toBe('群里没什么可接的话。')
+    expect(collectMaterialFacts({ chatKey: 'group:404', messages: [], now: NOW }).topic.active).toBe('')
   })
 })

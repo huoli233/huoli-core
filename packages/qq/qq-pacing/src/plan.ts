@@ -42,6 +42,29 @@ export const PACING_DEFAULTS = {
   perHour: 60,
   perDay: 600,
   repeatWindowMs: 10 * 60_000,
+  recentKeep: 40,
+}
+
+/** 记账仓能按配置改的四项额度 */
+export interface QuotaLimits {
+  perHour: number
+  perDay: number
+  repeatWindowMs: number
+  recentKeep: number
+}
+
+/**
+ * 从配置解析出额度，缺项一律取默认值表
+ * @param overrides - 配置里给的额度
+ * @returns 这一行实际用的额度
+ */
+export function resolveQuotaLimits(overrides: Partial<QuotaLimits> = {}): QuotaLimits {
+  return {
+    perHour: Math.max(1, Math.floor(overrides.perHour ?? PACING_DEFAULTS.perHour)),
+    perDay: Math.max(1, Math.floor(overrides.perDay ?? PACING_DEFAULTS.perDay)),
+    repeatWindowMs: Math.max(0, Math.floor(overrides.repeatWindowMs ?? PACING_DEFAULTS.repeatWindowMs)),
+    recentKeep: Math.max(1, Math.floor(overrides.recentKeep ?? PACING_DEFAULTS.recentKeep)),
+  }
 }
 
 // 句末标点，断句优先级最高

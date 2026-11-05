@@ -50,7 +50,7 @@ describe('把身体的读数翻成面板读数', () => {
   })
 
   it('不是数的体温不要，缺的项整块省掉', () => {
-    const kept = panelVitalsOf(portOf({ temp: Number.NaN } as unknown as VitalsReadout))
+    const kept = panelVitalsOf(portOf({ core_temp: Number.NaN }))
 
     expect(kept).toBeUndefined()
   })

@@ -36,7 +36,9 @@ function load(file: string): StoredState {
     if (text.trim().length === 0) return { version: 1, chats: {} }
     const parsed = JSON.parse(text) as StoredStateInput
     return { version: 1, chats: parsed.chats !== undefined && parsed.chats !== null ? parsed.chats : {} }
-  } catch {
+  } catch (readError) {
+    // 读盘失败只影响这次恢复，按空仓继续，不覆盖还没读出来的正式文件
+    void readError
     return { version: 1, chats: {} }
   }
 }

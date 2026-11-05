@@ -2,12 +2,18 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { dayKey, PACING_DEFAULTS, type PacingVerdict, type QuotaUse } from './plan.ts'
+import { dayKey, hourKey, resolveQuotaLimits, type PacingVerdict, type QuotaLimits, type QuotaUse } from './plan.ts'
 
 /** 记账选项 */
 export interface PacingStoreOptions {
   file: string
   now?: () => number
+  limits?: Partial<QuotaLimits>
+}
+
+/** 固定时刻只给测试用，正式装配走配置里的额度 */
+export interface PacingFixedClockOptions extends PacingStoreOptions {
+  at: number
 }
 
 /** 记账仓 */
@@ -15,7 +21,6 @@ export interface PacingStore {
   used(): QuotaUse
   check(text: string): PacingVerdict
   record(text: string): QuotaUse
-  resetTurn(): void
   flush(): void
 }
 
@@ -26,13 +31,12 @@ interface StoredPacing {
   dayCount: number
   hourKey: string
   hourCount: number
-  turnBurst: number
   recent: Array<{ text: string; at: number }>
 }
 
 // 读文件，出错就当今天刚开始
 function load(file: string, now: number): StoredPacing {
-  const empty: StoredPacing = { version: 1, day: dayKey(now), dayCount: 0, hourKey: '', hourCount: 0, turnBurst: 0, recent: [] }
+  const empty: StoredPacing = { version: 1, day: dayKey(now), dayCount: 0, hourKey: '', hourCount: 0, recent: [] }
   try {
     if (!fs.existsSync(file)) return empty
     const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
@@ -44,10 +48,11 @@ function load(file: string, now: number): StoredPacing {
       dayCount: Number(parsed.dayCount) || 0,
       hourKey: typeof parsed.hourKey === 'string' ? parsed.hourKey : '',
       hourCount: Number(parsed.hourCount) || 0,
-      turnBurst: Number(parsed.turnBurst) || 0,
       recent: Array.isArray(parsed.recent) ? parsed.recent : [],
     }
-  } catch {
+  } catch (readError) {
+    // 记账文件读坏了就按今天刚开始，下一次记录会重写它
+    void readError
     return empty
   }
 }
@@ -61,13 +66,13 @@ function save(file: string, data: StoredPacing): void {
 }
 
 // 把过期的计数清掉
-function refresh(data: StoredPacing, now: number): StoredPacing {
+function refresh(data: StoredPacing, now: number, limits: QuotaLimits): StoredPacing {
   const today = dayKey(now)
-  const hour = `${today}-${String(new Date(now).getHours()).padStart(2, '0')}`
+  const hour = hourKey(now)
   let next = data
   if (next.day !== today) next = { ...next, day: today, dayCount: 0 }
   if (next.hourKey !== hour) next = { ...next, hourKey: hour, hourCount: 0 }
-  const since = now - PACING_DEFAULTS.repeatWindowMs
+  const since = now - limits.repeatWindowMs
   const recent = next.recent.filter(row => row.at >= since)
   return recent.length === next.recent.length ? next : { ...next, recent }
 }
@@ -77,9 +82,11 @@ function refresh(data: StoredPacing, now: number): StoredPacing {
  * @param options - 选项
  * @returns 处理结果
  */
-export function createPacingStore(options: PacingStoreOptions): PacingStore {
-  const now = options.now ?? (() => Date.now())
-  let data = refresh(load(options.file, now()), now())
+export function createPacingStore(options: PacingStoreOptions | PacingFixedClockOptions): PacingStore {
+  const clock = 'at' in options ? options.at : undefined
+  const now = clock !== undefined ? () => clock : options.now ?? (() => Date.now())
+  const tuning = resolveQuotaLimits(options.limits)
+  let data = refresh(load(options.file, now()), now(), tuning)
 
   const persist = (): void => {
     save(options.file, data)
@@ -87,16 +94,16 @@ export function createPacingStore(options: PacingStoreOptions): PacingStore {
 
   return {
     used() {
-      data = refresh(data, now())
+      data = refresh(data, now(), tuning)
       return { day: data.day, hourKey: data.hourKey, dayCount: data.dayCount, hourCount: data.hourCount }
     },
     check(text) {
       const at = now()
-      data = refresh(data, at)
-      if (data.hourCount >= PACING_DEFAULTS.perHour) {
+      data = refresh(data, at, tuning)
+      if (data.hourCount >= tuning.perHour) {
         return { ok: false, code: 'pacing.hour_full', reason: '这一小时说得够多了', hint: '等下一小时' }
       }
-      if (data.dayCount >= PACING_DEFAULTS.perDay) {
+      if (data.dayCount >= tuning.perDay) {
         return { ok: false, code: 'pacing.day_full', reason: '今天说得够多了', hint: '明天再说' }
       }
       const body = text.trim()
@@ -108,20 +115,15 @@ export function createPacingStore(options: PacingStoreOptions): PacingStore {
     },
     record(text) {
       const at = now()
-      data = refresh(data, at)
+      data = refresh(data, at, tuning)
       data = {
         ...data,
         dayCount: data.dayCount + 1,
         hourCount: data.hourCount + 1,
-        turnBurst: data.turnBurst + 1,
-        recent: [...data.recent, { text: text.trim(), at }].slice(-40),
+        recent: [...data.recent, { text: text.trim(), at }].slice(-tuning.recentKeep),
       }
       persist()
       return { day: data.day, hourKey: data.hourKey, dayCount: data.dayCount, hourCount: data.hourCount }
-    },
-    resetTurn() {
-      data = { ...data, turnBurst: 0 }
-      persist()
     },
     flush() {
       persist()

@@ -46,7 +46,9 @@ function load(file: string, now: number): SubjectState {
       chats: parsed.chats !== undefined && parsed.chats !== null ? parsed.chats : {},
       lastActive: typeof parsed.lastActive === 'string' ? parsed.lastActive : '',
     }
-  } catch {
+  } catch (readError) {
+    // 状态读坏了按没用过重建，写回时由原子写覆盖，不删原文件也不假装恢复成功
+    void readError
     return emptySubject(now)
   }
 }

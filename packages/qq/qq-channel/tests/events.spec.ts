@@ -49,8 +49,16 @@ describe('有没有点到自己', () => {
     expect(mentionsSelf([{ type: 'text', data: { text: '你好' } }], '999')).toBe(false)
   })
 
-  it('回复自己能认出来', () => {
-    expect(repliesToSelf([{ type: 'reply', data: { user_id: '999' } }, { type: 'text', data: { text: '在吗' } }], '999')).toBe(true)
+  it('回的是自己发过的编号才算回复自己', () => {
+    expect(repliesToSelf([{ type: 'reply', data: { id: 'm-1' } }, { type: 'text', data: { text: '在吗' } }], '999', new Set(['m-1']))).toBe(true)
+  })
+
+  it('回复段只有号码没有编号时认不出来，不猜', () => {
+    expect(repliesToSelf([{ type: 'reply', data: { user_id: '999' } }], '999', new Set(['m-1']))).toBe(false)
+  })
+
+  it('回的是别人的编号也不算', () => {
+    expect(repliesToSelf([{ type: 'reply', data: { id: 'other' } }], '999', new Set(['m-1']))).toBe(false)
   })
 })
 

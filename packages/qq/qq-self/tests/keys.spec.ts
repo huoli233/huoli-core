@@ -130,3 +130,56 @@ describe('两把钥匙', () => {
     expect(keyRows(dir)).toHaveLength(0)
   })
 })
+
+describe('身份级动作的三十分钟冷却', () => {
+  it('同一动作在冷却里被拒，只算提议也不记账', async () => {
+    const dir = tempDir()
+    const seam = await mount(dir)
+    const now = Date.now()
+
+    expect(seam.requireKeys('memory.delete', true, true, now).allowed).toBe(true)
+    const second = seam.requireKeys('memory.delete', true, true, now + 60_000)
+
+    expect(second.allowed).toBe(false)
+    expect(second.reason).toBe('cooldown')
+    expect(second.proposed).toBe(true)
+    expect(keyRows(dir)).toHaveLength(1)
+  })
+
+  it('满三十分钟就能再做一次', async () => {
+    const dir = tempDir()
+    const seam = await mount(dir)
+    const now = Date.now()
+
+    seam.requireKeys('memory.delete', true, true, now)
+    const later = seam.requireKeys('memory.delete', true, true, now + 30 * 60_000)
+
+    expect(later.allowed).toBe(true)
+    expect(keyRows(dir)).toHaveLength(2)
+  })
+
+  it('不同动作各算各的，互不挡', async () => {
+    const dir = tempDir()
+    const seam = await mount(dir)
+    const now = Date.now()
+
+    seam.requireKeys('memory.delete', true, true, now)
+    const other = seam.requireKeys('money.spend', true, true, now + 1_000)
+
+    expect(other.allowed).toBe(true)
+    expect(keyRows(dir)).toHaveLength(2)
+  })
+
+  it('冷却里被拒那次不留痕，所以不把冷却往后推', async () => {
+    const dir = tempDir()
+    const seam = await mount(dir)
+    const now = Date.now()
+
+    seam.requireKeys('memory.delete', true, true, now)
+    seam.requireKeys('memory.delete', true, true, now + 10 * 60_000)
+    const rows = keyRows(dir)
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.at).toBe(now)
+  })
+})

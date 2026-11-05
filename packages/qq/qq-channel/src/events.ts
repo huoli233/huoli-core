@@ -11,6 +11,8 @@ export interface IncomingMessage {
   isPoke: boolean
   replyToBot: boolean
   messageId: string
+  /** 自己发出来的只作事实标记，拦不拦由装配层决定 */
+  readonly selfSent: boolean
 }
 
 /** 被戳了一下 */
@@ -26,12 +28,19 @@ export interface Outgoing {
   text: string
 }
 
+/** 消息段，data 里的值由通信那头给 */
+export interface MessageSegment {
+  type: string
+  data?: Record<string, unknown>
+}
+
 /** 发出去的结果 */
 export interface SentResult {
   ok: boolean
   messageId?: string
   code?: string
   reason?: string
+  hint?: string
 }
 
 /** 发送这一路发生的事，只给排查用，不带原文 */
@@ -74,7 +83,7 @@ export function chatKeyOf(kind: 'group' | 'private', id: string | number): strin
 }
 
 /**
- * 从一坨 OneBot 消息段里挤出文字
+ * 从一坨 OneBot 消息段里挤出文字，引用编号留占位好让模型看见在回谁
  * @param segments - 消息段
  * @returns 拼好的话
  */
@@ -92,7 +101,10 @@ export function textOf(segments: unknown): string {
       parts.push(qq === 'all' ? '@全体成员' : `@${asText(item.data?.name ?? qq)}`)
     } else if (kind === 'image') parts.push('[图片]')
     else if (kind === 'face') parts.push('[表情]')
-    else if (kind === 'reply') continue
+    else if (kind === 'reply') {
+      const id = asText(item.data?.id)
+      if (id !== '') parts.push(`[回复:${id}]`)
+    }
   }
   return parts.join('').replace(/\s+/g, ' ').trim()
 }
@@ -124,31 +136,52 @@ export function mentionsSelf(segments: unknown, selfId: string): boolean {
 }
 
 /**
- * 这条消息有没有在回复自己
+ * 读出消息段里引用的编号，没有引用段就给空表
  * @param segments - 消息段
- * @param selfId - 自己的号
- * @returns 是或不是
+ * @returns 被引用消息的编号
  */
-export function repliesToSelf(segments: unknown, selfId: string): boolean {
-  if (!Array.isArray(segments) || selfId === '') return false
+export function replyIds(segments: unknown): string[] {
+  if (!Array.isArray(segments)) return []
+  const ids: string[] = []
   for (const segment of segments) {
     if (segment === null || typeof segment !== 'object') continue
     const item = segment as { type?: unknown; data?: Record<string, unknown> }
     if (asText(item.type) !== 'reply') continue
-    const target = asText(item.data?.user_id ?? item.data?.qq)
-    if (target === selfId) return true
+    const id = asText(item.data?.id)
+    if (id !== '') ids.push(id)
+  }
+  return ids
+}
+
+/**
+ * 这条消息有没有在回复自己，引用编号落进自己发过的表里才算
+ * @param segments - 消息段
+ * @param selfId - 自己的号
+ * @param sentIds - 自己发出去过的消息编号
+ * @returns 是或不是
+ */
+export function repliesToSelf(segments: unknown, selfId: string, sentIds: ReadonlySet<string> = new Set()): boolean {
+  if (selfId === '') return false
+  for (const id of replyIds(segments)) {
+    if (sentIds.has(id)) return true
   }
   return false
 }
 
 /**
- * 把收到的原始事件翻成一条消息
+ * 把收到的原始事件翻成一条消息，自发只打标不丢
  * @param raw - 原始事件
  * @param selfId - 自己的号
  * @param now - 现在的时间
+ * @param sentIds - 自己发出去过的消息编号，用来按引用编号认出在回自己
  * @returns 处理结果
  */
-export function toIncoming(raw: Record<string, unknown>, selfId: string, now: number): IncomingMessage | null {
+export function toIncoming(
+  raw: Record<string, unknown>,
+  selfId: string,
+  now: number,
+  sentIds: ReadonlySet<string> = new Set(),
+): IncomingMessage | null {
   const postType = asText(raw.post_type)
   if (postType !== 'message' && postType !== 'message_sent') return null
   const type = asText(raw.message_type)
@@ -166,8 +199,9 @@ export function toIncoming(raw: Record<string, unknown>, selfId: string, now: nu
     at: Number(raw.time) > 0 ? Number(raw.time) * 1000 : now,
     atMe: mentionsSelf(segments, selfId) || (kind === 'private' && userId === selfId),
     isPoke: false,
-    replyToBot: repliesToSelf(segments, selfId),
+    replyToBot: repliesToSelf(segments, selfId, sentIds),
     messageId: asText(raw.message_id),
+    selfSent: postType === 'message_sent' || (selfId !== '' && userId === selfId),
   }
 }
 

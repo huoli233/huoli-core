@@ -2,16 +2,16 @@
 
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
-import '@huoli/huoli-agent'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { createPacingStore, type PacingStore } from './store.ts'
 import { splitSpeech, PACING_DEFAULTS, type PacingVerdict, type PlannedSpeech, type QuotaUse } from './plan.ts'
 
-export type { PacingVerdict, PlannedSpeech, QuotaUse, SplitBudget } from './plan.ts'
-export { splitSpeech, splitByBudget, speechGaps, dayKey, hourKey, PACING_DEFAULTS } from './plan.ts'
+export type { PacingVerdict, PlannedSpeech, QuotaUse, SplitBudget, QuotaLimits } from './plan.ts'
+export { splitSpeech, splitByBudget, speechGaps, dayKey, hourKey, PACING_DEFAULTS, resolveQuotaLimits } from './plan.ts'
 export { replyBudget, replyRange, REPLY_DEFAULTS, REPLY_TIERS } from './reply.ts'
 export type { ReplyFacts, ReplyRange, ReplyTier, ReplyTuning } from './reply.ts'
-export type { PacingStore, PacingStoreOptions } from './store.ts'
+export type { PacingStore, PacingFixedClockOptions, PacingStoreOptions } from './store.ts'
+export { createPacingStore } from './store.ts'
 
 /** 一个应用里的记账仓 */
 export interface QqPacingSeam {
@@ -20,7 +20,6 @@ export interface QqPacingSeam {
   allow(text: string): PacingVerdict
   spend(text: string): QuotaUse
   used(): QuotaUse
-  resetTurn(): void
 }
 
 /** 这一行接受的配置 */
@@ -33,6 +32,14 @@ export interface Config {
   maxParts?: number
   /** 每条最多几个字 */
   maxCharsPerPart?: number
+  /** 一小时最多说几句 */
+  perHour?: number
+  /** 一天最多说几句 */
+  perDay?: number
+  /** 同一句隔多久才算说旧了 */
+  repeatWindowMs?: number
+  /** 留最近几句用来认重复 */
+  recentKeep?: number
 }
 
 const seams = new WeakMap<Context, QqPacingSeam>()
@@ -61,7 +68,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-pacing.json')
   const maxParts = Math.max(1, config.maxParts ?? PACING_DEFAULTS.maxParts)
   const maxCharsPerPart = Math.max(20, config.maxCharsPerPart ?? PACING_DEFAULTS.maxCharsPerPart)
-  const store = createPacingStore({ file })
+  const store = createPacingStore({ file, limits: config })
 
   const seam: QqPacingSeam = {
     store,
@@ -77,17 +84,8 @@ export function apply(ctx: Context, config: Config = {}): void {
     used() {
       return store.used()
     },
-    resetTurn() {
-      store.resetTurn()
-    },
   }
   seams.set(ctx.root, seam)
-
-  // 每轮开始时把这一轮已经说了几条清零
-  ctx.on('agent/pre-step', (payload, next) => {
-    if (payload.step === 1) store.resetTurn()
-    return next()
-  })
 
   // 卸载时落一次盘
   ctx.effect(() => () => {

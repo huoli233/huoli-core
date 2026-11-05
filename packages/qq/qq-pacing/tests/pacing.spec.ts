@@ -4,6 +4,7 @@ import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqPacingOf, type Config, type QqPacingSeam } from '../src/index.ts'
+import { createPacingStore } from '../src/store.ts'
 import { REPLY_DEFAULTS, replyBudget, type ReplyFacts } from '../src/reply.ts'
 
 const tempDirs: string[] = []
@@ -103,15 +104,53 @@ describe('还能不能说', () => {
     expect(full.code === 'pacing.hour_full' || full.code === 'pacing.day_full').toBe(true)
   })
 
-  it('新一轮开始时只清本轮的计数，小时额度还在', () => {
+  it('改小一小时额度后行为跟着变', () => {
+    const seam = mount(tempFile(), { perHour: 2 })
+    seam.spend('第一句测试内容')
+    seam.spend('第二句测试内容')
+
+    const full = seam.allow('第三句测试内容')
+
+    expect(full.ok).toBe(false)
+    expect(full.code).toBe('pacing.hour_full')
+    expect(full.reason).not.toBe('')
+    expect(full.hint).not.toBe('')
+  })
+
+  it('改小一天额度后行为跟着变，且小时额度没满', () => {
+    const seam = mount(tempFile(), { perDay: 2, perHour: 20 })
+    seam.spend('第一句测试内容')
+    seam.spend('第二句测试内容')
+
+    const full = seam.allow('第三句测试内容')
+
+    expect(full.code).toBe('pacing.day_full')
+  })
+
+  it('改短同文本窗口后旧话不再被拦，这是时间越界的负例', () => {
+    const file = tempFile()
+    const start = Date.now()
+    const before = createPacingStore({ file, at: start })
+    before.record('这句刚说过')
+
+    const after = createPacingStore({ file, at: start + 20, limits: { repeatWindowMs: 10 } })
+
+    expect(after.check('这句刚说过').ok).toBe(true)
+  })
+
+  it('同文本窗口默认仍然拦住刚说过的话', () => {
     const seam = mount(tempFile())
     seam.spend('这句刚说过')
-    const before = seam.used()
 
-    seam.resetTurn()
+    expect(seam.allow('这句刚说过').code).toBe('pacing.repeated')
+  })
 
-    expect(seam.used().hourCount).toBe(before.hourCount)
-    expect(seam.used().dayCount).toBe(before.dayCount)
+  it('落盘文件里不再写只增不读的死计数', () => {
+    const file = tempFile()
+    const seam = mount(file)
+    seam.spend('一句测试内容')
+
+    expect(fs.readFileSync(file, 'utf8')).not.toContain('turnBurst')
   })
 })
 

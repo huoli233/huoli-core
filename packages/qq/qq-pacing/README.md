@@ -40,7 +40,7 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`：记账文件、主目录覆盖、一段最多拆几条、每条最多几个字；计数默认落在主目录的 data 下（`data/qq-pacing.json`），每轮第一步把本轮已说的条数清零。
+配置项在 `src/index.ts` 的 `Config`：记账文件、主目录覆盖、一段最多拆几条、每条最多几个字，以及一小时额度 `perHour`、一天额度 `perDay`、同文本窗口 `repeatWindowMs`、留多少条最近文本 `recentKeep`；后四项的默认值都在 `src/plan.ts` 的 `PACING_DEFAULTS`，改配置后记账行为跟着变。计数默认落在主目录的 data 下（`data/qq-pacing.json`）。
 
 回几条的入口是纯函数 `replyRange(facts)`：输入累、烦、精力、黏、孤独五项事实，输出 `{ min, max }` 这一轮最少与最多几条，只给范围，不做该不该回的判断；只要上限时用兼容入口 `replyBudget(facts)`，它给的就是 `replyRange` 的 `max`。分档表在 `src/reply.ts` 的 `REPLY_TIERS`，从上往下取第一条命中的，下限与上限取自同一档，所以 `min` 永不超过 `max`：
 

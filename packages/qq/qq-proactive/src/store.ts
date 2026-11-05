@@ -10,6 +10,89 @@ export interface PendingStoreOptions {
   now?: () => number
 }
 
+// 文件里的样子
+interface StoredPending {
+  version: 2
+  items: PendingItem[]
+  previewed: string[]
+  lastSpokenAt: Record<string, number>
+  todayCount: Record<string, number>
+}
+
+// 读盘时按可能缺失或为空的字段声明
+interface StoredPendingInput {
+  version?: number
+  items?: PendingItem[]
+  previewed?: string[] | null
+  lastSpokenAt?: Record<string, number> | null
+  todayCount?: Record<string, number> | null
+}
+
+/** 这份状态的结构版本，只随结构变化递增 */
+export const PROACTIVE_STORE_VERSION = 2
+
+// 一份空状态
+function emptyStored(): StoredPending {
+  return { version: PROACTIVE_STORE_VERSION, items: [], previewed: [], lastSpokenAt: {}, todayCount: {} }
+}
+
+// 读一个文件，读不出或版本对不上就交回 undefined，让调用方逐级回退
+function readOne(file: string): StoredPending | undefined {
+  try {
+    if (!fs.existsSync(file)) return undefined
+    const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
+    if (text.trim().length === 0) return undefined
+    const parsed = JSON.parse(text) as StoredPendingInput
+    if (parsed.version !== undefined && parsed.version !== PROACTIVE_STORE_VERSION) return undefined
+    return {
+      version: PROACTIVE_STORE_VERSION,
+      items: Array.isArray(parsed.items) ? parsed.items : [],
+      previewed: Array.isArray(parsed.previewed) ? parsed.previewed : [],
+      lastSpokenAt: parsed.lastSpokenAt !== undefined && parsed.lastSpokenAt !== null ? parsed.lastSpokenAt : {},
+      todayCount: parsed.todayCount !== undefined && parsed.todayCount !== null ? parsed.todayCount : {},
+    }
+  } catch (readError) {
+    // 读不动就当这一份不存在，让调用方退到备份；错误本身只在这一层消化，不往上抛
+    void readError
+    return undefined
+  }
+}
+
+// 正式文件读不出就退到备份，备份也没有才算空
+function load(file: string): StoredPending {
+  return readOne(file) ?? readOne(`${file}.bak`) ?? emptyStored()
+}
+
+// 整份写回：先把现有文件留一份备份，再原子换掉正式文件
+function save(file: string, data: StoredPending): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true })
+  if (fs.existsSync(file)) {
+    try {
+      fs.copyFileSync(file, `${file}.bak`)
+    } catch (backupError) {
+      // 备份写不动不拦这一笔，正式文件照原子写走，坏读时再退默认值
+      void backupError
+    }
+  }
+  const temporary = `${file}.${process.pid}.tmp`
+  fs.writeFileSync(temporary, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 })
+  fs.renameSync(temporary, file)
+}
+
+/** 攒着的与记账共用一份文件：只有一个 owner，改一处存一次，两个视图读同一份内存 */
+export interface ProactiveStore {
+  pending: PendingStore
+  timing: TimingStore
+  flush(): void
+}
+
+/** 本次开口的时间与次数记账 */
+export interface TimingStore {
+  lastSpokenAt(chatKey: string): number
+  todayCount(chatKey: string): number
+  noteSpoken(chatKey: string): void
+}
+
 /** 攒着的仓 */
 export interface PendingStore {
   all(): PendingItem[]
@@ -25,57 +108,12 @@ export interface PendingStore {
   flush(): void
 }
 
-// 文件里的样子
-interface StoredPending {
-  version: 2
-  items: PendingItem[]
-  previewed: string[]
-  lastSpokenAt: Record<string, number>
-  todayCount: Record<string, number>
-}
-
-// 读盘时按可能缺失或为空的字段声明
-interface StoredPendingInput {
-  items?: PendingItem[]
-  previewed?: string[] | null
-  lastSpokenAt?: Record<string, number> | null
-  todayCount?: Record<string, number> | null
-}
-
-// 读文件
-function load(file: string): StoredPending {
-  const empty: StoredPending = { version: 2, items: [], previewed: [], lastSpokenAt: {}, todayCount: {} }
-  try {
-    if (!fs.existsSync(file)) return empty
-    const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
-    if (text.trim().length === 0) return empty
-    const parsed = JSON.parse(text) as StoredPendingInput
-    return {
-      version: 2,
-      items: Array.isArray(parsed.items) ? parsed.items : [],
-      previewed: Array.isArray(parsed.previewed) ? parsed.previewed : [],
-      lastSpokenAt: parsed.lastSpokenAt !== undefined && parsed.lastSpokenAt !== null ? parsed.lastSpokenAt : {},
-      todayCount: parsed.todayCount !== undefined && parsed.todayCount !== null ? parsed.todayCount : {},
-    }
-  } catch {
-    return empty
-  }
-}
-
-// 整份写回
-function save(file: string, data: StoredPending): void {
-  fs.mkdirSync(path.dirname(file), { recursive: true })
-  const temporary = `${file}.${process.pid}.tmp`
-  fs.writeFileSync(temporary, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 })
-  fs.renameSync(temporary, file)
-}
-
 /**
- * 建一个攒着的仓
+ * 建一个 owner：同一份文件只有一个写入路径，pending 与 timing 只是它的两个视图
  * @param options - 选项
- * @returns 处理结果
+ * @returns 两个视图与一个马上落盘的出口
  */
-export function createPendingStore(options: PendingStoreOptions): PendingStore {
+export function createProactiveStore(options: PendingStoreOptions): ProactiveStore {
   const now = options.now ?? (() => Date.now())
   let data = load(options.file)
 
@@ -101,7 +139,12 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
     previewed: data.previewed.filter(kept => kept !== id),
   })
 
-  return {
+  const dayKeyOf = (at: number): string => {
+    const date = new Date(at)
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+  }
+
+  const pending: PendingStore = {
     all() {
       clean()
       return data.items
@@ -136,34 +179,8 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
       persist()
     },
   }
-}
 
-/** 本次开口的时间与次数记账 */
-export interface TimingStore {
-  lastSpokenAt(chatKey: string): number
-  todayCount(chatKey: string): number
-  noteSpoken(chatKey: string): void
-}
-
-/**
- * 建一个时间记账
- * @param options - 选项
- * @returns 处理结果
- */
-export function createTimingStore(options: PendingStoreOptions): TimingStore {
-  const now = options.now ?? (() => Date.now())
-  let data = load(options.file)
-
-  const persist = (): void => {
-    save(options.file, data)
-  }
-
-  const dayKeyOf = (at: number): string => {
-    const date = new Date(at)
-    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
-  }
-
-  return {
+  const timing: TimingStore = {
     lastSpokenAt(chatKey) {
       return data.lastSpokenAt[chatKey] ?? 0
     },
@@ -181,6 +198,26 @@ export function createTimingStore(options: PendingStoreOptions): TimingStore {
       persist()
     },
   }
+
+  return { pending, timing, flush: persist }
+}
+
+/**
+ * 只拿攒着这一面，单用与用例都方便
+ * @param options - 选项
+ * @returns 攒着的仓
+ */
+export function createPendingStore(options: PendingStoreOptions): PendingStore {
+  return createProactiveStore(options).pending
+}
+
+/**
+ * 只拿记账这一面
+ * @param options - 选项
+ * @returns 时间与次数记账
+ */
+export function createTimingStore(options: PendingStoreOptions): TimingStore {
+  return createProactiveStore(options).timing
 }
 
 /** 攒着的东西多久算过期 */

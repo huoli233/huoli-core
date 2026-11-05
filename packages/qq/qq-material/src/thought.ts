@@ -33,7 +33,9 @@ function load(file: string): Array<Thought & { chatKey: string }> {
     if (text.trim().length === 0) return []
     const parsed = JSON.parse(text) as Partial<StoredThoughts>
     return Array.isArray(parsed.items) ? parsed.items : []
-  } catch {
+  } catch (readError) {
+    // 念头文件读坏了按没有念头继续，别的会话状态不在这份文件里
+    void readError
     return []
   }
 }

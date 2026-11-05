@@ -3,6 +3,7 @@
 import fs from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
+import { STAMP_FIELDS } from '../src/defaults.ts'
 import type { VitalsState } from '../src/types.ts'
 
 /** 体检用到的三个入参 */
@@ -98,8 +99,11 @@ export async function runCheck(options: CheckOptions = {}): Promise<CheckReport>
   }
   const temp = Number(state.core_temp ?? 0)
   if (!(temp >= 34 && temp <= 42)) problems.push(`体温 ${temp.toFixed(2)} 异常`)
-  if (state.last_drink > now + CLOCK_SLACK_SECONDS * 1000) problems.push('last_drink 在未来')
-  if (state.last_update > now + CLOCK_SLACK_SECONDS * 1000) problems.push('last_update 在未来')
+  // 时间戳逐字段查：零是还没发生过，未来超出允许误差才算异常
+  for (const field of STAMP_FIELDS) {
+    const stamp = Number(state[field] ?? 0)
+    if (stamp > now + CLOCK_SLACK_SECONDS * 1000) problems.push(`${String(field)} 在未来`)
+  }
   if (state.thirst > 0.55 && state.last_drink_name !== '') {
     notes.push('口渴仍高但有喝水记录，确认是不是冷却挡掉了那一次')
   }

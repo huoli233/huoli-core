@@ -586,6 +586,7 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     apology_applied_at: 0,
     farewell_applied_at: 0,
     meal_applied_at: 0,
+    cycle_start_applied_at: 0,
     last_drink_name: '',
     last_taste: null,
     last_user_text: '',

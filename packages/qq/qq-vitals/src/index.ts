@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import '@huoli/huoli-system-prompt'
+import { cycleStartOf, type CycleFact } from './cycle.ts'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { derive } from './derive.ts'
 import { dreamFactOf, type DreamFact } from './dream.ts'
@@ -19,8 +20,10 @@ import { mealName } from './words.ts'
 
 export type { Tuning } from './defaults.ts'
 export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
-export { cycleOf, localDayDiff, localHour, localPoint } from './clock.ts'
+export { cycleOf, localDate, localDayDiff, localHour, localPoint } from './clock.ts'
 export type { LocalPoint } from './clock.ts'
+export { cycleStartOf } from './cycle.ts'
+export type { CycleFact } from './cycle.ts'
 export { derive } from './derive.ts'
 export { dreamFactOf, dreamMoodOf, drawDream, startDream } from './dream.ts'
 export type { DreamFact } from './dream.ts'
@@ -66,6 +69,9 @@ export interface DrinkFact {
   name: string
 }
 
+/** 开经日的事实，交给组合包以后接记忆，本包不写记忆 */
+export type CycleStartFact = CycleFact
+
 /** 一个应用里的那份身体 */
 export interface QqVitalsSeam {
   /** 读事实：当前这一份状态，别的包不许自己再算 */
@@ -85,6 +91,10 @@ export interface QqVitalsSeam {
   onMeal(listener: (fact: MealFact) => void): () => void
   /** 接住每一杯水的写回，冷却挡掉的那次不算，取消时用返回的那个函数 */
   onDrink(listener: (fact: DrinkFact) => void): () => void
+  /** 接住开经那一天的事实，同一周期只通知一次，取消时用返回的那个函数 */
+  onCycle(listener: (fact: CycleFact) => void): () => void
+  /** 接住开经那一天的事实，与 onCycle 同一个口，取消时用返回的那个函数 */
+  onCycleStart(listener: (fact: CycleStartFact) => void): () => void
   /** 周期四个分界日：面板按它把一圈切成五段彩弧 */
   cycleBounds(): readonly number[]
   /** 五组双条：哪两条是一对由这一包说了算，面板只照画 */
@@ -141,6 +151,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const store = createVitalsStore({ file, tuning })
   const meals = new Set<(fact: MealFact) => void>()
   const drinks = new Set<(fact: DrinkFact) => void>()
+  const cycles = new Set<(fact: CycleFact) => void>()
   const farewells = new Set<(fact: FarewellFact) => void>()
   const dreams = new Set<(fact: DreamFact) => void>()
   const scars = new Set<(fact: ScarFact) => void>()
@@ -171,10 +182,13 @@ export function apply(ctx: Context, config: Config = {}): void {
     const dream = dreamFactOf(settled, tuning)
     const scar = scarFactOf(before, settled, at)
     const farewell = farewellOf(settled, balance, at, tuning)
+    // 开经判定与幂等标记只在这一份纯函数里算，两条结算路径共用，挡掉的重复不通知
+    const cycleStart = cycleStartOf(before, settled, at, tuning)
     // 三个标记跟状态一起落盘：先写盘再通知，落盘失败就当这一拍没发生过
     const next: VitalsState = { ...settled }
     if (dream !== undefined) next.dream_applied_at = dream.at
     if (farewell !== undefined) next.farewell_applied_at = farewell.at
+    if (cycleStart !== undefined) next.cycle_start_applied_at = cycleStart.at
     try {
       store.write(next)
     } catch (error) {
@@ -184,6 +198,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (dream !== undefined) notify(dreams, '梦境', dream)
     if (scar !== undefined) notify(scars, '疤痕', scar)
     if (farewell !== undefined) notify(farewells, '遗书', farewell)
+    if (cycleStart !== undefined) notify(cycles, '开经', cycleStart)
   }
 
   const seam: QqVitalsSeam = {
@@ -217,6 +232,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       let drink: DrinkFact | undefined
       let dream: DreamFact | undefined
       let scar: ScarFact | undefined
+      let cycleStart: CycleFact | undefined
       try {
         const settled = derive(
           reactToText(drift(raw, moment, tuning, undefined, balance, existence), text, moment, tuning),
@@ -224,8 +240,10 @@ export function apply(ctx: Context, config: Config = {}): void {
         )
         dream = dreamFactOf(settled, tuning)
         scar = scarFactOf(raw, settled, moment)
+        cycleStart = cycleStartOf(raw, settled, moment, tuning)
         const next: VitalsState = { ...settled }
         if (dream !== undefined) next.dream_applied_at = dream.at
+        if (cycleStart !== undefined) next.cycle_start_applied_at = cycleStart.at
         store.write(next)
         if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text) }
         // 只在这一杯真写进去了才产事实：冷却挡掉的那次 last_drink 不动
@@ -238,6 +256,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (drink !== undefined) notify(drinks, '喝水', drink)
       if (dream !== undefined) notify(dreams, '梦境', dream)
       if (scar !== undefined) notify(scars, '疤痕', scar)
+      if (cycleStart !== undefined) notify(cycles, '开经', cycleStart)
     },
     setBalance(level) {
       balance = level
@@ -255,6 +274,18 @@ export function apply(ctx: Context, config: Config = {}): void {
       drinks.add(listener)
       return () => {
         drinks.delete(listener)
+      }
+    },
+    onCycle(listener) {
+      cycles.add(listener)
+      return () => {
+        cycles.delete(listener)
+      }
+    },
+    onCycleStart(listener) {
+      cycles.add(listener)
+      return () => {
+        cycles.delete(listener)
       }
     },
     onFarewell(listener) {
@@ -311,6 +342,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     store.write(current())
     meals.clear()
     drinks.clear()
+    cycles.clear()
     farewells.clear()
     dreams.clear()
     scars.clear()

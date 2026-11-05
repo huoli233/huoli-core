@@ -98,3 +98,20 @@ describe('召回回升', () => {
     expect(importanceAfterRecall(100, IMPORTANCE_DECAY.salienceHighAt)).toBe(100)
   })
 })
+
+describe('越界输入', () => {
+  it('重要度不是有限数时按最低分算，这是越界负例', () => {
+    expect(quantizeImportance(Number.POSITIVE_INFINITY)).toBe(1)
+    expect(quantizeImportance(Number.NaN)).toBe(1)
+  })
+
+  it('重要度低于地板时只回到地板，不越出下界，这是越界负例', () => {
+    expect(importanceAfterDrop(-10, 3, IMPORTANCE_DECAY.importanceFloor)).toBe(IMPORTANCE_DECAY.importanceFloor)
+  })
+
+  it('单日跌幅封顶后不会越出上限，这是越界负例', () => {
+    const runaway = { ...IMPORTANCE_DECAY, decayBase: 1000, decayDailyCap: 3 }
+
+    expect(importanceDailyDrop({ importance: 20, recallCount: 0, emotional: 1 }, 100, runaway)).toBe(3)
+  })
+})

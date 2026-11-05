@@ -2,7 +2,7 @@
 
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
-import type { Reflection } from './close.ts'
+import { NOTE_MAX_CHARS, type Reflection } from './close.ts'
 import type { ContinuityStore } from './store.ts'
 
 /** 工具要用到的东西 */
@@ -52,7 +52,7 @@ export function registerContinuityTools(ctx: Context, deps: ContinuityToolDeps):
       const chatKey = chatKeyOf(exec)
       const text = typeof args.text === 'string' ? args.text.trim() : ''
       if (text.length < 2) refuse('continuity.too_short', '太短了', '写一句具体的话')
-      if (text.length > 300) refuse('continuity.too_long', '一条最多 300 字', '挑最要紧的那句')
+      if (text.length > NOTE_MAX_CHARS) refuse('continuity.too_long', `一条最多 ${NOTE_MAX_CHARS} 字`, '挑最要紧的那句')
       const item = store.addReflection(chatKey, kindOf(args.kind), text)
       return Promise.resolve({ id: item.id, kind: item.kind, text: item.text })
     },

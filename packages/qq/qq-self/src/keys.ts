@@ -8,6 +8,36 @@ import type { KeysDecision } from './types.ts'
 /** 抬阶段要的那一条留痕在 keys.jsonl 里的动作名 */
 export const STAGE_ACTION = 'stage.advance'
 
+/** 同一个身份级动作两次之间至少隔这么久，默认三十分钟 */
+export const IDENTITY_COOLDOWN_MS = 30 * 60_000
+
+/**
+ * 同一个身份级动作还在冷却里吗
+ * @param store - 目录读写口
+ * @param action - 要做的那个动作，与账里逐字相同才算同一次
+ * @param at - 这一次的时刻
+ * @param windowMs - 冷却窗口
+ * @returns 仍在冷却时给还剩多少毫秒，不在冷却给零
+ */
+export function identityCooldownLeft(
+  store: SelfStore,
+  action: string,
+  at: number,
+  windowMs: number = IDENTITY_COOLDOWN_MS,
+): number {
+  const rows = store.records(FILES.keys)
+  // 从最后一条往前找同一个动作：中间夹着的别的动作不重置这一格的冷却
+  for (let idx = rows.length - 1; idx >= 0; idx -= 1) {
+    const row = rows[idx]
+    if (row === undefined || row.action !== action) continue
+    const taken = row.at
+    if (typeof taken !== 'number' || !Number.isFinite(taken)) return 0
+    const since = at - taken
+    return since >= windowMs ? 0 : windowMs - since
+  }
+  return 0
+}
+
 /**
  * 判一次身份级动作能不能做
  * @param action - 要做的那个动作，与清单逐字相同才算数

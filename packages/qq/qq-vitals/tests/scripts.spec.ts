@@ -5,6 +5,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
+import { runCheck } from '../scripts/check.ts'
+import { STAMP_FIELDS } from '../src/defaults.ts'
 import { createVitalsStore, emptyState, resolveTuning, type VitalsState } from '../src/index.ts'
 
 const tuning = resolveTuning()
@@ -92,6 +94,38 @@ describe('体检脚本', () => {
     const ran = run(checkScript, ['--file', tempState({ thirst: 1.5 })])
 
     expect(ran.stdout).toContain('thirst=1.5 越界')
+  })
+
+  it('任意时间戳落到未来都要被抓到，另外两个老字段也照样查', () => {
+    const future = Date.now() + 10 * 60_000
+    const wake = run(checkScript, ['--file', tempState({ wake_after: future })])
+    const drink = run(checkScript, ['--file', tempState({ last_drink: future })])
+    const update = run(checkScript, ['--file', tempState({ last_update: future })])
+
+    expect(wake.status).toBe(1)
+    expect(wake.stdout).toContain('wake_after 在未来')
+    expect(drink.stdout).toContain('last_drink 在未来')
+    expect(update.stdout).toContain('last_update 在未来')
+  })
+
+  it('未来时刻在允许误差内不算问题', () => {
+    const ran = run(checkScript, ['--file', tempState({ groggy_until: Date.now() + 30_000 })])
+
+    expect(ran.status).toBe(0)
+    expect(ran.stdout).toContain('✅ 正常')
+  })
+
+  it('状态里每一个时间戳字段都归体检管', async () => {
+    const now = Date.now()
+    const report = await runCheck({ file: tempState({}, now), now })
+
+    expect(STAMP_FIELDS.length).toBeGreaterThan(0)
+    for (const field of STAMP_FIELDS) {
+      const future = now + 10 * 60_000
+      const one = await runCheck({ file: tempState({ [field]: future }, now), now })
+      expect(one.problems, field).toContain(`${field} 在未来`)
+    }
+    expect(report.problems).toEqual([])
   })
 
   it('摘要那行带渴、饿、水队列与体温', () => {

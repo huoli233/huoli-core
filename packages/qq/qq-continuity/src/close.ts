@@ -41,6 +41,48 @@ export const NOTE_MAX_CHARS = 200
 /** 一段对话至少聊多久才算数 */
 export const MIN_RUN_MS = 60_000
 
+/** 只按输入截出一条收尾事实，不碰落盘 */
+export type CloseFactsInput = Omit<CloseInput, 'at'> & { at: number }
+
+/** 渲染收尾事实要用的东西 */
+export interface ContinuityFactsInput {
+  note?: CloseNote
+  outcome?: Outcome
+  reflections?: readonly Reflection[]
+}
+
+/**
+ * 截出一条收尾事实，装配层可直接拿它渲染
+ * @param input - 会话、结束点、下次接法、水位与时刻
+ * @returns 只含事实的一条收尾
+ */
+export function closeFacts(input: CloseFactsInput): CloseNote {
+  return {
+    chatKey: input.chatKey,
+    closedAt: input.at,
+    summary: input.summary.slice(0, NOTE_MAX_CHARS),
+    nextOpening: input.nextOpening.slice(0, NOTE_MAX_CHARS),
+    throughSeq: Number(input.throughSeq) || 0,
+  }
+}
+
+/**
+ * 把收尾、成色与事后想法写成一段中文事实
+ * @param input - 收尾、成色与回想，都可以不给
+ * @returns 一段中文事实，什么都没有时返回空串
+ */
+export function renderContinuityFacts(input: ContinuityFactsInput = {}): string {
+  const lines: string[] = []
+  if (input.note !== undefined) {
+    lines.push(`上次聊到 ${new Date(input.note.closedAt).toLocaleString('zh-CN', { hour12: false })}`)
+    if (input.note.summary !== '') lines.push(`收在：${input.note.summary}`)
+    if (input.note.nextOpening !== '') lines.push(`下次可以：${input.note.nextOpening}`)
+  }
+  if (input.outcome !== undefined) lines.push(describeOutcome(input.outcome))
+  for (const item of input.reflections ?? []) lines.push(`事后想过：${item.text}`)
+  return lines.join('\n')
+}
+
 /**
  * 把聊天记录算成一个粗略成色
  * @param messages - 消息

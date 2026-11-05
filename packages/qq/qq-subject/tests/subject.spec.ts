@@ -143,3 +143,29 @@ describe('关掉再开', () => {
     expect(seam.store.read().global.updatedAt).toBeGreaterThan(0)
   })
 })
+
+describe('越界与读坏', () => {
+  it('心情加减再猛也不越出零到一，这是越界负例', async () => {
+    const { seam } = await mount(tempFile())
+    seam.store.changeGlobal('mood', 10)
+    const high = seam.store.read().global.mood
+    seam.store.changeGlobal('mood', -20)
+    const low = seam.store.read().global.mood
+
+    expect(high).toBeLessThanOrEqual(1)
+    expect(high).toBeGreaterThanOrEqual(0)
+    expect(low).toBeLessThanOrEqual(1)
+    expect(low).toBeGreaterThanOrEqual(0)
+    expect(low).toBeLessThan(high)
+  })
+
+  it('状态文件写坏了按初始状态回退，不把半截文件当真，这是失败负例', async () => {
+    const file = tempFile()
+    fs.writeFileSync(file, '{ 这不是一份完整的状态')
+
+    const { seam } = await mount(file)
+
+    expect(seam.store.read().global.mood).toBeGreaterThan(0)
+    expect(seam.render('group:1')).toContain('心情')
+  })
+})

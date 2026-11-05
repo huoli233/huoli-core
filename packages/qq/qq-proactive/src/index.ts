@@ -13,7 +13,7 @@ import {
   type PendingItem,
 } from './score.ts'
 import { runGates, type GateInput } from './gates.ts'
-import { createPendingStore, createTimingStore, PENDING_TTL_MS, type PendingStore, type TimingStore } from './store.ts'
+import { createProactiveStore, PENDING_TTL_MS, type PendingStore, type TimingStore } from './store.ts'
 
 export type { Candidate, CandidateFacts, GateConfig, GateVerdict, PendingItem } from './score.ts'
 export { orderByArrival, dropRepeats, sameThing, PROACTIVE_DEFAULTS } from './score.ts'
@@ -110,6 +110,8 @@ export interface Config {
   biasMax?: number
   /** 刚被吵醒之后还要安静多久，毫秒 */
   wakingDelayMs?: number
+  /** 一条候选攒着多久就过期，毫秒 */
+  pendingTtlMs?: number
 }
 
 const seams = new WeakMap<Context, QqProactiveSeam>()
@@ -142,8 +144,10 @@ export const inject: string[] = []
  */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-proactive.json')
-  const pending = createPendingStore({ file })
-  const timing = createTimingStore({ file })
+  // 攒着的与记账读同一份文件，只由这一个 owner 写，谁也不会把谁整份覆盖掉
+  const store = createProactiveStore({ file })
+  const pending = store.pending
+  const timing = store.timing
   const gateConfig: Partial<GateConfig> = {
     ...config.enabled !== undefined ? { enabled: config.enabled } : {},
     ...config.dailyMax !== undefined ? { dailyMax: config.dailyMax } : {},
@@ -155,6 +159,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     ...config.biasMin !== undefined ? { biasMin: config.biasMin } : {},
     ...config.biasMax !== undefined ? { biasMax: config.biasMax } : {},
     ...config.wakingDelayMs !== undefined ? { wakingDelayMs: config.wakingDelayMs } : {},
+    ...config.pendingTtlMs !== undefined ? { pendingTtlMs: config.pendingTtlMs } : {},
   }
   const enabled = config.enabled ?? PROACTIVE_DEFAULTS.enabled
 
@@ -183,7 +188,7 @@ export function apply(ctx: Context, config: Config = {}): void {
 
       const considered = dropRepeats(orderByArrival(gatheredCandidates(input)), input.history)
       if (considered.length === 0) {
-        const nothing: GateVerdict = { ok: false, code: 'proactive.no_candidate', reason: '没攒到能说的事' }
+        const nothing: GateVerdict = { ok: false, code: 'proactive.no_candidate', reason: '没攒到能说的事', hint: '等她心里真有事再来问，别为了开口而编' }
         return { verdict: nothing, pending: [], considered: [], facts }
       }
 
@@ -202,7 +207,8 @@ export function apply(ctx: Context, config: Config = {}): void {
           at: candidate.at,
         },
         createdAt: candidate.at,
-        expiresAt: candidate.at + PENDING_TTL_MS,
+        // 过期只看参数表：配置给了就按配置，没给才用包内默认值
+        expiresAt: candidate.at + (input.config?.pendingTtlMs ?? gateConfig.pendingTtlMs ?? PENDING_TTL_MS),
       }))
       for (const item of items) pending.put(item)
       return { verdict: { ok: true, code: 'proactive.preview_ready' }, pending: items, considered, facts }

@@ -8,6 +8,9 @@ export interface QqMessage {
   senderName?: string
   text: string
   at: number
+  atMe?: boolean
+  isPoke?: boolean
+  replyToBot?: boolean
 }
 
 /** 通道推消息时给的字段 */
@@ -16,6 +19,9 @@ export interface InboxPush {
   senderName?: string
   text: string
   at?: number
+  atMe?: boolean
+  isPoke?: boolean
+  replyToBot?: boolean
 }
 
 /** 读的结果，水位是这次读到的最后一条 */
@@ -93,6 +99,9 @@ export function createInbox(now: () => number = () => Date.now()): QqInbox {
         ...message.senderName !== undefined ? { senderName: message.senderName } : {},
         text: message.text,
         at: message.at ?? now(),
+        ...message.atMe !== undefined ? { atMe: message.atMe } : {},
+        ...message.isPoke !== undefined ? { isPoke: message.isPoke } : {},
+        ...message.replyToBot !== undefined ? { replyToBot: message.replyToBot } : {},
       }
       list.push(item)
       notify(chatKey, item)

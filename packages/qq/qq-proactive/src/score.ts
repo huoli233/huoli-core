@@ -40,6 +40,8 @@ export interface GateVerdict {
   ok: boolean
   code?: string
   reason?: string
+  /** 下一步怎么办，只给方向，不改写内容也不代说 */
+  hint?: string
   retryAt?: number
 }
 

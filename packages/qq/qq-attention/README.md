@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-五个工具 `read_messages`、`wait_for_messages`、`mark_read`、`close_conversation`、`set_wake_config` 的名称与参数；工具返回的消息列表、读水位、等待结果、收尾确认。
+五个工具 `read_messages`、`wait_for_messages`、`mark_read`、`close_conversation`、`set_wake_config` 的名称与参数；工具返回的消息列表、读水位、等待结果、收尾确认。提示词层另可取 `renderAttentionFacts` 渲染出的中文事实段：把 `signals()` 采到的现场事实与 `set_wake_config` 写下的唤醒偏好并列写出，只说「这几条在叫你」「你设了只在这几种情况醒」这类事实，不决定是否行动。
 
 #### Token effect
 
@@ -40,4 +40,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`，状态文件位置、主目录覆盖与机器人自己的称呼三项；状态默认落在主目录的 data 下（`data/qq-attention.json`），每次变化整体原子写回，卸载时再落一次盘。唤醒条件是布尔开关与发言人白名单，没有概率；有趣的判断只报勾到了哪些事实（`src/select.ts` 的 `fun.evidence` 与 `fun.signals`）。
+配置项在 `src/index.ts` 的 `Config`，状态文件位置、主目录覆盖与机器人自己的称呼三项；状态默认落在主目录的 data 下（`data/qq-attention.json`），每次变化整体原子写回，卸载时再落一次盘。唤醒条件是布尔开关与发言人白名单，没有概率；有趣的判断只报勾到了哪些事实（`src/select.ts` 的 `fun.evidence` 与 `fun.signals`）。收件箱的 `InboxPush` 可带 `atMe`、`isPoke`、`replyToBot` 三个可选指向字段，推消息时存下并由 `select.ts` 读成 `directed` 事实，不再恒为假。

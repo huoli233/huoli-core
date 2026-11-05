@@ -3,7 +3,7 @@
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
-import { createInbox, type QqInbox } from './inbox.ts'
+import { createInbox, type QqInbox, type QqMessage } from './inbox.ts'
 import { createAttentionStore, type AttentionStore } from './store.ts'
 import { collectSignals, type AttentionSignals, type SignalMessage } from './select.ts'
 import { registerAttentionTools } from './tools.ts'
@@ -14,6 +14,8 @@ export { NOTE_MAX_CHARS } from './types.ts'
 export type { AttentionStore, AttentionStoreOptions } from './store.ts'
 export type { AttentionSignals, Candidate, CollectInput, SignalMessage } from './select.ts'
 export { collectSignals } from './select.ts'
+export type { AttentionFactsInput, WakePreference } from './facts.ts'
+export { renderAttentionFacts } from './facts.ts'
 export { WAIT_MAX_MS, DEFAULT_READ_LIMIT, DEFAULT_QUIET_MS } from './tools.ts'
 
 /** 一个应用上下文里的运行件 */
@@ -64,12 +66,15 @@ export function apply(ctx: Context, config: Config = {}): void {
   const store = createAttentionStore({ file })
   const selfNames = config.selfNames ?? []
 
-  const toSignal = (message: { seq: number; senderId: string; senderName?: string; text: string; at: number }): SignalMessage => ({
+  const toSignal = (message: QqMessage): SignalMessage => ({
     seq: message.seq,
     senderId: message.senderId,
     ...message.senderName !== undefined ? { senderName: message.senderName } : {},
     text: message.text,
     at: message.at,
+    ...message.atMe !== undefined ? { atMe: message.atMe } : {},
+    ...message.isPoke !== undefined ? { isPoke: message.isPoke } : {},
+    ...message.replyToBot !== undefined ? { replyToBot: message.replyToBot } : {},
   })
 
   const seam: QqAttentionSeam = {

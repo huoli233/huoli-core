@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-一个工具 `note_reflection`。收尾留的话由上层读出来放进提示词。
+一个工具 `note_reflection`。提示词层另可取 `renderContinuityFacts` 渲染出的中文事实段：把上次收尾、这段对话的成色与事后回想并列写出；`closeFacts` 可不建运行件直接截出一条收尾事实。
 
 #### Token effect
 

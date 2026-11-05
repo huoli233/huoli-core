@@ -117,6 +117,21 @@ export function localPoint(at: number, timeZone = ''): LocalPoint {
   return { midnight: midnightMs(wall, timeZone), hour: wall.hour + wall.minute / 60 }
 }
 
+// 日历日固定两位，不随配置改
+const DATE_WIDTH = 2
+
+/**
+ * 取某一刻在指定时区里的本地日历日
+ * @param at - 毫秒时间戳
+ * @param timeZone - 时区名，留空跟随运行环境，认不出的名字也按运行环境算
+ * @returns 年月日字符串
+ */
+export function localDate(at: number, timeZone = ''): string {
+  const wall = wallClock(at, timeZone)
+  const pad = (value: number): string => String(value).padStart(DATE_WIDTH, '0')
+  return `${wall.year}-${pad(wall.month)}-${pad(wall.day)}`
+}
+
 /**
  * 两个时刻在指定时区里隔了几个日历日
  * @param from - 起始毫秒时间戳

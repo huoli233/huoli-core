@@ -63,6 +63,8 @@ export const DEFAULTS: SelfSettings = {
   mirrorScope: 'self:layer',
   driveNeeds: DRIVE_NEEDS,
   identityActions: IDENTITY_ACTIONS,
+  // 规范：同一个身份级动作两次之间至少隔三十分钟
+  identityCooldownMs: 30 * 60_000,
   stage: 'P0',
   publicMinStage: 'P3',
   privateMinStage: 'P3',

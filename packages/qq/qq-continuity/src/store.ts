@@ -2,7 +2,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { NOTE_MAX_CHARS, type CloseInput, type CloseNote, type Reflection } from './close.ts'
+import { NOTE_MAX_CHARS, closeFacts, type CloseInput, type CloseNote, type Reflection } from './close.ts'
 
 /** 存文件的选项 */
 export interface ContinuityStoreOptions {
@@ -44,7 +44,9 @@ function load(file: string): StoredContinuity {
       closes: parsed.closes !== undefined && parsed.closes !== null ? parsed.closes : {},
       reflections: Array.isArray(parsed.reflections) ? parsed.reflections : [],
     }
-  } catch {
+  } catch (readError) {
+    // 收尾文件读坏了按空仓继续，回想下次写入会补回，正式文件不由这里删
+    void readError
     return empty
   }
 }
@@ -71,14 +73,7 @@ export function createContinuityStore(options: ContinuityStoreOptions): Continui
 
   return {
     close(input) {
-      const at = input.at ?? Date.now()
-      const note: CloseNote = {
-        chatKey: input.chatKey,
-        closedAt: at,
-        summary: input.summary.slice(0, NOTE_MAX_CHARS),
-        nextOpening: input.nextOpening.slice(0, NOTE_MAX_CHARS),
-        throughSeq: Number(input.throughSeq) || 0,
-      }
+      const note = closeFacts({ ...input, at: input.at ?? Date.now() })
       data = { ...data, closes: { ...data.closes, [input.chatKey]: note } }
       persist()
       return note
@@ -93,7 +88,7 @@ export function createContinuityStore(options: ContinuityStoreOptions): Continui
         chatKey,
         at,
         kind,
-        text: text.slice(0, 300),
+        text: text.slice(0, NOTE_MAX_CHARS),
       }
       data = { ...data, reflections: [...data.reflections, item].slice(-200) }
       persist()

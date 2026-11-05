@@ -165,6 +165,19 @@ export function collectMaterial(input: CollectInput): Material {
   }
 }
 
+/** 一整份素材事实的入参，装配层可只按这份调用 */
+export type MaterialFactsInput = Omit<CollectInput, 'now'> & { now: number; thoughts?: readonly Thought[] }
+
+/**
+ * 整理一份素材事实，装配层不需要先建运行件
+ * @param input - 现场消息、时刻与惦记的事
+ * @returns 只含事实的一份素材
+ */
+export function collectMaterialFacts(input: MaterialFactsInput): Material {
+  const material = collectMaterial({ ...input, now: input.now })
+  return { ...material, thoughts: [...(input.thoughts ?? [])] }
+}
+
 /**
  * 把素材写成几行字，给模型看
  * @param material - 素材
@@ -182,4 +195,13 @@ export function renderMaterial(material: Material): string {
     lines.push(`心里惦记着：${material.thoughts.map(item => item.text).join('；')}`)
   }
   return lines.length === 0 ? '群里没什么可接的话。' : lines.join('\n')
+}
+
+/**
+ * 把现场素材写成一段中文事实，装配层可直接拼进提示词
+ * @param input - 现场消息、时刻与惦记的事
+ * @returns 一段中文事实
+ */
+export function renderMaterialFacts(input: MaterialFactsInput): string {
+  return renderMaterial(collectMaterialFacts(input))
 }

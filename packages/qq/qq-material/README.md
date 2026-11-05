@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-两个工具 `write_thought` 与 `drop_thought`。素材本身由上层拼进提示词。
+两个工具 `write_thought` 与 `drop_thought`。提示词层另可取 `renderMaterialFacts` 渲染出的中文事实段，或由 `collectMaterialFacts` 直接取一份素材事实；两者都不要求先建运行件。
 
 #### Token effect
 
