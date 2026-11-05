@@ -2,7 +2,7 @@
 
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
-import type { ThoughtStore } from './thought.ts'
+import { THOUGHT_MAX_CHARS, THOUGHT_MIN_CHARS, type ThoughtStore } from './thought.ts'
 
 /** 工具要用到的东西 */
 export interface MaterialToolDeps {
@@ -42,8 +42,8 @@ export function registerMaterialTools(ctx: Context, deps: MaterialToolDeps): voi
     execute(args, exec) {
       const chatKey = chatKeyOf(exec)
       const text = typeof args.text === 'string' ? args.text.trim() : ''
-      if (text.length < 2) refuse('material.too_short', '太短了', '写清一句具体的话')
-      if (text.length > 200) refuse('material.too_long', '一条最多 200 字', '挑最要紧的那句')
+      if (text.length < THOUGHT_MIN_CHARS) refuse('material.too_short', '太短了', '写清一句具体的话')
+      if (text.length > THOUGHT_MAX_CHARS) refuse('material.too_long', `一条最多 ${THOUGHT_MAX_CHARS} 字`, '挑最要紧的那句')
       const item = thoughts.add(text, chatKey)
       return Promise.resolve({ id: item.id, text: item.text, expiresAt: item.expiresAt })
     },

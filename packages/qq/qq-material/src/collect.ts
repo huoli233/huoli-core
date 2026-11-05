@@ -67,8 +67,36 @@ export interface CollectInput {
 /** 念头多久算过期 */
 export const THOUGHT_TTL_MS = 2 * 60 * 60_000
 
+/** 采集这一层的默认值：看多少条、话题句多长、热度怎么算、几条动机门槛 */
+export const COLLECT_DEFAULTS = {
+  /** 一眼看多少条 */
+  lookback: 30,
+  /** 一句够格当话题的最少字数 */
+  topicMinChars: 4,
+  /** 话题句最多截多少字 */
+  topicMaxChars: 60,
+  /** 名字至少几个字才算认得出 */
+  nameMinChars: 2,
+  /** 被直接点到时的把握 */
+  atMeConfidence: 1,
+  /** 从话里推出在跟谁说的把握 */
+  inferredConfidence: 0.6,
+  /** 只靠最近一条推的把握 */
+  weakConfidence: 0.2,
+  /** 算热度时回头看多少毫秒 */
+  heatWindowMs: 10 * 60_000,
+  /** 算热度时按多少分钟摊 */
+  heatMinutes: 10,
+  /** 热度里每分钟几条就算满，这个除数 */
+  heatPerMinute: 2,
+  /** 无聊、好奇、社交饿过这条线才进动机表 */
+  motiveFrom: 0.5,
+  /** 想分享这条动机的权重 */
+  wannaShareWeight: 0.4,
+}
+
 // 一眼看多少条
-const LOOKBACK = 30
+const LOOKBACK = COLLECT_DEFAULTS.lookback
 
 // 去掉零宽字符并折叠全角
 function normalize(text: string): string {
@@ -81,7 +109,7 @@ function pickTopic(messages: CollectInput['messages']): string {
     const item = messages[at]
     if (item === undefined || item.self === true) continue
     const text = item.text.trim()
-    if (text.length >= 4) return text.slice(0, 60)
+    if (text.length >= COLLECT_DEFAULTS.topicMinChars) return text.slice(0, COLLECT_DEFAULTS.topicMaxChars)
   }
   return ''
 }
@@ -92,14 +120,14 @@ function pickQuestion(messages: CollectInput['messages']): string {
     const item = messages[at]
     if (item === undefined || item.self === true) continue
     const text = item.text.trim()
-    if (/[?？]/.test(text) || /(吗|呢|吧|么|嘛)$/.test(text.replace(/[。！!…~～\s]+$/, ''))) return text.slice(0, 60)
+    if (/[?？]/.test(text) || /(吗|呢|吧|么|嘛)$/.test(text.replace(/[。！!…~～\s]+$/, ''))) return text.slice(0, COLLECT_DEFAULTS.topicMaxChars)
   }
   return ''
 }
 
 // 谁最后被叫到
 function pickAddressee(messages: CollectInput['messages'], selfNames: string[]): Addressee {
-  const names = selfNames.map(normalize).filter(name => name.length >= 2)
+  const names = selfNames.map(normalize).filter(name => name.length >= COLLECT_DEFAULTS.nameMinChars)
   for (let at = messages.length - 1; at >= 0; at -= 1) {
     const item = messages[at]
     if (item === undefined || item.self === true) continue
@@ -109,7 +137,7 @@ function pickAddressee(messages: CollectInput['messages'], selfNames: string[]):
       return {
         userId: item.senderId,
         name: item.senderName ?? item.senderId,
-        confidence: item.atMe === true ? 1 : 0.6,
+        confidence: item.atMe === true ? COLLECT_DEFAULTS.atMeConfidence : COLLECT_DEFAULTS.inferredConfidence,
         evidence: item.atMe === true ? ['直接点了机器人'] : ['文本里出现名字'],
       }
     }
@@ -119,7 +147,7 @@ function pickAddressee(messages: CollectInput['messages'], selfNames: string[]):
   return {
     userId: last.senderId,
     name: last.senderName ?? last.senderId,
-    confidence: 0.2,
+    confidence: COLLECT_DEFAULTS.weakConfidence,
     evidence: ['最后说话的人'],
   }
 }
@@ -133,12 +161,12 @@ export function collectMaterial(input: CollectInput): Material {
   const now = input.now ?? Date.now()
   const messages = input.messages.slice(-LOOKBACK)
   const humans = messages.filter(item => item.self !== true)
-  const recent = humans.filter(item => now - item.at <= 10 * 60_000)
+  const recent = humans.filter(item => now - item.at <= COLLECT_DEFAULTS.heatWindowMs)
   const lastHuman = humans[humans.length - 1]
   const lastSelf = [...messages].reverse().find(item => item.self === true)
 
-  const minutes = Math.max(1, 10)
-  const heat = Math.min(1, recent.length / minutes / 2)
+  const minutes = Math.max(1, COLLECT_DEFAULTS.heatMinutes)
+  const heat = Math.min(1, recent.length / minutes / COLLECT_DEFAULTS.heatPerMinute)
 
   const situation: Situation = {
     who: lastHuman !== undefined ? lastHuman.senderName ?? lastHuman.senderId : '',
@@ -151,10 +179,10 @@ export function collectMaterial(input: CollectInput): Material {
   const bored = input.boredom ?? 0
   const curious = input.curiosity ?? 0
   const lonely = input.socialHunger ?? 0
-  if (bored > 0.5) motives.push({ need: 'bored', weight: bored })
-  if (curious > 0.5) motives.push({ need: 'curious', weight: curious })
-  if (lonely > 0.5) motives.push({ need: 'lonely', weight: lonely })
-  if (situation.topic !== '') motives.push({ need: 'wanna_share', weight: 0.4 })
+  if (bored > COLLECT_DEFAULTS.motiveFrom) motives.push({ need: 'bored', weight: bored })
+  if (curious > COLLECT_DEFAULTS.motiveFrom) motives.push({ need: 'curious', weight: curious })
+  if (lonely > COLLECT_DEFAULTS.motiveFrom) motives.push({ need: 'lonely', weight: lonely })
+  if (situation.topic !== '') motives.push({ need: 'wanna_share', weight: COLLECT_DEFAULTS.wannaShareWeight })
 
   return {
     situation,

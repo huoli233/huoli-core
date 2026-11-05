@@ -10,6 +10,15 @@ export interface ThoughtStoreOptions {
   now?: () => number
 }
 
+/** 念头最多攒几条，多了就丢最旧的 */
+export const THOUGHTS_KEEP = 50
+
+/** 一条念头最长几个字 */
+export const THOUGHT_MAX_CHARS = 200
+
+/** 一条念头最短几个字 */
+export const THOUGHT_MIN_CHARS = 2
+
 /** 念头仓 */
 export interface ThoughtStore {
   all(): Thought[]
@@ -89,7 +98,7 @@ export function createThoughtStore(options: ThoughtStoreOptions): ThoughtStore {
         expiresAt: at + THOUGHT_TTL_MS,
         chatKey,
       }
-      items = [...items, item].slice(-50)
+      items = [...items, item].slice(-THOUGHTS_KEEP)
       persist()
       return { id: item.id, text: item.text, at: item.at, expiresAt: item.expiresAt }
     },
