@@ -9,6 +9,12 @@ export interface ContinuityStoreOptions {
   file: string
 }
 
+/** 回想最多留几条，多了就丢最旧的 */
+export const REFLECTIONS_KEEP = 200
+
+/** 问回想时默认给几条 */
+export const REFLECTIONS_DEFAULT_LIMIT = 5
+
 /** 收尾仓 */
 export interface ContinuityStore {
   close(input: CloseInput): CloseNote
@@ -90,13 +96,13 @@ export function createContinuityStore(options: ContinuityStoreOptions): Continui
         kind,
         text: text.slice(0, NOTE_MAX_CHARS),
       }
-      data = { ...data, reflections: [...data.reflections, item].slice(-200) }
+      data = { ...data, reflections: [...data.reflections, item].slice(-REFLECTIONS_KEEP) }
       persist()
       return item
     },
     reflections(chatKey, limit) {
       const all = data.reflections.filter(item => item.chatKey === chatKey)
-      const size = Math.max(1, limit ?? 5)
+      const size = Math.max(1, limit ?? REFLECTIONS_DEFAULT_LIMIT)
       return all.slice(-size)
     },
     flush() {

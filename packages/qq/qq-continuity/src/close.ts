@@ -38,8 +38,11 @@ export interface CloseInput {
 /** 收尾时留的话最多几个字 */
 export const NOTE_MAX_CHARS = 200
 
+/** 一分钟的毫秒数，单位换算，不随配置改 */
+export const MS_PER_MINUTE = 60_000
+
 /** 一段对话至少聊多久才算数 */
-export const MIN_RUN_MS = 60_000
+export const MIN_RUN_MS = MS_PER_MINUTE
 
 /** 只按输入截出一条收尾事实，不碰落盘 */
 export type CloseFactsInput = Omit<CloseInput, 'at'> & { at: number }
@@ -94,7 +97,7 @@ export function evaluateOutcome(messages: Array<{ self?: boolean; at: number }>,
   const selves = messages.filter(item => item.self === true)
   const first = messages[0]
   const last = messages[messages.length - 1]
-  const runMinutes = first !== undefined && last !== undefined ? Math.max(0, Math.round((last.at - first.at) / 60_000)) : 0
+  const runMinutes = first !== undefined && last !== undefined ? Math.max(0, Math.round((last.at - first.at) / MS_PER_MINUTE)) : 0
   const lastSelfAt = selves.reduce((acc, item) => Math.max(acc, item.at), 0)
   const gotReply = lastSelfAt > 0 && humans.some(item => item.at > lastSelfAt)
   void now
