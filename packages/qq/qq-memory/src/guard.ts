@@ -42,6 +42,12 @@ export function metadataOr(value: unknown): Record<string, unknown> | undefined 
   return value as Record<string, unknown>
 }
 
+/** 重要度刻度的下限，与记忆规范同一把尺 */
+export const IMPORTANCE_MIN = 1
+
+/** 重要度刻度的上限，与记忆规范同一把尺 */
+export const IMPORTANCE_MAX = 100
+
 /**
  * 重要度夹到 1 到 100 的整数
  * @param value - 想写的值
@@ -50,5 +56,5 @@ export function metadataOr(value: unknown): Record<string, unknown> | undefined 
  */
 export function clampImportance(value: number | undefined, fallback: number): number {
   const raw = value === undefined || !Number.isFinite(value) ? fallback : value
-  return Math.min(100, Math.max(1, Math.round(raw)))
+  return Math.min(IMPORTANCE_MAX, Math.max(IMPORTANCE_MIN, Math.round(raw)))
 }

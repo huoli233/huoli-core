@@ -3,6 +3,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
+import { IMPORTANCE_MAX, IMPORTANCE_MIN } from './guard.ts'
 import {
   CLARITY_ORDER,
   clarityFor,
@@ -71,10 +72,13 @@ function pick<T extends string>(value: unknown, allowed: readonly T[], fallback:
   return typeof value === 'string' && (allowed as readonly string[]).includes(value) ? value as T : fallback
 }
 
+/** 旧版情绪强度是 24 分制，读回来按这个分母折算成零到一 */
+const LEGACY_INTENSITY_SCALE = 24
+
 // 情绪强度按 0 到 1 记，旧的 24 分制折算回来
 function emotionalOr(value: unknown): number {
   const raw = numberOr(value, 0)
-  const scaled = raw > 1 ? raw / 24 : raw
+  const scaled = raw > 1 ? raw / LEGACY_INTENSITY_SCALE : raw
   return Math.min(1, Math.max(0, scaled))
 }
 
@@ -86,7 +90,7 @@ function normalizeItem(raw: Record<string, unknown>, now: number): MemoryItem {
   const importanceRaw = numberOr(raw.importance, 0)
   // 重要度每天按小数往下掉，读回来只补到一位小数，不能取整抹掉掉落进度
   const importance = importanceRaw > 0
-    ? Math.min(100, Math.max(1, quantizeImportance(importanceRaw)))
+    ? Math.min(IMPORTANCE_MAX, Math.max(IMPORTANCE_MIN, quantizeImportance(importanceRaw)))
     : initialImportance({ scene: 'group' })
   const computed = clarityFor(retention({ importance, at, lastSeenAt, recallCount }, now))
   const clarity = pick<Clarity>(raw.clarity, CLARITY_ORDER, computed)
