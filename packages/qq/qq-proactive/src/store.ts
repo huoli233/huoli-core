@@ -1,4 +1,4 @@
-// 攒着的想说话：先放这里，等闸门放行再发
+// 攒着的想说话：先放这里，等关卡放行再发
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -79,14 +79,14 @@ function save(file: string, data: StoredPending): void {
   fs.renameSync(temporary, file)
 }
 
-/** 攒着的与记账共用一份文件：只有一个 owner，改一处存一次，两个视图读同一份内存 */
+/** 攒着的与记录共用一份文件：只有一个 owner，改一处存一次，两个视图读同一份内存 */
 export interface ProactiveStore {
   pending: PendingStore
   timing: TimingStore
   flush(): void
 }
 
-/** 本次开口的时间与次数记账 */
+/** 本次开口的时间与次数记录 */
 export interface TimingStore {
   lastSpokenAt(chatKey: string): number
   todayCount(chatKey: string): number
@@ -212,9 +212,9 @@ export function createPendingStore(options: PendingStoreOptions): PendingStore {
 }
 
 /**
- * 只拿记账这一面
+ * 只拿记一笔这一面
  * @param options - 选项
- * @returns 时间与次数记账
+ * @returns 时间与次数记一笔
  */
 export function createTimingStore(options: PendingStoreOptions): TimingStore {
   return createProactiveStore(options).timing

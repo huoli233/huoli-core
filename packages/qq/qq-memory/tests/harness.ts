@@ -6,7 +6,7 @@ import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { apply, qqMemoryOf, type QqMemorySeam } from '../src/index.ts'
 import type { Tuning } from '../src/defaults.ts'
 
-// 工具体只读会话编号，其余执行字段由内核在真实调用时注入
+// 工具体只读会话编号，其余字段由内核在真实调用时给
 export function execOf(chatKey: string): ToolRunContext {
   return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal: new AbortController().signal })
 }
@@ -23,6 +23,10 @@ export interface MountOptions {
   healthLogFile?: string
   queueFile?: string
   tuning?: Partial<Tuning>
+  /** 向量仓怎么存，用例要试它就传 pglite */
+  vectorStore?: 'off' | 'pglite'
+  /** 向量仓的数据放哪 */
+  vectorDir?: string
 }
 
 const tempDirs: string[] = []
@@ -44,7 +48,7 @@ export function tempFile(): string {
   return path.join(tempDir(), 'memory.json')
 }
 
-// 跟记忆文件放一起的账本
+// 跟记忆文件放一起的记录
 export function ledgerBeside(file: string): string {
   return path.join(path.dirname(file), 'qq-memory-ledger.json')
 }
@@ -77,6 +81,8 @@ export function mount(options: MountOptions): Mounted {
     healthLogFile: options.healthLogFile ?? healthLogBeside(options.file),
     queueFile: options.queueFile ?? queueBeside(options.file),
     ...options.tuning !== undefined ? { tuning: options.tuning } : {},
+    ...options.vectorStore !== undefined ? { vectorStore: options.vectorStore } : {},
+    ...options.vectorDir !== undefined ? { vectorDir: options.vectorDir } : {},
   })
   const seam = qqMemoryOf(ctx)
   if (seam === undefined) throw new Error('记忆没有装配')

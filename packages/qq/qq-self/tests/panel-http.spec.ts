@@ -347,7 +347,7 @@ describe('页面', () => {
     expect(page).toContain('睡眠压力')
   })
 
-  it('体内环境只画拿得到的那几条，缺的不占位', () => {
+  it('体内环境只画拿得到的那几条，缺的不位置', () => {
     const page = panelPage({ ...STATE, vitals: { thirst: 0.5, temp: 36.8, pain: 0.1 } })
 
     expect(page).toContain('data-keys="temp,pain"')
@@ -364,6 +364,30 @@ describe('页面', () => {
     expect(page).toContain('副交感')
     expect(page).toContain('width:60%')
     expect(page).toContain('width:30%')
+  })
+
+  it('五组双条另有一张粒子画布，两边读数都带出去', () => {
+    const page = panelPage({
+      ...STATE,
+      vitals: {
+        thirst: 0.5,
+        pairs: [
+          { name: '自主神经', a: '交感', av: 0.6, b: '副交感', bv: 0.3 },
+          { name: '奖赏', a: '想要', av: 0.2, b: '满足', bv: 0.8 },
+        ],
+      },
+    })
+
+    expect(page).toContain('canvas class="particles"')
+    expect(page).toContain('流向')
+    expect(page).toContain('&quot;av&quot;:0.6')
+    expect(page).toContain('&quot;bv&quot;:0.8')
+  })
+
+  it('没有双条就没有粒子画布，不留空画布', () => {
+    const page = panelPage({ ...STATE, vitals: { thirst: 0.5 } })
+
+    expect(page).not.toContain('canvas class="particles"')
   })
 
   it('没有身体读数时这几块整块省掉，只说身体没接上', () => {

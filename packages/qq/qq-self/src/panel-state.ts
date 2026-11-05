@@ -16,7 +16,7 @@ export interface PanelStateInput {
   panel: string
   /** 面板首行记的生成时间，还没生成时为空串 */
   generatedAt: string
-  /** 两档账，由账本自己算好递进来，两档从不相加 */
+  /** 两档账，由记录表自己算好递进来，两档从不相加 */
   ledger: LedgerSummary
   /** 画条要用的那几个数，没接上身体时不给 */
   vitals?: PanelVitals

@@ -1,4 +1,4 @@
-// 主动开口装配入口：攒理由、过闸门、先给你看，说不说由模型定
+// 主动开口装配入口：攒理由、过关卡、先给你看，说不说由模型定
 
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
@@ -86,7 +86,7 @@ export interface ConsiderInput {
 
 /** 这一行接受的配置 */
 export interface Config {
-  /** 攒着的和记账都放这个文件，不填就用主目录下的 data */
+  /** 攒着的和记录都放这个文件，不填就用主目录下的 data */
   file?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
@@ -144,7 +144,7 @@ export const inject: string[] = []
  */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-proactive.json')
-  // 攒着的与记账读同一份文件，只由这一个 owner 写，谁也不会把谁整份覆盖掉
+  // 攒着的与记一笔读同一份文件，只由这一个 owner 写，谁也不会把谁整份覆盖掉
   const store = createProactiveStore({ file })
   const pending = store.pending
   const timing = store.timing

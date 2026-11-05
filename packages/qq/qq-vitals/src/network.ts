@@ -58,9 +58,9 @@ export function deltaOf(pass: NetworkPass, field: NetworkField): number {
 }
 
 /**
- * 当前边表的副本，供排障与文档用，不进提示词
+ * 当前边表的抄本，供排障与文档用，不进提示词
  * @param tuning - 参数
- * @returns 边表副本，改它不影响参数
+ * @returns 边表抄本，改它不影响参数
  */
 export function describeNetwork(tuning: Tuning): readonly NetworkEdge[] {
   return tuning.networkEdges.map(edge => ({ ...edge }))

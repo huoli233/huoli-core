@@ -10,6 +10,7 @@ import {
 } from '@huoli/huoli-qq-policy'
 import { DEFAULTS, type Tuning } from './defaults.ts'
 import type { MemoryStore } from './store.ts'
+import { cosineSimilarity, encodeVector } from './recall.ts'
 import type { MemoryItem } from './types.ts'
 
 // 刚发生的记忆多久后可以变成这段经历
@@ -139,4 +140,72 @@ export function touch(store: MemoryStore, id: string, now: number, tuning: Tunin
     patch.recoverTimes = usedToday + 1
   }
   store.update(id, patch)
+}
+
+/** 合并式遗忘的结果 */
+export interface MergeResult {
+  /** 并掉了几条 */
+  merged: number
+  /** 被并进别人身上的那些编号 */
+  retired: string[]
+}
+
+/**
+ * 合并式遗忘：又旧又不重要的两条几乎同文时并成一条，重要的那条永不合并
+ * @param store - 存放的地方
+ * @param tuning - 门槛：多低算不重要、多久算旧、多像算同一条
+ * @param now - 现在的时间
+ * @returns 并掉几条、并进了哪几条
+ */
+export function mergeForgotten(store: MemoryStore, tuning: Tuning = DEFAULTS, now = Date.now()): MergeResult {
+  const retired: string[] = []
+  const old = now - tuning.mergeAfterDays * 86_400_000
+  // 只碰又旧又不重要的：重要的、私密的、标成核心的一律不动
+  const candidates = store.all().filter(item =>
+    item.state === 'active'
+    && item.clarity !== 'forgotten'
+    && item.importance < tuning.mergeBelow
+    && item.at < old
+    && item.layer !== 'private'
+    && item.secret !== true
+    && item.metadata?.core !== true)
+  for (const item of candidates) {
+    // 以库里现在的状态为准：刚被并掉的那条不能再当自己那一端
+    const live = store.byId(item.id)
+    if (live === undefined || live.state !== 'active') continue
+    // 两两直接比：不能拿自己跟自己比，那样每次都命中自己
+    let best: { id: string; similarity: number } | undefined
+    const body = encodeVector(item.text)
+    for (const other of candidates) {
+      if (other.id === item.id || other.state !== 'active' || other.scope !== item.scope) continue
+      const similarity = cosineSimilarity(body, encodeVector(other.text))
+      if (similarity === null || similarity < tuning.nearDuplicateRatio) continue
+      if (best === undefined || similarity > best.similarity) best = { id: other.id, similarity }
+    }
+    const like = best
+    if (like === undefined) continue
+    const target = store.byId(like.id)
+    if (target === undefined || target.state === 'forgotten') continue
+    // 谁重留谁；一样重就留更早那条
+    const keep = target.importance >= item.importance ? target : item
+    const drop = keep.id === item.id ? target : item
+    if (drop.importance >= tuning.mergeBelow) continue
+    const merged = store.byId(keep.id)
+    if (merged === undefined) continue
+    store.update(keep.id, {
+      importance: Math.max(merged.importance, drop.importance),
+      recallCount: merged.recallCount + drop.recallCount,
+      metadata: { ...merged.metadata, mergedFrom: [drop.id] },
+    })
+    // 被并掉的那条不删，标成已退役，写清并进了谁
+    store.update(drop.id, {
+      state: 'forgotten',
+      clarity: 'forgotten',
+      retiredAt: now,
+      text: '',
+      metadata: { ...drop.metadata, mergedInto: keep.id },
+    })
+    retired.push(drop.id)
+  }
+  return { merged: retired.length, retired }
 }

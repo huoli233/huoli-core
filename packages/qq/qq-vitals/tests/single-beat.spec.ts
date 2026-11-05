@@ -4,9 +4,9 @@ import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import { afterEach, describe, expect, it } from 'vitest'
-import { apply as applyVitals, createVitalsStore, emptyState, qqVitalsOf, resolveTuning } from '../src/index.ts'
+import { apply as applyVitals, createVitalsStore, emptyState, qqVitalsOf, resolveTuning, WORDS_PRESET } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const SEED = new Date(2026, 10, 3, 7, 30, 0).getTime()
 const roots: string[] = []
 const contexts: Context[] = []
@@ -26,7 +26,7 @@ async function mount(file: string): Promise<{ ctx: Context; logs: string[] }> {
   const logs: string[] = []
   ctx.logger.exporter({ levels: { default: 3 }, export: ({ args }) => { logs.push(String(args[0])) } })
   await ctx.plugin(SystemPrompt, {})
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   return { ctx, logs }
 }
 

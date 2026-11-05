@@ -7,9 +7,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   apply, createVitalsStore, dreamFactOf, dreamMoodOf, drawDream, drift, emptyState, qqVitalsOf, resolveTuning,
   type DreamFact, type DreamKind, type DreamMood, type QqVitalsSeam, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 
 // 用例里的时刻一律写死，跑在哪一天、哪个时区都一样
 function moment(day: number, hour: number, minute = 0): number {
@@ -20,7 +21,7 @@ function fresh(overrides: Partial<VitalsState> = {}, at = moment(1, 10)): Vitals
   return { ...emptyState(tuning, at), ...overrides }
 }
 
-// 固定随机源：每次抽签都拿同一个值，边界才断言得动
+// 固定随机源：每次抽签都拿同一个值，边界才好验
 function constant(value: number): () => number {
   return () => value
 }
@@ -43,7 +44,7 @@ async function mount(file: string): Promise<{ ctx: Context; seam: QqVitalsSeam }
   const ctx = new Context()
   contexts.push(ctx)
   await ctx.plugin(SystemPrompt, {})
-  apply(ctx, { file, tuning: { startDelayMs: 1 } })
+  apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 1 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('状态没装上')
   return { ctx, seam }
@@ -132,7 +133,7 @@ describe('三档心情的抽签边界', () => {
   })
 
   it('概率全在参数里，改一条就换个结果', () => {
-    const allSweet = resolveTuning({ dreamSweetNormal: 1.0, dreamSweetBad: 1.0 })
+    const allSweet = resolveTuning({ words: WORDS_PRESET, dreamSweetNormal: 1.0, dreamSweetBad: 1.0 })
 
     expect(drawDream('normal', constant(0.9), tuning)).toBe('plain')
     expect(drawDream('normal', constant(0.9), allSweet)).toBe('sweet')

@@ -1,9 +1,9 @@
 // 按规范第 12 章那张验收表逐条跑一遍：全部在内存里算，不碰真实状态
 
 import { pathToFileURL } from 'node:url'
-import { derive, drift, emptyState, react, renderPrompt, resolveTuning, type VitalsState } from '../src/index.ts'
+import { derive, drift, emptyState, react, renderPrompt, resolveTuning, type VitalsState, WORDS_PRESET } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const HOUR = 3_600_000
 
 /** 一条验收的结论 */
@@ -21,7 +21,7 @@ function fresh(at: number, overrides: Partial<VitalsState> = {}): VitalsState {
   return { ...emptyState(tuning, at), ...overrides }
 }
 
-// 说一句话：写回之后还要算一次派生量，标签与主动劲都在那一步才更新
+// 说一句话：写回之后还要算一次算出来的量，标签与主动劲都在那一步才更新
 function hit(state: VitalsState, text: string, at: number): VitalsState {
   return derive(react(state, text, at, tuning), tuning)
 }
@@ -31,7 +31,7 @@ function later(state: VitalsState, hours: number): VitalsState {
   return drift(state, state.last_update + hours * HOUR, tuning, () => 0.5)
 }
 
-// 结算到某一刻并把派生量一起算出来：标签与派生量只有这一步之后才是新的
+// 结算到某一刻并把算出来的量一起算出来：标签与算出来的量只有这一步之后才是新的
 function settle(state: VitalsState, at: number): VitalsState {
   return derive(drift(state, at, tuning, () => 0.5), tuning)
 }
@@ -131,7 +131,7 @@ export function runAccept(): AcceptRow[] {
     `第二杯把口渴从 ${first.thirst.toFixed(3)} 改成了 ${second.thirst.toFixed(3)}`,
   ))
 
-  // 注入检查：提示词里真能看到这一段
+  // 放进检查：提示词里真能看到这一段
   rows.push(row(
     '提示词里有神经状态那一段',
     note.includes('【你现在的神经状态'),

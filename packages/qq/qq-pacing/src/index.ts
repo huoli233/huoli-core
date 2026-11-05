@@ -13,7 +13,7 @@ export type { ReplyFacts, ReplyRange, ReplyTier, ReplyTuning } from './reply.ts'
 export type { PacingStore, PacingFixedClockOptions, PacingStoreOptions } from './store.ts'
 export { createPacingStore } from './store.ts'
 
-/** 一个应用里的记账仓 */
+/** 一个应用里的记录仓 */
 export interface QqPacingSeam {
   store: PacingStore
   plan(text: string): PlannedSpeech
@@ -24,7 +24,7 @@ export interface QqPacingSeam {
 
 /** 这一行接受的配置 */
 export interface Config {
-  /** 记账文件放哪，不填就用主目录下的 data */
+  /** 记录文件放哪，不填就用主目录下的 data */
   file?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
@@ -45,7 +45,7 @@ export interface Config {
 const seams = new WeakMap<Context, QqPacingSeam>()
 
 /**
- * 取记账仓，未装配时为 undefined
+ * 取记一笔仓，未装配时为 undefined
  * @param ctx - 运行环境
  * @returns 处理结果
  */

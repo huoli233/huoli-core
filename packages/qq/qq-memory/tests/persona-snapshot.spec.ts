@@ -8,7 +8,7 @@ import { cleanupTempDirs, mount, tempFile } from './harness.ts'
 
 const NOW = new Date(2026, 10, 4, 9, 30).getTime()
 
-// 一份记得住事、能给注入挑出条目的记忆
+// 一份记得住事、能给提示词挑出条目的记忆
 function seeded(text = '上次一起爬山的那天很热'): string {
   const file = tempFile()
   const { seam } = mount({ file })

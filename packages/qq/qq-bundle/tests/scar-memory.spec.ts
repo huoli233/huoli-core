@@ -12,6 +12,7 @@ import {
   qqVitalsOf,
   resolveTuning,
   type ScarFact,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle, type Config } from '../src/index.ts'
@@ -44,9 +45,9 @@ function tempDir(): string {
 interface Mounted {
   ctx: Context
   memory: QqMemorySeam
-  /** 组合包发过几次订阅、眼下还挂着几个监听 */
+  /** 组合包发过几次挂上、眼下还挂着几个监听 */
   live: { subscribed: number; listeners: number }
-  /** 把留下这道疤的那一刻递给组合包订阅进来的那个回调 */
+  /** 把留下这道疤的那一刻递给组合包挂上进来的那个被叫到时做的事 */
   deliver: (fact: ScarFact) => void
 }
 
@@ -65,8 +66,8 @@ async function mount(config: Config = {}, options: MountOptions = {}): Promise<M
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
-  // 记忆的四个文件都落在临时目录里，队列与账本不去碰主目录那份
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
+  // 记忆的四个文件都落在临时目录里，队列与记录不去碰主目录那份
   applyMemory(ctx, {
     file: path.join(dir, 'memory.json'),
     ledgerFile: path.join(dir, 'ledger.json'),
@@ -79,7 +80,7 @@ async function mount(config: Config = {}, options: MountOptions = {}): Promise<M
   if (vitals === undefined || memory === undefined) throw new Error('零件没有装配')
   const live = { subscribed: 0, listeners: 0 }
   const listeners = new Set<(fact: ScarFact) => void>()
-  // 订阅只能由组合包发出：在它动手之前把订阅那头包一层，顺手留住它递过来的回调
+  // 这些只能由组合包挂上去：在它动手之前把那一头包一层，顺手留住它递过来的函数
   const subscribe = vitals.onScar.bind(vitals)
   vitals.onScar = (listener) => {
     const off = subscribe(listener)
@@ -166,7 +167,7 @@ describe('一小时内只写一条', () => {
 })
 
 describe('写记忆失手', () => {
-  it('只记一行日志，回调照常返回', async () => {
+  it('只记一行日志，被叫到时做的事照常返回', async () => {
     const { ctx, memory, deliver } = await mount()
     const failing = vi.spyOn(memory, 'write').mockImplementation(() => {
       throw new Error('磁盘满了')
@@ -192,7 +193,7 @@ describe('没有活跃会话', () => {
 })
 
 describe('开关关着', () => {
-  it('一个订阅都没有，零写入', async () => {
+  it('一个挂上都没有，零写入', async () => {
     const { memory, live, deliver } = await mount({ scarMemory: false })
 
     expect(live.subscribed).toBe(0)
@@ -206,7 +207,7 @@ describe('开关关着', () => {
 })
 
 describe('卸载之后', () => {
-  it('订阅撤掉了，再来一道疤也不写', async () => {
+  it('挂上撤掉了，再来一道疤也不写', async () => {
     const { ctx, memory, deliver, live } = await mount()
     deliver(scar(9))
     expect(memory.store.all()).toHaveLength(1)

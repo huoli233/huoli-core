@@ -26,13 +26,13 @@ describe('从消息段里挤出文字', () => {
     expect(textOf('就是一句话')).toBe('就是一句话')
   })
 
-  it('转发聊天记录留一个占位，不当成空消息', () => {
+  it('转发聊天记录留一个位置，不当成空消息', () => {
     expect(textOf([{ type: 'forward', data: { id: 'abc' } }])).toBe('[转发的聊天记录]')
     expect(textOf([{ type: 'forward', data: { id: 'abc' } }, { type: 'text', data: { text: '看看' } }]))
       .toBe('[转发的聊天记录]看看')
   })
 
-  it('文件、语音、视频、卡片、表情包各有各的占位', () => {
+  it('文件、语音、视频、卡片、表情包各有各的位置', () => {
     expect(textOf([{ type: 'file', data: { name: 'a.txt' } }])).toBe('[文件]')
     expect(textOf([{ type: 'record', data: {} }])).toBe('[语音]')
     expect(textOf([{ type: 'video', data: {} }])).toBe('[视频]')
@@ -47,7 +47,7 @@ describe('从消息段里挤出文字', () => {
 })
 
 describe('是不是一句话', () => {
-  it('有字才算，只由占位拼出来的不算', () => {
+  it('有字才算，只由位置拼出来的不算', () => {
     expect(hasWords('喝了水')).toBe(true)
     expect(hasWords('@小岸 你看这个[图片]')).toBe(true)
     expect(hasWords('[表情]')).toBe(false)

@@ -121,7 +121,7 @@ export type {
 export interface QqSelfSeam {
   /** 这块自我落在哪个目录 */
   readonly dir: string
-  /** 面板正文，主会话注入与验收都用它 */
+  /** 面板正文，主会话放进与验收都用它 */
   panel(): string
   /** 已生成的那份面板正文，只读缓存文件，不重算 */
   panelText(chatKey: string): string
@@ -186,7 +186,7 @@ export interface QqSelfSeam {
   identityOf(): IdentityRow | undefined
   /** 叙事全文，还没生成时为空串 */
   narrative(): string
-  /** 首次生成叙事骨架，已有那份就不动 */
+  /** 首次生成叙事底稿，已有那份就不动 */
   seedNarrative(): WriteOutcome
   /** 换掉或续写叙事的一章 */
   updateNarrative(chapter: string, text: string, mode?: 'replace' | 'append'): WriteOutcome
@@ -212,6 +212,18 @@ export interface QqSelfSeam {
   errors(sinceAt?: number): ErrorRow[]
   /** 近七天的汇总：三行、错处、两档账、项目状态 */
   weeklyReview(now: number): WeeklyReview
+  /** 记一条每月十问：一个月一条，正好十问 */
+  probe(answers: readonly string[], at: number): WriteOutcome
+  /** 三行真写进去了才通知，返回撤掉的函数 */
+  onDay(listener: (lines: readonly string[], at: number) => void): () => void
+  /** 阶段真推进了才通知，返回撤掉的函数 */
+  onStage(listener: (from: string, to: string, at: number) => void): () => void
+  /** 叙事真写进去了才通知，返回撤掉的函数 */
+  onNarrative(listener: (chapter: string, text: string, at: number) => void): () => void
+  /** 十问真写进去了才通知，返回撤掉的函数 */
+  onProbe(listener: (answers: readonly string[], at: number) => void): () => void
+  /** 这个月那一次十问，没写过就是 undefined */
+  probeThisMonth(at: number): Record<string, unknown> | undefined
   /**
    * 列一个种类的旧版本，最近的在前
    * @param kind - 面板还是叙事
@@ -242,10 +254,14 @@ export interface Config {
   dir?: string
   /** 数据根目录，不给就用默认的家目录 */
   huoliHome?: string
-  /** 主会话的键，不配就哪个会话都不注入 */
+  /** 主会话的键，不配就哪个会话都不放进 */
   mainChatKey?: string
-  /** 只读面板出口绑哪个端口，默认 0 表示不开；开了只绑回环地址，没有鉴权 */
+  /** 只读面板出口绑哪个端口，默认 0 表示不开；开了只绑回环地址 */
   panelPort?: number
+  /** 面板访问口令，设了就要带 `?token=` 或那块饼干；空串等于不要求 */
+  panelToken?: string
+  /** 记忆文件放哪，星海读它；不给就跟记忆包的默认位置一致 */
+  memoryFile?: string
   /** 想改哪些默认参数 */
   settings?: Partial<SelfSettings>
 }

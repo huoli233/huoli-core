@@ -1,4 +1,4 @@
-// 性格不变快照：同一句话在注入开与关两种状态下各算一份哈希，人能拿两份文件对比
+// 性格不变快照：同一句话在放进开与关两种状态下各算一份哈希，人能拿两份文件对比
 
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'
@@ -20,7 +20,7 @@ export interface PersonaSnapshotOptions {
   snapshotsDir?: string
   /** 拿来找记忆的那句，不填取默认值表里的 snapshotQuery */
   query?: string
-  /** 拿来试注入的那句闲聊，固定问题集在调用方，不填取默认值表里的 snapshotSample */
+  /** 拿来试放进的那句闲聊，固定问题集在调用方，不填取默认值表里的 snapshotSample */
   sample?: string
   /** 只在同一个会话里找，不填按全部会话找 */
   chatKey?: string
@@ -42,13 +42,13 @@ export interface SnapshotDigest {
 
 /** 一次快照的结果 */
 export interface PersonaSnapshotResult {
-  /** 注入开的那一份 */
+  /** 放进开的那一份 */
   on: SnapshotDigest
-  /** 注入关的那一份 */
+  /** 放进关的那一份 */
   off: SnapshotDigest
-  /** 两份哈希不一样就说明记忆注入确实改了这段文本 */
+  /** 两份哈希不一样就说明记忆放进确实改了这段文本 */
   changed: boolean
-  /** 这次找到几条可注入的记忆 */
+  /** 这次找到几条可放进的记忆 */
   hits: number
 }
 
@@ -66,8 +66,8 @@ function writeSnapshot(dir: string, name: string, text: string): SnapshotDigest 
 }
 
 /**
- * 产出性格不变快照：注入开与关两种状态下各写一份注入文本，并给出两份哈希
- * @param options - 记忆文件、快照落点与两句取样文本
+ * 产出性格不变快照：放进开与关两种状态下各写一份放进文本，并给出两份哈希
+ * @param options - 记忆文件、快照位置与两句取样文本
  * @returns 两份摘要与它们是否不一样
  */
 export function personaSnapshot(options: PersonaSnapshotOptions = {}): PersonaSnapshotResult {

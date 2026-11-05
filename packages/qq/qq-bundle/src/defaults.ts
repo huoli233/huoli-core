@@ -16,15 +16,15 @@ export const BUNDLE_DEFAULTS = {
   allowedTools: [] as readonly string[],
   /** 每轮是否把召回到的记忆接在用户原话之后 */
   memoryInject: true,
-  /** 注入整串的字数上限，与记忆包同一份默认值 */
+  /** 放进整串的字数上限，与记忆包同一份默认值 */
   memoryInjectMaxChars: MEMORY_DEFAULTS.injectMaxChars,
-  /** 一次注入最多几条，与记忆包同一份默认值 */
+  /** 一次放进最多几条，与记忆包同一份默认值 */
   memoryInjectMaxItems: MEMORY_DEFAULTS.injectMaxItems,
-  /** 同一段在最近多少轮内不重复注入，与记忆包同一份默认值 */
+  /** 同一段在最近多少轮内不重复放进，与记忆包同一份默认值 */
   memoryInjectRepeatTurns: MEMORY_DEFAULTS.injectRepeatTurns,
   /** 公共动态报上去的级别，公开发布要过阶段与两把钥匙 */
   postLevel: 'public',
-  /** 多久之内有人说过话就算群里正热闹，只用来给闸门报事实 */
+  /** 多久之内有人说过话就算群里正热闹，只用来给关卡报事实 */
   humanActiveWindowMs: 120_000,
   /** 主动开口去重时最多回想几条已发正文 */
   deliveredHistoryMax: 20,
@@ -32,25 +32,25 @@ export const BUNDLE_DEFAULTS = {
   addPostWantFrom: 0.30,
   /** 同一个会话一天最多攒几条动态候选，攒到就不再看读数 */
   postCandidateDailyMax: 1,
-  /** 一顿饭写不写进记忆，关掉就一次都不订阅 */
+  /** 一顿饭写不写进记忆，关掉就一次都不挂上 */
   mealMemory: true,
   /** 一顿饭写成一条记忆时的重要度，例行的一顿比事件轻，但要过记忆的写入门槛 */
   mealMemoryImportance: 30,
-  /** 喝水写不写进记忆，关掉就一次都不订阅 */
+  /** 喝水写不写进记忆，关掉就一次都不挂上 */
   drinkMemory: true,
   /** 喝水写成一条记忆时的重要度，比一顿饭还轻，日常到不值得记太久 */
   drinkMemoryImportance: 25,
-  /** 开经日写不写进记忆，关掉就一次都不订阅 */
+  /** 开经日写不写进记忆，关掉就一次都不挂上 */
   cycleMemory: true,
   /** 开经日写成一条记忆时的重要度，一个周期一次，比喝水重一点 */
   cycleMemoryImportance: 35,
-  /** 遗书写不写进记忆，关掉就一次都不订阅 */
+  /** 遗书写不写进记忆，关掉就一次都不挂上 */
   farewellMemory: true,
   /** 一场梦写不写进记忆 */
   dreamMemory: true,
   /** 美梦与噩梦发不发出去，关掉就一条动态都不发 */
   dreamPublish: true,
-  /** 疤写不写进记忆，关掉就一次都不订阅 */
+  /** 疤写不写进记忆，关掉就一次都不挂上 */
   scarMemory: true,
   /** 遗书写成一条记忆时的重要度，一辈子只留一句，压在保护线以上 */
   farewellMemoryImportance: 95,

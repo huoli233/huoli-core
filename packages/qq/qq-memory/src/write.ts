@@ -279,7 +279,7 @@ export function writeFact(store: MemoryStore, draft: MemoryItem, tuning: Tuning 
   if (old !== undefined) {
     // 并进旧条不看门槛：门槛只管新写入，已经记下的事不该因为这次算得低就被丢掉
     const mergedCount = Math.max(0, Math.round(numberOr(old.metadata?.['mergedCount'], 0))) + 1
-    // 合并只动被提起时刻、重要度与一条合并记录：正文与召回次数保持旧条的样子，账本指纹才不会漂移
+    // 合并只动被提起时刻、重要度与一条合并记录：正文与召回次数保持旧条的样子，记录表指纹才不会漂移
     store.update(old.id, {
       lastSeenAt: draft.lastSeenAt,
       importance: Math.max(old.importance, draft.importance),
@@ -288,7 +288,7 @@ export function writeFact(store: MemoryStore, draft: MemoryItem, tuning: Tuning 
     return { written: true, code: '', reason: '', hint: '', merged: true, id: old.id, item: store.byId(old.id) ?? old }
   }
   const gate = importanceGate(draft.importance, tuning.writeMinImportance)
-  // 门槛不放行就一条都不落盘，把理由交回调用方，丢掉的那条由装配层计数
+  // 门槛不放行就一条都不落盘，把理由交被叫到时做的事用方，丢掉的那条由装配层计数
   if (!gate.written) return { ...gate, merged: false, id: '', item: undefined }
   store.add(draft)
   return { ...gate, merged: false, id: draft.id, item: draft }

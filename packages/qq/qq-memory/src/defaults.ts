@@ -12,14 +12,26 @@ import {
 export interface Tuning extends DecayParams, RecoverParams {
   /** 重要度到这条线以上算受保护，当天不再衰减 */
   protectLine: number
-  /** 注入整串的字数上限，模板与条目一起算 */
+  /** 放进整串的字数上限，模板与条目一起算 */
   injectMaxChars: number
-  /** 一次注入最多几条 */
+  /** 一次放进最多几条 */
   injectMaxItems: number
-  /** 同一条记忆在最近多少轮内不重复注入 */
+  /** 同一条记忆在最近多少轮内不重复放进 */
   injectRepeatTurns: number
   /** 召回默认取几条 */
   recallLimit: number
+  /** 放进时每条只给多少字的底稿，要细节让模型自己看全文 */
+  skeletonMaxChars: number
+  /** 一次召回总共最多带多少字，默认零表示不限；开了就超预算换更短的 */
+  budgetChars: number
+  /** 低于这条重要度才算不重要，够格被合并式遗忘 */
+  mergeBelow: number
+  /** 隔多久才允许她乱想一次 */
+  wanderEveryMs: number
+  /** 多少天之前的才算旧 */
+  mergeAfterDays: number
+  /** 核心记忆最多保底几条：她的身份、对方的基本情况不能被挤掉 */
+  coreMax: number
   /** 关键词切成几个字一段 */
   gramSize: number
   /** 查询短到几个字以内按短查询判 */
@@ -36,6 +48,10 @@ export interface Tuning extends DecayParams, RecoverParams {
   weightImportance: number
   /** 新鲜度在总分里占多少 */
   weightFreshness: number
+  /** 星链在总分里占多少：连得多的更容易一起被想起 */
+  weightEdge: number
+  /** 相隔多久之内的两次写入算同一轮，彼此连一条边 */
+  sameTurnWindowMs: number
   /** 新鲜度按几天摊完 */
   freshnessDays: number
   /** 镜像写进来时重要度不低于这条线 */
@@ -70,7 +86,7 @@ export interface Tuning extends DecayParams, RecoverParams {
   backupKeep: number
   /** 性格不变快照拿来找记忆的那句，空串只按重要度与新鲜度挑 */
   snapshotQuery: string
-  /** 性格不变快照拿来试注入的那句闲聊，固定问题集在调用方 */
+  /** 性格不变快照拿来试放进的那句闲聊，固定问题集在调用方 */
   snapshotSample: string
 }
 
@@ -87,6 +103,12 @@ export const DEFAULTS: Tuning = {
   injectMaxItems: 3,
   injectRepeatTurns: 3,
   recallLimit: 3,
+  skeletonMaxChars: 40,
+  budgetChars: 0,
+  mergeBelow: 55,
+  mergeAfterDays: 7,
+  wanderEveryMs: 10_800_000,
+  coreMax: 2,
   gramSize: 2,
   shortQueryChars: 8,
   shortQueryMinHits: 1,
@@ -95,6 +117,8 @@ export const DEFAULTS: Tuning = {
   weightSim: 0.75,
   weightImportance: 0.15,
   weightFreshness: 0.1,
+  weightEdge: 0.15,
+  sameTurnWindowMs: 60_000,
   freshnessDays: 7,
   // 镜像进来的事是自我层认定要记住的，落在保护线之上
   selfImportanceFloor: 80,
@@ -113,7 +137,7 @@ export const DEFAULTS: Tuning = {
   pinnedAlert: 30,
   coldRatioAlert: 0.5,
   backupKeep: 7,
-  // 快照不在这里带问题集：调用方给哪句就试哪句，默认按重要度挑、拿一句闲聊试注入
+  // 快照不在这里带问题集：调用方给哪句就试哪句，默认按重要度挑、拿一句闲聊试一下
   snapshotQuery: '',
   snapshotSample: '今天过得怎么样？',
 }

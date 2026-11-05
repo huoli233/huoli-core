@@ -60,7 +60,7 @@ function tempDir(): string {
   return dir
 }
 
-// 工具体只读会话编号与取消信号，其余执行字段由内核在真实调用时注入
+// 工具体只读会话编号与取消信号，其余字段由内核在真实调用时给
 function execOf(chatKey: string): ToolRunContext {
   return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal: new AbortController().signal })
 }
@@ -113,7 +113,7 @@ afterEach(() => {
 })
 
 describe('发布工具出现在工具清单里', () => {
-  it('注册好了，能按名字取到', () => {
+  it('挂上好了，能按名字取到', () => {
     const { names } = mount()
 
     expect(names).toContain('qq_publish_post')
@@ -169,7 +169,7 @@ describe('两条级别走发布入口', () => {
   })
 })
 
-describe('闸门都交给发布入口', () => {
+describe('关卡都交给发布入口', () => {
   it('空正文被拒，码是 post.empty', async () => {
     const { tool } = mount()
 

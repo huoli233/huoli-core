@@ -27,7 +27,7 @@ afterEach(async () => {
 })
 
 describe('一份文件一个 owner', () => {
-  it('攒下一条候选之后记账再写，候选不会被整份覆盖掉', () => {
+  it('攒下一条候选之后记录再写，候选不会被整份覆盖掉', () => {
     const file = tempFile()
     const store = createProactiveStore({ file, now: () => 1_000 })
 
@@ -39,7 +39,7 @@ describe('一份文件一个 owner', () => {
     expect(reopened.timing.todayCount('group:1')).toBe(1)
   })
 
-  it('记账之后攒候选，今天那一次开口的数还在', () => {
+  it('记录之后攒候选，今天那一次开口的数还在', () => {
     const file = tempFile()
     const store = createProactiveStore({ file, now: () => 1_000 })
 

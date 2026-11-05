@@ -15,7 +15,7 @@ function storeAt(name: string) {
   return createMemoryStore({ file: path.join(tempDir(), name) })
 }
 
-// 直接用队列模块建一个，用来注入写不进去的那种失败
+// 直接用队列模块建一个，用来造出写不进去的那种失败
 function bareQueue(write: (fact: QueuedFact) => void, tuning: Partial<Tuning> = {}) {
   const store = storeAt('memory.json')
   const queue = createWriteQueue({

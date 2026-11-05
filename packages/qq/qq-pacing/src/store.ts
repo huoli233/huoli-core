@@ -1,10 +1,10 @@
-// 额度记账：今天说了几句、这一小时说了几句、这句话是不是刚说过
+// 额度记一笔：今天说了几句、这一小时说了几句、这句话是不是刚说过
 
 import fs from 'node:fs'
 import path from 'node:path'
 import { dayKey, hourKey, resolveQuotaLimits, type PacingVerdict, type QuotaLimits, type QuotaUse } from './plan.ts'
 
-/** 记账选项 */
+/** 记录选项 */
 export interface PacingStoreOptions {
   file: string
   now?: () => number
@@ -16,7 +16,7 @@ export interface PacingFixedClockOptions extends PacingStoreOptions {
   at: number
 }
 
-/** 记账仓 */
+/** 记录仓 */
 export interface PacingStore {
   used(): QuotaUse
   check(text: string): PacingVerdict
@@ -51,7 +51,7 @@ function load(file: string, now: number): StoredPacing {
       recent: Array.isArray(parsed.recent) ? parsed.recent : [],
     }
   } catch (readError) {
-    // 记账文件读坏了就按今天刚开始，下一次记录会重写它
+    // 记一笔文件读坏了就按今天刚开始，下一次记录会重写它
     void readError
     return empty
   }
@@ -78,7 +78,7 @@ function refresh(data: StoredPacing, now: number, limits: QuotaLimits): StoredPa
 }
 
 /**
- * 建一个记账仓
+ * 建一个记一笔仓
  * @param options - 选项
  * @returns 处理结果
  */

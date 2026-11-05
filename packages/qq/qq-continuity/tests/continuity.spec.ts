@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqContinuityOf, type QqContinuitySeam } from '../src/index.ts'
 import { NOTE_MAX_CHARS, closeFacts, renderContinuityFacts } from '../src/close.ts'
 
-// 工具体只读会话编号，其余执行字段由内核在真实调用时注入
+// 工具体只读会话编号，其余字段由内核在真实调用时给
 function execOf(chatKey: string): ToolRunContext {
   return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal: new AbortController().signal })
 }

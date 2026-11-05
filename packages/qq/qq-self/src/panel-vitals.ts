@@ -37,7 +37,7 @@ export function panelVitalsOf(port: VitalsPort | undefined): PanelVitals | undef
   const readout = port.read()
   const thirst = unit(readout.thirst)
   const energy = unit(readout.energy)
-  // 心情、无聊、想说话、累是面板上的叫法，取的还是身体算好的那几个派生量
+  // 心情、无聊、想说话、累是面板上的叫法，取的还是身体算好的那几个算出来的量
   const mood = unit(readout.valence)
   const boredom = unit(readout.loneliness)
   const socialHunger = unit(readout.proactive_bias)

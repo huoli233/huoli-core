@@ -49,7 +49,7 @@ function copyTriggers(triggers: WakeTriggers): Record<string, boolean | string[]
 }
 
 /**
- * 注册五个工具
+ * 挂上五个工具
  * @param ctx - 运行环境
  * @param deps - 要用到的东西
  */

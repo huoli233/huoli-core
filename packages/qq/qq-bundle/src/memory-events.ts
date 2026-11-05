@@ -1,8 +1,9 @@
-// 身体那边产出的六类事实在这里落成记忆，开关关着时一个订阅都不注册
+// 身体那边产出的六类事实在这里落成记忆，开关关着时一个都不挂
 
 import type { Context } from '@huoli/cordis'
 import { farewellTextAt, readFarewellSlot, type QqChannelSeam } from '@huoli/huoli-qq-channel'
 import type { QqMemorySeam } from '@huoli/huoli-qq-memory'
+import type { QqSelfSeam } from '@huoli/huoli-qq-self'
 import type { QqSubjectSeam } from '@huoli/huoli-qq-subject'
 import type { CycleStartFact, DreamFact, DrinkFact, FarewellFact, MealFact, QqVitalsSeam, ScarFact } from '@huoli/huoli-qq-vitals'
 import type { Config } from './types.ts'
@@ -21,11 +22,13 @@ export interface MemoryEventDeps {
   subject: QqSubjectSeam | undefined
   vitals: QqVitalsSeam | undefined
   channel: QqChannelSeam | undefined
+  /** 自我层：三行与阶段推进要从它那儿接 */
+  selfLayer: QqSelfSeam | undefined
   postLevel: string
   farewellFile: string
 }
 
-/** 没有活跃会话就只记一行，不让这一拍的其它订阅者跟着断掉 */
+/** 没有活跃会话就只记一行，不让这一拍的其它挂上去的那些跟着断掉 */
 function activeOf(ctx: Context, subject: QqSubjectSeam | undefined, what: string): string {
   const chatKey = subject?.store.read().lastActive ?? ''
   if (chatKey === '') ctx.logger('qq-bundle').warn(`${what}没有落点：还没有活跃会话`)
@@ -33,12 +36,12 @@ function activeOf(ctx: Context, subject: QqSubjectSeam | undefined, what: string
 }
 
 /**
- * 把六类事实接进装配，卸载时逐个撤订阅
+ * 把六类事实接进装配，卸载时逐个撤下
  * @param ctx - 运行环境
  * @param deps - 记忆仓、身体、通道与六类事实各自的开关
  */
 export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void {
-  const { config, defaults, memory, subject, vitals, channel, postLevel, farewellFile } = deps
+  const { config, defaults, memory, subject, vitals, channel, selfLayer, postLevel, farewellFile } = deps
   const warn = (message: string, error: unknown): void => {
     ctx.logger('qq-bundle').warn(message, String(error))
   }
@@ -177,5 +180,61 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
       try { writeScar(fact) } catch (error) { warn('疤痕没写进去：%s', error) }
     })
     ctx.effect(() => () => { off() })
+  }
+
+  // 每天三行写完落一条：今天做过什么
+  if (selfLayer !== undefined && memory !== undefined) {
+    ctx.effect(() => selfLayer.onDay((lines, at) => {
+      const chatKey = activeOf(ctx, subject, '三行记忆')
+      if (chatKey === '') return
+      try {
+        memory.write(lines.join('；'), chatKey, { layer: 'episodic', source: 'self', importance: 55, at })
+      } catch (error) {
+        warn('三行没写进记忆：%s', error)
+      }
+    }))
+    // 阶段真推进了才落一条：她变了
+    ctx.effect(() => selfLayer.onStage((from, to, at) => {
+      const chatKey = activeOf(ctx, subject, '阶段记忆')
+      if (chatKey === '') return
+      try {
+        memory.write(`我从「${from}」走到了「${to}」`, chatKey, { layer: 'semantic', source: 'self', importance: 70, at })
+      } catch (error) {
+        warn('阶段没写进记忆：%s', error)
+      }
+    }))
+    // 月更落到长期那一层：这一段是她的长期叙事，不该按月淡掉
+    ctx.effect(() => selfLayer.onNarrative((chapter, text, at) => {
+      const chatKey = activeOf(ctx, subject, '月更记忆')
+      if (chatKey === '') return
+      try {
+        memory.write(`${chapter}：${text}`, chatKey, { layer: 'semantic', source: 'self', importance: 65, at })
+      } catch (error) {
+        warn('月更没写进记忆：%s', error)
+      }
+    }))
+    // 每月十问是自省，也落到长期那一层
+    ctx.effect(() => selfLayer.onProbe((answers, at) => {
+      const chatKey = activeOf(ctx, subject, '探针记忆')
+      if (chatKey === '') return
+      try {
+        memory.write(answers.join('；'), chatKey, { layer: 'semantic', source: 'self', importance: 60, at })
+      } catch (error) {
+        warn('探针没写进记忆：%s', error)
+      }
+    }))
+  }
+
+  // 睡醒了落一条：这一觉睡过去了
+  if (vitals !== undefined && memory !== undefined) {
+    ctx.effect(() => vitals.onWake((fact) => {
+      const chatKey = activeOf(ctx, subject, '醒来记忆')
+      if (chatKey === '') return
+      try {
+        memory.write('睡了一觉，醒过来了', chatKey, { layer: 'episodic', source: 'chat', importance: 35, at: fact.at })
+      } catch (error) {
+        warn('醒来没写进记忆：%s', error)
+      }
+    }))
   }
 }

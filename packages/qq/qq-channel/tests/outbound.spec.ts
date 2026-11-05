@@ -5,7 +5,7 @@ import { createOutboundCheck, OUTBOUND_DEFAULTS, type OutboundTuning } from '../
 const NIGHT = new Date(2026, 2, 5, 3, 0, 0, 0).getTime()
 const NOON = new Date(2026, 2, 5, 12, 0, 0, 0).getTime()
 
-// 静默时段关掉，好让别的闸门单独被测到
+// 静默时段关掉，好让别的关卡单独被测到
 const OPEN: OutboundTuning = { ...OUTBOUND_DEFAULTS, quietStart: '00:00', quietEnd: '00:00' }
 
 interface Clocked {

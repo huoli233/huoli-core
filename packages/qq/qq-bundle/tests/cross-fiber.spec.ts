@@ -28,7 +28,7 @@ function tempDir(): string {
   return dir
 }
 
-// 工具只登记不执行：这几条行都注入 tools，这里要的是一个真能被解析到的服务
+// 工具只登记不执行：这几条行都要 tools，这里要的是一个真能取到的服务
 class FakeTools extends Service {
   constructor(ctx: Context) {
     super(ctx, 'tools')
@@ -91,7 +91,7 @@ async function mountStack(options: { vitals?: boolean } = {}): Promise<Context> 
       oxytocin: 1,
       endorphin: 1,
     })
-    await mountRow(root, vitalsRow, { file, tuning: { startDelayMs: 60 * 60_000 } })
+    await mountRow(root, vitalsRow, { file, tuning: { words: vitalsRow.WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   }
   // 停手开关写下就一直在，自检时它读的是这一份文件
   fs.mkdirSync(path.join(dir, 'self'), { recursive: true })
@@ -193,7 +193,7 @@ describe('跨 fiber 取接缝', () => {
     expect(self.stage()).toBe('P3')
     expect(self.isPaused()).toBe(true)
 
-    // 发送闸门拿同一份接缝判一次：停手开关经组合包接到通道上，这一条就不该发出去
+    // 发送前的关卡拿同一份接缝判一次：停手开关经组合包接到通道上，这一条就不该发出去
     const verdict = await channel.publish('post', '今天吃了面', { chatKey: 'group:1', level: 'routine', topic: '吃喝' })
     expect(verdict).toMatchObject({ ok: false, code: 'post.paused' })
   })
@@ -224,7 +224,7 @@ describe('跨 fiber 取接缝', () => {
     const ctx = new Context()
     await ctx.plugin(SystemPrompt, {})
 
-    vitalsRow.apply(ctx, { file: path.join(dir, 'vitals.json'), tuning: { startDelayMs: 60 * 60_000 } })
+    vitalsRow.apply(ctx, { file: path.join(dir, 'vitals.json'), tuning: { words: vitalsRow.WORDS_PRESET, startDelayMs: 60 * 60_000 } })
 
     expect(vitalsRow.qqVitalsOf(ctx)).toBeDefined()
     expect(vitalsRow.qqVitalsOf(ctx)?.read()).toBeTypeOf('object')

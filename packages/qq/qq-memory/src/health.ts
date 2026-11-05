@@ -1,4 +1,4 @@
-// 每天一行健康记录：条数、受保护的、退役与只剩印象的、注入上限、账本状态、待写入
+// 每天一行健康记录：条数、受保护的、退役与只剩印象的、每轮最多放几条、记录表状态、待写入
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -7,7 +7,7 @@ import type { AlertThresholds } from './defaults.ts'
 import type { LedgerReport } from './ledger.ts'
 import type { MemoryItem } from './types.ts'
 
-/** 账本这一栏的四档，除 OK 之外都算告警 */
+/** 记录表这一栏的四档，除 OK 之外都算告警 */
 export type LedgerLevel = 'OK' | 'DRIFT' | 'MISSING' | 'ERROR'
 
 /** 行尾告警标记里能出现的四种原因 */
@@ -19,11 +19,11 @@ export interface HealthInput {
   items: readonly MemoryItem[]
   /** 现在的时间 */
   now: number
-  /** 注入整串的字数上限，从配置读 */
+  /** 放进整串的字数上限，从配置读 */
   injectMaxChars: number
   /** 重要度到这条线以上算受保护 */
   protectLine: number
-  /** 这次的对账结果 */
+  /** 这次的核对结果 */
   ledger: LedgerReport
   /** 已入队还没写进文件的条数，由装配层从队列取 */
   pending?: number
@@ -89,13 +89,13 @@ export function healthCounts(items: readonly MemoryItem[], protectLine: number, 
 }
 
 /**
- * 把对账结果折成四档，取值只由读账本的情况与三类差异决定
- * @param report - 对账结果
+ * 把核对结果折成四档，取值只由读记录表的情况与三类差异决定
+ * @param report - 核对结果
  * @returns 四档之一
  */
 export function ledgerLevel(report: LedgerReport): LedgerLevel {
   if (report.read === 'broken') return 'ERROR'
-  // 账本还没建过时一条都对不上，与条目丢了同一档
+  // 记录表还没建过时一条都对不上，与条目丢了同一档
   if (report.read === 'absent' || report.lost.length > 0) return 'MISSING'
   if (report.changed.length > 0 || report.unrecorded.length > 0) return 'DRIFT'
   return 'OK'
@@ -104,7 +104,7 @@ export function ledgerLevel(report: LedgerReport): LedgerLevel {
 /**
  * 这一行末尾要挂哪几个告警，按从要紧到缓的顺序排
  * @param counts - 数出来的数
- * @param level - 账本这一栏的档
+ * @param level - 记录表这一栏的档
  * @param thresholds - 三个阈值
  * @returns 命中的告警，没命中就是空数组
  */

@@ -6,9 +6,10 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { replyBudget } from '@huoli/huoli-qq-pacing'
 import { panelPage, type PanelState } from '@huoli/huoli-qq-self'
-import { createVitalsStore, emptyState, react, resolveTuning, type VitalsState } from '@huoli/huoli-qq-vitals'
+import { createVitalsStore, emptyState, react, resolveTuning, WORDS_PRESET, type VitalsState } from '@huoli/huoli-qq-vitals'
 
-const tuning = resolveTuning()
+// 验收表里那几行按口语判的那几条，显式把词表打开
+const tuning = resolveTuning({ words: WORDS_PRESET })
 
 /** 一条验收的结论 */
 export interface AcceptRow {

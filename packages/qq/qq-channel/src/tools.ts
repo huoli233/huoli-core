@@ -8,16 +8,26 @@ import type { OutboundVerdict } from './outbound.ts'
 import { CONFIRM_KINDS } from './actions.ts'
 import type { ActionFacts, ActionKind, ActionResult } from './actions.ts'
 import type { FarewellStage } from './farewell-slot.ts'
+import type { ForwardNode } from './forward.ts'
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
   status: () => ChannelStatus
   send: (text: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
   react: (messageId: string, emoji: string) => Promise<{ ok: boolean; code?: string; reason?: string }>
+  /** 把几段合成一条合并转发发出去；没接上就退回一条一条发 */
+  sendForward?: (
+    nodes: readonly ForwardNode[],
+    chatKey: string,
+  ) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
+  /** 合并转发的开关与卡片上显示的名字 */
+  forward?: { enabled: boolean; name: string }
   /** 按这一轮的条数上限把一段话切成几条，连着条与条之间的间隔 */
   split: (text: string, maxParts: number) => { parts: string[]; gapsMs: number[] }
   /** 这一轮最多几条，拿不到上限时是最紧的一档 */
   cap: () => number
+  /** 发到第几条时该不该停：给了就按它提前收口，不给按上限走 */
+  stop?: (sentCount: number) => boolean
   spend: (text: string) => void
   allow: (text: string) => { ok: boolean; code?: string; reason?: string; hint?: string }
   /** 发之前过一遍出站体检 */
@@ -91,7 +101,7 @@ function filled(value: unknown): string | undefined {
 }
 
 /**
- * 注册发送工具
+ * 挂上发送工具
  * @param ctx - 运行环境
  * @param deps - 要用到的东西
  */
@@ -127,8 +137,23 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       }
 
       const planned = deps.split(text, deps.cap())
+      // 分成两段以上又开着合并转发：一条发出去，别让对面收一串碎片
+      if (deps.forward?.enabled === true && planned.parts.length > 1 && deps.sendForward !== undefined) {
+        const forwarded = await deps.sendForward(planned.parts.map(content => ({ name: deps.forward?.name ?? '', content })), chatKey)
+        if (!forwarded.ok) {
+          deps.report({ kind: 'blocked', at: Date.now(), chatKey, count: 0, code: forwarded.code ?? 'channel.send_failed' })
+          refuse(forwarded.code ?? 'channel.send_failed', forwarded.reason ?? '合并转发没发出去', '等一下再发，或者把这一段说短些')
+        }
+        const moment = Date.now()
+        for (const part of planned.parts) deps.spend(part)
+        deps.account(moment)
+        deps.report({ kind: 'sent', at: moment, chatKey, count: planned.parts.length })
+        return { parts: planned.parts.length, messageIds: [forwarded.messageId ?? ''] }
+      }
       const sent: string[] = []
       for (const [at, part] of planned.parts.entries()) {
+        // 已经发了一条之后再看要不要停：对方要她别说、或者场面太紧，剩下的就不发了
+        if (at > 0 && deps.stop?.(sent.length) === true) break
         const result = await deps.send(part, chatKey)
         if (!result.ok) {
           // 已经发出去的不撤也不再发一遍，只把发了几条、卡在第几条报出去
@@ -144,8 +169,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
         const gap = planned.gapsMs[at]
         if (gap !== undefined) await sleep(gap)
       }
-      deps.report({ kind: 'sent', at: Date.now(), chatKey, count: planned.parts.length })
-      return { parts: planned.parts.length, messageIds: sent }
+      deps.report({ kind: 'sent', at: Date.now(), chatKey, count: sent.length })
+      return { parts: sent.length, messageIds: sent }
     },
   }))
 

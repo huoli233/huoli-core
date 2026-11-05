@@ -9,7 +9,7 @@ import { applyEntryPatches, entryListSchema, type PatchOptions } from '@huoli/co
 
 type Entries = Parameters<typeof applyEntryPatches>[0]
 
-// 一份最小的基线，够让 insert 与 override 两条 patch 都有落点
+// 一份最小的底子，够让 insert 与 override 两条改动都插得进去
 const BASE: Entries = [{ id: 'system-prompt', name: '@huoli/huoli-system-prompt' }, { id: 'compaction-basic', name: '@huoli/huoli-compaction-basic' }]
 
 // 十二个零件加装配那一行，顺序照 patch 里写的
@@ -46,7 +46,7 @@ describe('组合包挂载', () => {
     expect(bundle?.name).toBe('@huoli/huoli-qq-bundle')
   })
 
-  it('压缩那一行被覆盖成群聊留更多原话的口径', () => {
+  it('压缩那一行被覆盖成群聊留更多原话的说法', () => {
     const root = fileURLToPath(new URL('..', import.meta.url))
     const rows = applyEntryPatches(BASE, patchOf(root, 'qq.patch.yml'), () => {})
     const compaction = rows.find(row => row.id === 'compaction-basic')

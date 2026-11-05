@@ -1,6 +1,6 @@
 // 提示词那一段的阈值：只决定这一轮怎么说，不参与状态怎么算
 
-/** 提示词那一组的参数，与其它参数一起展开进 Tuning */
+/** 提示词那一组的参数，与其它参数一起看全文进 Tuning */
 export interface PromptTuning {
   /** 每轮身体提示词的字数上限，默认 600，超出就截断且至少保留 60 字 */
   promptMaxChars: number

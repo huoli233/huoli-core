@@ -1,4 +1,4 @@
-// 十个派生量加常用标签：派生量只算一次，别处只读
+// 十个算出来的量加常用标签：算出来的量只算一次，别处只读
 
 import { biasUnit, type Tuning } from './defaults.ts'
 import { mixOf } from './emotion.ts'
@@ -233,10 +233,10 @@ function suppress(scores: Map<string, number>, s: VitalsState, tuning: Tuning): 
 }
 
 /**
- * 算派生量与标签，写回状态
+ * 算这些量与标签，写回状态
  * @param state - 当前状态
  * @param tuning - 参数
- * @returns 带派生量的状态
+ * @returns 带这些量的状态
  */
 export function derive(state: VitalsState, tuning: Tuning): VitalsState {
   const next: VitalsState = { ...state }

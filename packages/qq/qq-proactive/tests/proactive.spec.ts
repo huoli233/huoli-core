@@ -755,7 +755,7 @@ describe('外面递来的候选', () => {
     for (const item of decision.pending) expect(Object.hasOwn(item.facts, 'postWant')).toBe(false)
   })
 
-  it('外部候选照样先过闸门：关着就一条都不攒', () => {
+  it('外部候选照样先过关卡：关着就一条都不攒', () => {
     const seam = mount({ file: tempFile(), enabled: false, ...NO_QUIET })
 
     const decision = considerWith(seam, 'group:share', [SHARE_WANT])

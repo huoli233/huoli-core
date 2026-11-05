@@ -1,4 +1,4 @@
-// 只读地打开记忆、账本与队列：读坏了只报告，不修也不写
+// 只读地打开记忆、记录表与队列：读坏了只报告，不修也不写
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -16,7 +16,7 @@ export interface FileVersion {
   present: boolean
 }
 
-/** 账本文件的名字，跟记忆文件放同一个目录 */
+/** 记录表文件的名字，跟记忆文件放同一个目录 */
 const LEDGER_NAME = 'qq-memory-ledger.json'
 
 /** 待写队列文件的名字，跟记忆文件放同一个目录 */
@@ -38,9 +38,9 @@ function readText(file: string): string | undefined {
 }
 
 /**
- * 跟记忆文件放一起的账本
+ * 跟记忆文件放一起的记录表
  * @param file - 记忆文件
- * @returns 账本文件的位置
+ * @returns 记录表文件的位置
  */
 export function ledgerBeside(file: string): string {
   return path.join(path.dirname(file), LEDGER_NAME)

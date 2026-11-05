@@ -26,7 +26,7 @@ kind: "package-group"
 | [`qq-memory`](qq-memory/README.md) | 四层记忆，会慢慢变淡 |
 | [`qq-pacing`](qq-pacing/README.md) | 拆句、间隔、额度 |
 | [`qq-material`](qq-material/README.md) | 现场素材与惦记的事 |
-| [`qq-proactive`](qq-proactive/README.md) | 攒理由、过闸门、先看后发 |
+| [`qq-proactive`](qq-proactive/README.md) | 攒理由、过关卡、先看后发 |
 | [`qq-continuity`](qq-continuity/README.md) | 收尾留话头、事后回想 |
 | [`qq-self`](qq-self/README.md) | 自我层：只读面板、两档账、两把钥匙、动态分级 |
 | [`qq-channel`](qq-channel/README.md) | 接 QQ、收发消息、动态的发布入口 |

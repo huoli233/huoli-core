@@ -98,7 +98,7 @@ export const COLLECT_DEFAULTS = {
 // 一眼看多少条
 const LOOKBACK = COLLECT_DEFAULTS.lookback
 
-// 去掉零宽字符并折叠全角
+// 去掉零宽字符并把全角并成半角
 function normalize(text: string): string {
   return text.replace(/[\u200B-\u200D\u2060\uFEFF\u00AD]/g, '').normalize('NFKC').toLowerCase()
 }

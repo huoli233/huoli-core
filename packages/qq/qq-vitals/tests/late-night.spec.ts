@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { emptyState, react, resolveTuning, type Tuning, type VitalsState } from '../src/index.ts'
+import { emptyState, react, resolveTuning, WORDS_PRESET, type Tuning, type VitalsState } from '../src/index.ts'
 
 // 这一串时刻在上海是深夜、在 UTC 还是下午，同一句话用两个时区就能比出差别
 const AT = Date.UTC(2026, 0, 1, 15, 0)
 const PRAISE = '你最乖了，抱抱'
 
-const shanghai = resolveTuning({ timeZone: 'Asia/Shanghai' })
-const utc = resolveTuning({ timeZone: 'UTC' })
+const shanghai = resolveTuning({ words: WORDS_PRESET, timeZone: 'Asia/Shanghai' })
+const utc = resolveTuning({ words: WORDS_PRESET, timeZone: 'UTC' })
 
 function praised(tuning: Tuning, at = AT): VitalsState {
   return react(emptyState(tuning, at), PRAISE, at, tuning)
@@ -43,13 +43,13 @@ describe('深夜被夸的加成', () => {
   })
 
   it('阈值配到一以上时深夜不再加成', () => {
-    const never = resolveTuning({ timeZone: 'Asia/Shanghai', lateNightFrom: 1.01 })
+    const never = resolveTuning({ words: WORDS_PRESET, timeZone: 'Asia/Shanghai', lateNightFrom: 1.01 })
 
     expect(praised(never).dopamine).toBeCloseTo(praised(utc).dopamine, 10)
   })
 
   it('加成倍率能从参数改', () => {
-    const doubled = resolveTuning({ timeZone: 'Asia/Shanghai', lateNightPraiseGain: 2 })
+    const doubled = resolveTuning({ words: WORDS_PRESET, timeZone: 'Asia/Shanghai', lateNightPraiseGain: 2 })
 
     expect(praised(doubled).dopamine).toBeCloseTo(0.5 + doubled.praiseDopamineGain * 2, 10)
   })

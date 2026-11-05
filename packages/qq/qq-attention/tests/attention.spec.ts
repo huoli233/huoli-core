@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqAttentionOf, type QqAttentionSeam } from '../src/index.ts'
 import { renderAttentionFacts } from '../src/facts.ts'
 
-// 工具体只读会话编号与取消信号，其余执行字段由内核在真实调用时注入
+// 工具体只读会话编号与取消信号，其余字段由内核在真实调用时给
 function execOf(chatKey: string, signal: AbortSignal = new AbortController().signal): ToolRunContext {
   return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal })
 }
@@ -306,7 +306,7 @@ describe('提示词里的注意力事实', () => {
     expect(text).not.toMatch(/该不该|要不要|建议醒|应该醒/)
   })
 
-  it('定时唤醒与白名单也只报读数', () => {
+  it('定时唤醒与允许的名单也只报读数', () => {
     const { seam } = mount(tempFile())
     const signals = seam.signals('group:1')
     const wakeUntil = Date.now() + 60_000

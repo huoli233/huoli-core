@@ -16,6 +16,8 @@ import { registerChannelTools } from './tools.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
 export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
+export { canModerate, GROUP_ROLES, parseGroupRole, roleOfMember } from './group-role.ts'
+export type { GroupRole, RoleRead } from './group-role.ts'
 export type { OutboundCheck, OutboundInput, OutboundTuning, OutboundVerdict } from './outbound.ts'
 export { createOutboundCheck, OUTBOUND_DEFAULTS } from './outbound.ts'
 export type { ActionDelivery, ActionFacts, ActionGate, ActionKind, ActionResult, ActionTuning, ActionTunings } from './actions.ts'
@@ -28,18 +30,27 @@ export type { FarewellSlot, FarewellSlotOptions, FarewellSlotStore, FarewellStag
 export { createFarewellSlotStore, defaultFarewellSlotFile, FAREWELL_SLOT_VERSION, farewellTextAt, readFarewellSlot } from './farewell-slot.ts'
 export type { WsChannel, WsHandlers, WsOptions } from './ws.ts'
 export { createWsChannel, WS_DEFAULTS } from './ws.ts'
+export type { ForwardNode } from './forward.ts'
+
+/** 合并转发的默认值：默认关，打开只影响真的分成两段以上的回复 */
+export const FORWARD_DEFAULTS = {
+  /** 多段回复要不要合成一条合并转发 */
+  replyForward: false,
+  /** 合并转发卡片上显示的名字 */
+  replyForwardName: '她',
+} as const
 
 /** 别处要往收件箱塞消息、要发东西，都从这儿拿 */
 export interface QqChannelSeam {
   channel: WsChannel
   status(): ChannelStatus
-  /** 收一条消息，返回注销函数 */
+  /** 收一条消息，返回撤掉的函数 */
   onIncoming(handler: (message: IncomingMessage) => void): () => void
-  /** 收一次戳一戳，返回注销函数 */
+  /** 收一次戳一戳，返回撤掉的函数 */
   onPoke(handler: (poke: IncomingPoke) => void): () => void
-  /** 看发送这一路发生了什么，返回注销函数 */
+  /** 看发送这一路发生了什么，返回撤掉的函数 */
   onOutbound(handler: (event: OutboundEvent) => void): () => void
-  /** 发一次公共动作，先过级别与这一类动作自己的闸门，再走出站体检 */
+  /** 发一次公共动作，先过级别与这一类动作自己的关卡，再走出站体检 */
   publish(kind: ActionKind, text: string, facts: ActionFacts): Promise<ActionResult>
   /** 往某个会话发一段普通消息，只过出站体检、频控与切分，不碰公共动作的级别 */
   send(text: string, chatKey: string): Promise<ActionResult>
@@ -53,6 +64,8 @@ export interface QqChannelSeam {
   usePause(check: (() => boolean) | undefined): void
   /** 接上这一轮的条数上限，不接就只发一条 */
   useReplyCap(provide: (() => number) | undefined): void
+  /** 接上「发到第几条就该停」：给了就按它提前收口 */
+  useStop(provide: ((sentCount: number) => boolean) | undefined): void
   /** 接上自我层现在的阶段，三类公共动作都按它判能不能发 */
   useStage(provide: (() => string) | undefined): void
 }
@@ -67,6 +80,12 @@ export interface Config {
   accessToken?: string
   /** 断了之后隔多久重连 */
   reconnectMs?: number
+  /** 一段等 QQ 那头回话的超时 */
+  callTimeoutMs?: number
+  /** 多段回复要不要合成一条合并转发 */
+  replyForward?: boolean
+  /** 合并转发卡片上显示的名字 */
+  replyForwardName?: string
   /** 允许发声的群编号，空表示不限制 */
   allowGroups?: readonly string[]
   /** 允许发声的人编号，空表示不限制 */
@@ -83,7 +102,7 @@ export interface Config {
   quietEnd?: string
   /** 敏感词，命中就拦 */
   banned?: readonly string[]
-  /** 白名单、长度、敏感词这三类拒绝给出的下次时间 */
+  /** 允许的名单、长度、敏感词这三类拒绝给出的下次时间 */
   retryMs?: number
   /** 两条动态之间至少隔多久 */
   postCoolDownMs?: number
@@ -214,7 +233,7 @@ export function apply(ctx: Context, config: Config): void {
   const pokes: Array<(poke: IncomingPoke) => void> = []
   const outboundEvents: Array<(event: OutboundEvent) => void> = []
 
-  // 注销就是把这一条从表里拿掉，卸载之后再来消息不会再找到它
+  // 撤掉就是把这一条从表里拿掉，卸载之后再来消息不会再找到它
   const listen = <T>(list: Array<(value: T) => void>, handler: (value: T) => void): (() => void) => {
     list.push(handler)
     return () => {
@@ -233,6 +252,7 @@ export function apply(ctx: Context, config: Config): void {
       selfId: config.selfId,
       ...config.accessToken !== undefined ? { accessToken: config.accessToken } : {},
       ...config.reconnectMs !== undefined ? { reconnectMs: config.reconnectMs } : {},
+      ...config.callTimeoutMs !== undefined ? { callTimeoutMs: config.callTimeoutMs } : {},
     },
     {
       onMessage(raw) {
@@ -259,11 +279,16 @@ export function apply(ctx: Context, config: Config): void {
 
   const tuning = resolveOutbound(config)
   const outbound = createOutboundCheck(tuning)
+  // 多段回复要不要合成一条合并转发：默认关，打开只在真的分成两段以上时才用
+  const replyForward = config.replyForward ?? FORWARD_DEFAULTS.replyForward
+  const forwardName = config.replyForwardName ?? FORWARD_DEFAULTS.replyForwardName
 
   // 三类动作共用一份状态与一个入口，账不与发言额度共用
   let pauseCheck: () => boolean = () => false
   // 条数上限由组合包每轮给一次，没接上就按分档表的下限发一条
   let replyCap: (() => number) | undefined
+  // 发到第几条就该停：由组装那一层按额度、张力与「人家要她别说」判
+  let stopCheck: ((sentCount: number) => boolean) | undefined
   // 自我层现在的阶段由组合包接进来，没接上就按那一层默认值表里最保守的一档判
   let stageCheck: (() => string) | undefined
   const capNow = (): number => {
@@ -343,6 +368,24 @@ export function apply(ctx: Context, config: Config): void {
         }
       }
       const parts = splitByBudget(body, { maxParts: capNow(), maxCharsPerPart: tuning.maxChars })
+      // 分成两段以上又开着合并转发：一条发出去，别让对面收一串碎片
+      if (replyForward && parts.length > 1) {
+        const forwarded = await channel.sendForward(parts.map(part => ({ name: forwardName, content: part })), chatKey)
+        if (!forwarded.ok) {
+          for (const handler of outboundEvents) handler({ kind: 'blocked', at: Date.now(), chatKey, count: 0, ...forwarded.code === undefined ? {} : { code: forwarded.code } })
+          return {
+            ok: false,
+            at: Date.now(),
+            ...forwarded.code === undefined ? {} : { code: forwarded.code },
+            reason: forwarded.reason ?? '合并转发没发出去',
+            hint: '等一下再发，或者把这一段说短些',
+          }
+        }
+        for (const part of parts) pacing?.spend(part)
+        outbound.record(Date.now())
+        for (const handler of outboundEvents) handler({ kind: 'sent', at: Date.now(), chatKey, count: parts.length })
+        return { ok: true, at: Date.now(), messageId: forwarded.messageId ?? '' }
+      }
       const ids: string[] = []
       for (const [index, part] of parts.entries()) {
         const sent = await channel.send(part, chatKey)
@@ -378,6 +421,9 @@ export function apply(ctx: Context, config: Config): void {
     useReplyCap(provide) {
       replyCap = provide
     },
+    useStop(provide) {
+      stopCheck = provide
+    },
     useStage(provide) {
       stageCheck = provide
     },
@@ -391,13 +437,21 @@ export function apply(ctx: Context, config: Config): void {
   registerChannelTools(ctx, {
     status: () => channel.status(),
     send: (text, chatKey) => channel.send(text, chatKey),
+    sendForward: (nodes, chatKey) => channel.sendForward(nodes, chatKey),
+    forward: { enabled: replyForward, name: forwardName },
     react: (messageId, emoji) => channel.react(messageId, emoji),
-    // 单条的字数口径与出站体检的长度闸取同一个数，切出来的每条都过得了那道闸
+    // 单条的字数标准与出站体检的长度闸取同一个数，切出来的每条都过得了那道闸
     split: (text, maxParts) => {
-      const parts = splitByBudget(text, { maxParts, maxCharsPerPart: tuning.maxChars })
+      const parts = splitByBudget(text, {
+        maxParts,
+        maxCharsPerPart: tuning.maxChars,
+        // 切到第几条该停由上面那层判，这里只照做
+        ...stopCheck === undefined ? {} : { stop: (index: number) => stopCheck?.(index) === true },
+      })
       return { parts, gapsMs: speechGaps(parts) }
     },
     cap: () => capNow(),
+    stop: sent => stopCheck?.(sent) === true,
     spend: (text) => {
       pacing?.spend(text)
     },

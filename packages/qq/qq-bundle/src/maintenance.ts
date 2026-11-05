@@ -1,4 +1,4 @@
-// 每天这一步的日志：镜像前后各核一次账本，判据三四的违规也一并写进去
+// 每天这一步的日志：镜像前后各核一次记录表，判据三四的违规也一并写进去
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -24,7 +24,7 @@ export interface MaintenanceInput {
   at: number
   /** 记忆仓，没装上时整步不做，也不写日志 */
   memory: QqMemorySeam | undefined
-  /** 自我层，没装上时不镜像，也没有账本判据可查 */
+  /** 自我层，没装上时不镜像，也没有记录表判据可查 */
   self: QqSelfSeam | undefined
   /** 日志写进哪个文件 */
   logFile: string
@@ -36,8 +36,8 @@ function pad2(value: number): string {
 }
 
 /**
- * 一份对账结果的说法：对得上几条，对不上时把三类差异接在后头
- * @param report - 对账结果
+ * 一份核对结果的说法：对得上几条，对不上时把三类差异接在后头
+ * @param report - 核对结果
  * @returns 这一份结果的一句话
  */
 export function ledgerPart(report: LedgerReport): string {
@@ -99,7 +99,7 @@ export function mirrorPortOf(memory: QqMemorySeam): SelfMirrorPort {
 }
 
 /**
- * 每天这一步：镜像前核一次，整理并镜像，写入后入账再核一次，两次结果与判据三四的违规写进当日日志
+ * 每天这一步：镜像前核一次，整理并镜像，写入后记进记录表再核一次，两次结果与判据三四的违规写进当日日志
  * @param input - 零件与日志位置
  * @returns 写进日志的那一行，记忆仓没装上时是空串
  */
@@ -110,7 +110,7 @@ export function runMaintenance(input: MaintenanceInput): string {
   input.memory.maintain(input.at)
   // 关着的那一层不写，镜像入口自己会返回没写
   const mirrored = input.self?.mirror(input.at)
-  // 镜像写入立刻入账，这次核对才不会把它当成正文被改
+  // 镜像写入立刻记进记录表，这次核对才不会把它当成正文被改
   if ((mirrored?.written ?? 0) > 0) input.memory.ledger('sync')
   const after = input.memory.ledger('verify').report
   // 判据三四只在自我层那本账上查，自我层没装上时一条都查不到

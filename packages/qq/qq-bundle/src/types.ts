@@ -26,11 +26,11 @@ export interface Config {
   allowedTools?: readonly string[]
   /** 每轮是否把召回到的记忆接在用户原话之后，关掉就一次都不召回 */
   memoryInject?: boolean
-  /** 注入整串的字数上限 */
+  /** 放进整串的字数上限 */
   memoryInjectMaxChars?: number
-  /** 一次注入最多几条 */
+  /** 一次放进最多几条 */
   memoryInjectMaxItems?: number
-  /** 同一段在最近多少轮内不重复注入 */
+  /** 同一段在最近多少轮内不重复放进 */
   memoryInjectRepeatTurns?: number
   /** 想发动态的读数高过这条线就攒一条动态候选 */
   addPostWantFrom?: number

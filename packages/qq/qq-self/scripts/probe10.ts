@@ -1,4 +1,4 @@
-// 10 问探针：只读 SELF_DIR 与记忆导出，把一份固定问卷写成 JSON，SELF_DIR 一个字都不动
+// 10 问十问：只读 SELF_DIR 与记忆导出，把一份固定问卷写成 JSON，SELF_DIR 一个字都不动
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -65,7 +65,7 @@ export interface ProbeQuestion {
   evidence: ProbeEvidence
 }
 
-/** 一次探针的产物 */
+/** 一次十问的产物 */
 export interface ProbeDocument {
   /** 文件格式版本，结构与判读方式变了才动它 */
   version: number
@@ -77,7 +77,7 @@ export interface ProbeDocument {
   questions: ProbeQuestion[]
 }
 
-/** 探针要读的几处 */
+/** 十问要读的几处 */
 export interface ProbeOptions {
   /** SELF_DIR */
   dir: string
@@ -107,7 +107,7 @@ function readMemory(file: string): ProbeMemory {
   try {
     parsed = JSON.parse(text)
   } catch (error) {
-    // 坏文件按空账算，探针不替它修
+    // 坏文件按空账算，十问不替它修
     void error
     return { file, present: true, total: 0, active: 0 }
   }
@@ -164,7 +164,7 @@ export function buildProbe(options: ProbeOptions): ProbeDocument {
   }
 }
 
-/** 探针收的三个参数 */
+/** 十问收的三个参数 */
 interface ProbeArgs {
   /** SELF_DIR，不给就按数据根目录算 */
   dir?: string

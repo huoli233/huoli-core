@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cycleOf, localDayDiff, localHour, localPoint, resolveTuning } from '../src/index.ts'
+import { cycleOf, localDayDiff, localHour, localPoint, resolveTuning, WORDS_PRESET } from '../src/index.ts'
 
 const HOUR = 3_600_000
 
@@ -78,8 +78,8 @@ describe('周期跟着时区走', () => {
   it('同一时刻落在两地的日期不同，周期第几天也不同', () => {
     const at = Date.UTC(2026, 0, 4, 20)
 
-    expect(cycleOf(at, resolveTuning({ timeZone: 'UTC' })).day).toBe(31)
-    expect(cycleOf(at, resolveTuning({ timeZone: 'Asia/Shanghai' })).day).toBe(1)
-    expect(cycleOf(at, resolveTuning({ timeZone: 'Asia/Shanghai' })).len).toBe(31)
+    expect(cycleOf(at, resolveTuning({ words: WORDS_PRESET, timeZone: 'UTC' })).day).toBe(31)
+    expect(cycleOf(at, resolveTuning({ words: WORDS_PRESET, timeZone: 'Asia/Shanghai' })).day).toBe(1)
+    expect(cycleOf(at, resolveTuning({ words: WORDS_PRESET, timeZone: 'Asia/Shanghai' })).len).toBe(31)
   })
 })

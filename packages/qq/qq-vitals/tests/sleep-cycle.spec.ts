@@ -12,9 +12,10 @@ import {
   renderPrompt,
   resolveTuning,
   type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 
 // 用例里的时刻一律写死，跑在哪一天、哪个时区都一样
 function moment(day: number, hour: number, minute = 0): number {
@@ -372,7 +373,7 @@ describe('周期相位', () => {
   })
 })
 
-describe('派生量里的周期项', () => {
+describe('算出来的量里的周期项', () => {
   it('经期与经前都让易怒上升、好坏下降', () => {
     const plain = settled()
     const menstrual = settled({ cycle_phase: 'menstrual' })

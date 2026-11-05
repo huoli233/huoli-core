@@ -42,6 +42,10 @@ export interface MemoryItem {
   retiredAt?: number
   source: MemorySource
   personId?: string
+  /** 这件事不想让人知道：只在私密空间可见 */
+  secret?: boolean
+  /** 事后平静下来的时刻，过了这一刻不再紧绷 */
+  settledAt?: number
   /** 话题、地点、人物等附加事实，不参与打分，留给自我层镜像 */
   metadata?: Record<string, unknown>
 }

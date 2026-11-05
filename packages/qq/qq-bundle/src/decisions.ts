@@ -3,10 +3,12 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-/** 被哪条闸门拦下 */
+/** 被哪条关卡拦下 */
 export interface DecisionBlock {
   code: string
   retryAt: number | null
+  /** 这一条被拦下之后该做什么，排查时照着看 */
+  hint?: string
 }
 
 /** 一轮的记录，只有事实与理由码，没有模型原文与用户原文 */
@@ -23,7 +25,7 @@ export interface DecisionRecord {
   attempted: boolean
   /** 真的发出去几条 */
   sent: number
-  /** 被哪条闸门拦下、给了什么下次时间 */
+  /** 被哪条关卡拦下、给了什么下次时间 */
   blocked: DecisionBlock | null
 }
 
@@ -44,6 +46,7 @@ function readText(file: string): string {
   try {
     return fs.readFileSync(file, 'utf8').replace(/^\uFEFF/u, '')
   } catch {
+    // 决策日志读不到就当没有：它是排查线，不该把主流程拖住
     return ''
   }
 }
@@ -73,6 +76,7 @@ function parseLine(line: string): DecisionRecord | null {
   try {
     raw = JSON.parse(line)
   } catch {
+    // 坏行跳过：一条写坏了不该让整份日志都读不出来
     return null
   }
   if (raw === null || typeof raw !== 'object') return null
@@ -123,5 +127,50 @@ export function createDecisionLog(options: DecisionLogOptions): DecisionLog {
       }
       return kept.slice(-limit)
     },
+  }
+}
+
+/** 一次主动开口考虑的结论 */
+export interface Verdict {
+  /** 攒成了没有 */
+  ok: boolean
+  /** 没攒成时的结果码 */
+  code?: string
+  /** 下次什么时候再看 */
+  retryAt?: number | null
+  /** 下一步该做什么 */
+  hint?: string
+}
+
+// 结果码进记录时写成 proactive:<原因>，点只留在代码里
+function reasonOf(code: string): string {
+  const cut = code.indexOf('.')
+  return `proactive:${cut < 0 ? code : code.slice(cut + 1)}`
+}
+
+/**
+ * 每考虑一次落一条：攒到、拦下、没攒到都落
+ * @param log - 决策记录
+ * @param warn - 写不进去时往哪报
+ * @param chatKey - 哪个会话
+ * @param at - 什么时候
+ * @param verdict - 这一次的结论
+ */
+export function appendConsidered(
+  log: DecisionLog,
+  warn: { warn: (message: string, ...rest: unknown[]) => void },
+  chatKey: string,
+  at: number,
+  verdict: Verdict,
+): void {
+  const code = verdict.code ?? 'proactive.no_candidate'
+  // 被拦下时把码、下次时刻与下一步一起记进这一条，排查照着看
+  const blocked = verdict.ok
+    ? null
+    : { code, retryAt: verdict.retryAt ?? null, ...verdict.hint === undefined ? {} : { hint: verdict.hint } }
+  try {
+    log.append({ at, chatKey, awake: false, reason: reasonOf(code), attempted: false, sent: 0, blocked })
+  } catch (error) {
+    warn.warn('主动开口的记录写不进去：%s', String(error))
   }
 }

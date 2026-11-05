@@ -1,4 +1,4 @@
-// 只读探测：把记忆与账本看一眼，产出一份报告，一个文件都不写
+// 只读探测：把记忆与记录表看一眼，产出一份报告，一个文件都不写
 
 import { CLARITY_ORDER, type Clarity } from '@huoli/huoli-qq-policy'
 import { describeLedger, runLedger, type LedgerReport } from '../src/ledger.ts'
@@ -13,7 +13,7 @@ import {
 
 /** 探测时能改的两个旁路文件位置 */
 export interface ProbeOptions {
-  /** 账本文件，不填取记忆文件同目录的 qq-memory-ledger.json */
+  /** 记录表文件，不填取记忆文件同目录的 qq-memory-ledger.json */
   ledgerFile?: string
   /** 待写队列，不填取记忆文件同目录的 qq-memory-queue.json */
   queueFile?: string
@@ -32,7 +32,7 @@ export interface ProbeReport {
   file: string
   /** 记忆文件读得出来、没建过、还是坏了 */
   memory: FileState
-  /** 这次比对的账本文件 */
+  /** 这次比对的记录表文件 */
   ledgerFile: string
   /** 这次读的队列文件 */
   queueFile: string
@@ -44,9 +44,9 @@ export interface ProbeReport {
   layers: Readonly<Record<MemoryLayer, number>>
   /** 每档清晰度各几条，五档都列出来 */
   clarity: Readonly<Record<Clarity, number>>
-  /** 账本对账结果 */
+  /** 记录表核对结果 */
   ledger: LedgerReport
-  /** 账本结论写成一句话 */
+  /** 记录表结论写成一句话 */
   ledgerLine: string
   /** 最早的那一条，一条都没有时是 undefined */
   earliest: EarliestMemory | undefined
@@ -83,9 +83,9 @@ function earliestOf(items: readonly MemoryItem[]): EarliestMemory | undefined {
 }
 
 /**
- * 只看不碰地探一遍记忆与账本：条数、层分布、清晰度分布、账本结论、最早的记忆、待写入
+ * 只看不碰地探一遍记忆与记录表：条数、层分布、清晰度分布、记录表结论、最早的记忆、待写入
  * @param file - 记忆文件
- * @param options - 账本与队列的位置，不给就取同目录
+ * @param options - 记录表与队列的位置，不给就取同目录
  * @returns 探测报告
  */
 export function probe(file: string, options: ProbeOptions = {}): ProbeReport {
@@ -93,7 +93,7 @@ export function probe(file: string, options: ProbeOptions = {}): ProbeReport {
   const queueFile = options.queueFile ?? queueBeside(file)
   const memory = readMemory(file)
   const queue = readQueue(queueFile)
-  // 对账只走 verify 这条只读路径：读账本、比对、不写回
+  // 核对只走 verify 这条只读路径：读记录表、比对、不写回
   const ledger = runLedger('verify', { file: ledgerFile, items: memory.items }).report
   const layers = zeroed(LAYERS)
   const clarity = zeroed(CLARITY_ORDER)

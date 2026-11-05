@@ -12,6 +12,7 @@ import {
   qqVitalsOf,
   resolveTuning,
   type QqVitalsSeam,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle, BUNDLE_DEFAULTS, type Config } from '../src/index.ts'
@@ -40,7 +41,7 @@ interface Mounted {
   ctx: Context
   vitals: QqVitalsSeam
   memory: QqMemorySeam
-  /** 组合包发过几次订阅、眼下还挂着几个监听 */
+  /** 组合包发过几次挂上、眼下还挂着几个监听 */
   live: { subscribed: number; listeners: number }
 }
 
@@ -54,8 +55,8 @@ async function mount(config: Config = {}): Promise<Mounted> {
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
-  // 记忆的四个文件都落在临时目录里，队列与账本不去碰主目录那份
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
+  // 记忆的四个文件都落在临时目录里，队列与记录不去碰主目录那份
   applyMemory(ctx, {
     file: path.join(dir, 'memory.json'),
     ledgerFile: path.join(dir, 'ledger.json'),
@@ -66,7 +67,7 @@ async function mount(config: Config = {}): Promise<Mounted> {
   const vitals = qqVitalsOf(ctx)
   const memory = qqMemoryOf(ctx)
   if (vitals === undefined || memory === undefined) throw new Error('零件没有装配')
-  // 订阅只能由组合包发出：在它动手之前把订阅那头包一层来数
+  // 这些只能由组合包挂上去：在它动手之前把那一头包一层来数
   const live = { subscribed: 0, listeners: 0 }
   const subscribe = vitals.onMeal.bind(vitals)
   vitals.onMeal = (listener) => {
@@ -146,7 +147,7 @@ describe('同一天同一顿只写一条', () => {
 })
 
 describe('开关关着', () => {
-  it('一个订阅都没有，一顿饭记忆零新增', async () => {
+  it('一个挂上都没有，一顿饭记忆零新增', async () => {
     const { vitals, memory, live } = await mount({ mealMemory: false })
 
     vitals.react('我去吃饭了', at(11, 45))
@@ -158,7 +159,7 @@ describe('开关关着', () => {
 })
 
 describe('卸载之后', () => {
-  it('订阅撤掉了，再吃一顿也不写', async () => {
+  it('挂上撤掉了，再吃一顿也不写', async () => {
     const { ctx, vitals, memory, live } = await mount()
     vitals.react('我去吃饭了', at(8, 5))
     expect(memory.store.all()).toHaveLength(1)

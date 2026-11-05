@@ -1,14 +1,20 @@
 // 参数表：每个可调项只有这里一个声明点，默认值在 defaults.ts
 
 import type { PromptTuning } from './prompt-tuning.ts'
+import type { WordLists } from './words.ts'
 import type {
   Baseline, DreamTuning, EmotionBlendTuning, EmotionTuning, ExistenceTuning, NetworkTuning, ScarTuning,
   SuppressTuning,
 } from './types.ts'
 
+/** 覆盖项：词表按表覆盖，别的字段按字段覆盖 */
+export type TuningOverride = Partial<Omit<Tuning, 'words'>> & { words?: Partial<WordLists> }
+
 /** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
 export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning,
   EmotionBlendTuning, PromptTuning {
+  /** 十四张口语词表，覆盖时按表合并，没提的那张还用默认 */
+  words: WordLists
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -175,7 +181,7 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   sleepAdenosineFrom: number
   /** 夜睡该醒的钟点，本地小时 0~24，默认 7.5 即七点半 */
   wakeAt: number
-  /** 该醒时刻前后抖动的分钟数，默认 40，让每天不完全一样 */
+  /** 该醒时刻前后随机的分钟数，默认 40，让每天不完全一样 */
   wakeJitterMinutes: number
   /** 白天里睡眠压力低于这条线就自然醒，0~1 标度，默认 0.30 */
   wakeAdenosineBelow: number

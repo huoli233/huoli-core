@@ -14,6 +14,7 @@ import {
   resolveTuning,
   type FarewellFact,
   type QqVitalsSeam,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle, BUNDLE_DEFAULTS, FAREWELL_NEUTRAL, farewellWritten, type Config } from '../src/index.ts'
@@ -43,7 +44,7 @@ interface Mounted {
   memory: QqMemorySeam
   /** 遗书正文的暂存槽落在哪 */
   farewellFile: string
-  /** 组合包发过几次订阅、眼下还挂着几个监听 */
+  /** 组合包发过几次挂上、眼下还挂着几个监听 */
   live: { subscribed: number; listeners: number }
   /** 直接把一条到线的事实送进去，等于身体在那一拍产出了它 */
   deliver: (fact: FarewellFact) => void
@@ -59,8 +60,8 @@ async function mount(config: Config = {}): Promise<Mounted> {
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
-  // 记忆的四个文件都落在临时目录里，队列与账本不去碰主目录那份
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
+  // 记忆的四个文件都落在临时目录里，队列与记录不去碰主目录那份
   applyMemory(ctx, {
     file: path.join(dir, 'memory.json'),
     ledgerFile: path.join(dir, 'ledger.json'),
@@ -71,7 +72,7 @@ async function mount(config: Config = {}): Promise<Mounted> {
   const vitals = qqVitalsOf(ctx)
   const memory = qqMemoryOf(ctx)
   if (vitals === undefined || memory === undefined) throw new Error('零件没有装配')
-  // 订阅只能由组合包发出：在它动手之前把订阅那头包一层来数，并留住挂着的那些回调
+  // 这些只能由组合包挂上去：在它动手之前把那一头包一层来数，并留住挂着的那些函数
   const live = { subscribed: 0, listeners: 0 }
   const listeners: ((fact: FarewellFact) => void)[] = []
   const subscribe = vitals.onFarewell.bind(vitals)
@@ -180,7 +181,7 @@ describe('正文由谁写', () => {
     expect(neutral.memory.store.all()[0]?.metadata?.authoredBy).toBe('fallback')
   })
 
-  it('模型写在前一天，到线这天不算写过，按兜底写', async () => {
+  it('模型写在前一天，到线这天不算写过，按备用写', async () => {
     const { memory, farewellFile, deliver } = await mount()
     createFarewellSlotStore({ file: farewellFile }).stage('昨天想说的那句', moment(2, 8))
 
@@ -206,7 +207,7 @@ describe('正文由谁写', () => {
 })
 
 describe('暂存槽读不动', () => {
-  it('只记一行日志，记忆照写兜底那句，别的订阅者照旧', async () => {
+  it('只记一行日志，记忆照写备用那句，别的挂上去的那些照旧', async () => {
     const { ctx, vitals, memory, farewellFile, deliver } = await mount()
     // 槽的位置被一个目录占着：文件在却读不动
     fs.rmSync(farewellFile, { force: true })
@@ -261,7 +262,7 @@ describe('同一天同一个人只写一条', () => {
 })
 
 describe('写记忆失手', () => {
-  it('只记一行日志，消息路径与别的订阅者照旧', async () => {
+  it('只记一行日志，消息路径与别的挂上去的那些照旧', async () => {
     const { ctx, vitals, memory, deliver } = await mount()
     const failing = vi.spyOn(memory, 'write').mockImplementation(() => {
       throw new Error('磁盘满了')
@@ -282,7 +283,7 @@ describe('写记忆失手', () => {
 })
 
 describe('开关关着', () => {
-  it('一个订阅都没有，到线也不写', async () => {
+  it('一个挂上都没有，到线也不写', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(SEED))
     const { memory, live } = await mount({ farewellMemory: false })
@@ -295,7 +296,7 @@ describe('开关关着', () => {
 })
 
 describe('卸载之后', () => {
-  it('订阅撤掉了，再送事实也不写', async () => {
+  it('挂上撤掉了，再送事实也不写', async () => {
     const { ctx, memory, live, deliver } = await mount()
     deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
     expect(memory.store.all()).toHaveLength(1)

@@ -17,6 +17,8 @@ export type { SubjectStore, SubjectStoreOptions } from './store.ts'
 export interface QqSubjectSeam {
   store: SubjectStore
   render(chatKey?: string, thoughts?: readonly string[]): string
+  /** 碰到没见过的话题：把好奇心抬一点，抬到顶就夹住 */
+  noteNovelty(at: number): void
 }
 
 /** 这一行接受的配置 */
@@ -29,6 +31,8 @@ export interface Config {
   maxChars?: number
   /** 每个群叫什么名字，写快照时用 */
   chatNames?: Record<string, string>
+  /** 一次陌生话题把好奇心抬多少，默认零点一二 */
+  curiosityNoveltyGain?: number
 }
 
 const seams = new WeakMap<Context, QqSubjectSeam>()
@@ -48,7 +52,7 @@ export const name = 'qq-subject'
 /** 要用的内核接口 */
 export const inject = ['systemPrompt']
 
-// 提示词里的占位名
+// 提示词里留的那个名字
 const VARIABLE = 'qq_self'
 
 /**
@@ -61,9 +65,14 @@ export function apply(ctx: Context, config: Config = {}): void {
   const maxChars = Math.max(SNAPSHOT_DEFAULTS.minChars, config.maxChars ?? SNAPSHOT_DEFAULTS.maxChars)
   const chatNames = config.chatNames ?? {}
   const store = createSubjectStore({ file })
+  const curiosityGain = config.curiosityNoveltyGain ?? 0.12
 
   const seam: QqSubjectSeam = {
     store,
+    // 陌生话题抬一点好奇心：这是它唯一的上升来源，衰减由策略那一层管
+    noteNovelty() {
+      store.changeGlobal('curiosity', curiosityGain)
+    },
     render(chatKey, thoughts) {
       const state = store.read()
       const key = chatKey ?? state.lastActive

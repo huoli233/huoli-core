@@ -81,7 +81,7 @@ function importanceOf(kind: DreamKind, repeat: boolean, tuning: Tuning): number 
 
 /**
  * 入梦时的心情三档：好坏偏低或想哭偏重算差，好坏偏高且不难受算不错，其余算正常
- * @param state - 入梦时的状态，心情从派生量读
+ * @param state - 入梦时的状态，心情从算出来的量读
  * @param tuning - 参数，四条判据都在里面
  * @returns 心情档位
  */
@@ -92,7 +92,7 @@ export function dreamMoodOf(state: VitalsState, tuning: Tuning = DEFAULTS): Drea
 }
 
 /**
- * 按心情三档抽这一场梦的类型，两条概率都进参数，抽签源可注入
+ * 按心情三档抽这一场梦的类型，两条概率都进参数，抽签源可给
  * @param mood - 入梦时的心情档位
  * @param random - 取零到一的随机源，默认 Math.random
  * @param tuning - 参数，六条概率在里面

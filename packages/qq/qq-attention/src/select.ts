@@ -60,7 +60,7 @@ export const SELECT_DEFAULTS = {
 /** 一分钟的毫秒数，单位换算，不随配置改 */
 const MS_PER_MINUTE = 60_000
 
-// 去掉零宽字符并折叠全角，名字才比得准
+// 去掉零宽字符并把全角并成半角，名字才比得准
 function normalize(text: string): string {
   return text.replace(/[\u200B-\u200D\u2060\uFEFF\u00AD]/g, '').normalize('NFKC').toLowerCase()
 }

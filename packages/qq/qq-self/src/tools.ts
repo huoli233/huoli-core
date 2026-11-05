@@ -22,6 +22,8 @@ const REASON_TEXT: Record<WriteReason, string> = {
   no_evidence: '缺理由或缺证据，这一条不落',
   bad_lines: '三行的条数不对',
   unknown_chapter: '章名对不上叙事里已有的那几章',
+  rest: '这会儿电量见底或困得厉害，先歇着，醒了再动身份级的东西',
+  wrong_count: '条数不对：每天正好三行，探针正好十问',
 }
 
 // 拒绝时抛错，让内核当工具失败处理
@@ -51,7 +53,7 @@ function needEvidence(value: unknown): string[] {
 }
 
 /**
- * 注册自我层的写入工具
+ * 挂上自我层的写入工具
  * @param sink - 内核的工具登记口
  * @param deps - 自我层露出来的那一面
  */
@@ -71,6 +73,24 @@ export function registerSelfTools(sink: SelfToolSink, deps: QqSelfSeam): void {
         ? args.lines.filter(item => typeof item === 'string' && item.trim() !== '').map(item => (item as string).trim())
         : []
       return Promise.resolve(settled(deps.recordDay(lines, Date.now())))
+    },
+  }))
+
+  sink.register(defineTool({
+    name: 'qq_self_probe',
+    description: '每月一次的十问十问：把十个问题各自怎么答的记下来。一个月只记一次，答案要具体，不要写套话。',
+    parameters: {
+      answers: { type: 'array', description: '十个回答，按问题的顺序，一问一条。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    execute(args) {
+      const answers = Array.isArray(args.answers)
+        ? args.answers.filter(item => typeof item === 'string' && item.trim() !== '').map(item => (item as string).trim())
+        : []
+      return Promise.resolve(settled(deps.probe(answers, Date.now())))
     },
   }))
 

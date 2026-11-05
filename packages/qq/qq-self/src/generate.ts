@@ -1,4 +1,4 @@
-// 只读目录就能画一份面板：注入路径与离线命令共用这一处
+// 只读目录就能画一份面板：面板与离线命令共用这一处路径
 
 import { FILES } from './files.ts'
 import { renderPanel } from './panel.ts'

@@ -22,7 +22,7 @@ function chatKeyOf(exec: { agent?: { id: string } }): string {
 }
 
 /**
- * 注册两个念头工具
+ * 挂上两个念头工具
  * @param ctx - 运行环境
  * @param deps - 要用到的东西
  */

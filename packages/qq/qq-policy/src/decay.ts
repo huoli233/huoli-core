@@ -46,7 +46,7 @@ export const TAU_MS = {
 export type TauKind = keyof typeof TAU_MS
 
 /**
- * 收敛到 0 到 1
+ * 收到 0 到 1
  * @param value - 值
  * @returns 算出来的数
  */

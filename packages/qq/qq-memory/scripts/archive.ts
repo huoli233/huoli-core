@@ -56,7 +56,7 @@ const KINDS: readonly ArchiveKind[] = ['memory', 'ledger', 'queue']
 export interface BackupOptions {
   /** 记忆文件，不填取主目录下的 data/qq-memory.json */
   file?: string
-  /** 账本文件，不填取记忆文件同目录 */
+  /** 记录表文件，不填取记忆文件同目录 */
   ledgerFile?: string
   /** 待写队列，不填取记忆文件同目录 */
   queueFile?: string
@@ -101,7 +101,7 @@ export interface BackupResult {
 export interface RestoreOptions {
   /** 恢复到哪个记忆文件，不填按清单里的原路径 */
   file?: string
-  /** 恢复到哪个账本，不填按清单里的原路径 */
+  /** 恢复到哪个记录表，不填按清单里的原路径 */
   ledgerFile?: string
   /** 恢复到哪个队列，不填按清单里的原路径 */
   queueFile?: string
@@ -171,7 +171,7 @@ function roll(root: string, keep: number): { kept: string[]; removed: string[] }
 }
 
 /**
- * 把记忆、账本、队列整份抄进一个带时间戳的备份目录，再按份数滚一次
+ * 把记忆、记录表、队列整份抄进一个带时间戳的备份目录，再按份数滚一次
  * @param now - 备份时刻，目录名按它取
  * @param options - 三份文件的位置与留几份
  * @returns 备份目录、抄了哪些、缺了哪些、滚掉了哪些
@@ -279,7 +279,7 @@ function verifyAt(memoryFile: string, ledgerFile: string): LedgerReport {
  * 从一个备份目录恢复三份文件，恢复前后各对一次账
  * @param dir - 备份目录
  * @param options - 三个目标位置，不给就回到清单里记的原路径
- * @returns 这次覆盖了哪些文件，以及前后的对账结果
+ * @returns 这次覆盖了哪些文件，以及前后的核对结果
  */
 export function restore(dir: string, options: RestoreOptions = {}): RestoreResult {
   const manifest = readManifest(dir)
@@ -296,7 +296,7 @@ export function restore(dir: string, options: RestoreOptions = {}): RestoreResul
   }
   const ledgerFile = targets.get('ledger') ?? ledgerBeside(memoryFile)
   const before = verifyAt(memoryFile, ledgerFile)
-  // 记忆先回、队列其次、账本最后：对账读的是前两份，账本落地时它才代表恢复后的样子
+  // 记忆先回、队列其次、记录表最后：核对读的是前两份，记录表落地时它才代表恢复后的样子
   const order: readonly ArchiveKind[] = ['memory', 'queue', 'ledger']
   const restored: string[] = []
   for (const kind of order) {

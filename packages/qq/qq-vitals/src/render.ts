@@ -5,7 +5,7 @@ import { DEFAULTS, type Tuning } from './defaults.ts'
 import type { VitalsState } from './types.ts'
 
 // 抬头写清这段只改语气
-const HEADER = '【你现在的神经状态（只用来决定语气，绝对不要向用户解释，也不要提激素/数值）】'
+const HEADER = '【你现在的神经状态（只用来决定语气，绝对不要向对方解释，也不要提激素/数值）】'
 
 // 收尾每次换一句，保证同一状态的两次渲染不逐字相同
 const TAILS: readonly string[] = [
@@ -116,7 +116,7 @@ function sideWord(value: number, tuning: Tuning): string {
   return '中'
 }
 
-// 这一行的三格：愉悦取好坏偏向、唤醒取精力（规范没给唤醒公式，用精力顶上）、掌控取支配感
+// 这一行的三格：愉悦取好坏偏向、唤醒取精力（文档没给唤醒公式，用精力顶上）、掌控取支配感
 function padLine(state: VitalsState, tuning: Tuning): string {
   return `PAD：愉悦 ${sideWord(state.valence, tuning)} / 唤醒 ${levelWord(state.energy, tuning)} / 掌控 ${levelWord(state.dominance, tuning)}`
 }

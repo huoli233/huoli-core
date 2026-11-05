@@ -5,18 +5,19 @@ import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import '@huoli/huoli-system-prompt'
 import { cycleStartOf, type CycleFact } from './cycle.ts'
-import { resolveTuning, type Tuning } from './defaults.ts'
+import { resolveTuning } from './defaults.ts'
+import type { TuningOverride } from './tuning.ts'
 import { derive } from './derive.ts'
 import { dreamFactOf, type DreamFact } from './dream.ts'
 import { drift } from './drift.ts'
 import type { ExistenceFacts } from './existence.ts'
 import { farewellOf, type FarewellFact } from './mortality.ts'
-import { react as reactToText } from './react.ts'
+import { applyEvents, react as reactToText, type BodyEvent } from './react.ts'
 import { renderPrompt } from './render.ts'
 import { scarFactOf, type ScarFact } from './scar.ts'
 import { createVitalsStore } from './store.ts'
 import type { VitalsState } from './types.ts'
-import { mealName } from './words.ts'
+import { mealName, type WordLists } from './words.ts'
 
 export type { Tuning } from './defaults.ts'
 export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
@@ -38,13 +39,13 @@ export { deltaOf, describeNetwork, propagate } from './network.ts'
 export type { NetworkPass } from './network.ts'
 export { peakOf } from './peak.ts'
 export type { PeakKind } from './peak.ts'
-export { postLevel } from './post.ts'
-export type { PostDecision, PostFacts } from './post.ts'
-export { react } from './react.ts'
+export { applyEvents, react, type BodyEvent } from './react.ts'
 export { renderPrompt, thirstNote } from './render.ts'
 export { inCrisis, raiseScar, scarFactOf, settleScar } from './scar.ts'
 export type { ScarFact } from './scar.ts'
-export { isDrink, isMeal, mealName } from './words.ts'
+export {
+  EMPTY_WORDS, isDrink, isMeal, mealName, WORDS, WORDS_PRESET, type WordLists,
+} from './words.ts'
 export { createVitalsStore } from './store.ts'
 export type { VitalsStoreOptions, VitalsStore } from './store.ts'
 export type {
@@ -72,6 +73,16 @@ export interface DrinkFact {
 /** 开经日的事实，交给组合包以后接记忆，本包不写记忆 */
 export type CycleStartFact = CycleFact
 
+/** 醒来的那一刻：睡态从睡着变成别的，就算醒了一次 */
+export interface WakeFact {
+  /** 什么时候醒的 */
+  at: number
+  /** 醒之前是什么睡态 */
+  from: string
+  /** 醒之后是什么睡态 */
+  to: string
+}
+
 /** 一个应用里的那份身体 */
 export interface QqVitalsSeam {
   /** 读事实：当前这一份状态，别的包不许自己再算 */
@@ -80,10 +91,12 @@ export interface QqVitalsSeam {
   render(): string
   /** 记一句话：写回身体并落盘，冷却窗口内的重复写法不再计入 */
   react(text: string, at?: number): void
-  /** 注入外部余额档位：给了就按分档朝目标走，给 undefined 表示这一路没有来源 */
+  /** 按模型报的事件写回身体：一个事件只做一次，冷却照样管 */
+  reactEvents(events: readonly BodyEvent[], at?: number): void
+  /** 放进外部余额档位：给了就按分档朝目标走，给 undefined 表示这一路没有来源 */
   setBalance(level: number | undefined): void
   /**
-   * 注入运行环境事实：进程活了多久、今天重启几次、有没有收到关停提示
+   * 放进运行环境事实：进程活了多久、今天重启几次、有没有收到关停提示
    * @param facts - 三条只读事实，给 undefined 表示这一路没有来源，两个存在性字段不再朝目标走
    */
   setExistence(facts: ExistenceFacts | undefined): void
@@ -105,6 +118,8 @@ export interface QqVitalsSeam {
   onDream(listener: (fact: DreamFact) => void): () => void
   /** 接住疤痕那一刻的记忆事实：抬一档才产一条，取消时用返回的那个函数 */
   onScar(listener: (fact: ScarFact) => void): () => void
+  /** 接住醒来的那一刻：从睡着变回醒着才产一条，取消时用返回的那个函数 */
+  onWake(listener: (fact: WakeFact) => void): () => void
 }
 
 /** 这一行接受的配置 */
@@ -114,7 +129,9 @@ export interface Config {
   /** 数据根目录，不给就用默认的家目录 */
   huoliHome?: string
   /** 想改哪些默认参数 */
-  tuning?: Partial<Tuning>
+  tuning?: TuningOverride
+  /** 口语词表：只写要换的那几张，没写的还用默认 */
+  words?: Partial<WordLists>
 }
 
 const seams = new WeakMap<Context, QqVitalsSeam>()
@@ -137,7 +154,7 @@ export const name = 'qq-vitals'
 /** 要用的内核接口 */
 export const inject = ['systemPrompt']
 
-// 提示词里的占位名
+// 提示词里留的那个名字
 const VARIABLE = 'qq_vitals'
 
 /**
@@ -146,7 +163,11 @@ const VARIABLE = 'qq_vitals'
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  const tuning = resolveTuning(config.tuning)
+  // 词表跟着参数一起合：只换一张表时，别的表还是默认那份
+  const tuning = resolveTuning({
+    ...config.tuning,
+    ...config.words === undefined ? {} : { words: { ...config.tuning?.words, ...config.words } },
+  })
   const file = config.file ?? join(resolveHuoliHome(config.huoliHome), 'data', 'qq-vitals.json')
   const store = createVitalsStore({ file, tuning })
   const meals = new Set<(fact: MealFact) => void>()
@@ -155,6 +176,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const farewells = new Set<(fact: FarewellFact) => void>()
   const dreams = new Set<(fact: DreamFact) => void>()
   const scars = new Set<(fact: ScarFact) => void>()
+  const wakes = new Set<(fact: WakeFact) => void>()
   let variant = 0
   let balance: number | undefined
   let existence: ExistenceFacts | undefined
@@ -163,7 +185,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const current = (at = Date.now()): VitalsState =>
     derive(drift(store.read(), at, tuning, undefined, balance, existence), tuning)
 
-  // 事实只在产出那一刻通知一次，某个订阅者失手不影响别人
+  // 事实只在产出那一刻通知一次，某个听的人失手不影响别人
   const notify = <F>(listeners: Set<(fact: F) => void>, what: string, fact: F): void => {
     for (const listener of listeners) {
       try {
@@ -182,7 +204,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     const dream = dreamFactOf(settled, tuning)
     const scar = scarFactOf(before, settled, at)
     const farewell = farewellOf(settled, balance, at, tuning)
-    // 开经判定与幂等标记只在这一份纯函数里算，两条结算路径共用，挡掉的重复不通知
+    // 开经判定与防重复的标记只在这一份纯函数里算，两条结算路径共用，挡掉的重复不通知
     const cycleStart = cycleStartOf(before, settled, at, tuning)
     // 三个标记跟状态一起落盘：先写盘再通知，落盘失败就当这一拍没发生过
     const next: VitalsState = { ...settled }
@@ -199,6 +221,10 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (scar !== undefined) notify(scars, '疤痕', scar)
     if (farewell !== undefined) notify(farewells, '遗书', farewell)
     if (cycleStart !== undefined) notify(cycles, '开经', cycleStart)
+    // 睡醒了才通知：睡前是睡着、这一拍已经不是了，就算醒了一次
+    if (before.sleep_state === 'sleeping' && next.sleep_state !== 'sleeping') {
+      notify(wakes, '醒来', { at, from: before.sleep_state, to: next.sleep_state })
+    }
   }
 
   const seam: QqVitalsSeam = {
@@ -245,11 +271,45 @@ export function apply(ctx: Context, config: Config = {}): void {
         if (dream !== undefined) next.dream_applied_at = dream.at
         if (cycleStart !== undefined) next.cycle_start_applied_at = cycleStart.at
         store.write(next)
-        if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text) }
+        if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text, tuning.words) }
         // 只在这一杯真写进去了才产事实：冷却挡掉的那次 last_drink 不动
         if (next.last_drink !== raw.last_drink) drink = { at: next.last_drink, name: next.last_drink_name }
       } catch (error) {
         ctx.logger('qq-vitals').warn('消息写盘失败：%s', String(error))
+        return
+      }
+      if (meal !== undefined) notify(meals, '进食', meal)
+      if (drink !== undefined) notify(drinks, '喝水', drink)
+      if (dream !== undefined) notify(dreams, '梦境', dream)
+      if (scar !== undefined) notify(scars, '疤痕', scar)
+      if (cycleStart !== undefined) notify(cycles, '开经', cycleStart)
+    },
+    reactEvents(events, at) {
+      if (events.length === 0) return
+      const raw = store.read()
+      const moment = Math.max(at ?? Date.now(), raw.last_update)
+      let meal: MealFact | undefined
+      let drink: DrinkFact | undefined
+      let dream: DreamFact | undefined
+      let scar: ScarFact | undefined
+      let cycleStart: CycleFact | undefined
+      try {
+        const settled = derive(
+          applyEvents(drift(raw, moment, tuning, undefined, balance, existence), events, moment, tuning),
+          tuning,
+        )
+        dream = dreamFactOf(settled, tuning)
+        scar = scarFactOf(raw, settled, moment)
+        cycleStart = cycleStartOf(raw, settled, moment, tuning)
+        const next: VitalsState = { ...settled }
+        if (dream !== undefined) next.dream_applied_at = dream.at
+        if (cycleStart !== undefined) next.cycle_start_applied_at = cycleStart.at
+        store.write(next)
+        // 只有真吃进去、真喝下去才产事实：冷却挡掉的那次不动这两个时刻
+        if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: '饭' }
+        if (next.last_drink !== raw.last_drink) drink = { at: next.last_drink, name: next.last_drink_name }
+      } catch (error) {
+        ctx.logger('qq-vitals').warn('事件写盘失败：%s', String(error))
         return
       }
       if (meal !== undefined) notify(meals, '进食', meal)
@@ -298,6 +358,12 @@ export function apply(ctx: Context, config: Config = {}): void {
       dreams.add(listener)
       return () => {
         dreams.delete(listener)
+      }
+    },
+    onWake(listener) {
+      wakes.add(listener)
+      return () => {
+        wakes.delete(listener)
       }
     },
     onScar(listener) {

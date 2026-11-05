@@ -1,8 +1,8 @@
-// 闸门：只回答"现在能不能开口"，不能就告诉它下次什么时候再来
+// 关卡：只回答"现在能不能开口"，不能就告诉它下次什么时候再来
 
 import { PROACTIVE_DEFAULTS, type GateConfig, type GateVerdict } from './score.ts'
 
-/** 闸门看的东西 */
+/** 关卡看的东西 */
 export interface GateInput {
   now: number
   config?: Partial<GateConfig>
@@ -45,7 +45,7 @@ function multiplierOf(bias: number | undefined, config: GateConfig): number {
 
 /**
  * 两次开口之间隔多久：区间中点乘倍率，同样的输入永远得到同样的数
- * @param config - 闸门配置
+ * @param config - 关卡配置
  * @param bias - 身体给的那条读数，零到一，累与气往久那头走，想人往近那头落，不给按一倍算
  * @returns 毫秒数
  */
@@ -57,7 +57,7 @@ export function cooldownMs(config: GateConfig, bias?: number): number {
 
 /**
  * 这一天最多开口几次：倍率越大开口越少，最少留下限那么多次，最多不超过上限
- * @param config - 闸门配置
+ * @param config - 关卡配置
  * @param bias - 身体给的那条读数，零到一，不给按一倍算
  * @returns 次数
  */
@@ -83,9 +83,9 @@ export function inQuietHours(now: number, start: string, end: string): boolean {
 }
 
 /**
- * 一道道过闸门，第一道不过就返回，并告诉它下次什么时候
+ * 一道道过关卡，第一道不过就返回，并告诉它下次什么时候
  * @param input - 传进来的东西
- * @returns 闸门结论
+ * @returns 关卡结论
  */
 export function runGates(input: GateInput): GateVerdict {
   const config: GateConfig = { ...PROACTIVE_DEFAULTS, ...(input.config ?? {}) }

@@ -143,7 +143,7 @@ describe('镜像三类', () => {
 })
 
 describe('镜像的边界', () => {
-  it('日常三行、问句、账本、面板、叙事、错处一律不进记忆', async () => {
+  it('日常三行、问句、记录表、面板、叙事、错处一律不进记忆', async () => {
     const dir = tempDir()
     const seam = await mount(dir)
     const { port, handed } = fakePort()

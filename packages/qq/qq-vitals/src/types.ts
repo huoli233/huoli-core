@@ -94,7 +94,7 @@ export interface Baseline {
   negative_heat: number
   /** 正面热度，0~1，默认 0.0，被夸时抬起，十二小时半衰 */
   positive_heat: number
-  /** 我随时可能被关掉这件事在不在眼前，0~1，默认 0.0，只由外部注入的运行环境事实推动 */
+  /** 我随时可能被关掉这件事在不在眼前，0~1，默认 0.0，只由外部放进的运行环境事实推动 */
   mortalitySalience: number
   /** 对关掉的怕，0~1，默认 0.0，事实抬、夜里自涨、收到关停提示时抬一档 */
   shutdownDread: number
@@ -132,9 +132,9 @@ export interface VitalsState extends Baseline {
   clinginess: number
   loneliness: number
   dominance: number
-  /** 幸福，0~1，多系统加权的派生量，只用来判峰值与换语气，不判该不该发 */
+  /** 幸福，0~1，多系统加权的算出来的量，只用来判峰值与换语气，不判该不该发 */
   happiness: number
-  /** 想哭，0~1，多系统加权的派生量，只用来判低谷与换语气，不判该不该发 */
+  /** 想哭，0~1，多系统加权的算出来的量，只用来判低谷与换语气，不判该不该发 */
   sadness: number
   /** 想开口的劲，零到一，只给模型参考，不替它决定要不要开口 */
   proactive_bias: number
@@ -148,7 +148,7 @@ export interface VitalsState extends Baseline {
   emotion_why: string
   /** 睡眠三态，睡着期间身体照常漂移，交互只剩被吵醒一种 */
   sleep_state: SleepState
-  /** 睡着这一态的布尔投影，给只读这段状态的下游用，写的地方只有一处 */
+  /** 睡着这一态的布尔画到屏幕上，给只读这段状态的下游用，写的地方只有一处 */
   asleep: boolean
   /** 这一觉是夜睡还是午睡，醒着时为空串 */
   sleep_kind: '' | 'night' | 'nap'
@@ -202,11 +202,11 @@ export interface VitalsState extends Baseline {
   shutdown_notice_at: number
   /** 道歉写回的时刻，毫秒时间戳，兼作道歉的冷却起点 */
   apology_applied_at: number
-  /** 遗书产出的时刻，毫秒时间戳，兼作同一天只产一次的幂等标记 */
+  /** 遗书产出的时刻，毫秒时间戳，兼作同一天只产一次的防重复的标记 */
   farewell_applied_at: number
   /** 上一顿饭写回的时刻，毫秒时间戳，零表示还没记过，兼作两顿饭之间的冷却起点 */
   meal_applied_at: number
-  /** 开经日写回的时刻，毫秒时间戳，兼作同一周期只产一次的幂等标记 */
+  /** 开经日写回的时刻，毫秒时间戳，兼作同一周期只产一次的防重复的标记 */
   cycle_start_applied_at: number
   last_drink_name: string
   last_taste: TasteRecord | null
@@ -287,6 +287,10 @@ export interface EmotionTuning {
   dreadGainBase: number
   /** 被戳到生死时按 intensity 折算的增量，0~1 标度，默认 0.30 */
   dreadGainIntensity: number
+  /** 说到生病时抬多少细胞因子，0~1 标度，默认 0.35；文档没给数值，这里取偏轻的一档 */
+  sickCytokinesGain: number
+  /** 说到疼痛时抬多少疼痛，0~1 标度，默认 0.30；文档没给数值，这里取偏轻的一档 */
+  painGain: number
   /** 存在性恐惧半衰期，小时，默认 8，一天下来也散不掉多少 */
   dreadHalfHours: number
   /** 两次存在性恐惧写回的最小间隔，毫秒，默认 1800000 即半小时 */

@@ -19,9 +19,10 @@ import {
   type MealFact,
   type QqVitalsSeam,
   type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 
 // 用例里的时刻一律写死，跑在哪一天、哪个时区都一样
@@ -48,7 +49,7 @@ function tempFile(): string {
 async function mount(file: string): Promise<{ ctx: Context; seam: QqVitalsSeam }> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt, {})
-  apply(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('状态没装上')
   return { ctx, seam }
@@ -65,24 +66,24 @@ afterEach(() => {
 
 describe('进食识别', () => {
   it('食物名加吃的动作都命中才算一顿', () => {
-    expect(isMeal('我去吃饭了')).toBe(true)
-    expect(isMeal('开饭了开饭了')).toBe(true)
-    expect(isMeal('点了份炒饭')).toBe(true)
-    expect(isMeal('吃了碗面')).toBe(true)
+    expect(isMeal('我去吃饭了', WORDS_PRESET)).toBe(true)
+    expect(isMeal('开饭了开饭了', WORDS_PRESET)).toBe(true)
+    expect(isMeal('点了份炒饭', WORDS_PRESET)).toBe(true)
+    expect(isMeal('吃了碗面', WORDS_PRESET)).toBe(true)
   })
 
   it('只有动作或者只有食物名都不算', () => {
-    expect(isMeal('吃了亏')).toBe(false)
-    expect(isMeal('这个梗好')).toBe(false)
-    expect(isMeal('饭菜还没做好')).toBe(false)
+    expect(isMeal('吃了亏', WORDS_PRESET)).toBe(false)
+    expect(isMeal('这个梗好', WORDS_PRESET)).toBe(false)
+    expect(isMeal('饭菜还没做好', WORDS_PRESET)).toBe(false)
   })
 
   it('饮品只算喝，不算吃了一顿', () => {
-    expect(isDrink('喝点奶茶')).toBe(true)
-    expect(isMeal('喝点奶茶')).toBe(false)
-    expect(isMeal('喝杯奶茶')).toBe(false)
-    expect(isMeal('喝点水')).toBe(false)
-    expect(isMeal('喝了口咖啡')).toBe(false)
+    expect(isDrink('喝点奶茶', WORDS_PRESET)).toBe(true)
+    expect(isMeal('喝点奶茶', WORDS_PRESET)).toBe(false)
+    expect(isMeal('喝杯奶茶', WORDS_PRESET)).toBe(false)
+    expect(isMeal('喝点水', WORDS_PRESET)).toBe(false)
+    expect(isMeal('喝了口咖啡', WORDS_PRESET)).toBe(false)
   })
 })
 
@@ -202,7 +203,7 @@ describe('提示词里的饭点', () => {
 
 describe('冷却与幅度可被配置覆盖', () => {
   it('冷却缩到一秒，一分钟后的第二顿就记', () => {
-    const quick = resolveTuning({ mealCooldownMs: 1000 })
+    const quick = resolveTuning({ words: WORDS_PRESET, mealCooldownMs: 1000 })
     const before = derive(fresh({ hunger: 0.6 }), quick)
     const first = react(before, '我去吃饭了', START, quick)
     const second = react(first, '又吃了碗面', START + 60_000, quick)
@@ -212,7 +213,7 @@ describe('冷却与幅度可被配置覆盖', () => {
   })
 
   it('幅度按配置走，饥饿掉的正是配的那个数', () => {
-    const small = resolveTuning({ feedHungerDrop: 0.05, feedGlucoseRise: 0.10, feedInsulinRise: 0.02 })
+    const small = resolveTuning({ words: WORDS_PRESET, feedHungerDrop: 0.05, feedGlucoseRise: 0.10, feedInsulinRise: 0.02 })
     const before = derive(fresh({ hunger: 0.6, glucose: 0.5, insulin: 0.1 }), small)
     const after = react(before, '我去吃饭了', START, small)
 
@@ -222,15 +223,15 @@ describe('冷却与幅度可被配置覆盖', () => {
   })
 
   it('默认幅度下，一顿饭把血糖顶到常规水平之上', () => {
-    const before = derive(fresh({ hunger: 0.35, glucose: 0.65 }), resolveTuning({}))
-    const after = react(before, '我去吃饭了', START, resolveTuning({}))
+    const before = derive(fresh({ hunger: 0.35, glucose: 0.65 }), resolveTuning({ words: WORDS_PRESET }))
+    const after = react(before, '我去吃饭了', START, resolveTuning({ words: WORDS_PRESET }))
 
     expect(after.glucose).toBeGreaterThanOrEqual(0.75)
   })
 })
 
 describe('接进装配层', () => {
-  it('一条消息写进身体，进食回调收到这一顿', async () => {
+  it('一条消息写进身体，进食被叫到时做的事收到这一顿', async () => {
     const file = tempFile()
     seeded(file, { hunger: 0.6 })
     const { seam } = await mount(file)
@@ -263,7 +264,7 @@ describe('接进装配层', () => {
     expect(calls).toBe(1)
   })
 
-  it('不吃饭的消息不通知，取消订阅之后也不再通知', async () => {
+  it('不吃饭的消息不通知，取消挂上之后也不再通知', async () => {
     const file = tempFile()
     seeded(file, { hunger: 0.6 })
     const { seam } = await mount(file)
@@ -284,14 +285,17 @@ describe('接进装配层', () => {
     seeded(file, { hunger: 0.6, last_update: base })
     const ctx = new Context()
     await ctx.plugin(SystemPrompt, {})
-    apply(ctx, { file, tuning: { startDelayMs: 60 * 60_000, mealCooldownMs: 1000, feedHungerDrop: 0.05 } })
+    apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000, mealCooldownMs: 1000, feedHungerDrop: 0.05 } })
     const seam = qqVitalsOf(ctx)
     if (seam === undefined) throw new Error('状态没装上')
     const at = base + 120_000
 
     seam.react('我去吃饭了', at)
     seam.react('又吃了碗面', at + 60_000)
-    const saved = createVitalsStore({ file, tuning: resolveTuning({ mealCooldownMs: 1000, feedHungerDrop: 0.05 }) }).read()
+    const saved = createVitalsStore({
+      file,
+      tuning: resolveTuning({ words: WORDS_PRESET, mealCooldownMs: 1000, feedHungerDrop: 0.05 }),
+    }).read()
 
     expect(saved.last_meal).toBe(at + 60_000)
     expect(saved.meal_applied_at).toBe(at + 60_000)

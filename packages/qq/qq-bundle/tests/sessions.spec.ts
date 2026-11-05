@@ -174,7 +174,7 @@ describe('一个群一条会话', () => {
     })
   })
 
-  it('只有表情占位的那条不叫醒', async () => {
+  it('只有表情位置的那条不叫醒', async () => {
     const { opened, socket } = await mount()
 
     socket.deliver({

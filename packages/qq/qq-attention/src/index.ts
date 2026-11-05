@@ -16,6 +16,8 @@ export type { AttentionSignals, Candidate, CollectInput, SignalMessage } from '.
 export { collectSignals } from './select.ts'
 export type { AttentionFactsInput, WakePreference } from './facts.ts'
 export { renderAttentionFacts } from './facts.ts'
+export type { InterjectTuning, SpeakFacts, SpeakVerdict, StopFacts, StopVerdict } from './interject.ts'
+export { INTERJECT_DEFAULTS, shouldSpeak, shouldStop } from './interject.ts'
 export { WAIT_MAX_MS, DEFAULT_READ_LIMIT, DEFAULT_QUIET_MS } from './tools.ts'
 
 /** 一个应用上下文里的运行件 */

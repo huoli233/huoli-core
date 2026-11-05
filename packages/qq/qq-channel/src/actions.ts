@@ -4,7 +4,7 @@ import type { ActionKind } from '@huoli/huoli-qq-self'
 
 export type { ActionKind } from '@huoli/huoli-qq-self'
 
-/** 一类动作自己那套闸门参数 */
+/** 一类动作自己那套关卡参数 */
 export interface ActionTuning {
   /** 同一类动作两次之间至少隔多久 */
   coolDownMs: number
@@ -21,7 +21,7 @@ export interface ActionTuning {
 /** 三类动作各一套参数，互不共用 */
 export type ActionTunings = Readonly<Record<ActionKind, ActionTuning>>
 
-// 公共动作的三十分钟：冷却、同文去重与待确认项的有效期共用这一个口径
+// 公共动作的三十分钟：冷却、同文去重与待确认项的有效期用同一套数字
 const PUBLIC_WINDOW_MS = 30 * 60_000
 
 /** 三类动作的默认值表 */

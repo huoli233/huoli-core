@@ -132,7 +132,7 @@ describe('两把钥匙', () => {
 })
 
 describe('身份级动作的三十分钟冷却', () => {
-  it('同一动作在冷却里被拒，只算提议也不记账', async () => {
+  it('同一动作在冷却里被拒，只算提议也不记录', async () => {
     const dir = tempDir()
     const seam = await mount(dir)
     const now = Date.now()

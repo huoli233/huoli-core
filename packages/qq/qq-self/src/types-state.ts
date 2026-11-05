@@ -1,4 +1,4 @@
-// 目录里存下的类型：账本、行、身份、写入、版本、镜像与叙事
+// 目录里存下的类型：记录表、行、身份、写入、版本、镜像与叙事
 
 /** 身体的四种需要，与身体那边的字段名逐字相同 */
 export type DriveNeed = 'hunger' | 'thirst' | 'adenosine' | 'energy'
@@ -32,7 +32,7 @@ export interface AgencyEntry {
   artifact: string
 }
 
-/** 账本里的一行，只有这两档 */
+/** 记录表里的一行，只有这两档 */
 export type LedgerEntry = DriveEntry | AgencyEntry
 
 /** 两档分开计数，从不相加 */
@@ -45,7 +45,7 @@ export interface LedgerSummary {
   recentAgency: number
 }
 
-/** 账本判据查出来的一条违规 */
+/** 记录表判据查出来的一条违规 */
 export interface LedgerViolation {
   /** 哪条判据：三是有产出才算做成，四是隔一两周要有一次失败 */
   rule: 'done_without_artifact' | 'no_recent_failed'
@@ -55,7 +55,7 @@ export interface LedgerViolation {
   count: number
 }
 
-/** 查判据三与判据四的口径 */
+/** 查判据三与判据四的说法 */
 export interface AuditOptions {
   /** 判据四看的窗口，最长两周 */
   failedWindowMs: number
@@ -72,6 +72,8 @@ export type WriteReason =
   | 'no_evidence'
   | 'bad_lines'
   | 'unknown_chapter'
+  | 'rest'
+  | 'wrong_count'
 
 /** 一次写入的结果 */
 export interface WriteOutcome {
@@ -122,6 +124,8 @@ export interface RollbackCheck {
   line: number
   /** 比不了时的码，形如 versions.missing */
   code?: string
+  /** 比不了时给人看的下一步 */
+  hint?: string
 }
 
 /** 一个新项目的写法 */

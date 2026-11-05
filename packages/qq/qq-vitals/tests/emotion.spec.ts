@@ -4,9 +4,10 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   createVitalsStore, derive, drift, emptyState, react, renderPrompt, resolveTuning, type Tuning, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 const NIGHT = new Date(2026, 0, 1, 23, 0, 0).getTime()
 const HOUR = 3_600_000
@@ -93,7 +94,7 @@ describe('情绪的触发', () => {
   })
 
   it('冷却与增量都从配置读', () => {
-    const zero = resolveTuning({ fearCooldownMs: 0, fearGainBase: 0.5, fearGainIntensity: 0 })
+    const zero = resolveTuning({ words: WORDS_PRESET, fearCooldownMs: 0, fearGainBase: 0.5, fearGainIntensity: 0 })
     const once = react(settled({}, zero), '吓我一跳', START, zero)
     const twice = react(once, '吓我一跳', START + 1, zero)
 
@@ -153,7 +154,7 @@ describe('情绪的衰减', () => {
   })
 
   it('半衰期换成配置里的值就按新值走', () => {
-    const slow = resolveTuning({ angerHalfHours: 2 })
+    const slow = resolveTuning({ words: WORDS_PRESET, angerHalfHours: 2 })
     const after = drift(fresh({ anger: 0.8, last_msg: START + HOUR }), START + HOUR, slow)
 
     expect(after.anger).toBeCloseTo(0.5656854249, 6)
@@ -230,7 +231,7 @@ describe('反向压制', () => {
   })
 
   it('阈值可以从配置覆盖', () => {
-    const loose = resolveTuning({ suppressFearFrom: 0.95, suppressWorryFrom: 0.95 })
+    const loose = resolveTuning({ words: WORDS_PRESET, suppressFearFrom: 0.95, suppressWorryFrom: 0.95 })
 
     expect(settled({ fear: 0.7 }, loose).emotion_candidates).toContain('安心')
     expect(settled({ worry: 0.7 }, loose).emotion_candidates).toContain('幸福')

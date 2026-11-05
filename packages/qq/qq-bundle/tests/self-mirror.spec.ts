@@ -100,7 +100,7 @@ describe('镜像接进了记忆库', () => {
     expect(memory.store.all()).toHaveLength(0)
   })
 
-  it('每天整理那一步会把镜像带上，并且立刻入账', async () => {
+  it('每天整理那一步会把镜像带上，并且立刻记进记录表', async () => {
     const dir = tempDir()
     const { ctx, memory, self } = await mount(dir, true, false)
     writeRows(dir, 'claims.jsonl', [{ at: AT, id: 'c1', text: '周五爬山那次她更想待在家里' }])

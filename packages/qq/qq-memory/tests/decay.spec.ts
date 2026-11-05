@@ -10,7 +10,7 @@ const NOW = new Date(2026, 9, 30, 18, 39).getTime()
 
 afterEach(cleanupTempDirs)
 
-describe('保护线口径', () => {
+describe('保护线说法', () => {
   it('默认就是策略表那条线，现在是 70', () => {
     expect(DEFAULTS.protectLine).toBe(RETENTION.anchorImportance)
     expect(DEFAULTS.protectLine).toBe(70)
@@ -211,7 +211,7 @@ describe('先掉重要度，再算清晰度，最后清正文', () => {
   })
 })
 
-describe('落盘和账本', () => {
+describe('落盘和记录表', () => {
   it('重启之后数值还是衰减后的那个', () => {
     const file = tempFile()
     const first = mount({ file })
@@ -225,7 +225,7 @@ describe('落盘和账本', () => {
     expect(reopened?.importance).toBe(decayedTo)
   })
 
-  it('衰减不碰正文，对账不报正文被改', () => {
+  it('衰减不碰正文，核对不报正文被改', () => {
     const { seam } = mount({ file: tempFile() })
     seam.remember('掉分也不动正文的一句', 'group:1', { importance: 45, at: NOW })
 

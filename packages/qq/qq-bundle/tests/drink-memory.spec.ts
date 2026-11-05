@@ -12,6 +12,7 @@ import {
   qqVitalsOf,
   resolveTuning,
   type QqVitalsSeam,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply as applyBundle, type Config } from '../src/index.ts'
@@ -44,7 +45,7 @@ async function mount(config: Config = {}): Promise<Mounted> {
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   applyMemory(ctx, {
     file: path.join(dir, 'memory.json'),
     ledgerFile: path.join(dir, 'ledger.json'),

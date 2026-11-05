@@ -30,6 +30,7 @@
     "@huoli/huoli-tools": "workspace:*"
   },
   "dependencies": {
+    "@electric-sql/pglite": "0.5.15",
     "@huoli/huoli-qq-policy": "workspace:*"
   }
 }

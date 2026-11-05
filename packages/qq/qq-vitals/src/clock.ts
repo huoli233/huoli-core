@@ -235,7 +235,7 @@ export function isDaytime(hour: number, tuning: Tuning): boolean {
 }
 
 /**
- * 这一夜该几点醒：落到下一个该醒钟点，再按抖动前后挪一点
+ * 这一夜该几点醒：落到下一个该醒钟点，再按随机前后挪一点
  * @param at - 入睡时刻的毫秒时间戳
  * @param tuning - 参数
  * @param random - 取零到一的随机源，测试可以换成定值

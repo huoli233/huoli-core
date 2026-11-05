@@ -7,9 +7,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   apply, createVitalsStore, emptyState, farewellOf, farewellReason, qqVitalsOf, renderPrompt, resolveTuning,
   type FarewellFact, type QqVitalsSeam, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 // 用例里的时刻一律写死，日期与小时都按本地时间算
 const MORNING = new Date(2026, 0, 2, 9, 0, 0).getTime()
 const HOUR = 3_600_000
@@ -37,7 +38,7 @@ async function mount(file: string): Promise<QqVitalsSeam> {
   const ctx = new Context()
   contexts.push(ctx)
   await ctx.plugin(SystemPrompt, {})
-  apply(ctx, { file, tuning: { startDelayMs: 1 } })
+  apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 1 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('状态没装上')
   return seam
@@ -63,7 +64,7 @@ describe('到线才产出事实', () => {
   })
 
   it('阈值可以配', () => {
-    const low = resolveTuning({ farewellMortalityFrom: 0.5 })
+    const low = resolveTuning({ words: WORDS_PRESET, farewellMortalityFrom: 0.5 })
     const middling = fresh({ mortality: 0.6 })
 
     expect(farewellOf(middling, 3, MORNING, tuning)).toBeUndefined()
@@ -173,7 +174,7 @@ describe('心跳产出那一下', () => {
     expect(seam.read().farewell_applied_at).toBe(0)
   })
 
-  it('取消订阅之后收不到，标记照样落盘', async () => {
+  it('取消挂上之后收不到，标记照样落盘', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(MORNING))
     const file = tempFile()

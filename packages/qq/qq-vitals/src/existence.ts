@@ -4,7 +4,7 @@ import { DEFAULTS, type Tuning } from './defaults.ts'
 import { clamp, clampRange, follow } from './math.ts'
 import type { VitalsState } from './types.ts'
 
-/** 外部注入的运行环境事实，这一包不自己去读系统 */
+/** 外部放进的运行环境事实，这一包不自己去读系统 */
 export interface ExistenceFacts {
   /** 这一份进程已经活了多久，毫秒，负数按零算 */
   uptimeMs: number

@@ -81,12 +81,13 @@ export function defaultRulesPath(): string {
     const here = path.dirname(fileURLToPath(import.meta.url))
     return path.join(here, '..', 'prompts', 'rules.md')
   } catch {
+    // 拿不到模块位置就退回工作目录：规则文件本来就允许部署时自己放
     return path.join(process.cwd(), 'prompts', 'rules.md')
   }
 }
 
 /**
- * 读规则，读不到就用一句兜底
+ * 读规则，读不到就用一句备用话
  * @param file - 规则文件路径
  * @returns 规则正文
  */
@@ -94,6 +95,7 @@ export function readRules(file: string): string {
   try {
     return fs.readFileSync(file, 'utf8').trim()
   } catch {
+    // 规则文件不在就用这一句备用话，不拦启动
     return '你是群里的一个人，说话简短，说完就停。'
   }
 }
@@ -139,7 +141,7 @@ export function replyFactsOf(state: VitalsState): ReplyFacts {
 }
 
 /**
- * 睡眠那三项事实原样转述，判不判由被动那一边的闸门定
+ * 睡眠那三项事实原样转述，判不判由被动那一边的关卡定
  * @param state - 身体那一份状态
  * @returns 睡着、预计醒来的时刻、刚被吵醒
  */

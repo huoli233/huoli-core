@@ -14,6 +14,7 @@ import {
   resolveTuning,
   type CycleStartFact,
   type QqVitalsSeam,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { apply as applyBundle, type Config } from '../src/index.ts'
 
@@ -36,7 +37,7 @@ interface Mounted {
   emit: (fact: CycleStartFact) => void
 }
 
-// 装配顺序与正式一致；把订阅到的回调留下来，用例自己触发那一拍
+// 装配顺序与正式一致；把挂上去的函数留下来，用例自己触发那一拍
 async function mount(config: Config = {}): Promise<Mounted> {
   const dir = tempDir()
   const file = path.join(dir, 'vitals.json')
@@ -46,7 +47,7 @@ async function mount(config: Config = {}): Promise<Mounted> {
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   applyMemory(ctx, {
     file: path.join(dir, 'memory.json'),
     ledgerFile: path.join(dir, 'ledger.json'),
@@ -106,10 +107,10 @@ describe('开经日写一条记忆', () => {
     expect(cycles(memory)).toHaveLength(1)
   })
 
-  it('关掉这一路就一个订阅都不注册', async () => {
+  it('关掉这一路就一个挂上都不挂上', async () => {
     const { memory, emit } = await mount({ cycleMemory: false })
 
-    // 关着时连回调都不该挂上去，硬触发只会拿到「没有订阅」
+    // 关着时一个函数都不该挂上去，硬触发只会拿到「没有挂」
     expect(() => {
       emit({ at: AT, day: 1, date: '2026-11-05' })
     }).toThrow('组合包没有订阅开经')

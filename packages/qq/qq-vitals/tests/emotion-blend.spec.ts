@@ -5,10 +5,11 @@ import { describe, expect, it } from 'vitest'
 import {
   createVitalsStore, DEFAULTS, derive, emptyState, mixOf, react, renderPrompt, resolveTuning, type Tuning,
   type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 import { DERIVED_FIELDS, NUMERIC_FIELDS } from '../src/defaults.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 
 // 二十六个标签全在这，用来核对语气那一行里一个情绪名都不出现
@@ -53,7 +54,7 @@ function withoutExtraLine(off: string, on: string): string[] {
 
 describe('混合层', () => {
   it('两个标签同时成立时按分数归一，权重加起来是一', () => {
-    const state = settled(HOT_AND_HURT, resolveTuning({ emotionBlendCount: 2 }))
+    const state = settled(HOT_AND_HURT, resolveTuning({ words: WORDS_PRESET, emotionBlendCount: 2 }))
     const weights = state.emotion_blend.map(entry => entry.weight)
 
     expect(state.emotion_candidates.slice(0, 2)).toEqual(['生气', '委屈'])
@@ -84,7 +85,7 @@ describe('混合层', () => {
 
   it('半衰期跟这条标签自己那条一致', () => {
     const hot = settled(HOT_AND_HURT)
-    const slow = resolveTuning({ angerHalfHours: 2 })
+    const slow = resolveTuning({ words: WORDS_PRESET, angerHalfHours: 2 })
 
     expect(mixOf(scored(['生气', 1]), hot, tuning).blend[0]?.half_min).toBe(30)
     expect(mixOf(scored(['担心', 1]), settled({ worry: 0.9 }), tuning).blend[0]?.half_min).toBe(48)
@@ -95,7 +96,7 @@ describe('混合层', () => {
   })
 
   it('只有一个标签时退化成单条', () => {
-    const solo = settled({ anger: 0.95 }, resolveTuning({ labelThreshold: 0.9 }))
+    const solo = settled({ anger: 0.95 }, resolveTuning({ words: WORDS_PRESET, labelThreshold: 0.9 }))
 
     expect(solo.emotion_candidates).toEqual(['生气'])
     expect(solo.emotion_blend).toEqual([{ key: '生气', weight: 1, half_min: 30, why: '有股火还没消' }])
@@ -129,7 +130,7 @@ describe('语气开关', () => {
 
   it('开启时只多一行，不含情绪名与数字，也没超字数', () => {
     const state = settled(HOT_AND_HURT)
-    const on = resolveTuning({ emotionToneEnabled: true })
+    const on = resolveTuning({ words: WORDS_PRESET, emotionToneEnabled: true })
     const offText = renderPrompt(state, tuning, 0)
     const onText = renderPrompt(state, on, 0)
     const extra = extraLine(offText, onText)
@@ -149,7 +150,7 @@ describe('语气开关', () => {
   })
 
   it('一路压过其余时那一行换成话短的版本', () => {
-    const one = resolveTuning({ emotionBlendCount: 1, emotionToneEnabled: true })
+    const one = resolveTuning({ words: WORDS_PRESET, emotionBlendCount: 1, emotionToneEnabled: true })
     const state = settled(HOT_AND_HURT, one)
 
     expect(state.emotion_blend).toHaveLength(1)
@@ -157,8 +158,8 @@ describe('语气开关', () => {
   })
 
   it('没有混合层时开着也不多一行', () => {
-    const calm = settled({}, resolveTuning({ labelThreshold: 0.99 }))
-    const on = resolveTuning({ emotionToneEnabled: true })
+    const calm = settled({}, resolveTuning({ words: WORDS_PRESET, labelThreshold: 0.99 }))
+    const on = resolveTuning({ words: WORDS_PRESET, emotionToneEnabled: true })
 
     expect(calm.emotion_blend).toEqual([])
     expect(renderPrompt(calm, on, 0)).toBe(renderPrompt(calm, tuning, 0))
@@ -169,8 +170,8 @@ describe('不变性', () => {
   const text = '闭嘴，你真讨厌'
 
   it('开关只改提示词，状态里的生理字段完全一致', () => {
-    const off = resolveTuning({ emotionToneEnabled: false })
-    const on = resolveTuning({ emotionToneEnabled: true })
+    const off = resolveTuning({ words: WORDS_PRESET, emotionToneEnabled: false })
+    const on = resolveTuning({ words: WORDS_PRESET, emotionToneEnabled: true })
     const offState = derive(react(fresh(), text, START, off), off)
     const onState = derive(react(fresh(), text, START, on), on)
 
@@ -179,7 +180,7 @@ describe('不变性', () => {
     expect(onState.emotion_why).toBe(offState.emotion_why)
   })
 
-  it('同一次事件只扣一次：重放一次不叠加，再算一遍派生也不掉值', () => {
+  it('同一次事件只扣一次：重放一次不叠加，再算一遍算出来的量也不掉值', () => {
     const once = derive(react(fresh(), text, START, tuning), tuning)
     const replay = derive(react(react(fresh(), text, START, tuning), text, START, tuning), tuning)
     const twice = derive(once, tuning)
@@ -194,9 +195,9 @@ describe('不变性', () => {
 
 describe('参数可覆盖', () => {
   it('条数决定取几条', () => {
-    const three = settled(HOT_AND_HURT, resolveTuning({ emotionBlendCount: 3 }))
-    const two = settled(HOT_AND_HURT, resolveTuning({ emotionBlendCount: 2 }))
-    const one = settled(HOT_AND_HURT, resolveTuning({ emotionBlendCount: 1 }))
+    const three = settled(HOT_AND_HURT, resolveTuning({ words: WORDS_PRESET, emotionBlendCount: 3 }))
+    const two = settled(HOT_AND_HURT, resolveTuning({ words: WORDS_PRESET, emotionBlendCount: 2 }))
+    const one = settled(HOT_AND_HURT, resolveTuning({ words: WORDS_PRESET, emotionBlendCount: 1 }))
 
     expect(three.emotion_blend.map(entry => entry.key)).toEqual(['生气', '委屈', '想哭'])
     expect(two.emotion_blend.map(entry => entry.key)).toEqual(['生气', '委屈'])
@@ -206,13 +207,13 @@ describe('参数可覆盖', () => {
 
   it('权重下限把掺得少的挤掉，剩下的重新归一', () => {
     const state = settled(HOT_AND_HURT)
-    const strict = resolveTuning({ emotionBlendWeightFrom: 0.9 })
+    const strict = resolveTuning({ words: WORDS_PRESET, emotionBlendWeightFrom: 0.9 })
     const mix = mixOf(scored(['生气', 6], ['委屈', 3], ['低落', 1]), state, strict)
 
     expect(mix.blend.map(entry => entry.key)).toEqual(['生气'])
     expect(mix.blend[0]?.weight).toBe(1)
     // 下限放低时三条都留，权重照原来的比例
-    const loose = mixOf(scored(['生气', 6], ['委屈', 3], ['低落', 1]), state, resolveTuning({ emotionBlendWeightFrom: 0.05 }))
+    const loose = mixOf(scored(['生气', 6], ['委屈', 3], ['低落', 1]), state, resolveTuning({ words: WORDS_PRESET, emotionBlendWeightFrom: 0.05 }))
     const weights = loose.blend.map(entry => entry.weight)
 
     expect(weights).toHaveLength(3)
@@ -223,8 +224,8 @@ describe('参数可覆盖', () => {
 
   it('那一行的字数上限从参数读', () => {
     const state = settled(HOT_AND_HURT)
-    const full = renderPrompt(state, resolveTuning({ emotionToneEnabled: true }), 0)
-    const clipped = renderPrompt(state, resolveTuning({ emotionToneEnabled: true, emotionToneMaxChars: 20 }), 0)
+    const full = renderPrompt(state, resolveTuning({ words: WORDS_PRESET, emotionToneEnabled: true }), 0)
+    const clipped = renderPrompt(state, resolveTuning({ words: WORDS_PRESET, emotionToneEnabled: true, emotionToneMaxChars: 20 }), 0)
     const fullLine = extraLine(renderPrompt(state, tuning, 0), full)
     const clippedLine = extraLine(renderPrompt(state, tuning, 0), clipped)
 

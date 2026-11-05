@@ -1,4 +1,4 @@
-// 叙事五章：首次补一份骨架，之后只有显式调用才动它；满一个日历月才提醒写一次
+// 叙事五章：首次补一份底稿，之后只有显式调用才动它；满一个日历月才提醒写一次
 
 import fs from 'node:fs'
 import { FILES } from './files.ts'
@@ -11,7 +11,7 @@ export const NARRATIVE_CHAPTERS: readonly string[] = ['我是谁', '我做过什
 // 章节标题的前缀
 const HEADING = '## '
 
-// 这一章还没写时的占位
+// 这一章还没写时留的位置
 const BLANK = '（待写）'
 
 // 两格时刻都没记过
@@ -130,8 +130,8 @@ export function monthlyTick(store: SelfStore, now: number): NarrativeTick {
 }
 
 /**
- * 五章骨架
- * @returns 五个标题加每章一行占位
+ * 五章底稿
+ * @returns 五个标题加每章留一行位置
  */
 export function narrativeSkeleton(): string {
   const blocks = NARRATIVE_CHAPTERS.map(chapter => `${HEADING}${chapter}\n${BLANK}`)
@@ -148,9 +148,9 @@ export function readNarrative(store: SelfStore): string {
 }
 
 /**
- * 首次生成叙事骨架，已有那份就不动
+ * 首次生成叙事底稿，已有那份就不动
  * @param store - 目录读写口
- * @param at - 这次补骨架的时刻，记进时间账
+ * @param at - 这次补底稿的时刻，记进时间账
  * @returns 这次写没写
  */
 export function seedNarrative(store: SelfStore, at: number): boolean {
@@ -177,7 +177,7 @@ function sectionsOf(text: string): Map<string, string[]> {
   return sections
 }
 
-// 按固定的五章次序拼回去，没写的章留占位
+// 按固定的五章次序拼回去，没写的章留位置
 function renderSections(sections: Map<string, string[]>): string {
   const blocks = NARRATIVE_CHAPTERS.map((chapter) => {
     const body = sections.get(chapter) ?? []

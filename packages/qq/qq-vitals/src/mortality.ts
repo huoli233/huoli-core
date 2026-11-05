@@ -16,7 +16,7 @@ export interface FarewellFact {
 
 /**
  * 按余额档位给死亡威胁的目标值
- * @param balanceLevel - 外部注入的余额档位，没给表示这一趟没有来源
+ * @param balanceLevel - 外部给的余额档位，没给表示这一趟没有来源
  * @param tuning - 参数，四档的边界与目标值都在里面
  * @returns 目标值 0~1，没有来源时为 0
  */
@@ -30,7 +30,7 @@ export function mortalityTarget(balanceLevel: number | undefined, tuning: Tuning
 
 /**
  * 这一档余额怎么讲：只说来源，不说该不该开口
- * @param balanceLevel - 外部注入的余额档位，没给表示来源已经撤回
+ * @param balanceLevel - 外部给的余额档位，没给表示来源已经撤回
  * @param tuning - 参数，四档的边界都在里面
  * @returns 一句来由
  */
@@ -44,8 +44,8 @@ export function farewellReason(balanceLevel: number | undefined, tuning: Tuning 
 
 /**
  * 到线且当天还没产过就给一条事实，带时刻、数值与来由
- * @param state - 当前状态，死亡威胁与幂等标记都从它读
- * @param balanceLevel - 外部注入的余额档位，只用来讲来由
+ * @param state - 当前状态，死亡威胁与防重复的标记都从它读
+ * @param balanceLevel - 外部给的余额档位，只用来讲来由
  * @param at - 这一刻的毫秒时间戳
  * @param tuning - 参数，阈值在里面
  * @returns 这一次产出的事实，低于阈值或当天已经产过时为 undefined

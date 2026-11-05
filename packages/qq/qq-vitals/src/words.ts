@@ -70,18 +70,24 @@ export const DREAD: readonly string[] = [
   '死', '去世', '离开我', '别离开', '消失', '不在了', '没了',
 ]
 
-// 把口头禅整段拿掉，剩下的才算真话
-function withoutHabitual(text: string): string {
-  return HABITUAL.reduce((rest, word) => rest.split(word).join(''), text)
-}
+/** 生病与不舒服的词：抬高细胞因子，发烧跟着滞后起来 */
+export const SICK: readonly string[] = [
+  '感冒', '发烧', '不舒服', '难受', '咳嗽', '生病', '着凉', '头晕', '恶心', '拉肚子', '发炎',
+]
+
+/** 疼痛的词：直接抬高疼痛，半小时半衰 */
+export const PAIN: readonly string[] = [
+  '疼', '痛', '受伤', '扭到', '抽筋', '磕到', '发酸', '酸胀',
+]
 
 /**
  * 剔掉口头禅之后的这句话，凶与生死两路都用它判
  * @param text - 用户这句话
+ * @param words - 词表，不传就用默认那份
  * @returns 拿掉口头禅的句子
  */
-export function saidSeriously(text: string): string {
-  return withoutHabitual(text)
+export function saidSeriously(text: string, words: WordLists = WORDS): string {
+  return words.habitual.reduce((rest, word) => rest.split(word).join(''), text)
 }
 
 /**
@@ -97,11 +103,12 @@ export function mentionsAny(text: string, words: readonly string[]): boolean {
 /**
  * 这句话里最长的那个饮品名
  * @param text - 用户这句话
+ * @param words - 用哪份词表，不填用默认那份
  * @returns 命中的饮品名，没命中给“水”
  */
-export function drinkName(text: string): string {
+export function drinkName(text: string, words: WordLists = WORDS): string {
   let hit = '水'
-  for (const word of DRINK) {
+  for (const word of words.drink) {
     if (text.includes(word) && word.length > hit.length) hit = word
   }
   return hit
@@ -110,20 +117,22 @@ export function drinkName(text: string): string {
 /**
  * 是不是在说喝水
  * @param text - 用户这句话
+ * @param words - 词表，不传就用默认那份
  * @returns 双条件都命中才是 true
  */
-export function isDrink(text: string): boolean {
-  return mentionsAny(text, DRINK) && mentionsAny(text, DRINK_HINTS)
+export function isDrink(text: string, words: WordLists = WORDS): boolean {
+  return mentionsAny(text, words.drink) && mentionsAny(text, words.drinkHints)
 }
 
 /**
  * 这句话里最长的那个食物名
  * @param text - 用户这句话
+ * @param words - 用哪份词表，不填用默认那份
  * @returns 命中的食物名，没命中给空串
  */
-export function mealName(text: string): string {
+export function mealName(text: string, words: WordLists = WORDS): string {
   let hit = ''
-  for (const word of MEAL) {
+  for (const word of words.meal) {
     if (text.includes(word) && word.length > hit.length) hit = word
   }
   return hit
@@ -132,8 +141,80 @@ export function mealName(text: string): string {
 /**
  * 这句话是不是在说吃一顿饭，只产出事实，不判该不该吃
  * @param text - 用户这句话
+ * @param words - 词表，不传就用默认那份
  * @returns 食物名与吃的动作都命中才是 true
  */
-export function isMeal(text: string): boolean {
-  return mentionsAny(text, MEAL) && mentionsAny(text, MEAL_HINTS)
+export function isMeal(text: string, words: WordLists = WORDS): boolean {
+  return mentionsAny(text, words.meal) && mentionsAny(text, words.mealHints)
 }
+
+/** 十四张词表，一张一类话；要改就整表换掉，不用去翻代码 */
+export interface WordLists {
+  /** 饮品名 */
+  drink: readonly string[]
+  /** 喝水的动作说法 */
+  drinkHints: readonly string[]
+  /** 食物名 */
+  meal: readonly string[]
+  /** 吃饭的动作说法 */
+  mealHints: readonly string[]
+  /** 夸她的话 */
+  praise: readonly string[]
+  /** 凶她的话 */
+  anger: readonly string[]
+  /** 口头禅，判之前先剔掉 */
+  habitual: readonly string[]
+  /** 道歉的话 */
+  apology: readonly string[]
+  /** 威胁关掉她的话 */
+  threat: readonly string[]
+  /** 吓到她的词 */
+  scare: readonly string[]
+  /** 担心对方的词 */
+  worry: readonly string[]
+  /** 提到生死与离开的词 */
+  dread: readonly string[]
+  /** 生病与不舒服的词 */
+  sick: readonly string[]
+  /** 疼痛的词 */
+  pain: readonly string[]
+}
+
+/** 默认那十四张表的写法示例：想要词表备用时把它传进 `words`，默认不启用 */
+export const WORDS_PRESET: WordLists = {
+  drink: DRINK,
+  drinkHints: DRINK_HINTS,
+  meal: MEAL,
+  mealHints: MEAL_HINTS,
+  praise: PRAISE,
+  anger: ANGER,
+  habitual: HABITUAL,
+  apology: APOLOGY,
+  threat: THREAT,
+  scare: SCARE,
+  worry: WORRY,
+  dread: DREAD,
+  sick: SICK,
+  pain: PAIN,
+}
+
+/** 默认一张表都不装：身体只按模型报的事件走，不靠关键词猜 */
+export const EMPTY_WORDS: WordLists = {
+  drink: [],
+  drinkHints: [],
+  meal: [],
+  mealHints: [],
+  praise: [],
+  anger: [],
+  habitual: [],
+  apology: [],
+  threat: [],
+  scare: [],
+  worry: [],
+  dread: [],
+  sick: [],
+  pain: [],
+}
+
+/** 词表空着时所有判定都不命中：这是默认状态 */
+export const WORDS: WordLists = EMPTY_WORDS

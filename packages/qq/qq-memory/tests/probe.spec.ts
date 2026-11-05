@@ -6,7 +6,7 @@ import { cleanupTempDirs, ledgerBeside, mount, queueBeside, tempDir, tempFile } 
 
 const NOW = new Date(2026, 10, 4, 9, 30).getTime()
 
-// 造一份有层、有清晰度、有账本、有队列的记忆
+// 造一份有层、有清晰度、有记录、有队列的记忆
 function seeded(): { file: string; ledger: string; queue: string; ids: readonly string[] } {
   const file = tempFile()
   const { seam } = mount({ file })
@@ -27,7 +27,7 @@ function mtimeOf(file: string): number {
 afterEach(cleanupTempDirs)
 
 describe('只读探测', () => {
-  it('条数、层分布、清晰度分布、账本结论、最早的记忆、待写入都在报告里', () => {
+  it('条数、层分布、清晰度分布、记录表结论、最早的记忆、待写入都在报告里', () => {
     const seededOne = seeded()
 
     const report = probe(seededOne.file)
@@ -72,7 +72,7 @@ describe('只读探测', () => {
     expect(fs.readFileSync(file, 'utf8')).toBe('这不是 JSON')
   })
 
-  it('账本读不出来时结论就说这一件事', () => {
+  it('记录表读不出来时结论就说这一件事', () => {
     const file = tempFile()
     const { seam } = mount({ file })
     seam.remember('记下来的一句', 'group:1', { at: NOW })

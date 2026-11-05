@@ -1,5 +1,5 @@
 ---
-description: "管淡忘的口径：半衰期、松弛常数、记忆保留度、清晰度五档与重要度每天的跌幅，别的包都从这里取参数。"
+description: "管淡忘的说法：半衰期、松弛常数、记忆保留度、清晰度五档与重要度每天的跌幅，别的包都从这里取参数。"
 kind: "package-reference"
 ---
 
@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-这一行不注册任何工具；`HALF_LIFE_MS` 与 `TAU_MS` 两张表供别的包读，不往提示词里写东西。
+这一行不挂上任何工具；`HALF_LIFE_MS` 与 `TAU_MS` 两张表供别的包读，不往提示词里写东西。
 
 #### Token effect
 

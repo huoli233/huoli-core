@@ -13,7 +13,7 @@ interface Seeded {
   queue: string
 }
 
-// 造一份三件都有、账本已经建好的记忆
+// 造一份三件都有、记录已经建好的记忆
 function seeded(): Seeded {
   const file = tempFile()
   const { seam } = mount({ file })
@@ -76,7 +76,7 @@ describe('备份', () => {
     expect(() => backup(NOW, { file })).toThrow(/memory.backup_source_missing/)
   })
 
-  it('账本与队列不在时照样备份记忆，缺的那两份点出来', () => {
+  it('记录表与队列不在时照样备份记忆，缺的那两份点出来', () => {
     const dir = tempDir()
     const file = path.join(dir, 'memory.json')
     fs.writeFileSync(file, JSON.stringify({ version: 1, lastMaintainedDay: '', items: [] }))
@@ -92,7 +92,7 @@ describe('备份', () => {
 })
 
 describe('恢复', () => {
-  it('恢复之后对账通过，恢复之前对不上', () => {
+  it('恢复之后核对通过，恢复之前对不上', () => {
     const seededOne = seeded()
     const result = backup(NOW, { file: seededOne.file })
     const { seam } = mount({ file: seededOne.file })
@@ -162,7 +162,7 @@ describe('更新的版本一律不写', () => {
     expect(fs.statSync(target).mtimeMs).toBe(before)
   })
 
-  it('备份里的账本版本更高也拒绝恢复', () => {
+  it('备份里的记录表版本更高也拒绝恢复', () => {
     const dir = tempDir()
     const target = path.join(dir, 'memory.json')
     fs.writeFileSync(target, JSON.stringify({ version: 1, lastMaintainedDay: '', items: [] }))
@@ -171,7 +171,7 @@ describe('更新的版本一律不写', () => {
     expect(() => restore(archive)).toThrow(/账本.*schemaVersion 是 7/)
   })
 
-  it('目标那份比本包新时同样拒绝，挡住降级覆盖', () => {
+  it('目标那份比本包新时同样拒绝，挡住低版本覆盖', () => {
     const dir = tempDir()
     const target = path.join(dir, 'memory.json')
     fs.writeFileSync(target, JSON.stringify({ version: 8, lastMaintainedDay: '', items: [] }))

@@ -35,7 +35,7 @@ function hpaLoadOf(next: VitalsState, tuning: Tuning): number {
     + tuning.hpaLoadHunger * highHunger)
 }
 
-// 负反馈：皮质醇越高越压 crh，压回去的那部分按自己的跨度折算；待迁：这是乘法闭环，图里只有一处加总
+// 负反馈：皮质醇越高越压 crh，压回去的那部分按自己的跨度折算；待迁：这是乘法做完一圈，图里只有一处加总
 function hpaFeedbackOf(next: VitalsState, tuning: Tuning): number {
   return 1 - tuning.hpaFeedbackGain * clamp((next.cortisol - tuning.hpaFeedbackFrom) / tuning.hpaFeedbackSpan)
 }
@@ -341,9 +341,9 @@ function settleMood(next: VitalsState, at: number, hours: number, night: number,
  * @param state - 当前状态
  * @param at - 当前毫秒时间戳
  * @param tuning - 参数
- * @param random - 取零到一的随机源，入睡时刻与抖动都走它，测试可以换成定值
- * @param balance - 外部注入的余额档位，没给表示这一路没有来源，死亡威胁保持不动
- * @param existence - 外部注入的运行环境事实，没给表示这一路没有来源，两个存在性字段保持不动
+ * @param random - 取零到一的随机源，入睡时刻与随机都走它，测试可以换成定值
+ * @param balance - 外部给的余额档位，没给表示这一路没有来源，死亡威胁保持不动
+ * @param existence - 外部给的运行环境事实，没给表示这一路没有来源，两个存在性字段保持不动
  * @returns 漂移后的状态
  */
 export function drift(

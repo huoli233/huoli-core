@@ -38,6 +38,9 @@ export const DEFAULTS: SelfSettings = {
   panelMaxChars: 300,
   panelMaxAgeMs: 24 * 60 * 60 * 1000,
   momentMaxChars: 120,
+  // 累了不做身份级决定：电量低于一成半、或困到七成半就停
+  restEnergyBelow: 0.15,
+  restTiredAbove: 0.75,
   projectMaxChars: 40,
   nextMaxChars: 40,
   questionMaxChars: 60,
@@ -45,6 +48,9 @@ export const DEFAULTS: SelfSettings = {
   verbatimMaxChars: 60,
   claimMaxChars: 200,
   claimEvidenceMax: 3,
+  // 每月一次十问，回答条数与每条字数都卡住，免得写成小作文
+  probeQuestionCount: 10,
+  probeAnswerMaxChars: 160,
   identityWhyMaxChars: 200,
   identityEvidenceMax: 3,
   commitmentMaxChars: 200,
@@ -63,7 +69,7 @@ export const DEFAULTS: SelfSettings = {
   mirrorScope: 'self:layer',
   driveNeeds: DRIVE_NEEDS,
   identityActions: IDENTITY_ACTIONS,
-  // 规范：同一个身份级动作两次之间至少隔三十分钟
+  // 设计里定的：同一个身份级动作两次之间至少隔三十分钟
   identityCooldownMs: 30 * 60_000,
   stage: 'P0',
   publicMinStage: 'P3',

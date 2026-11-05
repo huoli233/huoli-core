@@ -256,11 +256,13 @@ describe('回滚的拒绝与接线', () => {
     expect(store.rollback('panel', narrativeName)).toMatchObject({ ok: false, code: 'versions.name_invalid' })
     expect(store.rollback('panel', 'panel-20261104-1830.md')).toMatchObject({ ok: false, code: 'versions.missing' })
     expect(store.rollback('panel', `../${narrativeName}`)).toMatchObject({ ok: false, code: 'versions.name_invalid' })
-    expect(store.verifyAfterRollback('panel', 'panel-20261104-1830.md')).toEqual({
+    expect(store.verifyAfterRollback('panel', 'panel-20261104-1830.md')).toMatchObject({
       same: false,
       line: 0,
       code: 'versions.missing',
     })
+    // 比不了的时候也要给下一步，排查的人照着这句话走
+    expect(store.verifyAfterRollback('panel', 'panel-20261104-1830.md').hint).toBeTruthy()
     expect(read(dir, 'panel.md')).toBe(current)
     expect(store.listVersions('narrative')).toHaveLength(1)
   })

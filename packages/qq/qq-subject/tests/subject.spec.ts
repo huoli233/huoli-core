@@ -28,7 +28,7 @@ afterEach(() => {
 })
 
 describe('写进提示词', () => {
-  it('状态段落带占位符进提示词', async () => {
+  it('状态段落带位置符进提示词', async () => {
     const { ctx } = await mount(tempFile())
 
     const assembly = await ctx.systemPrompt.assemble()

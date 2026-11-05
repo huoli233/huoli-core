@@ -4,9 +4,10 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   createVitalsStore, derive, emptyState, peakOf, renderPrompt, resolveTuning, type Tuning, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 
 function fresh(overrides: Partial<VitalsState> = {}): VitalsState {
@@ -27,7 +28,7 @@ const SAD: Partial<VitalsState> = {
   serotonin: 0.05, cortisol: 0.95, oxytocin: 0.05, endorphin: 0.1, negative_heat: 0.9,
 }
 
-describe('幸福与想哭两个派生量', () => {
+describe('幸福与想哭两个算出来的量', () => {
   it('默认状态落在零到一之间', () => {
     const state = settled()
 
@@ -72,7 +73,7 @@ describe('幸福与想哭两个派生量', () => {
     expect(empty.sadness).toBeLessThanOrEqual(1)
   })
 
-  it('两个派生量写进状态文件后原样读回来', () => {
+  it('两个算出来的量写进状态文件后原样读回来', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qq-vitals-peak-'))
     const file = path.join(dir, 'vitals.json')
     const saved = settled(HAPPY)
@@ -119,8 +120,8 @@ describe('峰值判定', () => {
   })
 
   it('三个阈值都能从配置覆盖', () => {
-    const strict = resolveTuning({ peakHappinessFrom: 0.95 })
-    const loose = resolveTuning({ troughSadnessFrom: 0.20, troughSerotoninBelow: 0.70, troughCortisolFrom: 0.10 })
+    const strict = resolveTuning({ words: WORDS_PRESET, peakHappinessFrom: 0.95 })
+    const loose = resolveTuning({ words: WORDS_PRESET, troughSadnessFrom: 0.20, troughSerotoninBelow: 0.70, troughCortisolFrom: 0.10 })
 
     expect(peakOf(settled(HAPPY), strict)).toBeNull()
     expect(peakOf(settled(), loose)).toBe('sad')

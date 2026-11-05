@@ -13,6 +13,7 @@ import {
   qqVitalsOf,
   resolveTuning,
   type QqVitalsSeam,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle } from '../src/index.ts'
@@ -90,7 +91,7 @@ async function mount(): Promise<Mounted> {
   await ctx.plugin(SystemPrompt, {})
   applyAttention(ctx, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999' })
   applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   const socket = FakeSocket.opened.at(-1)

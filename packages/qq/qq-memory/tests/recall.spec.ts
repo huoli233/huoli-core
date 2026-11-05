@@ -39,7 +39,7 @@ describe('关键词路按片段判相关', () => {
     expect(hits[0]?.reasons.grams.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('无关的查询给空数组，不给占位句', () => {
+  it('无关的查询给空数组，不给位置句', () => {
     const { seam } = mount({ file: tempFile() })
     seam.remember(SAID, 'group:1', { at: NOW - DAY_MS, importance: 40 })
 

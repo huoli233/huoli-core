@@ -7,9 +7,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   apply, createVitalsStore, derive, drift, emptyState, inCrisis, qqVitalsOf, raiseScar, react, renderPrompt,
   resolveTuning, scarFactOf, settleScar, type QqVitalsSeam, type ScarFact, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 2, 9, 0, 0).getTime()
 const MINUTE = 60_000
 const HOUR = 3_600_000
@@ -40,7 +41,7 @@ async function mount(file: string): Promise<QqVitalsSeam> {
   const ctx = new Context()
   contexts.push(ctx)
   await ctx.plugin(SystemPrompt, {})
-  apply(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('状态没装上')
   return seam
@@ -131,7 +132,7 @@ describe('随时间变淡，但不下底', () => {
   })
 
   it('底与速率都能从配置覆盖', () => {
-    const stuck = resolveTuning({ scarFloor: 0.95, scarFallPerHour: 0.5 })
+    const stuck = resolveTuning({ words: WORDS_PRESET, scarFloor: 0.95, scarFallPerHour: 0.5 })
     const after = drift(fresh({ scar: 1, last_update: START - 24 * HOUR }), START + 48 * HOUR, stuck)
 
     expect(after.scar).toBeCloseTo(0.95, 10)
@@ -185,7 +186,7 @@ describe('一小时里只抬一次', () => {
   })
 
   it('冷却窗口写在参数里，改短就抬得更勤', () => {
-    const quick = resolveTuning({ scarCooldownMs: 60_000 })
+    const quick = resolveTuning({ words: WORDS_PRESET, scarCooldownMs: 60_000 })
     const state = fresh({ scar: tuning.scarFloor, scar_applied_at: START })
 
     expect(raiseScar({ ...state }, START + 30 * MINUTE, tuning)).toBe(false)
@@ -311,7 +312,7 @@ describe('落盘与接缝', () => {
     expect(createVitalsStore({ file, tuning }).read().scar_applied_at).toBeGreaterThan(0)
   })
 
-  it('取消订阅之后收不到', async () => {
+  it('取消挂上之后收不到', async () => {
     const file = tempFile()
     seeded(file)
     const seam = await mount(file)

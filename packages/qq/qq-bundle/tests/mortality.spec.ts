@@ -11,6 +11,7 @@ import {
   qqVitalsOf,
   resolveTuning,
   type Config as VitalsConfig,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle, type Config as BundleConfig } from '../src/index.ts'
@@ -71,7 +72,7 @@ async function mount(bundle: BundleConfig, vitals: VitalsConfig = {}): Promise<C
   contexts.push(ctx)
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 }, ...vitals })
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 }, ...vitals })
   applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999' })
   applyBundle(ctx, {
     maxSteps: 5,

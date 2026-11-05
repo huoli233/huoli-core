@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { biasUnit, derive, emptyState, resolveTuning, type Tuning, type VitalsState } from '../src/index.ts'
+import { biasUnit, derive, emptyState, resolveTuning, type Tuning, type VitalsState, WORDS_PRESET } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 
 function settled(overrides: Partial<VitalsState> = {}, custom: Tuning = tuning): VitalsState {

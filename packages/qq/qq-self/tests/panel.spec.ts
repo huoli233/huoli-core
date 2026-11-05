@@ -220,7 +220,7 @@ describe('面板', () => {
 })
 
 describe('关着的时候', () => {
-  it('不注入，也不建任何文件', async () => {
+  it('不放进，也不建任何文件', async () => {
     const dir = tempDir()
     const { ctx, seam } = await mount({ enabled: false, dir, mainChatKey: 'group:1' })
 

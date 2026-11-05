@@ -37,7 +37,7 @@ afterEach(() => {
 })
 
 describe('叙事', () => {
-  it('首次补一份五章骨架，之后不再重写', async () => {
+  it('首次补一份五章底稿，之后不再重写', async () => {
     const dir = tempDir()
     const seam = await mount(dir)
 

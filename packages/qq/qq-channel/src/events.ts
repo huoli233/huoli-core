@@ -83,7 +83,7 @@ export function chatKeyOf(kind: 'group' | 'private', id: string | number): strin
 }
 
 /**
- * 从一坨 OneBot 消息段里挤出文字，引用编号留占位好让模型看见在回谁
+ * 从一坨 OneBot 消息段里挤出文字，引用编号留个位置好让模型看见在回谁
  * @param segments - 消息段
  * @returns 拼好的话
  */
@@ -115,11 +115,11 @@ export function textOf(segments: unknown): string {
   return parts.join('').replace(/\s+/g, ' ').trim()
 }
 
-/** 这几个占位本身就说明有东西可看，不能当成纯表情丢掉 */
+/** 这几个位置本身就说明有东西可看，不能当成纯表情丢掉 */
 const CONTENT_MARKS: readonly string[] = ['[转发的聊天记录]', '[文件]']
 
 /**
- * 这句话里有没有值得回应的内容，只由图片表情占位拼出来的算没有
+ * 这句话里有没有值得回应的内容，只有图片表情凑出来的算没有
  * @param text - 翻好的话
  * @returns 有没有正文
  */

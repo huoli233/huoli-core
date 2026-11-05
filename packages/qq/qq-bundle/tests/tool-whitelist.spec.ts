@@ -25,12 +25,12 @@ function mount(): Mounted {
   return { ctx, guards, logs }
 }
 
-// 守卫只看工具名，其余执行字段由内核在真实调用时注入
+// 守卫只看工具名，其余字段由内核在真实调用时给
 function execOf(name: string): ToolExecution {
   return Object.assign({} as ToolExecution, { name })
 }
 
-describe('工具白名单', () => {
+describe('工具允许的名单', () => {
   it('名单里的工具放行', () => {
     const { ctx, guards } = mount()
     registerToolWhitelist(ctx, ['qq_send_message'])
@@ -49,7 +49,7 @@ describe('工具白名单', () => {
     expect(reason).toContain('下一步')
   })
 
-  it('名单空着就不注册守卫，谁都能调', () => {
+  it('名单空着就不挂上守卫，谁都能调', () => {
     const { ctx, guards } = mount()
     registerToolWhitelist(ctx, [])
 

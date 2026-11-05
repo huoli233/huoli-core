@@ -10,17 +10,19 @@ import { createUserMessage } from '@huoli/huoli-llm'
 import type { SessionId } from '@huoli/huoli-session'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
+import { ambientOf, speakVetoOf, stopNowOf } from './speak-gate.ts'
 import { qqContinuityOf } from '@huoli/huoli-qq-continuity'
 import { qqMaterialOf } from '@huoli/huoli-qq-material'
 import { buildInjectBlock, injectIntoUserText, localDay, qqMemoryOf, shouldInject } from '@huoli/huoli-qq-memory'
 import { hasWords, qqChannelOf, defaultFarewellSlotFile, type IncomingMessage } from '@huoli/huoli-qq-channel'
-import { qqProactiveOf, type Candidate, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
+import { qqProactiveOf, type Candidate } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { momentPort, qqSelfOf } from '@huoli/huoli-qq-self'
 import { qqVitalsOf, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
 import { budgetLine, budgetOf, clockOf, defaultRulesPath, readRules, registerAttentionPrompt, registerMaterialPrompts, sleepFactsOf } from './facts.ts'
-import { createDecisionLog, type DecisionBlock } from './decisions.ts'
+import { bodyEventText, registerBodyTools } from './body-tools.ts'
+import { appendConsidered, createDecisionLog, type DecisionBlock, type Verdict } from './decisions.ts'
 import { createLiveness } from './liveness.ts'
 import { defaultMaintenanceLogFile, mirrorPortOf, runMaintenance } from './maintenance.ts'
 import { registerMemoryEvents } from './memory-events.ts'
@@ -104,7 +106,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const vitals = qqVitalsOf(ctx)
   // 余额只有外部系统知道，没配就是没有来源，死亡威胁一动不动也不自己回弹
   vitals?.setBalance(config.balanceLevel)
-  // 活了多久问得出来；重启次数要有人给账本才数，不给就只报活多久
+  // 活了多久问得出来；重启次数要有人给记录表才数，不给就只报活多久
   const livenessFile = config.livenessFile
   const liveness = createLiveness(livenessFile === undefined ? {} : { file: livenessFile })
   vitals?.setExistence(liveness.facts(Date.now()))
@@ -113,15 +115,17 @@ export function apply(ctx: Context, config: Config = {}): void {
     order: 350,
     text: () => budgetLine(vitals),
   })
+  ctx.systemPrompt.section({ name: 'qq:body-events', order: 355, text: () => bodyEventText(memory, vitals, subject) })
+  if (vitals !== undefined) ctx.effect(() => registerBodyTools(ctx, vitals))
 
   // 名单里没有的工具一律不许调，名单空着就不限制
   registerToolWhitelist(ctx, config.allowedTools ?? BUNDLE_DEFAULTS.allowedTools)
 
-  // 每轮一条痕迹：只留事实与理由码，不碰原文
   const decisionsFile = config.decisionsFile ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-decisions.jsonl')
   const decisions = createDecisionLog({ file: decisionsFile })
   const rounds = new Map<string, RoundFacts>()
   const wakes = new Map<string, string>()
+  const lastSpokeAt = new Map<string, number>()
 
   const seam: QqBundleSeam = {
     decisions(sinceAt, limit) {
@@ -141,7 +145,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (channel === undefined) {
         return { ok: false, code: 'bundle.no_channel', reason: '没有能发出去的通道', hint: '装上通道那一行再来' }
       }
-      // 不是想发动态的那一条就发到当前群：公开动态一律不碰，这是定下来的口径
+      // 不是想发动态的那一条就发到当前群：公开动态一律不碰，这是定下来的说法
       if (delivered.item.facts.postWant === undefined) {
         const sent = await channel.send(text, chatKey)
         if (!sent.ok) return refusalOf(sent, '等连上再说，或者换一句短点的')
@@ -176,7 +180,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     }
   }
 
-  // 手上没有这一轮就补一条空白，闸门拦下时也要能落一行
+  // 手上没有这一轮就补一条空白，关卡拦下时也要能落一行
   const roundOf = (chatKey: string, at: number): RoundFacts => {
     const existing = rounds.get(chatKey)
     if (existing !== undefined) return existing
@@ -206,7 +210,11 @@ export function apply(ctx: Context, config: Config = {}): void {
     const chatKey = payload.agent.id
     if (payload.step === 1) openRound(chatKey, Date.now())
     if (payload.step > maxSteps) {
-      roundOf(chatKey, Date.now()).blocked = { code: 'bundle.step_cap', retryAt: null }
+      roundOf(chatKey, Date.now()).blocked = {
+        code: 'bundle.step_cap',
+        retryAt: null,
+        hint: '这一轮已经走到步数上限，下一轮再说',
+      }
       flush(chatKey)
       return { kind: 'reject' as const }
     }
@@ -321,6 +329,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         replyToBot: message.replyToBot,
       })
       subject?.store.setActive(message.chatKey)
+      if (attention?.signals(message.chatKey).novelty.newTopic === true) subject?.noteNovelty(message.at)
       // 有人说话就开一轮：这个群有自己的会话，就叫它自己那一条醒来
       if (hasWords(message.text)) wake(message.chatKey, message.text)
     })
@@ -335,13 +344,15 @@ export function apply(ctx: Context, config: Config = {}): void {
       })
       subject?.store.setActive(poke.chatKey)
     })
-    // 发送那一路只记事实：调没调、发了几条、被哪条闸门拦下
+    // 发送那一路只记事实：调没调、发了几条、被哪条关卡拦下
     const offOutbound = channel.onOutbound((event) => {
       const round = rounds.get(event.chatKey)
       if (round === undefined) return
       if (event.kind === 'attempt') round.attempted = true
-      else if (event.kind === 'sent') round.sent += event.count
-      else if (round.blocked === null) round.blocked = { code: event.code ?? 'outbound.blocked', retryAt: event.retryAt ?? null }
+      else if (event.kind === 'sent') {
+        round.sent += event.count
+        if (event.count > 0) lastSpokeAt.set(event.chatKey, event.at)
+      } else if (round.blocked === null) round.blocked = { code: event.code ?? 'outbound.blocked', retryAt: event.retryAt ?? null }
     })
     ctx.effect(() => () => {
       offIncoming()
@@ -350,7 +361,6 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
   }
 
-  // 身体那六类事实统一在另一个文件里接线，这里只把已经解析好的依赖递过去
   registerMemoryEvents(ctx, {
     config,
     defaults: BUNDLE_DEFAULTS,
@@ -358,6 +368,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     subject,
     vitals,
     channel,
+    selfLayer: qqSelfOf(ctx),
     postLevel,
     farewellFile: config.farewellFile ?? defaultFarewellSlotFile(config.home),
   })
@@ -375,7 +386,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     recent: chatKey => attention?.inbox.recent(chatKey, 30) ?? [],
   })
 
-  // 攒着的由头要真的进提示词，模型才看得见；投递也注册成工具，别让它只停在 seam 上
+  // 攒着的由头要真的进提示词，模型才看得见；投递也做成工具，别让它只停在接缝上
   const proactivePorts = {
     activeChatKey: (): string => subject?.store.read().lastActive ?? '',
     pending: (chatKey: string): readonly PendingLine[] => proactive === undefined
@@ -438,36 +449,18 @@ export function apply(ctx: Context, config: Config = {}): void {
     }))
   }
 
-  // 结果码进记录时写成 proactive:<原因>，点只留在代码里
-  const reasonOf = (code: string): string => {
-    const cut = code.indexOf('.')
-    return `proactive:${cut < 0 ? code : code.slice(cut + 1)}`
+  const noteConsidered = (chatKey: string, at: number, decision: { verdict: Verdict }): void => {
+    appendConsidered(decisions, ctx.logger('qq-bundle'), chatKey, at, decision.verdict)
   }
-
-  // 每考虑一次落一条：攒到、拦下、没攒到都落，事后都答得出为什么没开口
-  const noteConsidered = (chatKey: string, at: number, decision: ProactiveDecision): void => {
-    const code = decision.verdict.code ?? 'proactive.no_candidate'
-    try {
-      decisions.append({
-        at,
-        chatKey,
-        awake: false,
-        reason: reasonOf(code),
-        attempted: false,
-        sent: 0,
-        blocked: decision.verdict.ok ? null : { code, retryAt: decision.verdict.retryAt ?? null },
-      })
-    } catch (error) {
-      ctx.logger('qq-bundle').warn('主动开口的记录写不进去：%s', String(error))
-    }
-  }
-
-  // 群里正热闹只是一条事实：收件箱里这一段时间有人说过话，判不判交给闸门
+  // 群里正热闹只是一条事实：收件箱里这一段时间有人说过话，判不判交给关卡
   const humanActiveOf = (chatKey: string, at: number): boolean => {
     if (attention === undefined) return false
     return attention.inbox.recent(chatKey, 40).some(message =>
       message.senderId !== '' && at - message.at >= 0 && at - message.at < humanActiveWindowMs)
   }
+
+  const ambientOfChat = (chatKey: string, at: number) =>
+    ambientOf(attention === undefined ? [] : attention.inbox.recent(chatKey, 60), at)
 
   const considerProactive = (chatKey: string, at: number, busy: boolean, throttled: boolean): void => {
     if (proactive === undefined || !proactive.enabled) return
@@ -475,6 +468,12 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (throttled && at - last < throttleMs) return
     lastConsidered.set(chatKey, at)
     const body = vitals?.read()
+    const veto = speakVetoOf({
+      isPrivate: chatKey.startsWith('private:'),
+      ambient: ambientOfChat(chatKey, at),
+      fatigueLevel: body === undefined ? 0 : Math.max(1 - body.energy, body.adenosine),
+      sinceSelfSpokeMs: lastSpokeAt.get(chatKey) === undefined ? null : at - (lastSpokeAt.get(chatKey) as number),
+    })
     const postWant = body === undefined ? undefined : postWantCandidateOf(chatKey, at, body)
     const decision = proactive.consider({
       chatKey,
@@ -486,14 +485,20 @@ export function apply(ctx: Context, config: Config = {}): void {
       hasChannel: channel !== undefined,
       ...body !== undefined ? { proactiveBias: body.proactive_bias, ...sleepFactsOf(body) } : {},
     })
-    // 攒成了才记一笔「今天攒过」：被闸门拦下时不算，同一天还有机会
-    if (postWant !== undefined && decision.verdict.ok) {
+    // 本来攒不成就保留原理由，只有本来要开口时才轮到上面那道关卡
+    if (decision.verdict.ok && veto !== undefined) {
+      noteConsidered(chatKey, at, { verdict: { ok: false, code: `attention.${veto}` } })
+      return
+    }
+    // 攒成了才记一笔「今天攒过」：被关卡拦下时不算，同一天还有机会
+    if (postWant !== undefined && decision.verdict.ok && veto === undefined) {
       const day = localDay(at)
       postCandidateDays.set(chatKey, { day, count: postGathered(chatKey, day) + 1 })
     }
     // 攒住的当场摆出来，投递只认摆过的那几条
     if (decision.pending.length > 0) proactive.preview(chatKey)
     noteConsidered(chatKey, at, decision)
+    try { memory?.wander(at) } catch { /* 想不出来就算了，不影响这一轮开口 */ }
   }
 
   // 一轮刚收尾，人和机器都没在说，这正是问她要不要开口的时候
@@ -513,7 +518,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
   }
 
-  // 每天一次：先核定镜像前那一次账，再掉重要度、定清晰度、清正文、补账，接着镜像、入账、再核一次
+  // 每天一次：先核对镜像前的记录，再掉重要度、定清晰度、清正文、补记录，接着镜像、记进记录表、再核一次
   const self = qqSelfOf(ctx)
   // 镜像只往记忆库写，证据回查要用的现役编号也从记忆仓取，接上以后每日整理才会带上它
   if (self !== undefined) self.useMemory(memory === undefined ? undefined : mirrorPortOf(memory))
@@ -548,10 +553,10 @@ export function apply(ctx: Context, config: Config = {}): void {
   channel?.usePause(() => self?.isPaused() ?? false)
   // 阶段只由自我层说：私信那一档按它判能不能发，没接上就按那一层默认值表里最保守的一档
   if (self !== undefined) channel?.useStage(() => self.stage())
-  // 提示词里那条条数上限同时交给发送路径，按它把一段话切成几条发
   channel?.useReplyCap(() => budgetOf(vitals))
+  channel?.useStop(stopNowOf(budgetOf(vitals), vitals?.read()))
 
-  // 记忆注入：每轮带原话的那一步召回一次，命中就接在用户原话之后，系统提示词一个字不动
+  // 记忆这一路：每轮带原话的那一步找一次，命中就接在用户原话之后，系统提示词一个字不动
   if (config.memoryInject ?? BUNDLE_DEFAULTS.memoryInject) {
     const maxChars = Math.max(0, config.memoryInjectMaxChars ?? BUNDLE_DEFAULTS.memoryInjectMaxChars)
     const maxItems = Math.max(1, config.memoryInjectMaxItems ?? BUNDLE_DEFAULTS.memoryInjectMaxItems)
@@ -563,7 +568,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (memory === undefined || decision.kind !== 'enter') return decision
       const chatKey = payload.agent.id
       if (!shouldInject(payload.turn, lastInjected.get(chatKey), repeatTurns)) return decision
-      // 运行环境那一段也挂在 user 上，但不是用户问的话，注入只接在用户自己说的那条后面
+      // 运行环境那一段也挂在 user 上，但不是用户问的话，只接在用户自己说的那条后面
       const asked = decision.messages.filter(message => message.source.kind === 'user')
       const query = asked
         .flatMap(message => message.content.flatMap(part => part.type === 'text' ? [part.text] : []))

@@ -1,4 +1,4 @@
-// SELF_DIR 的读写：事件流只追加，单值内容先写临时文件再改名，面板与叙事重写前留旧版
+// SELF_DIR 的读写：一串事情只追加，单值内容先写临时文件再改名，面板与叙事重写前留旧版
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -331,11 +331,18 @@ export function createSelfStore(options: SelfStoreOptions): SelfStore {
     verifyAfterRollback(kind, name) {
       const matched = VERSION_NAME.exec(name)
       if (path.basename(name) !== name || matched === null || matched[1] !== kind) {
-        return { same: false, line: 0, code: 'versions.name_invalid' }
+        return {
+          same: false,
+          line: 0,
+          code: 'versions.name_invalid',
+          hint: `版本名要形如 ${kind}-20261104-1830.md，从列出来的版本里挑一个`,
+        }
       }
       const current = readRaw(pathOf(VERSION_FILES[kind]))
       const kept = readRaw(path.join(dir, FILES.versions, name))
-      if (current === undefined || kept === undefined) return { same: false, line: 0, code: 'versions.missing' }
+      if (current === undefined || kept === undefined) {
+        return { same: false, line: 0, code: 'versions.missing', hint: '这一版或当前正文不在了，先列一遍版本再挑一个' }
+      }
       const left = current.toString('utf8')
       const right = kept.toString('utf8')
       if (left === right) return { same: true, line: 0 }

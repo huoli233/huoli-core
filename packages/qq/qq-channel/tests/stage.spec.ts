@@ -76,7 +76,7 @@ function mount(patch: Partial<Config> = {}): Mounted {
   ctx.accessor('tools', {
     get: () => ({ register: () => () => {} }),
   })
-  // 这一组用例不读面板，提示词那一段只要有个落点
+  // 这一组用例不读面板，提示词那一段只要能放进去就行
   ctx.accessor('systemPrompt', {
     get: () => ({ section: () => {}, variable: () => {} }),
   })

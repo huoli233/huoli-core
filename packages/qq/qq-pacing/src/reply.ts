@@ -159,7 +159,7 @@ function capped(tier: ReplyTier, tuning: ReplyTuning): number {
   return Math.min(tuning.maxCap, Math.max(tuning.minCap, tier.cap))
 }
 
-// 分档给出上限之后，按惊吓、担心、愤怒、记恨再压或再抬一把，顺序照规范
+// 分档给出上限之后，按惊吓、担心、愤怒、记恨再压或再抬一把，顺序照文档
 function hardened(max: number, facts: ReplyFacts, tuning: ReplyTuning): number {
   const fear = facts.fear ?? 0
   const anger = facts.anger ?? 0

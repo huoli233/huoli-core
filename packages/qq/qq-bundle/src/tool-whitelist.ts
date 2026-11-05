@@ -1,4 +1,4 @@
-// 工具白名单：名单外的工具一律不许调，名单空着就不限制
+// 允许调用的工具：名单外的一律不许调，名单空着就不限制
 
 import type { Context } from '@huoli/cordis'
 import '@huoli/huoli-tools'
@@ -7,10 +7,10 @@ import '@huoli/huoli-tools'
 export const TOOL_WHITELIST_OPEN = '工具白名单为空，所有工具都能调'
 
 /**
- * 注册工具白名单守卫
+ * 看住允许调用的工具
  * @param ctx - 运行环境
  * @param allowed - 允许调用的工具名，空表示不限制
- * @returns 注销函数
+ * @returns 撤下函数
  */
 export function registerToolWhitelist(ctx: Context, allowed: readonly string[]): () => void {
   if (allowed.length === 0) {

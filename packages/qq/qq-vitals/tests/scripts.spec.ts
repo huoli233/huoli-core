@@ -7,9 +7,9 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runCheck } from '../scripts/check.ts'
 import { STAMP_FIELDS } from '../src/defaults.ts'
-import { createVitalsStore, emptyState, resolveTuning, type VitalsState } from '../src/index.ts'
+import { createVitalsStore, emptyState, resolveTuning, type VitalsState, WORDS_PRESET } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const roots: string[] = []
 const checkScript = fileURLToPath(new URL('../scripts/check.ts', import.meta.url))
 const drinkScript = fileURLToPath(new URL('../scripts/drink.ts', import.meta.url))

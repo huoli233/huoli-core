@@ -27,7 +27,7 @@ function cli(argv: readonly string[]): { code: number; out: string; err: string 
   return { code, out: collected.out.join('\n'), err: collected.err.join('\n') }
 }
 
-// 一份装了点东西的记忆文件与它旁边的账本
+// 一份装了点东西的记忆文件与它旁边的记录
 function seeded(): { file: string; ledger: string } {
   const file = tempFile()
   const { seam } = mount({ file })
@@ -38,8 +38,8 @@ function seeded(): { file: string; ledger: string } {
 
 afterEach(cleanupTempDirs)
 
-describe('账本命令行的三种操作', () => {
-  it('建账退出 0，账本写出来带版本戳', () => {
+describe('记录表命令行的三种操作', () => {
+  it('建账退出 0，记录表写出来带版本戳', () => {
     const { file, ledger } = seeded()
 
     const built = cli(['--init', '--memory', file, '--file', ledger])
@@ -53,7 +53,7 @@ describe('账本命令行的三种操作', () => {
     expect(parsed.schemaVersion).toBe(1)
   })
 
-  it('补账只补新的那条，补完再对账退出 0', () => {
+  it('补账只补新的那条，补完再核对退出 0', () => {
     const { file, ledger } = seeded()
     cli(['--init', '--memory', file, '--file', ledger])
     const { seam } = mount({ file })
@@ -162,8 +162,8 @@ describe('账本命令行的三种操作', () => {
   })
 })
 
-describe('账本命令行遇到更新的版本', () => {
-  it('账本版本比本包新就拒绝写，文件一个字不动', () => {
+describe('记录表命令行遇到更新的版本', () => {
+  it('记录表版本比本包新就拒绝写，文件一个字不动', () => {
     const { file, ledger } = seeded()
     const newer = { schemaVersion: 9, entries: {} }
     fs.writeFileSync(ledger, JSON.stringify(newer))
@@ -178,7 +178,7 @@ describe('账本命令行遇到更新的版本', () => {
     expect(fs.statSync(ledger).mtimeMs).toBe(before)
   })
 
-  it('记忆文件版本比本包新就拒绝建账，账本都不建', () => {
+  it('记忆文件版本比本包新就拒绝建账，记录表都不建', () => {
     const dir = tempDir()
     const file = path.join(dir, 'memory.json')
     const ledger = path.join(dir, 'ledger.json')
@@ -191,7 +191,7 @@ describe('账本命令行遇到更新的版本', () => {
     expect(fs.existsSync(ledger)).toBe(false)
   })
 
-  it('记忆文件读不出来就拒绝对账，不去猜', () => {
+  it('记忆文件读不出来就拒绝核对，不去猜', () => {
     const dir = tempDir()
     const file = path.join(dir, 'memory.json')
     fs.writeFileSync(file, '这不是 JSON')
@@ -203,7 +203,7 @@ describe('账本命令行遇到更新的版本', () => {
   })
 })
 
-describe('账本命令行作为进程跑', () => {
+describe('记录表命令行作为进程跑', () => {
   const repo = path.resolve(import.meta.dirname, '../../../..')
   const script = path.resolve(import.meta.dirname, '../scripts/ledger.ts')
 

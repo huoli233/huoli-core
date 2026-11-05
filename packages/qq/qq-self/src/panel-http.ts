@@ -2,6 +2,7 @@
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import { localDay } from './day.ts'
+import { briefShell, escapeHtml, percent } from './panel.ts'
 import type { PanelDayRow, PanelState, PanelVitals } from './types.ts'
 
 // 出口只绑这个地址，别的网卡上连不进来
@@ -10,17 +11,11 @@ const LOOPBACK = '127.0.0.1'
 // 页面每隔这么多秒自己去取一次，不再整页重载
 const REFRESH_SECONDS = 3
 
+// 动画最多跑多少帧：文档里说粒子与火舌 30fps 够用，再快只是白烧 CPU
+const ANIMATION_FPS = 30
+
 const HTML = 'text/html; charset=utf-8'
 const JSON_TYPE = 'application/json; charset=utf-8'
-
-// 页面上出现的每一段都要转义：她的原话里也可能有尖括号
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-}
 
 // 一天压成一行：跳过的写原因，写过的把三行接起来
 function dayText(row: PanelDayRow): string {
@@ -29,7 +24,7 @@ function dayText(row: PanelDayRow): string {
   return `${day}：${row.lines.filter(line => line !== '').join(' / ')}`
 }
 
-// 样式内联，一页不拉任何外部资源；色值照规范那张表，只在这里出现一次
+// 样式内联，一页不拉任何外部资源；色值照文档那张表，只在这里出现一次
 const STYLE = [
   ':root{--bg:#03060d;--panel:rgba(8,18,34,.62);--cyan:#67e8f9;--green:#34d399;--green2:#4ade80;',
   '--red:#fb7185;--orange:#fb923c;--amber:#fbbf24;--purple:#a78bfa;--purple2:#c4b5fd;',
@@ -58,6 +53,7 @@ const STYLE = [
   'background:rgba(3,6,13,.92);font-family:Consolas,ui-monospace,monospace;font-size:15px}',
   'canvas.dial{position:absolute;left:0;top:0}',
   'canvas.flame,canvas.cycle{display:block}',
+  'canvas.particles{display:block;width:100%}',
   'canvas.water{position:absolute;left:0;top:0}',
   '.env-labels{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}',
   '.pairs{margin:0;padding:0;list-style:none}',
@@ -150,6 +146,16 @@ const SCRIPT = [
   'g.strokeStyle=CY;g.lineWidth=1.2;g.beginPath();',
   'for(var x=0;x<arr.length;x+=1){var px=w-1-(arr.length-1-x)*(w/89),py=i*rowH+rowH*(1-arr[x])*0.9+2;',
   'if(x===0){g.moveTo(px,py)}else{g.lineTo(px,py)}}g.stroke()})};',
+  'var particleCanvas=function(c,now){var raw=c.getAttribute("data-pairs")||"[]",pairs;',
+  'try{pairs=JSON.parse(raw)}catch(e){/* 数据坏了这一帧就不画，下一轮轮询会重写 */return}if(!pairs.length)return;',
+  'var g=c.getContext("2d"),w=c.width,h=c.height,rowH=h/pairs.length;g.clearRect(0,0,w,h);',
+  'var ph=now/900;',
+  'pairs.forEach(function(p,i){var mid=(Number(p.av)||0)-(Number(p.bv)||0),y=i*rowH+rowH/2;',
+  'g.fillStyle=MU;g.globalAlpha=.22;g.fillRect(0,y,w,1);g.globalAlpha=1;',
+  'g.fillStyle=mid>=0?CY:RED;',
+  'for(var k=0;k<8;k+=1){var base=(k/8)*w,drift=mid*w*0.5,t=(ph+k*0.7)%1;',
+  'var x=(base+drift*t+2*w)%w;g.globalAlpha=.35+.55*(1-t);',
+  'g.beginPath();g.arc(x,y-6*Math.sin(t*Math.PI),1.7,0,Math.PI*2);g.fill()}g.globalAlpha=1})};',
   'var paint=function(s){var v=s&&s.vitals;if(!v)return;',
   'if(typeof v.thirst==="number"){latest=v.thirst;water(v.thirst)}',
   'Array.prototype.forEach.call(document.querySelectorAll("canvas[data-gauge]"),function(c){',
@@ -159,13 +165,21 @@ const SCRIPT = [
   'Array.prototype.forEach.call(document.querySelectorAll("canvas.cycle"),function(c){',
   'var bs=(c.getAttribute("data-bounds")||"").split(",").filter(function(s){return s!==""}).map(Number);',
   'dial(c,c.getAttribute("data-day"),c.getAttribute("data-len"),c.getAttribute("data-phase"),bs)});',
-  'Array.prototype.forEach.call(document.querySelectorAll("canvas.env"),function(c){envCanvas(c,s)})};',
+  'Array.prototype.forEach.call(document.querySelectorAll("canvas.env"),function(c){envCanvas(c,s)});',
+  'Array.prototype.forEach.call(document.querySelectorAll("canvas.particles"),function(c){',
+  'if(v.pairs)c.setAttribute("data-pairs",JSON.stringify(v.pairs.map(function(p){return {av:p.av,bv:p.bv}})));',
+  'particleCanvas(c,Date.now())})};',
   'paint(window.__PANEL__);',
-  'var raf=function(){var now=Date.now();',
+  'var reduceMotion=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);',
+  'var lastFast=0,FRAME_MS=' + String(Math.round(1000 / ANIMATION_FPS)) + ';',
+  'var raf=function(ts){requestAnimationFrame(raf);',
+  'if(reduceMotion)return;',
+  'if(ts-lastFast<FRAME_MS)return;',
+  'lastFast=ts;var now=Date.now();',
   'Array.prototype.forEach.call(document.querySelectorAll("canvas.water"),function(c){waterCanvas(c,latest,now)});',
   'Array.prototype.forEach.call(document.querySelectorAll("canvas.flame"),function(c){',
   'flame(c,c.getAttribute("data-anger"),c.getAttribute("data-resent"))});',
-  'requestAnimationFrame(raf)};',
+  'Array.prototype.forEach.call(document.querySelectorAll("canvas.particles"),function(c){particleCanvas(c,now)})};',
   'requestAnimationFrame(raf);',
   'var tick=function(){fetch("/api/state",{headers:{accept:"application/json"}})',
   '.then(function(r){return r.json()}).then(paint).catch(function(){})};',
@@ -179,9 +193,6 @@ function jsonForScript(value: unknown): string {
 }
 
 // 条宽只认零到一：越界的值收回来，条不会画出格子外面去
-function percent(value: number): string {
-  return `${Math.round(Math.min(1, Math.max(0, value)) * 100)}%`
-}
 
 // 渴分三档，每档一个中文词；颜色不看渴，只看水位
 function thirstWord(thirst: number): string {
@@ -349,6 +360,19 @@ function pairBars(vitals: PanelVitals): string[] {
   return ['<div class="card span-6"><h3>神经-体液</h3>', `<ul class="pairs">${rows.join('')}</ul></div>`]
 }
 
+// 粒子场景：五组双条各占一行，哪边高粒子就往哪边漂，一眼看出此刻偏哪边
+function particleScene(vitals: PanelVitals): string[] {
+  const pairs = vitals.pairs
+  if (pairs === undefined || pairs.length === 0) return []
+  const packed = pairs.map(pair => ({ av: pair.av, bv: pair.bv }))
+  return [
+    '<div class="card span-12">',
+    '<h3>流向</h3>',
+    `<canvas class="particles" data-pairs="${escapeHtml(JSON.stringify(packed))}" width="640" height="120"></canvas>`,
+    '</div>',
+  ]
+}
+
 // 身体那一块：没有读数时整块换成一句没接上，不留空壳
 function bodyBlocks(vitals: PanelVitals | undefined): string[] {
   const blocks = vitals === undefined
@@ -361,6 +385,7 @@ function bodyBlocks(vitals: PanelVitals | undefined): string[] {
       ...cycleDial(vitals),
       ...envCurves(vitals),
       ...pairBars(vitals),
+      ...particleScene(vitals),
       ...emotionBars(vitals),
       ...bodyOverview(vitals),
     ]
@@ -370,9 +395,11 @@ function bodyBlocks(vitals: PanelVitals | undefined): string[] {
 /**
  * 那一页只读的 HTML
  * @param state - 只读出口的内容
+ * @param options - brief 为真时只出简短版，给陪玩与视频那几路看
  * @returns 内联样式与内联脚本、没有外部资源的一页，每三秒自己去取一次
  */
-export function panelPage(state: PanelState): string {
+export function panelPage(state: PanelState, options: { brief?: boolean } = {}): string {
+  if (options.brief === true) return briefShell(state, STYLE)
   const identity = state.identity === undefined
     ? '还没有写过'
     : `${state.identity.claim}：${state.identity.why}`
@@ -422,10 +449,13 @@ export function panelPage(state: PanelState): string {
 }
 
 // 三种路由的回法都只有状态码、类型与整段正文
-function send(response: ServerResponse, status: number, type: string, body: string): void {
-  response.writeHead(status, { 'content-type': type, 'cache-control': 'no-store' })
+function send(response: ServerResponse, status: number, type: string, body: string, extra: Record<string, string> = {}): void {
+  response.writeHead(status, { 'content-type': type, 'cache-control': 'no-store', ...extra })
   response.end(body)
 }
+
+/** 看过一次口令之后带在身上的那块饼干名 */
+export const PANEL_COOKIE = 'qq_panel_token'
 
 /** 起出口要用的东西 */
 export interface PanelHttpOptions {
@@ -433,6 +463,10 @@ export interface PanelHttpOptions {
   port: number
   /** 每次请求现算一份内容，算的时候不写盘 */
   state(now: number): PanelState
+  /** 要给别人看时设一个口令：设了就要求带口令，空串等于不要求 */
+  token?: string
+  /** 这一页可以问一次星海：给了就多出 /graph 与两条只读接口 */
+  graph?: (pathname: string, search: URLSearchParams) => { type: string; body: string } | undefined
   /** 起不来时把这一句交给调用方记一行 */
   warn(message: string): void
 }
@@ -464,6 +498,35 @@ function localHost(host: string | undefined): boolean {
   return name === '127.0.0.1' || name === 'localhost'
 }
 
+// 请求里带的口令对不对：查参数或那块饼干，两边都没有就是没带
+function tokenOk(request: IncomingMessage, url: URL, token: string): boolean {
+  if (token === '') return true
+  if (url.searchParams.get('token') === token) return true
+  const jar = request.headers.cookie ?? ''
+  for (const part of jar.split(';')) {
+    const at = part.indexOf('=')
+    if (at < 0) continue
+    if (part.slice(0, at).trim() !== PANEL_COOKIE) continue
+    const raw = part.slice(at + 1).trim()
+    // 饼干里的值是按 URL 编码存的，解不开就按原样比
+    let value = raw
+    try {
+      value = decodeURIComponent(raw)
+    } catch (_badEscape) {
+      value = raw
+    }
+    return value === token
+  }
+  return false
+}
+
+// 口令只在参数里出现过就顺手记一块饼干，之后刷新不用再拼参数
+function cookieFor(url: URL, token: string): Record<string, string> {
+  if (token === '' || url.searchParams.get('token') !== token) return {}
+  // 响应头只收可见 ASCII，口令按 URL 编码存，读的时候再解回
+  return { 'set-cookie': `${PANEL_COOKIE}=${encodeURIComponent(token)}; HttpOnly; SameSite=Strict; Path=/` }
+}
+
 // 一个请求怎么回：只认本机与 GET 的三个路由，别的一律给码，不碰任何状态
 function answer(request: IncomingMessage, response: ServerResponse, options: PanelHttpOptions): void {
   if (!localHost(request.headers.host)) {
@@ -474,13 +537,29 @@ function answer(request: IncomingMessage, response: ServerResponse, options: Pan
     send(response, 405, JSON_TYPE, '{"ok":false}\n')
     return
   }
-  const path = new URL(request.url ?? '/', `http://${LOOPBACK}`).pathname
+  const url = new URL(request.url ?? '/', `http://${LOOPBACK}`)
+  const path = url.pathname
+  const token = options.token ?? ''
+  // 健康那一路不带数据，其余两路都带她自己，所以要口令
+  if (path !== '/api/health' && !tokenOk(request, url, token)) {
+    send(response, 403, JSON_TYPE, '{"ok":false}\n')
+    return
+  }
+  const jar = cookieFor(url, token)
+  // 星海那几路：图与单个星点，都是只读
+  const sea = options.graph?.(path, url.searchParams)
+  if (sea !== undefined) {
+    send(response, 200, sea.type, sea.body, jar)
+    return
+  }
   if (path === '/') {
-    send(response, 200, HTML, panelPage(options.state(Date.now())))
+    // 陪玩与视频那几路只读简短版：带 brief=1 就不是完整那一屏
+    const brief = url.searchParams.get('brief') === '1'
+    send(response, 200, HTML, panelPage(options.state(Date.now()), { brief }), jar)
     return
   }
   if (path === '/api/state') {
-    send(response, 200, JSON_TYPE, `${JSON.stringify(options.state(Date.now()))}\n`)
+    send(response, 200, JSON_TYPE, `${JSON.stringify(options.state(Date.now()))}\n`, jar)
     return
   }
   if (path === '/api/health') {
@@ -507,7 +586,7 @@ export function startPanelHttp(options: PanelHttpOptions): Promise<PanelHttp | u
       }
     })
     server.on('error', (error: Error) => {
-      // 端口被占或别的监听失手：只记一行，降级为不监听，别的功能照旧
+      // 端口被占或别的监听失手：只记一行，退成不监听，别的功能照旧
       options.warn(`只读出口没起来：端口 ${options.port} ${error.message}`)
       resolve(undefined)
     })

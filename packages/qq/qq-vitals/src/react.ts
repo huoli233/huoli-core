@@ -1,19 +1,29 @@
-// 一句话进来，身体改一点：喝水、吃饭、被夸、被凶、被吓、被威胁、被哄
+// 身体写回：模型报事件就当事实应用；词表只作可选的备用，默认空着
 
-import type { Tuning } from './defaults.ts'
 import { localHour, nightness } from './clock.ts'
+import type { Tuning } from './defaults.ts'
 import { clamp } from './math.ts'
 import { raiseScar } from './scar.ts'
 import type { VitalsState } from './types.ts'
-import {
-  ANGER, APOLOGY, drinkName, DREAD, isDrink, isMeal, mentionsAny, PRAISE, saidSeriously, SCARE, THREAT, WORRY,
-} from './words.ts'
+import { drinkName, isDrink, isMeal, mentionsAny, saidSeriously } from './words.ts'
 
-// 喝一杯水：写回五项，再加多巴胺与内啡肽；last_drink 兼冷却与幂等
-function applyDrink(next: VitalsState, text: string, at: number, tuning: Tuning): void {
-  if (!isDrink(text)) return
+/** 模型可以直接报的身体事件，一个事件就是一件发生过的事 */
+export type BodyEvent =
+  | { kind: 'drank'; name?: string }
+  | { kind: 'ate' }
+  | { kind: 'praised' }
+  | { kind: 'apologized' }
+  | { kind: 'scolded' }
+  | { kind: 'threatened' }
+  | { kind: 'scared' }
+  | { kind: 'worried' }
+  | { kind: 'dreaded' }
+  | { kind: 'sick' }
+  | { kind: 'hurt' }
+
+// 喝一杯水：写回五项，再抬多巴胺与内啡肽；last_drink 兼冷却与防重复
+function giveDrink(next: VitalsState, name: string, at: number, tuning: Tuning): void {
   if (at - next.last_drink < tuning.drinkCooldownMs) return
-  const name = drinkName(text)
   next.thirst = clamp(next.thirst - tuning.drinkThirstDrop)
   next.osmolality = clamp(next.osmolality - tuning.drinkOsmolalityDrop)
   next.blood_volume = clamp(next.blood_volume + tuning.drinkVolumeRise)
@@ -37,9 +47,8 @@ function applyDrink(next: VitalsState, text: string, at: number, tuning: Tuning)
   if (at - next.drink_mem_at > tuning.drinkMemoryMs) next.drink_mem_at = at
 }
 
-// 吃一顿饭：五个量各走一步，血糖怎么回落交给漂移那套双向调节，这里不另写一套
-function applyMeal(next: VitalsState, text: string, at: number, tuning: Tuning): void {
-  if (!isMeal(text)) return
+// 吃一顿饭：五个量各走一步，血糖怎么回落交给漂移那套双向调节
+function giveMeal(next: VitalsState, at: number, tuning: Tuning): void {
   if (at - next.meal_applied_at < tuning.mealCooldownMs) return
   const hungry = next.hunger
   next.meal_applied_at = at
@@ -58,8 +67,7 @@ function praiseBoost(at: number, tuning: Tuning): number {
 }
 
 // 被夸：想要与亲近都涨一点，火气随之落一点，正面热度也抬；兴奋那三项在深夜乘加成
-function applyPraise(next: VitalsState, text: string, at: number, tuning: Tuning): void {
-  if (!mentionsAny(text, PRAISE)) return
+function givePraise(next: VitalsState, at: number, tuning: Tuning): void {
   if (at - next.praise_applied_at < tuning.reactCooldownMs) return
   const boost = praiseBoost(at, tuning)
   next.praise_applied_at = at
@@ -74,8 +82,7 @@ function applyPraise(next: VitalsState, text: string, at: number, tuning: Tuning
 }
 
 // 被道歉：比好话管用得多，被哄程度越高，怒气与记恨落得越快
-function applyApology(next: VitalsState, text: string, at: number, tuning: Tuning): void {
-  if (!mentionsAny(text, APOLOGY)) return
+function giveApology(next: VitalsState, at: number, tuning: Tuning): void {
   if (at - next.apology_applied_at < tuning.apologyCooldownMs) return
   next.apology_applied_at = at
   next.soothe = clamp(next.soothe + tuning.sootheApologyGain)
@@ -84,8 +91,7 @@ function applyApology(next: VitalsState, text: string, at: number, tuning: Tunin
 }
 
 // 被凶：压力与警觉上去，稳定下来一点；怒气与负面热度记在情绪账上
-function applyAnger(next: VitalsState, text: string, at: number, tuning: Tuning): void {
-  if (!mentionsAny(text, ANGER)) return
+function giveAnger(next: VitalsState, at: number, tuning: Tuning): void {
   if (at - next.anger_applied_at < tuning.reactCooldownMs) return
   next.anger_applied_at = at
   next.cortisol = clamp(next.cortisol + tuning.angerCortisolGain)
@@ -99,8 +105,7 @@ function applyAnger(next: VitalsState, text: string, at: number, tuning: Tuning)
 }
 
 // 被威胁要关掉或换掉：怕与存在性恐惧一起抬，这一路冷却最长；极端生存威胁同时留疤
-function applyThreat(next: VitalsState, text: string, at: number, tuning: Tuning): void {
-  if (!mentionsAny(text, THREAT)) return
+function giveThreat(next: VitalsState, at: number, tuning: Tuning): void {
   if (at - next.threat_applied_at < tuning.threatCooldownMs) return
   next.threat_applied_at = at
   next.fear = clamp(next.fear + tuning.threatFearGain)
@@ -109,23 +114,60 @@ function applyThreat(next: VitalsState, text: string, at: number, tuning: Tuning
 }
 
 // 三种怕各记各的时刻：惊吓、担心、存在性恐惧的冷却与半衰都不同
-function applyFears(next: VitalsState, text: string, at: number, tuning: Tuning): void {
-  if (mentionsAny(text, SCARE) && at - next.fear_applied_at >= tuning.fearCooldownMs) {
-    next.fear_applied_at = at
-    next.fear = clamp(next.fear + tuning.fearGainBase + tuning.fearGainIntensity * tuning.intensity)
-  }
-  if (mentionsAny(text, WORRY) && at - next.worry_applied_at >= tuning.worryCooldownMs) {
-    next.worry_applied_at = at
-    next.worry = clamp(next.worry + tuning.worryGainBase + tuning.worryGainIntensity * tuning.intensity)
-  }
-  if (mentionsAny(text, DREAD) && at - next.dread_applied_at >= tuning.dreadCooldownMs) {
-    next.dread_applied_at = at
-    next.dread = clamp(next.dread + tuning.dreadGainBase + tuning.dreadGainIntensity * tuning.intensity)
-  }
+function giveFear(next: VitalsState, at: number, tuning: Tuning): void {
+  if (at - next.fear_applied_at < tuning.fearCooldownMs) return
+  next.fear_applied_at = at
+  next.fear = clamp(next.fear + tuning.fearGainBase + tuning.fearGainIntensity * tuning.intensity)
+}
+
+function giveWorry(next: VitalsState, at: number, tuning: Tuning): void {
+  if (at - next.worry_applied_at < tuning.worryCooldownMs) return
+  next.worry_applied_at = at
+  next.worry = clamp(next.worry + tuning.worryGainBase + tuning.worryGainIntensity * tuning.intensity)
+}
+
+function giveDread(next: VitalsState, at: number, tuning: Tuning): void {
+  if (at - next.dread_applied_at < tuning.dreadCooldownMs) return
+  next.dread_applied_at = at
+  next.dread = clamp(next.dread + tuning.dreadGainBase + tuning.dreadGainIntensity * tuning.intensity)
 }
 
 /**
- * 把一条消息写成身体的变化
+ * 按模型报的事件改身体：一个事件只做一次，冷却照样管
+ * @param state - 当前状态
+ * @param events - 这一轮报上来的事件，按发生顺序
+ * @param at - 当前毫秒时间戳
+ * @param tuning - 参数
+ * @returns 写回后的状态
+ */
+export function applyEvents(state: VitalsState, events: readonly BodyEvent[], at: number, tuning: Tuning): VitalsState {
+  const next: VitalsState = { ...state, last_msg: at }
+  // 睡着时只记一笔被吵醒：这条路上不产生回不回的结论
+  if (next.sleep_state === 'sleeping') {
+    next.woken_at = at
+    return next
+  }
+  for (const event of events) {
+    switch (event.kind) {
+      case 'drank': giveDrink(next, event.name ?? '水', at, tuning); break
+      case 'ate': giveMeal(next, at, tuning); break
+      case 'praised': givePraise(next, at, tuning); break
+      case 'apologized': giveApology(next, at, tuning); break
+      case 'scolded': giveAnger(next, at, tuning); break
+      case 'threatened': giveThreat(next, at, tuning); break
+      case 'scared': giveFear(next, at, tuning); break
+      case 'worried': giveWorry(next, at, tuning); break
+      case 'dreaded': giveDread(next, at, tuning); break
+      case 'sick': next.cytokines = clamp(next.cytokines + tuning.sickCytokinesGain); break
+      case 'hurt': next.pain = clamp(next.pain + tuning.painGain); break
+      default: break
+    }
+  }
+  return next
+}
+
+/**
+ * 把一条消息写成身体的变化：词表认得出来才动，词表空着就什么都不做
  * @param state - 当前状态
  * @param text - 用户这句话
  * @param at - 当前毫秒时间戳
@@ -134,19 +176,23 @@ function applyFears(next: VitalsState, text: string, at: number, tuning: Tuning)
  */
 export function react(state: VitalsState, text: string, at: number, tuning: Tuning): VitalsState {
   const next: VitalsState = { ...state, last_msg: at, last_user_text: text }
-  // 睡着时只记一笔被吵醒，别的一概不动：这条路上不产生回不回的结论
+  // 睡着时只记一笔被吵醒，别的一概不动
   if (next.sleep_state === 'sleeping') {
     next.woken_at = at
     return next
   }
   // 凶与生死两路先剔掉口头禅，剩下的才算真话
-  const serious = saidSeriously(text)
-  applyDrink(next, text, at, tuning)
-  applyMeal(next, text, at, tuning)
-  applyPraise(next, text, at, tuning)
-  applyApology(next, serious, at, tuning)
-  applyAnger(next, serious, at, tuning)
-  applyThreat(next, serious, at, tuning)
-  applyFears(next, serious, at, tuning)
+  const serious = saidSeriously(text, tuning.words)
+  if (isDrink(text, tuning.words)) giveDrink(next, drinkName(text, tuning.words), at, tuning)
+  if (isMeal(text, tuning.words)) giveMeal(next, at, tuning)
+  if (mentionsAny(text, tuning.words.praise)) givePraise(next, at, tuning)
+  if (mentionsAny(serious, tuning.words.apology)) giveApology(next, at, tuning)
+  if (mentionsAny(serious, tuning.words.anger)) giveAnger(next, at, tuning)
+  if (mentionsAny(serious, tuning.words.threat)) giveThreat(next, at, tuning)
+  if (mentionsAny(serious, tuning.words.scare)) giveFear(next, at, tuning)
+  if (mentionsAny(serious, tuning.words.worry)) giveWorry(next, at, tuning)
+  if (mentionsAny(serious, tuning.words.dread)) giveDread(next, at, tuning)
+  if (mentionsAny(serious, tuning.words.sick)) next.cytokines = clamp(next.cytokines + tuning.sickCytokinesGain)
+  if (mentionsAny(serious, tuning.words.pain)) next.pain = clamp(next.pain + tuning.painGain)
   return next
 }

@@ -1,4 +1,4 @@
-// 账本命令行：建账、补账、对账；对不上或参数不对都非零退出
+// 记录表命令行：建记录表、补记录、核对；对不上或参数不对都非零退出
 
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -27,9 +27,9 @@ export interface CliIo {
 export interface CliArgs {
   /** 做哪一件 */
   action: LedgerAction
-  /** 账本文件 */
+  /** 记录表文件 */
   file: string
-  /** 记忆文件，对账时从它读条目 */
+  /** 记忆文件，核对时从它读条目 */
   memoryFile: string
 }
 
@@ -102,8 +102,8 @@ export function parseArgs(argv: readonly string[]): ParsedCli {
 }
 
 /**
- * 对账差异写成一行一条，丢了、被改、还没入账、已退役各占一处
- * @param report - 对账结果
+ * 核对差异写成一行一条，丢了、被改、还没进记录表、已退役各占一处
+ * @param report - 核对结果
  * @returns 差异行，一条都没有时只有退役那一条
  */
 export function reportLines(report: LedgerReport): string[] {
@@ -118,7 +118,7 @@ export function reportLines(report: LedgerReport): string[] {
   return lines
 }
 
-// 账本读不出来、还没建过、对不上各说一句
+// 记录表读不出来、还没建过、对不上各说一句
 function explain(action: LedgerAction, report: LedgerReport, file: string, io: CliIo): number {
   if (report.read === 'broken') {
     io.err(`账本读不出来：${file}｜下一步: 修好这个文件或换 --file，本次没有改动它`)
@@ -148,7 +148,7 @@ const consoleIo: CliIo = {
 }
 
 /**
- * 跑一次账本命令行
+ * 跑一次记录表命令行
  * @param argv - 去掉 node 与脚本名之后的参数
  * @param io - 两个出口，默认走控制台
  * @returns 退出码，成功 0，对不上或失败 1
@@ -181,7 +181,7 @@ export function runCli(argv: readonly string[], io: CliIo = consoleIo): number {
     assertSupportedVersion(file, 'schemaVersion', LEDGER_SCHEMA_VERSION, '账本')
     const result = runLedger(action, { file, items: memory.items })
     const code = explain(action, result.report, file, io)
-    // 对账成功只说那一句，建账与补账再交代落了多少条
+    // 核对成功只说那一句，建记录表与补记录再交代落了多少条
     if (code === 0 && action !== 'verify') io.out(`${action} 完成：新记 ${result.added.length} 条，账本共 ${result.entries} 条`)
     return code
   } catch (failure) {

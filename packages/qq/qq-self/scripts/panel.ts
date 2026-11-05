@@ -1,4 +1,4 @@
-// 离线生成面板：只读 SELF_DIR 里的状态文件，写一份 panel.md，不注入也不改状态
+// 离线生成面板：只读 SELF_DIR 里的状态文件，写一份 panel.md，不放进也不改状态
 
 import process from 'node:process'
 import { resolveSelfDir, resolveSettings } from '../src/defaults.ts'

@@ -12,9 +12,10 @@ import {
   resolveTuning,
   type DrinkFact,
   type QqVitalsSeam,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const SEED = new Date(2026, 10, 3, 7, 30, 0).getTime()
 const MINUTE = 60_000
 
@@ -29,7 +30,7 @@ async function mount(): Promise<QqVitalsSeam> {
   const ctx = new Context()
   contexts.push(ctx)
   await ctx.plugin(SystemPrompt, {})
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('这一层没有装配')
   return seam
@@ -74,7 +75,7 @@ describe('喝水那一条事实', () => {
     expect(seen).toHaveLength(0)
   })
 
-  it('取消订阅之后不再收', async () => {
+  it('取消挂上之后不再收', async () => {
     const seam = await mount()
     const seen: DrinkFact[] = []
     const off = seam.onDrink(fact => seen.push(fact))

@@ -15,7 +15,7 @@ function tempDir(): string {
   return path.join(root, 'self')
 }
 
-// 工具只读会话编号与取消信号，其余执行字段由内核在真实调用时注入
+// 工具只读会话编号与取消信号，其余字段由内核在真实调用时给
 function execOf(chatKey = 'group:1'): ToolRunContext {
   return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal: new AbortController().signal })
 }
@@ -60,11 +60,12 @@ afterEach(() => {
 })
 
 describe('写入口挂上了', () => {
-  it('这一层开着就注册全套写入口', async () => {
+  it('这一层开着就挂上全套写入口', async () => {
     const { names } = await mount()
 
     expect(names).toEqual([
       'qq_self_day',
+      'qq_self_probe',
       'qq_self_skip_day',
       'qq_self_question',
       'qq_self_error',

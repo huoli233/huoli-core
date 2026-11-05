@@ -4,7 +4,7 @@ import { localDate, localDayDiff } from './clock.ts'
 import { DEFAULTS, type Tuning } from './defaults.ts'
 import type { VitalsState } from './types.ts'
 
-/** 开经那一刻的可核对事实，交订阅者自己成文 */
+/** 开经那一刻的可核对事实，交挂上去的那些自己成文 */
 export interface CycleFact {
   /** 这一刻的毫秒时间戳 */
   at: number
@@ -16,7 +16,7 @@ export interface CycleFact {
 
 /**
  * 周期日真的跨到开经那天才产事实，同一周期的重复结算不给
- * @param before - 结算前的状态，周期日与幂等标记都从它读
+ * @param before - 结算前的状态，周期日与防重复的标记都从它读
  * @param after - 结算后的状态，周期日与周期长度都从它读
  * @param at - 这一刻的毫秒时间戳
  * @param tuning - 参数，时区在里面

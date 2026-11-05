@@ -1,6 +1,8 @@
-// 装配这一层：目录、面板、账本、钥匙、工具、提示词与只读出口接成一个接缝
+// 装配这一层：目录、面板、记录表、钥匙、工具、提示词与只读出口接成一个接缝
 
 import type { Context } from '@huoli/cordis'
+import { join } from 'node:path'
+import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import type {} from '@huoli/huoli-agent'
 import '@huoli/huoli-system-prompt'
 import { recordDay as writeDay, skipDay as writeSkip } from './day.ts'
@@ -22,10 +24,11 @@ import {
   updateNarrative as writeNarrative,
 } from './narrative.ts'
 import { startPanelHttp, type PanelHttp } from './panel-http.ts'
+import { graphAnswer } from './panel-graph.ts'
 import { panelStateOf } from './panel-state.ts'
 import { panelVitalsOf } from './panel-vitals.ts'
 import { panelBody, panelStamp } from './panel.ts'
-import { weeklyReview as summarizeWeek } from './review.ts'
+import { probeOf, weeklyReview as summarizeWeek, writeProbe } from './review.ts'
 import { toProject } from './rows.ts'
 import { createSelfStore, newId } from './store.ts'
 import { registerSelfTools } from './tools.ts'
@@ -62,6 +65,8 @@ function clip(text: string, max: number): string {
 export function apply(ctx: Context, config: Config = {}): void {
   const settings = resolveSettings(config.settings)
   const dir = resolveSelfDir({ dir: config.dir, huoliHome: config.huoliHome })
+  // 星海读的是记忆那一份文件；没配就跟记忆包默认放在哪一致
+  const memoryFile = config.memoryFile ?? join(resolveHuoliHome(config.huoliHome), 'data', 'qq-memory.json')
   const store = createSelfStore({ dir, settings })
   const ledger = createLedger({ store, settings })
   const enabled = config.enabled ?? false
@@ -100,9 +105,21 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 关着的时候任何写入都不落盘
   const off = (): WriteOutcome | undefined => enabled ? undefined : { written: false, proposed: false, reason: 'disabled' }
+  // 写完才通知的地方：三行、阶段、月更与每月十问各一组
+  const dayListeners = new Set<(lines: readonly string[], at: number) => void>()
+  const stageListeners = new Set<(from: string, to: string, at: number) => void>()
+  const narrativeListeners = new Set<(chapter: string, text: string, at: number) => void>()
+  const probeListeners = new Set<(answers: readonly string[], at: number) => void>()
 
   // 停手期间第二个写入一律只提议
   const held = (): WriteOutcome | undefined => store.paused() ? { written: false, proposed: true, reason: 'paused' } : undefined
+
+  // 累了就不做身份级决定：电量见底或困到线都算，没接上身体时不拦
+  const resting = (): boolean => {
+    const body = panelVitalsOf(vitals)
+    if (body === undefined) return false
+    return (body.energy ?? 1) < settings.restEnergyBelow || (body.tired ?? 0) > settings.restTiredAbove
+  }
 
   // 判一次身份级动作，放行时把这一条写进钥匙账；关着或停手时只回结果不落盘
   const allowKeys = (action: string, userOk: boolean, selfOk: boolean, at: number | undefined): KeysOutcome => {
@@ -110,9 +127,11 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (!decision.allowed) return { ...decision, proposed: false }
     const stop = off()
     if (stop !== undefined) return { ...decision, proposed: stop.proposed }
+    // 累了这一次就不做：连钥匙都不往下走，免得她硬撑着改身份
+    if (resting()) return { allowed: false, reason: 'rest', proposed: false }
     if (store.paused()) return { ...decision, proposed: true }
     const moment = at ?? Date.now()
-    // 同一个动作还在冷却里就只留一条提议，不记账也不放行
+    // 同一个动作还在冷却里就只留一条提议，不记一笔也不放行
     if (identityCooldownLeft(store, action, moment, settings.identityCooldownMs) > 0) {
       return { allowed: false, reason: 'cooldown', proposed: true }
     }
@@ -245,6 +264,8 @@ export function apply(ctx: Context, config: Config = {}): void {
       }
       const moment = at ?? Date.now()
       store.append(FILES.stage, { at: moment, id: newId(moment), from, to, reason: why })
+      // 推进落盘之后才通知：没推成的那些不产生事件
+      for (const listener of stageListeners) listener(from, to, moment)
       return { ok: true, stage: to, at: moment }
     },
     recordProject(input, at) {
@@ -350,7 +371,13 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (stop !== undefined) return stop
       const blocked = held()
       if (blocked !== undefined) return blocked
-      return writeNarrative(store, settings, chapter, text, Date.now(), mode ?? 'replace')
+      // 累了不写叙事大改：这一条与身份级的门同源
+      if (resting()) return { written: false, proposed: false, reason: 'rest' }
+      const moment = Date.now()
+      const outcome = writeNarrative(store, settings, chapter, text, moment, mode ?? 'replace')
+      // 写完才通知：月更这一笔要落到记忆里
+      if (outcome.written) for (const listener of narrativeListeners) listener(chapter, text, moment)
+      return outcome
     },
     narrativeDue(now) {
       return enabled ? narrativeIsDue(store, now) : false
@@ -375,7 +402,10 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (stop !== undefined) return stop
       const blocked = held()
       if (blocked !== undefined) return blocked
-      return writeDay(store, settings, lines, at)
+      const outcome = writeDay(store, settings, lines, at)
+      // 写完才通知：没落盘的那些不产生事件
+      if (outcome.written) for (const listener of dayListeners) listener(lines, at)
+      return outcome
     },
     skipDay(why, at) {
       const stop = off()
@@ -397,8 +427,39 @@ export function apply(ctx: Context, config: Config = {}): void {
     weeklyReview(now) {
       return summarizeWeek({ store, settings, now, ledger: ledger.summary(now) })
     },
+    probe(answers, at) {
+      const stop = off()
+      if (stop !== undefined) return stop
+      const blocked = held()
+      if (blocked !== undefined) return blocked
+      // 每月十问是月度回顾，累了不写，与身份级的门同源
+      if (resting()) return { written: false, proposed: false, reason: 'rest' }
+      const outcome = writeProbe(store, settings, answers, at)
+      // 写完才通知：这一问一答也要落到记忆里
+      if (outcome.written) for (const listener of probeListeners) listener(answers, at)
+      return outcome
+    },
+    probeThisMonth(at) {
+      return enabled ? probeOf(store, at) : undefined
+    },
     listVersions(kind) {
       return store.listVersions(kind)
+    },
+    onDay(listener) {
+      dayListeners.add(listener)
+      return () => { dayListeners.delete(listener) }
+    },
+    onStage(listener) {
+      stageListeners.add(listener)
+      return () => { stageListeners.delete(listener) }
+    },
+    onNarrative(listener) {
+      narrativeListeners.add(listener)
+      return () => { narrativeListeners.delete(listener) }
+    },
+    onProbe(listener) {
+      probeListeners.add(listener)
+      return () => { probeListeners.delete(listener) }
     },
     rollback(kind, name) {
       const stop = off()
@@ -419,6 +480,10 @@ export function apply(ctx: Context, config: Config = {}): void {
     ? startPanelHttp({
       port: panelPort,
       state: panelStateNow,
+      // 空串等于不要求口令：只在本机看的时候不必再带一块饼干
+      token: config.panelToken ?? '',
+      // 星海：只读记忆文件与星链，读不到就给一页空的
+      graph: (pathname, search) => graphAnswer(pathname, search, memoryFile),
       warn: (message) => { ctx.logger('qq-self').warn('%s', message) },
     })
     : Promise.resolve(undefined)
@@ -432,7 +497,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     panel = started
   })
 
-  // 只给主会话注入这一段，其它会话拿到空串
+  // 只给主会话放这一段，其它会话拿到空串
   if (enabled) {
     // 没有工具服务时写入口这一次挂不上，只记一行；面板与提示词照旧
     const toolSink = ctx.get('tools')

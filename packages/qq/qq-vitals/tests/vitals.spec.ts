@@ -11,7 +11,6 @@ import {
   derive,
   drift,
   emptyState,
-  postLevel,
   qqVitalsOf,
   react,
   renderPrompt,
@@ -19,9 +18,10 @@ import {
   thirstNote,
   type QqVitalsSeam,
   type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 
 const HORMONE_NAMES = ['多巴胺', '皮质醇', '血清素', '催产素', '去甲肾上腺素', '肾上腺素', '褪黑素', '内啡肽']
@@ -45,7 +45,7 @@ function tempFile(): string {
 async function mount(file: string): Promise<{ ctx: Context; seam: QqVitalsSeam }> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt, {})
-  apply(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('状态没装上')
   return { ctx, seam }
@@ -118,7 +118,7 @@ describe('提示词的边界', () => {
   })
 })
 
-describe('心跳幂等', () => {
+describe('心跳只算一次', () => {
   it('同一分钟跑两次不再施加一次性效果', () => {
     const state = fresh({
       thirst: 0.6,
@@ -159,7 +159,7 @@ describe('心跳幂等', () => {
   })
 })
 
-describe('派生量与标签', () => {
+describe('算出来的量与标签', () => {
   it('皮质醇调高后易怒上升，安心被压下去', () => {
     const calm = settled()
     const stressed = settled({ cortisol: 0.9 })
@@ -169,7 +169,7 @@ describe('派生量与标签', () => {
     expect(stressed.emotion_candidates).not.toContain('安心')
   })
 
-  it('六个派生量都在零到一之间，掌控可以到负数', () => {
+  it('六个算出来的量都在零到一之间，掌控可以到负数', () => {
     const state = settled()
 
     for (const value of [state.energy, state.valence, state.irritability, state.clinginess, state.loneliness]) {
@@ -372,41 +372,5 @@ describe('想开口与想发动态', () => {
 
   it('心里有火时更不想发动态', () => {
     expect(settled({ cortisol: 0.9 }).post_want).toBeLessThan(settled().post_want)
-  })
-})
-
-describe('社交动态分级', () => {
-  const NONE = { routine: false, peak: false, consent: false, requested: false }
-
-  it('什么都没成立时不发', () => {
-    expect(postLevel(NONE).level).toBe('none')
-  })
-
-  it('只有例行不够', () => {
-    expect(postLevel({ ...NONE, routine: true }).level).toBe('none')
-  })
-
-  it('只有高峰不够', () => {
-    expect(postLevel({ ...NONE, peak: true }).level).toBe('none')
-  })
-
-  it('例行与高峰同时成立才给例行，并带一句理由', () => {
-    const decision = postLevel({ ...NONE, routine: true, peak: true })
-
-    expect(decision.level).toBe('routine')
-    expect(decision.reason.length).toBeGreaterThan(0)
-  })
-
-  it('没有两把钥匙时公开不出现', () => {
-    expect(postLevel({ ...NONE, routine: true, peak: true }).level).not.toBe('public')
-    expect(postLevel({ ...NONE, routine: true, peak: true, consent: true }).level).not.toBe('public')
-    expect(postLevel({ ...NONE, routine: true, peak: true, requested: true }).level).not.toBe('public')
-  })
-
-  it('两把钥匙都在且到了高峰才给公开', () => {
-    const decision = postLevel({ ...NONE, peak: true, consent: true, requested: true })
-
-    expect(decision.level).toBe('public')
-    expect(decision.reason.length).toBeGreaterThan(0)
   })
 })

@@ -1,4 +1,4 @@
-// 出站体检：白名单、静默时段、长度、敏感词、每分钟条数，只拦不说该不该说
+// 发出去之前先看一遍：允许的名单、静默时段、长度、敏感词、每分钟条数，只拦不说该不该说
 
 import { endOfQuiet, inQuietHours } from '@huoli/huoli-qq-proactive'
 
@@ -74,7 +74,7 @@ export function createOutboundCheck(
 ): OutboundCheck {
   let sent: number[] = []
 
-  // 窗口外的记账不再算数
+  // 窗口外的记一笔不再算数
   const prune = (at: number): void => {
     const since = at - tuning.windowMs
     const kept = sent.filter(stamp => stamp > since)

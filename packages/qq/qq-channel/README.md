@@ -7,7 +7,7 @@ kind: "package-reference"
 
 ## Summary
 
-接 QQ：连上去、收消息、把要说的话发出去。收到的消息翻成入站交给注意力；要发的先过白名单、静默时段、长度、敏感词、每分钟条数，再按说话规矩拆句送出去。
+接 QQ：连上去、收消息、把要说的话发出去。收到的消息翻成入站交给注意力；要发的先过允许的名单、静默时段、长度、敏感词、每分钟条数，再按说话规矩拆句送出去。
 
 ## Table of Contents
 
@@ -46,10 +46,10 @@ kind: "package-reference"
 ## Known Limitations and Deferred Work
 
 - 只用一种连法，没做反向连接。
-- 图片、语音这些只翻成占位文字，没有真的处理。
+- 图片、语音这些只翻成位置文字，没有真的处理。
 - 还没在真 QQ 号上跑过。
 - 表情回应不过体检：它不带正文，也就不判长度与敏感词。
-- 白名单与敏感词只在装配时读一次，改配置要重新挂载。
+- 允许的名单与敏感词只在装配时读一次，改配置要重新挂载。
 - 动态的级别只由模型声明，这一层不回头查正文有没有夸大；预授权话题清单只约束自己报了话题的调用方，工具只报级别。
 - 停手开关由装配层接进来，本包自己不判 `PAUSE` 文件。
 - 条数上限也由装配层每轮接进来，没接上就只发一条，本包自己不算这一轮能说几句。
@@ -65,7 +65,7 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`，连接地址与机器人自己的号必填，口令与重连间隔可选；连接本身不落盘，重连状态跟着进程走，只有三类公共动作那一份状态写盘。来消息时先翻成入站，`onIncoming` / `onPoke` 收的处理函数返回注销函数；只有图片表情占位的消息由 `hasWords` 判出，交给装配层决定要不要算一句话。
+配置项在 `src/index.ts` 的 `Config`，连接地址与机器人自己的号必填，口令与重连间隔可选；连接本身不落盘，重连状态跟着进程走，只有三类公共动作那一份状态写盘。来消息时先翻成入站，`onIncoming` / `onPoke` 收的处理函数返回撤掉函数；只有图片表情位置的消息由 `hasWords` 判出，交给装配层决定要不要算一句话。
 
 出站体检在 `src/outbound.ts`：默认值表是 `OUTBOUND_DEFAULTS`（`allowGroups`、`allowPeople`、`maxChars` 300、`perMinute` 6、`windowMs` 60000、`quietStart` `23:30`、`quietEnd` `07:30`、`banned`、`retryMs` 60000），每一项都能被 `Config` 覆盖。`createOutboundCheck` 按顺序过五道闸：群与人的名单、静默时段、长度上限、敏感词、每分钟条数；每道闸都给码、可读原因与下次时间。敏感词只用来拦，不产出该不该说。静默时段复用 `qq-proactive` 的 `inQuietHours` / `endOfQuiet`，同一套时段只有一份实现。
 
@@ -79,11 +79,11 @@ kind: "package-reference"
 
 状态在 `src/action-store.ts`：`data/qq-actions.json` 里 `version` 是 2，`kinds` 分 `post` / `comment` / `private` 三格，各存 `dayStart`、`dayCount`、`lastAt` 与正文的 sha256 指纹表，`pending` 是等着点头的那几条（编号、品类、指纹、正文、提出时刻、失效时刻与点头时刻）；做过的正文不落盘，只有待确认项短存正文。写盘先写同目录临时文件再改名，并先把上一份留成 `.bak`，正式文件读不出时按备份、再按默认值逐级回退。
 
-接线在 `apply` 里：发送工具真正发之前调 `inspect`，每发出一条调 `account` 把这一刻记进分钟窗口；拒了就抛错，让内核统一包装成失败结果。发送这一路的 `attempt` / `sent` / `blocked` 由 `seam.onOutbound` 报给装配层，只带码、条数与时刻，不带正文；三类动作都走同一个出口，所以发布工具一次调用照样先报 `attempt`，发出去报 `sent`，被闸门拦下报 `blocked`，工具自己不再补一遍。名单空着等于不限制，装配时各打印一次提示。停手开关、条数上限、自我层的阶段分别由 `seam.usePause` / `useReplyCap` / `useStage` 接进来。
+接线在 `apply` 里：发送工具真正发之前调 `inspect`，每发出一条调 `account` 把这一刻记进分钟窗口；拒了就抛错，让内核统一包装成失败结果。发送这一路的 `attempt` / `sent` / `blocked` 由 `seam.onOutbound` 报给装配层，只带码、条数与时刻，不带正文；三类动作都走同一个出口，所以发布工具一次调用照样先报 `attempt`，发出去报 `sent`，被关卡拦下报 `blocked`，工具自己不再补一遍。名单空着等于不限制，装配时各打印一次提示。停手开关、条数上限、自我层的阶段分别由 `seam.usePause` / `useReplyCap` / `useStage` 接进来。
 
 评论、私信与确认票这三个工具也在 `src/tools.ts`：`qq_comment_post` 只把正文、话题与当前会话键交给 `publish('comment', …)`；`qq_send_private` 把对象拼成 `private:编号` 当会话键交给 `publish('private', …)`，没报对象就带一个空号，让发布入口按缺对象拒；`qq_request_confirm` 与 `qq_confirm_action` 分别调 `requestConfirm(kind, text, at)` 与 `confirm(confirmId, at)`。四个工具都不判该不该发，拒绝原样抛出，只把 `*.needs_confirm` 那一条的下一步改写为「先调 qq_request_confirm 再调 qq_confirm_action」；要票的品类清单 `CONFIRM_KINDS` 从 `ACTION_DEFAULTS` 里 `confirmRequired` 为真的那几项取，别处不写第二份。
 
-分条发在 `src/tools.ts` 里：体检与额度这两道先过，再用这一轮的条数上限调 `qq-pacing` 的 `splitByBudget`，条与条之间按 `speechGaps` 给的间隔停一下再发下一条。上限由装配层通过 `seam.useReplyCap(provide)` 接进来，读的是组合包每轮算出的那个数；没接上就按 `REPLY_DEFAULTS.minCap` 发一条。单条的字数口径与长度那道闸是同一个 `maxChars`，切出来的每条都过得了它。中途某条没发出去就停在那儿：已经发出去的不撤也不再重发，抛出的失败里写明已发几条、卡在第几条，发送这一路先报已发的条数再报 `blocked`。
+分条发在 `src/tools.ts` 里：体检与额度这两道先过，再用这一轮的条数上限调 `qq-pacing` 的 `splitByBudget`，条与条之间按 `speechGaps` 给的间隔停一下再发下一条。上限由装配层通过 `seam.useReplyCap(provide)` 接进来，读的是组合包每轮算出的那个数；没接上就按 `REPLY_DEFAULTS.minCap` 发一条。单条的字数说法与长度那道闸是同一个 `maxChars`，切出来的每条都过得了它。中途某条没发出去就停在那儿：已经发出去的不撤也不再重发，抛出的失败里写明已发几条、卡在第几条，发送这一路先报已发的条数再报 `blocked`。
 
 遗书那个工具在 `src/tools.ts` 的末尾，参数只有 `text`，`execute` 把正文交给装配时传进来的 `stageFarewell(text, Date.now())`，拒了就把码、原因与下一步原样抛出，不改写正文、不重试、不写记忆。它自己不判该不该写：什么时候该说仍由身体事实与模型自己定。
 

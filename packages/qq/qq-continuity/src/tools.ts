@@ -30,7 +30,7 @@ function kindOf(raw: unknown): Reflection['kind'] {
 }
 
 /**
- * 注册事后想想的工具
+ * 挂上事后想想的工具
  * @param ctx - 运行环境
  * @param deps - 要用到的东西
  */

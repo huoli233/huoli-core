@@ -4,9 +4,9 @@ import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import { afterEach, describe, expect, it } from 'vitest'
-import { apply as applyVitals, createVitalsStore, emptyState, qqVitalsOf, resolveTuning } from '../src/index.ts'
+import { apply as applyVitals, createVitalsStore, emptyState, qqVitalsOf, resolveTuning, WORDS_PRESET } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const SEED = new Date(2026, 10, 3, 7, 30, 0).getTime()
 
 const roots: string[] = []
@@ -20,7 +20,7 @@ async function mount(): Promise<Context> {
   const ctx = new Context()
   contexts.push(ctx)
   await ctx.plugin(SystemPrompt, {})
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   return ctx
 }
 
@@ -51,7 +51,7 @@ describe('周期分界露给面板', () => {
     const ctx = new Context()
     contexts.push(ctx)
     await ctx.plugin(SystemPrompt, {})
-    applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000, cycleMenstrualEnd: 4 } })
+    applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000, cycleMenstrualEnd: 4 } })
 
     expect(qqVitalsOf(ctx)?.cycleBounds()[0]).toBe(4)
   })

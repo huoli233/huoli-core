@@ -22,7 +22,7 @@ export function farewellText(text?: string): string {
 /**
  * 跟着这条记忆一起存的附加事实
  * @param fact - 到线那一刻的事实
- * @param authoredBy - 正文是模型自己写的还是走的兜底
+ * @param authoredBy - 正文是模型自己写的还是用的是备用话
  * @returns metadata 里的四个字段
  */
 export function farewellMetadata(fact: FarewellFact, authoredBy: FarewellAuthor): Record<string, unknown> {

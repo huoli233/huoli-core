@@ -11,7 +11,7 @@ const UNRELATED = '今天天气很好'
 
 afterEach(cleanupTempDirs)
 
-// 归一化之后长度应当是一，用它看归一化有没有做
+// 长度化为一之后应当就是一，用它看这一步有没有做
 function normOf(vector: readonly number[]): number {
   return Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0))
 }
@@ -40,7 +40,7 @@ describe('本地编码', () => {
     expect(encodeVector('，。！')).toEqual(empty)
   })
 
-  it('编码结果归一化，长度为一', () => {
+  it('编码结果缩到零到一，长度为一', () => {
     expect(normOf(encodeVector(CLIMB))).toBeCloseTo(1, 12)
   })
 })

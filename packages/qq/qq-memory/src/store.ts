@@ -116,7 +116,7 @@ function normalizeItem(raw: Record<string, unknown>, now: number): MemoryItem {
     at,
     lastSeenAt,
     state,
-    // 旧文件里退役过的那条没有时刻，按写入时刻补，免得账本缺一格
+    // 旧文件里退役过的那条没有时刻，按写入时刻补，免得记录表缺一格
     ...state === 'forgotten' ? { retiredAt: Math.max(0, numberOr(raw.retiredAt, at)) } : {},
     source: pick(raw.source, MEMORY_SOURCES, 'chat'),
     metadata: isRecord(raw.metadata) ? raw.metadata : {},
@@ -138,6 +138,7 @@ function load(file: string): { items: MemoryItem[]; state: MemoryStoreState } {
       state: { lastMaintainedDay: textOr(parsed.lastMaintainedDay, '') },
     }
   } catch {
+    // 整份读不出来就当空库：坏文件会由维护那一步的备份与记录表核对兜住
     return { items: [], state: NO_STATE }
   }
 }

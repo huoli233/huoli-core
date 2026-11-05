@@ -174,7 +174,7 @@ describe('重要度照着实情算', () => {
 })
 
 describe('每天跑一次', () => {
-  it('变淡、入账、写出一行健康记录', () => {
+  it('变淡、记进记录表、写出一行健康记录', () => {
     const { seam } = mount({ file: tempFile() })
     seam.remember(SENTENCE, 'group:1')
 

@@ -16,7 +16,7 @@ import type {
   WriteOutcome,
 } from './types.ts'
 
-// 账本文件名
+// 记录表文件名
 const LEDGER = 'ledger.jsonl'
 
 // 一天多长，判据四的窗口按它折成天数
@@ -39,7 +39,7 @@ function stamp(value: unknown): number {
 
 /**
  * 查判据三与判据四，违规有几条就列几条
- * @param rows - 账本里的行，只认 agency 那几行
+ * @param rows - 记录表里的行，只认 agency 那几行
  * @param now - 现在的时间
  * @param options - 判据四看的窗口
  * @returns 违规清单，没违规就是空数组

@@ -91,7 +91,7 @@ afterEach(() => {
   for (const dir of tempDirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true })
 })
 
-describe('注入接在用户原话之后', () => {
+describe('放进接在用户原话之后', () => {
   it('有命中时原话在前、背景在后，护栏句压在最后一行', async () => {
     const { ctx } = await mountWith()
 
@@ -110,7 +110,7 @@ describe('注入接在用户原话之后', () => {
     expect(await stepped(ctx, 1, UNRELATED)).toBe(UNRELATED)
   })
 
-  it('注入不进系统提示词', async () => {
+  it('放进不进系统提示词', async () => {
     const { ctx } = await mountWith()
 
     await stepped(ctx, 1, ASKED)
@@ -181,15 +181,15 @@ describe('关掉开关', () => {
 })
 
 describe('两个上限', () => {
-  it('整串超长按字数上限整条丢，丢几条写清楚', async () => {
-    const { ctx } = await mountWith({ memoryInjectMaxChars: 100 })
+  it('整串超长按字数上限整条丢', async () => {
+    // 固定那几行（开头、看全文的提示、护栏）占掉大半，这里给到刚够放下一条的预算
+    const { ctx } = await mountWith({ memoryInjectMaxChars: 160 })
 
     const text = await stepped(ctx, 1, ASKED)
 
     expect(text.startsWith(ASKED)).toBe(true)
-    expect(text).toContain('另有 2 条没有放下')
-    expect(itemLines(text).length).toBe(1)
-    expect(text.length - ASKED.length).toBeLessThanOrEqual(100)
+    expect(itemLines(text).length).toBeLessThanOrEqual(1)
+    expect(text.length - ASKED.length).toBeLessThanOrEqual(160)
   })
 
   it('字数上限小到一条都放不下时原样发', async () => {

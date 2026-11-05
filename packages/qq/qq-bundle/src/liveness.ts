@@ -9,7 +9,7 @@ const BOOK_VERSION = 1
 
 /** 一份启动账 */
 export interface StartsBook {
-  /** 账本的版本戳 */
+  /** 记录表的版本戳 */
   version: number
   /** 本地日期，形如 2026-11-04 */
   day: string
@@ -17,9 +17,9 @@ export interface StartsBook {
   starts: number
 }
 
-/** 记账要的东西 */
+/** 记录要的东西 */
 export interface LivenessOptions {
-  /** 账本落在哪个文件，不给就只报活多久，不写任何盘 */
+  /** 记录表落在哪个文件，不给就只报活多久，不写任何盘 */
   file?: string
   /** 现在是几点，不给就取系统时间 */
   now?: () => number
@@ -56,6 +56,7 @@ function readBook(file: string): StartsBook | undefined {
     if (typeof parsed.day !== 'string' || typeof parsed.starts !== 'number') return undefined
     return { version: BOOK_VERSION, day: parsed.day, starts: Math.max(1, Math.floor(parsed.starts)) }
   } catch {
+    // 启动账坏了按没有算：重启次数宁少不多，也不要因为一份坏账起不来
     return undefined
   }
 }
@@ -72,15 +73,15 @@ function writeBook(file: string, book: StartsBook): void {
 
 /**
  * 开一份启动账：这一次算一次启动，同一天累加，跨零点重新从 1 算
- * @param options - 账本位置与两个可替换的时钟
- * @returns 记账结果与一个取事实的入口
+ * @param options - 记录表位置与两个可替换的时钟
+ * @returns 记一笔结果与一个取事实的入口
  */
 export function createLiveness(options: LivenessOptions): Liveness {
   const nowOf = options.now ?? (() => Date.now())
   const uptimeOf = options.uptime ?? (() => process.uptime() * 1000)
   const at = nowOf()
   const today = localDay(at)
-  // 没给账本就不数重启：没有账可记时宁可报 0，也不去猜
+  // 没给记录表就不数重启：没有账可记时宁可报 0，也不去猜
   const file = options.file
   let starts = 1
   if (file !== undefined) {
@@ -90,7 +91,7 @@ export function createLiveness(options: LivenessOptions): Liveness {
     try {
       writeBook(file, { version: BOOK_VERSION, day: today, starts })
     } catch {
-      // 账本写不进去只影响「今天重启几次」这一条，不挡整条装配
+      // 记录表写不进去只影响「今天重启几次」这一条，不挡整条装配
     }
   }
 

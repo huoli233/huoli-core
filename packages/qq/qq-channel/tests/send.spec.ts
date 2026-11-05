@@ -47,7 +47,7 @@ class FakeSocket {
   }
 }
 
-// 工具体只读会话编号与取消信号，其余执行字段由内核在真实调用时注入
+// 工具体只读会话编号与取消信号，其余字段由内核在真实调用时给
 function execOf(chatKey: string): ToolRunContext {
   return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal: new AbortController().signal })
 }

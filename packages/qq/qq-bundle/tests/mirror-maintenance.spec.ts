@@ -141,7 +141,7 @@ describe('镜像的长文拆分', () => {
     expect(items.map(item => item.text).join('')).toBe(long)
   })
 
-  it('拆开写进去的几条，账本核得过，再镜一次也不多写', async () => {
+  it('拆开写进去的几条，记录表核得过，再镜一次也不多写', async () => {
     const dir = tempDir()
     const { memory, self } = await mount(dir)
     writeRows(dir, 'commitments.jsonl', [{ at: AT, id: 'k1', text: '长'.repeat(700) }])
@@ -187,7 +187,7 @@ describe('每日维护的日志', () => {
   })
 })
 
-describe('账本判据三四', () => {
+describe('记录表判据三四', () => {
   it('判据三：done 多过有产出的条数就报一条', () => {
     const rows = [
       { at: AT, kind: 'agency', outcome: 'done', artifact: '' },

@@ -51,7 +51,7 @@ function tempDir(): string {
   return dir
 }
 
-// 工具体只读会话编号与取消信号，其余执行字段由内核在真实调用时注入
+// 工具体只读会话编号与取消信号，其余字段由内核在真实调用时给
 function execOf(chatKey: string): ToolRunContext {
   return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal: new AbortController().signal })
 }
@@ -117,7 +117,7 @@ afterEach(() => {
 })
 
 describe('工具清单', () => {
-  it('遗书那个工具注册好了，参数只有正文', () => {
+  it('遗书那个工具挂上好了，参数只有正文', () => {
     const { tool, names } = mount()
 
     expect(names).toContain('qq_write_farewell')

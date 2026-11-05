@@ -154,7 +154,7 @@ describe('停手开关', () => {
   })
 })
 
-describe('账本的写法', () => {
+describe('记录表的写法', () => {
   it('原话太长就截断，字段不丢', async () => {
     const dir = tempDir()
     const seam = await mount(dir)

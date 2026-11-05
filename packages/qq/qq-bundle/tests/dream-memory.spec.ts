@@ -13,6 +13,7 @@ import {
   qqVitalsOf,
   resolveTuning,
   type DreamFact,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle, type Config } from '../src/index.ts'
@@ -70,9 +71,9 @@ interface Mounted {
   ctx: Context
   memory: QqMemorySeam
   channel: QqChannelSeam
-  /** 组合包发过几次订阅、眼下还挂着几个监听 */
+  /** 组合包发过几次挂上、眼下还挂着几个监听 */
   live: { subscribed: number; listeners: number }
-  /** 把一场梦的事实递给组合包订阅进来的那个回调 */
+  /** 把一场梦的事实递给组合包挂上进来的那个被叫到时做的事 */
   deliver: (fact: DreamFact) => void
 }
 
@@ -91,8 +92,8 @@ async function mount(config: Config = {}, options: MountOptions = {}): Promise<M
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
-  // 记忆的四个文件都落在临时目录里，队列与账本不去碰主目录那份
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
+  // 记忆的四个文件都落在临时目录里，队列与记录不去碰主目录那份
   applyMemory(ctx, {
     file: path.join(dir, 'memory.json'),
     ledgerFile: path.join(dir, 'ledger.json'),
@@ -107,7 +108,7 @@ async function mount(config: Config = {}, options: MountOptions = {}): Promise<M
   if (vitals === undefined || memory === undefined || channel === undefined) throw new Error('零件没有装配')
   const live = { subscribed: 0, listeners: 0 }
   const listeners = new Set<(fact: DreamFact) => void>()
-  // 订阅只能由组合包发出：在它动手之前把订阅那头包一层，顺手留住它递过来的回调
+  // 这些只能由组合包挂上去：在它动手之前把那一头包一层，顺手留住它递过来的函数
   const subscribe = vitals.onDream.bind(vitals)
   vitals.onDream = (listener) => {
     const off = subscribe(listener)
@@ -275,7 +276,7 @@ describe('没有活跃会话', () => {
 })
 
 describe('开关关着', () => {
-  it('一个订阅都没有，零写入零发布', async () => {
+  it('一个挂上都没有，零写入零发布', async () => {
     const { memory, channel, live, deliver } = await mount({ dreamMemory: false, dreamPublish: false })
     const publish = vi.spyOn(channel, 'publish').mockResolvedValue({ ok: true, at: at(23, 30) })
 
@@ -291,7 +292,7 @@ describe('开关关着', () => {
 })
 
 describe('卸载之后', () => {
-  it('订阅撤掉了，再来一场也不写', async () => {
+  it('挂上撤掉了，再来一场也不写', async () => {
     const { ctx, memory, channel, deliver, live } = await mount()
     vi.spyOn(channel, 'publish').mockResolvedValue({ ok: true, at: at(23, 30) })
     deliver(dream('sweet'))

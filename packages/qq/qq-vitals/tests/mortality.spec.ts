@@ -7,9 +7,10 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   apply, createVitalsStore, drift, emptyState, mortalityTarget, qqVitalsOf, resolveTuning,
   type QqVitalsSeam, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 const HOUR = 3_600_000
 
@@ -28,7 +29,7 @@ function tempFile(): string {
 async function mount(file: string): Promise<QqVitalsSeam> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt, {})
-  apply(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('状态没装上')
   return seam
@@ -55,7 +56,7 @@ describe('余额分档', () => {
   })
 
   it('档位边界与各档目标都能从配置覆盖', () => {
-    const wide = resolveTuning({ mortalityBalanceCalm: 100, mortalityTargetWary: 0.9 })
+    const wide = resolveTuning({ words: WORDS_PRESET, mortalityBalanceCalm: 100, mortalityTargetWary: 0.9 })
 
     expect(mortalityTarget(12, wide)).toBeCloseTo(0.9, 10)
     expect(mortalityTarget(12)).toBe(0)
@@ -106,7 +107,7 @@ describe('朝目标走', () => {
   })
 
   it('两档步长都能从配置覆盖', () => {
-    const fast = resolveTuning({ mortalityRisePerBeat: 0.5, mortalityFallPerBeat: 0.5 })
+    const fast = resolveTuning({ words: WORDS_PRESET, mortalityRisePerBeat: 0.5, mortalityFallPerBeat: 0.5 })
     const up = drift(fresh({ mortality: 0, last_update: START - HOUR }), START, fast, undefined, 3)
     const down = drift(fresh({ mortality: 0.8, last_update: START - HOUR }), START, fast, undefined, 30)
 
@@ -121,13 +122,13 @@ describe('朝目标走', () => {
   })
 })
 
-describe('注入端口', () => {
+describe('放进端口', () => {
   // 先落一份一分钟前的状态，读的时候才够一拍
   function seeded(file: string, overrides: Partial<VitalsState> = {}): void {
     createVitalsStore({ file, tuning }).write({ ...emptyState(tuning, Date.now() - 60_000), ...overrides })
   }
 
-  it('没注入时读到的死亡威胁是零', async () => {
+  it('没放进时读到的死亡威胁是零', async () => {
     const file = tempFile()
     seeded(file)
     const seam = await mount(file)
@@ -135,7 +136,7 @@ describe('注入端口', () => {
     expect(seam.read().mortality).toBe(0)
   })
 
-  it('注入余额档位后读一次就朝目标走一步', async () => {
+  it('放进余额档位后读一次就朝目标走一步', async () => {
     const file = tempFile()
     seeded(file)
     const seam = await mount(file)
@@ -146,7 +147,7 @@ describe('注入端口', () => {
     expect(after.mortality).toBeCloseTo(tuning.mortalityRisePerBeat, 6)
   })
 
-  it('把注入撤回去就不再动', async () => {
+  it('把放进撤回去就不再动', async () => {
     const file = tempFile()
     seeded(file, { mortality: 0.4 })
     const seam = await mount(file)

@@ -3,6 +3,7 @@
 import type { Clarity } from '@huoli/huoli-qq-policy'
 import { DEFAULTS, resolveTuning, type Tuning } from './defaults.ts'
 import type { MemoryStore } from './store.ts'
+import type { MemoryItem } from './types.ts'
 
 const DAY_MS = 86_400_000
 
@@ -25,6 +26,8 @@ export interface RecallInput {
   now?: number
   /** 想改哪些默认参数，装配时传一次 */
   tuning?: Partial<Tuning>
+  /** 星链：一起被想起过的两条会互相带出来 */
+  edges?: readonly { a: string; b: string; weight: number }[]
 }
 
 /** 一条命中的理由，四项都能拿同样输入重算 */
@@ -46,6 +49,8 @@ export interface RecallHit {
   at: number
   clarity: Clarity
   score: number
+  /** 是不是核心记忆：身份、对方的基本情况这类，不能被挤掉 */
+  core?: boolean
   reasons: RecallReasons
 }
 
@@ -83,7 +88,7 @@ function bucketOf(feature: string): number {
 /**
  * 把一段文本编成固定维度的稀疏向量，纯本地计算
  * @param text - 要编码的文本
- * @returns 长度恒为编码维度的归一化向量，没有可用特征时是零向量
+ * @returns 长度恒等于编码维度的单位向量，没有可用特征时是零向量
  */
 export function encodeVector(text: string): readonly number[] {
   const body = plain(text)
@@ -109,7 +114,7 @@ export function encodeVector(text: string): readonly number[] {
 }
 
 /**
- * 两段向量的余弦相似度，归一化向量的余弦等于规范里的「1 减平方距离的一半」
+ * 两段向量的余弦相似度，长度化为一之后等于文档里的「1 减平方距离的一半」
  * @param left - 一段向量
  * @param right - 另一段向量
  * @returns 相似度，任一段是零向量时给 null
@@ -146,20 +151,42 @@ export function recall(store: MemoryStore, input: RecallInput = {}): RecallHit[]
   // 短查询放宽到一条，长查询要两条才对得上
   const minHits = plainQuery.length <= tuning.shortQueryChars ? tuning.shortQueryMinHits : tuning.longQueryMinHits
 
-  const hits: RecallHit[] = []
+  // 先过一遍筛出候选，同时记下每条的字面片段：算词频要用全库的分布
+  const candidates: { item: MemoryItem; bodyGrams: Set<string> }[] = []
+  // 私密星点只在私密空间可见：这是硬边界，不是风格选择
+  const inPrivateSpace = (input.scope ?? '').startsWith('private:')
   for (const item of store.all()) {
     if (item.state === 'forgotten' || item.clarity === 'forgotten') continue
     if (input.scope !== undefined && input.scope !== '' && item.scope !== input.scope) continue
-    const bodyGrams = new Set(keyGrams(item.text, tuning.gramSize))
+    if ((item.layer === 'private' || item.secret === true) && (!inPrivateSpace || item.scope !== input.scope)) continue
+    candidates.push({ item, bodyGrams: new Set(keyGrams(item.text, tuning.gramSize)) })
+  }
+
+  // 逆文档频率：常见词（今天、那个）权重低，罕见词权重高，跟参考实现一个思路
+  const total = Math.max(1, candidates.length)
+  const df = new Map<string, number>()
+  for (const entry of candidates) {
+    for (const gram of queryGrams) if (entry.bodyGrams.has(gram)) df.set(gram, (df.get(gram) ?? 0) + 1)
+  }
+  const weightOf = (gram: string): number => Math.log(1 + total / Math.max(1, df.get(gram) ?? 1))
+  const totalWeight = queryGrams.reduce((sum, gram) => sum + weightOf(gram), 0)
+
+  const hits: RecallHit[] = []
+  for (const { item, bodyGrams } of candidates) {
     const grams = queryGrams.filter(gram => bodyGrams.has(gram))
     // 关键词路只看命中数门槛，命中之后不受相似度门槛约束
     const keywordHit = queryGrams.length > 0 && grams.length >= minHits
     const vectorSim = plainQuery === '' ? null : cosineSimilarity(queryVector, encodeVector(item.text))
     const vectorHit = vectorSim !== null && vectorSim >= tuning.minSimilarity
+    // 核心记忆就算这一轮没命中也要留下：她的身份不该因为话题不相关就消失
+    const isCore = item.metadata?.core === true
     // 空查询既不按字面也不按方向筛，剩下的只由重要度与新鲜度排序
-    if (plainQuery !== '' && !keywordHit && !vectorHit) continue
+    if (plainQuery !== '' && !keywordHit && !vectorHit && !isCore) continue
+    // 命中的片段按稀有度加权，再除以整个查询的总权重：常见词凑出来的相似度自然会低
+    const hitWeight = grams.reduce((sum, gram) => sum + weightOf(gram), 0)
+    const gramSim = totalWeight === 0 ? 0 : hitWeight / totalWeight
     // 两路都命中时取较大的相似度，不叠加、不重复计分
-    const sim = Math.max(queryGrams.length === 0 ? 0 : grams.length / queryGrams.length, vectorSim ?? 0)
+    const sim = Math.max(gramSim, vectorSim ?? 0)
     const ageDays = Math.max(0, (now - item.at) / DAY_MS)
     const freshness = 1 / (1 + ageDays / tuning.freshnessDays)
     const importanceTerm = tuning.weightImportance * (item.importance / 100)
@@ -171,12 +198,57 @@ export function recall(store: MemoryStore, input: RecallInput = {}): RecallHit[]
       at: item.at,
       clarity: item.clarity,
       score,
+      ...item.metadata?.core === true ? { core: true } : {},
       reasons: { grams, vectorSim, importanceTerm, freshnessTerm },
     })
   }
 
   hits.sort((a, b) => b.score - a.score || b.at - a.at)
-  return hits.slice(0, limit)
+  // 星链只在已经排出来的前几名之间算：连着的几条互相带一把，不带全新的进来
+  const edgeBoost = tuning.weightEdge
+  if (edgeBoost > 0 && input.edges !== undefined && input.edges.length > 0 && hits.length > 1) {
+    const seeds = new Set(hits.slice(0, 20).map(hit => hit.id))
+    const linkOf = new Map<string, number>()
+    for (const edge of input.edges) {
+      for (const [here, there] of [[edge.a, edge.b], [edge.b, edge.a]] as const) {
+        if (!seeds.has(there)) continue
+        linkOf.set(here, (linkOf.get(here) ?? 0) + edge.weight)
+      }
+    }
+    for (const hit of hits) {
+      const linked = linkOf.get(hit.id) ?? 0
+      if (linked === 0) continue
+      // 连得多最多算一份加成，别让一条高频边把分数拉爆
+      hit.score += edgeBoost * Math.min(1, linked / 10)
+    }
+    hits.sort((a, b) => b.score - a.score || b.at - a.at)
+  }
+  return packHits(hits, limit, tuning)
+}
+
+// 装进预算里：核心记忆先留位置，其余按分数装，装不下就换更短的
+function packHits(hits: readonly RecallHit[], limit: number, tuning: Tuning): RecallHit[] {
+  const budget = Math.max(0, Math.floor(tuning.budgetChars))
+  const picked: RecallHit[] = []
+  let used = 0
+  const take = (hit: RecallHit): void => {
+    picked.push(hit)
+    used += hit.text.length
+  }
+  // 核心记忆先占：她的身份、对方的基本情况，不能因为这一轮没命中就消失
+  const coreLimit = Math.max(0, Math.floor(tuning.coreMax))
+  const corePicked = hits.filter(entry => entry.core === true).slice(0, coreLimit)
+  for (const hit of corePicked) take(hit)
+  // 超过保底条数的核心记忆不再强塞，按普通条目参与就够了
+  const coreIds = new Set(corePicked.map(hit => hit.id))
+  for (const hit of hits) {
+    if (picked.length >= limit) break
+    if (picked.includes(hit)) continue
+    if (hit.core === true && !coreIds.has(hit.id)) continue
+    if (budget > 0 && used + hit.text.length > budget) continue
+    take(hit)
+  }
+  return picked
 }
 
 // 本地时间的 yyyy-mm-dd
@@ -194,4 +266,84 @@ function localDate(at: number): string {
 export function renderRecall(hits: readonly RecallHit[]): string {
   if (hits.length === 0) return '没有想起相关的事。'
   return hits.map(hit => `${localDate(hit.at)} ${hit.text}`).join('\n')
+}
+
+/** 她此刻的感觉，用来说清是哪种感觉把这件事带出来的 */
+export interface FeelingFacts {
+  /** 心情，越低越难过 */
+  mood?: number
+  /** 怕到几分 */
+  fear?: number
+  /** 想说话到几分 */
+  socialHunger?: number
+  /** 好奇到几分 */
+  curiosity?: number
+}
+
+/** 一次主动回想的结果 */
+export interface RecollectResult {
+  /** 这一次是哪种感觉带出来的，没有就是 none */
+  feel: 'mood' | 'fear' | 'socialHunger' | 'curiosity' | 'none'
+  /** 想起来的几条，重要的在前 */
+  hits: RecallHit[]
+}
+
+// 哪种感觉最过头：越过头越先想
+function strongest(feeling: FeelingFacts): RecollectResult['feel'] {
+  const rows: [RecollectResult['feel'], number][] = [
+    ['mood', 0.5 - (feeling.mood ?? 0.5)],
+    ['fear', (feeling.fear ?? 0) - 0.5],
+    ['socialHunger', (feeling.socialHunger ?? 0) - 0.5],
+    ['curiosity', (feeling.curiosity ?? 0) - 0.5],
+  ]
+  // 过线最多的那一种才算数，没过线就当作没什么特别的感觉
+  let best: RecollectResult['feel'] = 'none'
+  let top = 0.2
+  for (const [feel, value] of rows) {
+    if (value > top) {
+      best = feel
+      top = value
+    }
+  }
+  return best
+}
+
+/**
+ * 按此刻的感觉去翻旧事：不靠词，只比重要度、新鲜度与模型给的感觉标记
+ * @param store - 存放的地方
+ * @param input - 哪个会话、什么感觉、取几条
+ * @returns 想起来的几条与是哪种感觉带出来的
+ */
+export function recallByFeeling(
+  store: MemoryStore,
+  input: { chatKey: string; feeling: FeelingFacts; now?: number; limit?: number; tuning?: Partial<Tuning> },
+): RecollectResult {
+  const tuning = resolveTuning(input.tuning)
+  const now = input.now ?? Date.now()
+  const limit = Math.max(1, Math.floor(input.limit ?? tuning.recallLimit))
+  const feel = strongest(input.feeling)
+  if (feel === 'none') return { feel, hits: [] }
+
+  const scope = input.chatKey
+  const rows: RecallHit[] = []
+  for (const item of store.all()) {
+    if (item.state === 'forgotten' || item.clarity === 'forgotten') continue
+    if (item.scope !== scope) continue
+    if ((item.layer === 'private' || item.secret === true) && !scope.startsWith('private:')) continue
+    // 模型在写这条时标过是哪种感觉，命中就往前排
+    const tagged = item.metadata?.feel === feel
+    const ageDays = Math.max(0, (now - item.at) / DAY_MS)
+    const freshness = 1 / (1 + ageDays / tuning.freshnessDays)
+    const score = (item.importance / 100) * 0.55 + freshness * 0.3 + (tagged ? 0.4 : 0)
+    rows.push({
+      id: item.id,
+      text: item.text,
+      at: item.at,
+      clarity: item.clarity,
+      score,
+      reasons: { grams: [], vectorSim: null, importanceTerm: item.importance / 100, freshnessTerm: freshness },
+    })
+  }
+  rows.sort((left, right) => right.score - left.score || right.at - left.at)
+  return { feel, hits: rows.slice(0, limit) }
 }

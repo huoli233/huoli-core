@@ -65,10 +65,10 @@ export function refusalOf(
 }
 
 /**
- * 注册主动开口的投递工具
+ * 挂上主动开口的投递工具
  * @param ctx - 运行环境
  * @param ports - 候选来源与投递出口
- * @returns 注销函数
+ * @returns 撤下函数
  */
 export function registerProactiveTools(ctx: Context, ports: ProactivePorts): () => void {
   // 测试用的最小上下文没有工具服务，这时只记一行，不让整条装配塌掉

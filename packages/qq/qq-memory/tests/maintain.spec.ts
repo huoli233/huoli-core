@@ -55,7 +55,7 @@ describe('一天只整理一次', () => {
     expect(after?.clarity).toBe('trace')
     expect(after?.text).toBe('快要淡没的一句')
     expect(after?.state).toBe('active')
-    // 没补账，后记的那条还挂在待入账里
+    // 没补记录，后记的那条还挂在待记进记录表里
     expect(seam.ledger('verify').report.unrecorded).toEqual([fresh.id])
   })
 

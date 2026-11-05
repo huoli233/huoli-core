@@ -3,7 +3,7 @@
 import fs from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
-import { createVitalsStore, react, resolveTuning } from '../src/index.ts'
+import { createVitalsStore, react, resolveTuning, WORDS_PRESET } from '../src/index.ts'
 
 /** 补写要看的三件事 */
 export interface DrinkOptions {
@@ -40,7 +40,7 @@ const JUST_WRITTEN_SECONDS = 180
  * @returns 补上了没有、渴从多少到多少
  */
 export function runDrink(options: DrinkOptions = {}): DrinkReport {
-  const tuning = resolveTuning()
+  const tuning = resolveTuning({ words: WORDS_PRESET })
   const file = options.file ?? `${resolveHuoliHome()}/data/qq-vitals.json`
   const now = options.now ?? Date.now()
   const age = (now - fs.statSync(file).mtimeMs) / 1000

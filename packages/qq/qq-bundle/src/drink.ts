@@ -1,4 +1,4 @@
-// 喝一杯水写成一条记忆：一句人话的正文、一项去重口径，二十分钟内只写一条
+// 喝一杯水写成一条记忆：一句人话的正文、一项去重依据，二十分钟内只写一条
 
 import type { MemoryItem } from '@huoli/huoli-qq-memory'
 import type { DrinkFact } from '@huoli/huoli-qq-vitals'

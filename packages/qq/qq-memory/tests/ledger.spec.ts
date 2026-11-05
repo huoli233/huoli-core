@@ -53,7 +53,7 @@ describe('指纹', () => {
     expect(fingerprint('一句话').len).toBe(3)
   })
 
-  it('空账本一条都没有', () => {
+  it('空记录表一条都没有', () => {
     expect(Object.keys(emptyBook().entries)).toHaveLength(0)
   })
 })
@@ -66,7 +66,7 @@ describe('建账', () => {
     expect(book.entries[FIRST.id]).toEqual({ ...fingerprint(FIRST.text), state: 'held' })
   })
 
-  it('账本默认落在主目录的 data 下', () => {
+  it('记录表默认落在主目录的 data 下', () => {
     const home = tempDir()
 
     expect(defaultLedgerFile(home)).toBe(path.join(home, 'data', 'qq-memory-ledger.json'))
@@ -93,7 +93,7 @@ describe('补新', () => {
   })
 })
 
-describe('对账', () => {
+describe('核对', () => {
   it('一条没动就对得上', () => {
     const book = initBook([FIRST, SECOND])
 
@@ -149,7 +149,7 @@ describe('对账', () => {
     expect(report.changed.map(one => one.id)).toEqual([FIRST.id])
   })
 
-  it('还没入账的条数就是待入账', () => {
+  it('还没进记录表的条数就是待记进记录表', () => {
     const book = initBook([FIRST])
 
     const report = verifyBook(book, [FIRST, SECOND])
@@ -168,7 +168,7 @@ describe('顺序纪律', () => {
     expect(verifyBook(next, [FIRST, SECOND]).ok).toBe(true)
   })
 
-  it('反过来会把新记的那条报成没入账', () => {
+  it('反过来会把新记的那条报成没记进记录表', () => {
     const book = initBook([FIRST])
 
     const early = verifyBook(book, [FIRST, SECOND])
@@ -180,7 +180,7 @@ describe('顺序纪律', () => {
 })
 
 describe('落到文件', () => {
-  it('建账之后账本文件读得回来', () => {
+  it('建账之后记录表文件读得回来', () => {
     const file = path.join(tempDir(), 'ledger.json')
 
     const built = runLedger('init', { file, items: [FIRST, SECOND] })
@@ -191,7 +191,7 @@ describe('落到文件', () => {
     expect(checked.report.ok).toBe(true)
   })
 
-  it('文件里没有账本时，补新会先建一本', () => {
+  it('文件里没有记录表时，补新会先建一本', () => {
     const file = path.join(tempDir(), 'ledger.json')
 
     const synced = runLedger('sync', { file, items: [FIRST] })
@@ -202,7 +202,7 @@ describe('落到文件', () => {
     expect(runLedger('verify', { file, items: [FIRST, SECOND] }).report.ok).toBe(true)
   })
 
-  it('改了一条正文，对账说得出是哪一条', () => {
+  it('改了一条正文，核对说得出是哪一条', () => {
     const file = tempFile()
     const { seam } = mount({ file })
     const kept = seam.remember('要留下的那句', 'group:1')
@@ -220,7 +220,7 @@ describe('落到文件', () => {
     expect(describeLedger(report)).not.toContain(kept.id)
   })
 
-  it('删了一条，对账说得出是哪一条', () => {
+  it('删了一条，核对说得出是哪一条', () => {
     const file = tempFile()
     const { seam } = mount({ file })
     const kept = seam.remember('要留下的那句', 'group:1')
@@ -236,7 +236,7 @@ describe('落到文件', () => {
     expect(describeLedger(report)).not.toContain(kept.id)
   })
 
-  it('先 sync 再 verify 通过，反过来会把新记忆报成没入账', () => {
+  it('先 sync 再 verify 通过，反过来会把新记忆报成没记进记录表', () => {
     const file = tempFile()
     const { seam } = mount({ file })
     seam.remember('原有的那句', 'group:1')
@@ -256,14 +256,14 @@ describe('落到文件', () => {
 })
 
 describe('退役是显式的', () => {
-  it('遗忘之后账本记为退役，对账照样通过', () => {
+  it('遗忘之后记录表记为退役，核对照样通过', () => {
     const file = tempFile()
     const { seam } = mount({ file })
     const gone = seam.remember('会淡到没的一句', 'group:1', { importance: 40, at: NOW - 87 * DAY })
     seam.store.update(gone.id, { clarity: 'trace', lastSeenAt: NOW - 87 * DAY })
     seam.ledger('init')
 
-    // 这次整理掉一分、淡到已遗忘、清正文，账本跟着把它标成退役
+    // 这次整理掉一分、淡到已遗忘、清正文，记录跟着把它标成退役
     const run = seam.maintain(NOW)
     const report = seam.ledger('verify').report
 
@@ -303,8 +303,8 @@ describe('退役是显式的', () => {
   })
 })
 
-describe('账本版本戳', () => {
-  it('写出来的账本带 schemaVersion 与每条的状态', () => {
+describe('记录表版本戳', () => {
+  it('写出来的记录表带 schemaVersion 与每条的状态', () => {
     const file = path.join(tempDir(), 'ledger.json')
 
     runLedger('init', { file, items: [FIRST, RETIRED] })
@@ -319,7 +319,7 @@ describe('账本版本戳', () => {
     expect(parsed.entries[RETIRED.id]?.retiredAt).toBe(NOW)
   })
 
-  it('没有 schemaVersion 的旧账本读得回来，按 1 补默认', () => {
+  it('没有 schemaVersion 的旧记录表读得回来，按 1 补默认', () => {
     const file = path.join(tempDir(), 'ledger.json')
     // 旧格式：文件头只有 version，每条只有指纹与字数
     fs.writeFileSync(file, JSON.stringify({ version: 1, entries: { [FIRST.id]: fingerprint(FIRST.text) } }, null, 2))

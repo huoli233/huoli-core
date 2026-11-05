@@ -102,7 +102,7 @@ describe('每天一行', () => {
   })
 })
 
-describe('账本四档', () => {
+describe('记录表四档', () => {
   it('全部对上就是 OK', () => {
     expect(ledgerLevel(PASSED)).toBe('OK')
     expect(lineOf(PASSED)).toContain('ledger=OK')
@@ -125,7 +125,7 @@ describe('账本四档', () => {
     expect(lineOf(report)).toContain('ledger=MISSING')
   })
 
-  it('账本还没建过时一条都对不上，也记 MISSING', () => {
+  it('记录表还没建过时一条都对不上，也记 MISSING', () => {
     const file = path.join(tempDir(), 'ledger.json')
 
     const report = runLedger('verify', { file, items: KEPT }).report
@@ -134,7 +134,7 @@ describe('账本四档', () => {
     expect(ledgerLevel(report)).toBe('MISSING')
   })
 
-  it('账本文件损坏就是 ERROR', () => {
+  it('记录表文件损坏就是 ERROR', () => {
     const file = path.join(tempDir(), 'ledger.json')
     fs.writeFileSync(file, '{ 这半截不是账本')
 
@@ -146,7 +146,7 @@ describe('账本四档', () => {
     expect(lineOf(report)).toContain('ledger=ERROR')
   })
 
-  it('账本坏了不补新也不覆盖，原有内容一个字不动', () => {
+  it('记录表坏了不补新也不覆盖，原有内容一个字不动', () => {
     const file = path.join(tempDir(), 'ledger.json')
     fs.writeFileSync(file, '{ 这半截不是账本')
 
@@ -185,7 +185,7 @@ describe('告警阈值', () => {
     expect(line.endsWith('alert=cold')).toBe(true)
   })
 
-  it('账本不是 OK 也要告警，还排在头一个', () => {
+  it('记录表不是 OK 也要告警，还排在头一个', () => {
     const broken = verifyBook(initBook(KEPT), [WARM, LIGHT])
     const line = lineOf(broken, { alerts: { pinnedAlert: 0 } })
 
@@ -205,7 +205,7 @@ describe('告警阈值', () => {
 })
 
 describe('这两个数从配置来', () => {
-  it('注入上限跟着配置走', () => {
+  it('放进上限跟着配置走', () => {
     const { seam } = mount({ file: tempFile(), tuning: { injectMaxChars: 800 } })
     seam.remember('记下的一句', 'group:1')
 

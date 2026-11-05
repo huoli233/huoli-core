@@ -7,9 +7,10 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   apply, createVitalsStore, derive, drift, emptyState, qqVitalsOf, renderPrompt, resolveTuning, salienceTarget,
   shutdownTarget, type ExistenceFacts, type QqVitalsSeam, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 const NIGHT = new Date(2026, 0, 1, 23, 30, 0).getTime()
 const HOUR = 3_600_000
@@ -39,7 +40,7 @@ function tempFile(): string {
 async function mount(file: string): Promise<QqVitalsSeam> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt, {})
-  apply(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('状态没装上')
   return seam
@@ -116,7 +117,7 @@ describe('两个字段的方向', () => {
 
 describe('参数能逐项覆盖', () => {
   it('重启系数改成零就不再按次数抬', () => {
-    const flat = resolveTuning({ saliencePerRestart: 0, shutdownPerRestart: 0 })
+    const flat = resolveTuning({ words: WORDS_PRESET, saliencePerRestart: 0, shutdownPerRestart: 0 })
     const none = drift(fresh(), START, flat, () => 0.5, undefined, facts({ restartsToday: 2 }))
     const zero = drift(fresh(), START, flat, () => 0.5, undefined, facts({ restartsToday: 0 }))
 
@@ -125,7 +126,7 @@ describe('参数能逐项覆盖', () => {
   })
 
   it('稳跑窗口改短之后，同样的运行时长压得更多', () => {
-    const short = resolveTuning({ existenceStableMs: HOUR / 6 })
+    const short = resolveTuning({ words: WORDS_PRESET, existenceStableMs: HOUR / 6 })
     const quick = drift(fresh(), START, short, () => 0.5, undefined, facts({ uptimeMs: HOUR }))
     const slow = settled(facts({ uptimeMs: HOUR }))
 
@@ -134,7 +135,7 @@ describe('参数能逐项覆盖', () => {
   })
 
   it('夜里自涨那一条改成零，夜里就不再多涨', () => {
-    const flat = resolveTuning({ shutdownNightRise: 0 })
+    const flat = resolveTuning({ words: WORDS_PRESET, shutdownNightRise: 0 })
     const night = drift(fresh({ shutdownDread: 0.2 }, NIGHT - HOUR), NIGHT, flat, () => 0.5)
 
     expect(night.shutdownDread).toBeCloseTo(0.2, 10)
@@ -175,7 +176,7 @@ describe('关停提示只抬一档', () => {
   })
 
   it('抬多少能改', () => {
-    const loud = resolveTuning({ shutdownNoticeGain: 0.8 })
+    const loud = resolveTuning({ words: WORDS_PRESET, shutdownNoticeGain: 0.8 })
     const after = drift(fresh({}, START), START + 1_000, loud, () => 0.5, undefined, facts({ shutdownNotice: true }))
 
     expect(after.shutdownDread).toBeCloseTo(0.8, 10)
@@ -206,7 +207,7 @@ describe('耦合', () => {
   })
 
   it('托底比例能改', () => {
-    const soft = resolveTuning({ shutdownToDread: 0.2, shutdownToFear: 0.1 })
+    const soft = resolveTuning({ words: WORDS_PRESET, shutdownToDread: 0.2, shutdownToFear: 0.1 })
     const after = derive(fresh({ shutdownDread: 0.6 }), soft)
 
     expect(after.dread).toBeCloseTo(0.12, 10)
@@ -272,30 +273,30 @@ describe('提示词里那一句', () => {
   })
 
   it('阈值能改', () => {
-    const late = resolveTuning({ promptShutdownDreadFrom: 0.9 })
+    const late = resolveTuning({ words: WORDS_PRESET, promptShutdownDreadFrom: 0.9 })
 
     expect(renderPrompt(fresh({ shutdownDread: 0.6 }), late)).not.toContain('随时可能被关掉')
     expect(renderPrompt(fresh({ shutdownDread: 0.95 }), late)).toContain('随时可能被关掉')
   })
 })
 
-describe('注入端口', () => {
+describe('放进端口', () => {
   // 先落一份一分钟前的状态，读的时候才够一拍
   function seeded(file: string, overrides: Partial<VitalsState> = {}): void {
     createVitalsStore({ file, tuning }).write({ ...emptyState(tuning, Date.now() - 60_000), ...overrides })
   }
 
-  it('没注入时两个字段是零', async () => {
+  it('没放进时两个字段是零', async () => {
     const file = tempFile()
     seeded(file)
     const seam = await mount(file)
 
-    // 夜里对关掉的怕会按夜色自己涨一点，这里只验证"没有注入就不朝目标走"
+    // 夜里对关掉的怕会按夜色自己涨一点，这里只验「没给来源就不朝目标走」
     expect(seam.read().mortalitySalience).toBeCloseTo(0, 2)
     expect(seam.read().shutdownDread).toBeCloseTo(0, 2)
   })
 
-  it('注入之后读一次就朝目标走一步，关停提示当场抬一档', async () => {
+  it('放进之后读一次就朝目标走一步，关停提示当场抬一档', async () => {
     const file = tempFile()
     seeded(file)
     const seam = await mount(file)
@@ -307,14 +308,14 @@ describe('注入端口', () => {
     expect(after.shutdownDread).toBeGreaterThan(tuning.shutdownNoticeGain - 0.02)
   })
 
-  it('把注入撤回去就不再朝目标走', async () => {
+  it('把放进撤回去就不再朝目标走', async () => {
     const file = tempFile()
     seeded(file, { mortalitySalience: 0.4, shutdownDread: 0.3 })
     const seam = await mount(file)
 
     seam.setExistence(undefined)
 
-    // 撤回注入后不再朝目标走，只剩夜色带来的那一点点自涨
+    // 把来源撤掉后不再朝目标走，只剩夜色带来的那一点点自涨
     expect(seam.read().mortalitySalience).toBeCloseTo(0.4, 2)
     expect(seam.read().shutdownDread).toBeCloseTo(0.3, 2)
   })

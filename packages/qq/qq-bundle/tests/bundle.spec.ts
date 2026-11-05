@@ -16,6 +16,7 @@ import {
   emptyState,
   resolveTuning,
   type VitalsState,
+  WORDS_PRESET,
 } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle, qqBundleOf } from '../src/index.ts'
@@ -51,7 +52,7 @@ async function mount(dir: string): Promise<Mounted> {
   applyPacing(ctx, { file: path.join(dir, 'pacing.json') })
   applyAttention(ctx, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  // 记忆的三个文件都落在临时目录里，队列与账本不去碰主目录那份
+  // 记忆的三个文件都落在临时目录里，队列与记录不去碰主目录那份
   applyMemory(ctx, {
     file: path.join(dir, 'memory.json'),
     ledgerFile: path.join(dir, 'ledger.json'),
@@ -90,7 +91,7 @@ async function mountWithBody(dir: string, body: Partial<VitalsState> = {}): Prom
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applyPacing(ctx, { file: path.join(dir, 'pacing.json') })
-  applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
+  applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 } })
   applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return ctx
 }
@@ -101,7 +102,7 @@ async function budgetText(ctx: Context): Promise<string> {
   return assembly.sections.find(section => section.name === 'qq:reply-budget')?.text ?? ''
 }
 
-// 取提示词里身体那一句：身体包注册的是变量，装配之后才插值进那一段
+// 取提示词里身体那一句：身体包挂的是变量，装配之后才填进那一段
 async function vitalsText(ctx: Context): Promise<string> {
   const assembly = await ctx.systemPrompt.assemble()
   return assembly.variables.qq_vitals ?? ''

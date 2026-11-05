@@ -37,7 +37,7 @@ function layerOf(raw: unknown): MemoryLayer {
 }
 
 /**
- * 注册两个记忆工具
+ * 挂上两个记忆工具
  * @param ctx - 运行环境
  * @param deps - 要用到的东西
  */
@@ -122,6 +122,44 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
         count: hits.length,
         text: renderRecall(hits),
         items: hits.map(hit => ({ id: hit.id, text: hit.text, clarity: hit.clarity, at: hit.at })),
+      })
+    },
+  }))
+
+  // 看全文：提示词里只给了开头一小段，要细节时按编号把全文拿回来
+  ctx.tools.register(defineTool({
+    name: 'qq_memory_detail',
+    description: '把一条记忆的全文取回来。提示词里只有开头一小段，想知道当时到底怎么回事就调它看全文。',
+    parameters: {
+      id: { type: 'string', description: '底稿后面括号里的那个编号。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const id = typeof args.id === 'string' ? args.id.replace(/^#/u, '').trim() : ''
+      if (id === '') refuse('memory.no_id', '没给编号', '从注入里那条骨架后面的括号里抄一个过来')
+      const item = store.byId(id)
+      // 别人的、已经忘掉的、私密层但不在私密空间的，一律当取不到
+      const scope = deps.scopeOf(chatKey)
+      const privateOk = scope.startsWith('private:')
+      if (item === undefined || item.scope !== scope) {
+        refuse('memory.not_found', '这条取不到', '可能编号抄错了，或者它不在这个会话里')
+      }
+      if (item.state === 'forgotten' || item.clarity === 'forgotten') {
+        refuse('memory.forgotten', '这条已经忘了', '换别的记忆问，别硬凑')
+      }
+      if ((item.layer === 'private' || item.secret === true) && !privateOk) {
+        refuse('memory.private', '这条只在私密空间取得到', '在这个会话里换个话题')
+      }
+      return Promise.resolve({
+        id: item.id,
+        text: item.text,
+        layer: item.layer,
+        importance: item.importance,
+        at: item.at,
       })
     },
   }))

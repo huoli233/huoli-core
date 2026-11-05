@@ -7,9 +7,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   apply, createVitalsStore, cycleOf, cycleStartOf, emptyState, qqVitalsOf, resolveTuning,
   type CycleFact, type CycleStartFact, type QqVitalsSeam, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 // 用例里的时刻一律写死，锚点取每月五号，四号是上月末、五号是开经当天
 const BEFORE = new Date(2026, 0, 4, 9, 0, 0).getTime()
 const ONSET = new Date(2026, 0, 5, 9, 0, 0).getTime()
@@ -39,7 +40,7 @@ async function mount(file: string): Promise<QqVitalsSeam> {
   const ctx = new Context()
   contexts.push(ctx)
   await ctx.plugin(SystemPrompt, {})
-  apply(ctx, { file, tuning: { startDelayMs: 1 } })
+  apply(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 1 } })
   const seam = qqVitalsOf(ctx)
   if (seam === undefined) throw new Error('状态没装上')
   return seam
@@ -74,8 +75,8 @@ describe('开经日事实', () => {
   })
 
   it('时区按当地日历给日期，不按运行环境猜', () => {
-    const west = resolveTuning({ timeZone: 'America/New_York' })
-    const east = resolveTuning({ timeZone: 'Asia/Shanghai' })
+    const west = resolveTuning({ words: WORDS_PRESET, timeZone: 'America/New_York' })
+    const east = resolveTuning({ words: WORDS_PRESET, timeZone: 'Asia/Shanghai' })
     const after = fresh({ cycle_day: 1, cycle_len: 31 }, ONSET)
 
     expect(cycleStartOf(fresh({ cycle_day: 30 }), after, ONSET, west)?.date).toBe('2026-01-04')
@@ -83,7 +84,7 @@ describe('开经日事实', () => {
   })
 })
 
-describe('装配层订阅', () => {
+describe('装配层挂上', () => {
   it('跨日那一拍只产一次，同日再拍也不通知', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(ONSET - 1))
@@ -101,7 +102,7 @@ describe('装配层订阅', () => {
     expect(heard).toHaveLength(1)
   })
 
-  it('老订阅口收到同一条事实，取消之后不再收', async () => {
+  it('老挂上口收到同一条事实，取消之后不再收', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(ONSET - 1))
     const seam = await mount(seed(tempFile()))

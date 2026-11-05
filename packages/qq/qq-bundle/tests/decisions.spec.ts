@@ -93,7 +93,7 @@ async function mount(patch: { banned?: readonly string[] } = {}): Promise<Mounte
   await ctx.plugin(SystemPrompt, {})
   applyAttention(ctx, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
-  // 队列与账本也落在临时目录里：每轮收尾会推一拍队列，别去碰主目录那份
+  // 队列与记录也落在临时目录里：每轮收尾会推一拍队列，别去碰主目录那份
   applyMemory(ctx, {
     file: path.join(dir, 'memory.json'),
     ledgerFile: path.join(dir, 'ledger.json'),
@@ -119,7 +119,7 @@ async function mount(patch: { banned?: readonly string[] } = {}): Promise<Mounte
   return { ctx, file, socket, tool, records: () => qqBundleOf(ctx)?.decisions(0, 100) ?? [] }
 }
 
-// 工具体只读会话编号与取消信号，其余执行字段由内核在真实调用时注入
+// 工具体只读会话编号与取消信号，其余字段由内核在真实调用时给
 function execOf(chatKey: string): ToolRunContext {
   return Object.assign({} as ToolRunContext, { agent: { id: chatKey }, signal: new AbortController().signal })
 }
@@ -217,7 +217,7 @@ describe('一轮一条记录', () => {
   })
 })
 
-describe('被闸门拦下', () => {
+describe('被关卡拦下', () => {
   it('敏感词拦下时留下码与下次时间', async () => {
     const seat = await mount({ banned: ['加群'] })
     seat.socket.deliver(groupMessage('在吗', 1))

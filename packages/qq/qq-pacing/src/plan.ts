@@ -28,6 +28,8 @@ export interface SplitBudget {
   maxParts: number
   /** 每条最多几个字 */
   maxCharsPerPart: number
+  /** 切到第几条该停：给了就按它收口，不给就只按上限切 */
+  stop?: (plannedIndex: number) => boolean
 }
 
 /** 默认规矩 */
@@ -45,7 +47,7 @@ export const PACING_DEFAULTS = {
   recentKeep: 40,
 }
 
-/** 记账仓能按配置改的四项额度 */
+/** 记录仓能按配置改的四项额度 */
 export interface QuotaLimits {
   perHour: number
   perDay: number
@@ -158,8 +160,12 @@ export function splitByBudget(text: string, budget: SplitBudget = PACING_DEFAULT
   const maxParts = Math.max(1, Math.floor(budget.maxParts))
   const maxChars = Math.max(1, Math.floor(budget.maxCharsPerPart))
   const segments = sentencesOf(body).flatMap(sentence => fitMax(sentence, maxChars))
-  if (segments.length <= maxParts) return segments
-  return mergeToBudget(segments, maxParts)
+  const parts = segments.length <= maxParts ? segments : mergeToBudget(segments, maxParts)
+  // 切到第几条该停就停：判据由调用方给，这一层不猜
+  if (budget.stop === undefined) return parts
+  let allowed = 0
+  while (allowed < parts.length && !budget.stop(allowed)) allowed += 1
+  return parts.slice(0, allowed)
 }
 
 /**

@@ -1,4 +1,4 @@
-// 一顿饭写成一条记忆：一句人话的正文、一项去重口径，同一天同一顿只写一条
+// 一顿饭写成一条记忆：一句人话的正文、一项去重依据，同一天同一顿只写一条
 
 import { localDay, type MemoryItem } from '@huoli/huoli-qq-memory'
 import type { MealFact } from '@huoli/huoli-qq-vitals'

@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULTS, deltaOf, derive, describeNetwork, drift, emptyState, propagate, resolveTuning,
   type NetworkEdge, type Tuning, type VitalsState,
+  WORDS_PRESET,
 } from '../src/index.ts'
 import { DERIVED_FIELDS, NUMERIC_FIELDS } from '../src/defaults.ts'
 
-const tuning = resolveTuning()
+const tuning = resolveTuning({ words: WORDS_PRESET })
 // 关掉图的那一套参数，用来对照旧路径
-const legacy = resolveTuning({ networkEnabled: false })
+const legacy = resolveTuning({ words: WORDS_PRESET, networkEnabled: false })
 const START = new Date(2026, 0, 1, 10, 0, 0).getTime()
 const HOUR = 3_600_000
 
@@ -17,7 +18,7 @@ function fresh(overrides: Partial<VitalsState> = {}, at = START): VitalsState {
 
 // 换一整张边表，用来只验一条边
 function withEdges(edges: readonly NetworkEdge[], extra: Partial<Tuning> = {}): Tuning {
-  return resolveTuning({ networkEdges: edges, ...extra })
+  return resolveTuning({ words: WORDS_PRESET, networkEdges: edges, ...extra })
 }
 
 // 从两小时之前结算到当下：白天醒着不碰睡眠与随机，两次结算必得同一结果
@@ -132,7 +133,7 @@ describe('默认边集复现原来写死的耦合', () => {
     const heavy = DEFAULTS.networkEdges.map(edge =>
       edge.to === 'acetylcholine' ? { ...edge, weight: 0.44, cap: 0.44 } : edge)
 
-    expect(settled({ leptin: 0.80 }, resolveTuning({ networkEdges: heavy })).acetylcholine)
+    expect(settled({ leptin: 0.80 }, resolveTuning({ words: WORDS_PRESET, networkEdges: heavy })).acetylcholine)
       .toBeGreaterThan(settled({ leptin: 0.80 }).acetylcholine)
   })
 })
@@ -167,7 +168,7 @@ describe('边表可观测', () => {
     expect(described[0]).toEqual({ from: 'cortisol', to: 'irritability', weight: 0.9, mode: 'push', cap: 0.9 })
   })
 
-  it('关掉开关也照样能描述，拿到的是副本', () => {
+  it('关掉开关也照样能描述，拿到的是抄本', () => {
     const described = describeNetwork(legacy)
 
     expect(described).toHaveLength(3)

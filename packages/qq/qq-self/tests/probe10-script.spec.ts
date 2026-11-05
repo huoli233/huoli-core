@@ -57,7 +57,7 @@ function seedSelf(dir: string, now: number): { memoryFile: string } {
   return { memoryFile }
 }
 
-// 一份问卷文件的读法，照着探针写出来的结构读
+// 一份问卷文件的读法，照着每月十问写出来的结构读
 interface ProbeFile {
   version: number
   selfDir: string
@@ -79,7 +79,7 @@ afterEach(() => {
   for (const dir of roots.splice(0)) fs.rmSync(dir, { recursive: true, force: true })
 })
 
-describe('10 问探针', () => {
+describe('10 问十问', () => {
   it('产出十道题，每题都带上当前可读的证据', () => {
     const base = root()
     const dir = path.join(base, 'self')

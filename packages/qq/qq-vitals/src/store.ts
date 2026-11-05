@@ -103,7 +103,7 @@ function sanitize(raw: unknown, fallback: VitalsState): VitalsState {
   }
   const sleepState = record.sleep_state
   if (sleepState === 'awake' || sleepState === 'sleeping' || sleepState === 'waking') state.sleep_state = sleepState
-  // 睡着这一态只有一个来源，读回来之后按它重算投影，两边不会对不上
+  // 睡着这一态只有一个来源，读回来之后按它重算睡着那一态，两边不会对不上
   state.asleep = state.sleep_state === 'sleeping'
   const sleepKind = record.sleep_kind
   if (sleepKind === '' || sleepKind === 'night' || sleepKind === 'nap') state.sleep_kind = sleepKind

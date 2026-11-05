@@ -153,7 +153,7 @@ export interface KeysDecision {
   /** 放行了没有 */
   allowed: boolean
   /** 没放行的原因 */
-  reason?: 'unknown_action' | 'user_key' | 'self_key' | 'cooldown'
+  reason?: 'unknown_action' | 'user_key' | 'self_key' | 'cooldown' | 'rest'
 }
 
 /** 三类公共动作，键与发布那一侧的状态分格逐字相同 */
@@ -343,6 +343,10 @@ export interface SelfSettings {
   panelMaxAgeMs: number
   /** 此刻那一句最多几个字 */
   momentMaxChars: number
+  /** 电量低于这条线就不做身份级决定，0~1 标度 */
+  restEnergyBelow: number
+  /** 困到这条线以上就不做身份级决定，0~1 标度，取睡眠压力 */
+  restTiredAbove: number
   /** 项目名最多几个字 */
   projectMaxChars: number
   /** 下一步最多几个字 */
@@ -357,6 +361,10 @@ export interface SelfSettings {
   claimMaxChars: number
   /** 一条相信的事最多挂几个证据 */
   claimEvidenceMax: number
+  /** 十问一共几问，默认十问 */
+  probeQuestionCount: number
+  /** 十问每一答最多几个字 */
+  probeAnswerMaxChars: number
   /** 身份主张的理由最多几个字 */
   identityWhyMaxChars: number
   /** 一条身份主张最多挂几个证据 */
@@ -405,7 +413,7 @@ export interface SelfSettings {
   stages: readonly string[]
   /** 提示词里的段落名 */
   sectionName: string
-  /** 提示词里的占位名 */
+  /** 提示词里的位置名 */
   variableName: string
   /** 段落排在什么位置 */
   sectionOrder: number

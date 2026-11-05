@@ -158,7 +158,7 @@ describe('按顺序推进', () => {
 })
 
 describe('推进之后同一个动作从拒变可', () => {
-  it('P0 时动态与评论都被阶段拦下，推到 P3 之后走到下一个闸门', async () => {
+  it('P0 时动态与评论都被阶段拦下，推到 P3 之后走到下一个关卡', async () => {
     const { seam } = await mount()
     const routine = { level: 'routine', topic: '吃喝', topics: TOPICS, userOk: true, selfOk: true, stage: seam.stage() }
 

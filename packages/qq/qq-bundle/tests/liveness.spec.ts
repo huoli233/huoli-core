@@ -52,7 +52,7 @@ describe('今天重启过几次', () => {
     expect(liveness.facts(AT).uptimeMs).toBe(0)
   })
 
-  it('账本读不出来就按今天第一次启动算，整条装配不塌', () => {
+  it('记录表读不出来就按今天第一次启动算，整条装配不塌', () => {
     const file = tempFile()
     fs.mkdirSync(path.dirname(file), { recursive: true })
     fs.writeFileSync(file, '这不是 JSON')

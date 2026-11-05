@@ -2,15 +2,17 @@
 
 import type { Baseline, VitalsState } from './types.ts'
 import { clamp, clampRange } from './math.ts'
-import type { Tuning } from './tuning.ts'
+import type { Tuning, TuningOverride } from './tuning.ts'
 import { PROMPT_TUNING } from './prompt-tuning.ts'
+import { WORDS } from './words.ts'
 
 export type { Tuning } from './tuning.ts'
 
 /** 全仓唯一的默认值表 */
 export const DEFAULTS: Tuning = {
-  // 提示词那一段的阈值单独一处定义，这里展开进来
+  // 提示词那一段的阈值单独一处定义，这里铺进来
   ...PROMPT_TUNING,
+  words: WORDS,
   // 心跳节奏：启动后二十秒开始，之后每分钟一次
   beatMs: 60_000,
   startDelayMs: 20_000,
@@ -221,7 +223,7 @@ export const DEFAULTS: Tuning = {
   cycleCrampsStart: 0.75,
   cycleCrampsEnd: 0.15,
   cycleCrampsPremenstrual: 0.05,
-  // 派生量里的周期项
+  // 算出来的量里的周期项
   energyCrampsPenalty: 0.35,
   energyLutealPenalty: 0.06,
   valenceMenstrualPenalty: 0.12,
@@ -267,6 +269,8 @@ export const DEFAULTS: Tuning = {
   worryCooldownMs: 600_000,
   dreadGainBase: 0.40,
   dreadGainIntensity: 0.30,
+  sickCytokinesGain: 0.35,
+  painGain: 0.30,
   dreadHalfHours: 8,
   dreadCooldownMs: 1_800_000,
   dreadNightRise: 0.02,
@@ -469,9 +473,9 @@ export const DEFAULTS: Tuning = {
   networkEnabled: true,
   networkSteps: 1,
   networkEdges: [
-    // 皮质醇推易怒，原来写在易怒的派生式里，0.2 起点已折进常数
+    // 皮质醇推易怒，原来写在易怒的算法里，0.2 起点已折进常数
     { from: 'cortisol', to: 'irritability', weight: 0.9, mode: 'push', cap: 0.9 },
-    // 皮质醇压精力，原来写在精力的派生式里
+    // 皮质醇压精力，原来写在精力的算法里
     { from: 'cortisol', to: 'energy', weight: 0.14, mode: 'pull', cap: 0.14 },
     // 瘦素抬副交感，原来写在乙酰胆碱的目标里，系数与 parasympatheticLeptinGain 一致
     { from: 'leptin', to: 'acetylcholine', weight: 0.22, mode: 'push', cap: 0.22 },
@@ -491,7 +495,7 @@ export const NUMERIC_FIELDS: readonly (keyof Baseline)[] = [
   'scar',
 ]
 
-/** 派生上也要落盘的数值字段 */
+/** 算出来上也要落盘的数值字段 */
 export const DERIVED_FIELDS = [
   'energy', 'valence', 'irritability', 'clinginess', 'loneliness', 'dominance',
   'happiness', 'sadness', 'proactive_bias', 'post_want',
@@ -514,8 +518,9 @@ export const CYCLE_FIELDS = ['cycle_dom', 'cycle_day', 'cycle_len'] as const
  * @param override - 调用方给的覆盖项
  * @returns 合并后的参数
  */
-export function resolveTuning(override?: Partial<Tuning>): Tuning {
-  return override === undefined ? DEFAULTS : { ...DEFAULTS, ...override }
+export function resolveTuning(override?: TuningOverride): Tuning {
+  if (override === undefined) return DEFAULTS
+  return { ...DEFAULTS, ...override, words: { ...DEFAULTS.words, ...override.words } }
 }
 
 /**

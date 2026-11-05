@@ -77,7 +77,7 @@ export function recordIdentity(
   evidence: readonly string[],
   at: number,
 ): WriteOutcome {
-  // 三档与文件里的写法逐字对齐：认不出就不落，别把一份读不回来的主张写进账
+  // 三档与文件里的写法逐字对上：认不出就不落，别把一份读不回来的主张写进去
   if (!isIdentityClaim(claim)) return { written: false, proposed: false, reason: 'unknown_claim' }
   const reason = why.trim()
   const kept = evidenceOf(evidence)

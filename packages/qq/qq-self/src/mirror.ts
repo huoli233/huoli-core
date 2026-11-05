@@ -1,4 +1,4 @@
-// 只把主张、项目、承诺镜像进记忆库：日常三行、问句、账本一律不进
+// 只把主张、项目、承诺镜像进记忆库：日常三行、问句、记录表一律不进
 
 import { FILES } from './files.ts'
 import type { SelfStore } from './store.ts'

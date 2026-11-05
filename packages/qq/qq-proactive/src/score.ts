@@ -35,7 +35,7 @@ export interface CandidateFacts {
   at: number
 }
 
-/** 闸门给的结果 */
+/** 关卡给的结果 */
 export interface GateVerdict {
   ok: boolean
   code?: string
@@ -56,7 +56,7 @@ export interface PendingItem {
   expiresAt: number
 }
 
-/** 闸门要看的配置 */
+/** 关卡要看的配置 */
 export interface GateConfig {
   enabled: boolean
   quietStart: string

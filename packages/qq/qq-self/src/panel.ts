@@ -1,7 +1,7 @@
 // 面板只有四类内容：此刻、我在做、我想弄明白、可以说不
 
 import { DEFAULTS } from './defaults.ts'
-import type { PanelInput, SelfSettings, VitalsPort } from './types.ts'
+import type { PanelInput, PanelState, SelfSettings, VitalsPort } from './types.ts'
 
 // 首行生成时间的写法，读与写共用同一处
 const STAMP_PREFIX = '<!-- generated_at: '
@@ -162,4 +162,74 @@ export function momentPort(port: VitalsPort, options: MomentOptions = {}): Vital
   // 五组双条只画不压句，原样转出去
   if (pairs !== undefined) kept.pairs = () => pairs()
   return kept
+}
+
+/**
+ * 页面上出现的每一段都要转义：她的原话里也可能有尖括号
+ * @param text - 要转义的那段
+ * @returns 转义后的那段
+ */
+export function escapeHtml(text: string): string {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+}
+
+/**
+ * 条宽只认零到一：越界的值收回来，条不会画出格子外面去
+ * @param value - 零到一的比例
+ * @returns 带百分号的宽度
+ */
+export function percent(value: number): string {
+  return `${Math.round(Math.min(1, Math.max(0, value)) * 100)}%`
+}
+
+/**
+ * 简短版整页：别的实例只读这一屏，不画任何画布，也不带轮询
+ * @param state - 只读出口的内容
+ * @param style - 内联样式，由调用方给
+ * @returns 一页极简的 HTML
+ */
+export function briefShell(state: PanelState, style: string): string {
+  return [
+    '<!doctype html>',
+    '<html lang="zh-CN">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<title>自我面板·简版</title>',
+    `<style>${style}</style>`,
+    '</head>',
+    '<body>',
+    '<div class="wrap"><div class="right">',
+    briefBody(state),
+    '</div></div>',
+    '</body>',
+    '</html>',
+    '',
+  ].join('\n')
+}
+
+/**
+ * 简短版：只给别的实例看的那一屏，不画任何画布，也不带轮询
+ * @param state - 只读出口的内容
+ * @returns 一页极简的正文片段，外壳由调用方套
+ */
+export function briefBody(state: PanelState): string {
+  const vitals = state.vitals
+  const line = vitals === undefined
+    ? '身体没接上'
+    : [
+      `口渴 ${percent(vitals.thirst ?? 0)}`,
+      `精力 ${percent(vitals.energy ?? 0)}`,
+      `想说话 ${percent(vitals.socialHunger ?? 0)}`,
+    ].join(' · ')
+  return [
+    '<div class="card span-12"><h3>我·此刻</h3>',
+    `<pre class="panel">${escapeHtml(state.panel.body === '' ? '还没生成' : state.panel.body)}</pre>`,
+    `<p class="num">${escapeHtml(line)}</p>`,
+    `<p class="muted">${escapeHtml(state.health)}</p>`,
+    '</div>',
+  ].join('\n')
 }

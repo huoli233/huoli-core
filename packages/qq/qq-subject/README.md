@@ -39,4 +39,4 @@ kind: "package-reference"
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`：状态文件位置、主目录覆盖、一段最多多少字、每个群的名字；状态默认落在主目录的 data 下（`data/qq-subject.json`），提示词里的占位名是 `qq_self`，取值时机就是每轮拼提示词的时候。
+配置项在 `src/index.ts` 的 `Config`：状态文件位置、主目录覆盖、一段最多多少字、每个群的名字；状态默认落在主目录的 data 下（`data/qq-subject.json`），提示词里的位置名是 `qq_self`，取值时机就是每轮拼提示词的时候。

@@ -1,6 +1,7 @@
 // 跟 QQ 那头连着：收消息、发消息、断了自动重连
 
 import { asText, type ChannelStatus, type MessageSegment, type SentResult } from './events.ts'
+import { forwardCallOf, type ForwardNode } from './forward.ts'
 
 /** 连上去要的地址与身份 */
 export interface WsOptions {
@@ -12,7 +13,7 @@ export interface WsOptions {
   now?: () => number
 }
 
-/** 连接的回调 */
+/** 连接的被叫到时做的事 */
 export interface WsHandlers {
   onMessage: (raw: Record<string, unknown>) => void
   onStatus: (status: ChannelStatus) => void
@@ -24,6 +25,8 @@ export interface WsChannel {
   start(): void
   stop(): void
   send(message: string | readonly MessageSegment[], chatKey: string): Promise<SentResult>
+  /** 把几段正文合成一条合并转发发出去 */
+  sendForward(nodes: readonly ForwardNode[], chatKey: string): Promise<SentResult>
   react(messageId: string, emoji: string): Promise<SentResult>
   status(): ChannelStatus
   /** 这一条连接发出去过的消息编号，用来按引用编号认出在回自己 */
@@ -148,6 +151,7 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
         publish({ lastError: '连接出错' })
       })
     } catch (error) {
+      // 建连失败不往外抛：把原因记进状态，按重连间隔再试一次
       publish({ connected: false, lastError: error instanceof Error ? error.message : asText(error) })
       if (!stopped) timer = setTimeout(connect, reconnectMs)
     }
@@ -172,6 +176,13 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
         return call('send_group_msg', { group_id: Number(chatKey.slice('group:'.length)), message })
       }
       return call('send_private_msg', { user_id: Number(chatKey.slice('private:'.length)), message })
+    },
+    sendForward(nodes: readonly ForwardNode[], chatKey: string) {
+      const request = forwardCallOf(nodes, chatKey, options.selfId)
+      if (request === undefined) {
+        return Promise.resolve({ ok: false, code: 'channel.empty_forward', reason: '没有能转发的段', hint: '至少给一段正文' })
+      }
+      return call(request.action, request.params)
     },
     react(messageId, emoji) {
       if (messageId === '') return Promise.resolve({ ok: false, code: 'channel.no_target', reason: '没有要回应的那条消息', hint: '从消息列表里拿编号' })
