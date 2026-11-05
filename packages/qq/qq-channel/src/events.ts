@@ -101,6 +101,12 @@ export function textOf(segments: unknown): string {
       parts.push(qq === 'all' ? '@全体成员' : `@${asText(item.data?.name ?? qq)}`)
     } else if (kind === 'image') parts.push('[图片]')
     else if (kind === 'face') parts.push('[表情]')
+    else if (kind === 'mface') parts.push('[表情]')
+    else if (kind === 'forward') parts.push('[转发的聊天记录]')
+    else if (kind === 'file') parts.push('[文件]')
+    else if (kind === 'record') parts.push('[语音]')
+    else if (kind === 'video') parts.push('[视频]')
+    else if (kind === 'json') parts.push('[卡片]')
     else if (kind === 'reply') {
       const id = asText(item.data?.id)
       if (id !== '') parts.push(`[回复:${id}]`)
@@ -109,12 +115,17 @@ export function textOf(segments: unknown): string {
   return parts.join('').replace(/\s+/g, ' ').trim()
 }
 
+/** 这几个占位本身就说明有东西可看，不能当成纯表情丢掉 */
+const CONTENT_MARKS: readonly string[] = ['[转发的聊天记录]', '[文件]']
+
 /**
- * 这句话里有没有真正的字，只由图片表情占位拼出来的算没有
+ * 这句话里有没有值得回应的内容，只由图片表情占位拼出来的算没有
  * @param text - 翻好的话
  * @returns 有没有正文
  */
 export function hasWords(text: string): boolean {
+  // 转发记录与文件里装着别人的话和东西，丢掉就等于她看不见群里发生过什么
+  if (CONTENT_MARKS.some(mark => text.includes(mark))) return true
   return text.replace(/\[[^\]]*\]/gu, '').trim() !== ''
 }
 

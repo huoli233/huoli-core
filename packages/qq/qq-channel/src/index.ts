@@ -27,7 +27,7 @@ export { ACTION_STATE_VERSION, createActionStore, emptyActionState } from './act
 export type { FarewellSlot, FarewellSlotOptions, FarewellSlotStore, FarewellStage } from './farewell-slot.ts'
 export { createFarewellSlotStore, defaultFarewellSlotFile, FAREWELL_SLOT_VERSION, farewellTextAt, readFarewellSlot } from './farewell-slot.ts'
 export type { WsChannel, WsHandlers, WsOptions } from './ws.ts'
-export { createWsChannel } from './ws.ts'
+export { createWsChannel, WS_DEFAULTS } from './ws.ts'
 
 /** 别处要往收件箱塞消息、要发东西，都从这儿拿 */
 export interface QqChannelSeam {

@@ -8,6 +8,7 @@ export interface WsOptions {
   selfId: string
   accessToken?: string
   reconnectMs?: number
+  callTimeoutMs?: number
   now?: () => number
 }
 
@@ -29,8 +30,17 @@ export interface WsChannel {
   sentIds(): ReadonlySet<string>
 }
 
-// 一段等回话的超时
-const CALL_TIMEOUT_MS = 15_000
+/** 连接这一层的默认值：等回话多久、断了隔多久重连、重连不许比这更快 */
+export const WS_DEFAULTS = {
+  /** 一段等回话的超时 */
+  callTimeoutMs: 15_000,
+  /** 断了之后隔多久重连 */
+  reconnectMs: 5_000,
+  /** 重连间隔的下限，配得再小也不快过它 */
+  minReconnectMs: 1_000,
+  /** 等回话超时的下限，配得再小也不短过它 */
+  minCallTimeoutMs: 1_000,
+}
 
 /**
  * 建一条连接
@@ -39,7 +49,8 @@ const CALL_TIMEOUT_MS = 15_000
  * @returns 处理结果
  */
 export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsChannel {
-  const reconnectMs = Math.max(1000, options.reconnectMs ?? 5000)
+  const reconnectMs = Math.max(WS_DEFAULTS.minReconnectMs, options.reconnectMs ?? WS_DEFAULTS.reconnectMs)
+  const callTimeoutMs = Math.max(WS_DEFAULTS.minCallTimeoutMs, options.callTimeoutMs ?? WS_DEFAULTS.callTimeoutMs)
   let socket: WebSocket | undefined
   let timer: ReturnType<typeof setTimeout> | undefined
   let stopped = false
@@ -77,7 +88,7 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
         pending.delete(echo)
         handlers.log(`发不出去：${action} 等回话超时`)
         resolve({ ok: false, code: 'channel.timeout', reason: '等回话超时', hint: '等一下再发，别原样重发同一句' })
-      }, CALL_TIMEOUT_MS)
+      }, callTimeoutMs)
       pending.set(echo, { settle: resolve, timer })
       active.send(JSON.stringify({ action, params, echo }))
     })

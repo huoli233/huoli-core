@@ -25,6 +25,25 @@ describe('从消息段里挤出文字', () => {
   it('本来就是一句话的原样返回', () => {
     expect(textOf('就是一句话')).toBe('就是一句话')
   })
+
+  it('转发聊天记录留一个占位，不当成空消息', () => {
+    expect(textOf([{ type: 'forward', data: { id: 'abc' } }])).toBe('[转发的聊天记录]')
+    expect(textOf([{ type: 'forward', data: { id: 'abc' } }, { type: 'text', data: { text: '看看' } }]))
+      .toBe('[转发的聊天记录]看看')
+  })
+
+  it('文件、语音、视频、卡片、表情包各有各的占位', () => {
+    expect(textOf([{ type: 'file', data: { name: 'a.txt' } }])).toBe('[文件]')
+    expect(textOf([{ type: 'record', data: {} }])).toBe('[语音]')
+    expect(textOf([{ type: 'video', data: {} }])).toBe('[视频]')
+    expect(textOf([{ type: 'json', data: { data: '{}' } }])).toBe('[卡片]')
+    expect(textOf([{ type: 'mface', data: {} }])).toBe('[表情]')
+  })
+
+  it('认不出的段一律不编内容', () => {
+    expect(textOf([{ type: 'shuffle', data: {} }])).toBe('')
+    expect(textOf([{ type: 'text' }])).toBe('')
+  })
 })
 
 describe('是不是一句话', () => {
@@ -33,6 +52,16 @@ describe('是不是一句话', () => {
     expect(hasWords('@小岸 你看这个[图片]')).toBe(true)
     expect(hasWords('[表情]')).toBe(false)
     expect(hasWords('[图片][表情]')).toBe(false)
+  })
+
+  it('转发记录与文件算有内容，不然她看不见群里发生过什么', () => {
+    expect(hasWords('[转发的聊天记录]')).toBe(true)
+    expect(hasWords('[文件]')).toBe(true)
+    expect(hasWords('[图片][转发的聊天记录]')).toBe(true)
+  })
+
+  it('语音视频卡片仍然不算正文', () => {
+    expect(hasWords('[语音][视频][卡片]')).toBe(false)
   })
 })
 
