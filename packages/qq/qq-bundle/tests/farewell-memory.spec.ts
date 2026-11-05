@@ -89,7 +89,7 @@ async function mount(config: Config = {}): Promise<Mounted> {
   }
   applyBundle(ctx, {
     maxSteps: 5,
-    dailySweepHour: 4,
+    dailySweepAt: '04:00',
     decisionsFile: path.join(dir, 'decisions.jsonl'),
     farewellFile: path.join(dir, 'farewell.json'),
     ...config,

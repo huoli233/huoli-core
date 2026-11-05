@@ -50,7 +50,7 @@ async function mountWith(patch: Partial<Config> = {}, items: readonly string[] =
   })
   applyBundle(ctx, {
     maxSteps: 5,
-    dailySweepHour: 4,
+    dailySweepAt: '04:00',
     decisionsFile: path.join(dir, 'decisions.jsonl'),
     ...patch,
   })

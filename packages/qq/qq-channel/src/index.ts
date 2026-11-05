@@ -221,6 +221,10 @@ export function apply(ctx: Context, config: Config): void {
     }
   }
 
+  // 通道本身不落盘，日志是排查断线唯一的出口
+  const logger = ctx.logger('qq-channel')
+  let lastError = ''
+
   const channel = createWsChannel(
     {
       url: config.url,
@@ -239,11 +243,14 @@ export function apply(ctx: Context, config: Config): void {
         const poke = toPoke(raw, now)
         if (poke !== null) for (const handler of pokes) handler(poke)
       },
-      onStatus() {
-        // 状态变化给控制台看，这里不额外做事
+      onStatus(status) {
+        // 同一条错重复刷屏没有信息量，只在错误文本变了时记一次
+        if (status.lastError === lastError) return
+        lastError = status.lastError
+        if (lastError !== '') logger.warn(`通道出错：${lastError}`)
       },
       log(message) {
-        void message
+        logger.info(message)
       },
     },
   )

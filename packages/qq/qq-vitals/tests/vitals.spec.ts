@@ -91,7 +91,7 @@ describe('提示词的边界', () => {
   it('最多三百字', () => {
     const states = [settled(), settled({ thirst: 1, hunger: 1, cytokines: 1, fever: 1, pain: 1, adenosine: 1 })]
 
-    for (const state of states) expect(renderPrompt(state, tuning).length).toBeLessThanOrEqual(300)
+    for (const state of states) expect(renderPrompt(state, tuning).length).toBeLessThanOrEqual(tuning.promptMaxChars)
   })
 
   it('不含激素名与数字', () => {

@@ -3,11 +3,14 @@
 import type { Baseline, VitalsState } from './types.ts'
 import { clamp, clampRange } from './math.ts'
 import type { Tuning } from './tuning.ts'
+import { PROMPT_TUNING } from './prompt-tuning.ts'
 
 export type { Tuning } from './tuning.ts'
 
 /** 全仓唯一的默认值表 */
 export const DEFAULTS: Tuning = {
+  // 提示词那一段的阈值单独一处定义，这里展开进来
+  ...PROMPT_TUNING,
   // 心跳节奏：启动后二十秒开始，之后每分钟一次
   beatMs: 60_000,
   startDelayMs: 20_000,
@@ -111,13 +114,25 @@ export const DEFAULTS: Tuning = {
   biasSickAbove: 0.40,
   biasExhausted: 1.40,
   biasExhaustedAbove: 0.70,
+  biasPeak: 0.70,
+  biasFear: 0.75,
+  biasFearAbove: 0.45,
+  biasWorry: 0.70,
+  biasWorryAbove: 0.45,
+  biasDread: 0.85,
+  biasDreadAbove: 0.50,
+  biasColdWar: 1.60,
+  biasColdWarAbove: 0.60,
+  biasResentful: 1.30,
+  biasResentfulAbove: 0.50,
+  biasBroke: 0.25,
+  biasBrokeMortalityFrom: 0.85,
   postStart: 0.30,
   postDown: 0.35,
   postDownAbove: 0.60,
   postWants: 1.08,
   postWantsAbove: 0.55,
-  // 提示词与标签
-  promptMaxChars: 300,
+  // 情绪标签
   labelThreshold: 0.40,
   labelCount: 3,
   // 混合层：默认只读展示，语气那一行要显式打开
@@ -487,7 +502,7 @@ export const STAMP_FIELDS = [
   'last_update', 'last_msg', 'last_meal', 'last_drink', 'last_drink_at', 'last_taste_at',
   'drink_mem_at', 'fluid_applied_at', 'praise_applied_at', 'anger_applied_at', 'meal_applied_at',
   'fear_applied_at', 'worry_applied_at', 'dread_applied_at', 'threat_applied_at', 'apology_applied_at',
-  'farewell_applied_at', 'shutdown_notice_at', 'scar_applied_at',
+  'farewell_applied_at', 'shutdown_notice_at', 'scar_applied_at', 'cycle_start_applied_at',
   'wake_after', 'groggy_until', 'woken_at', 'nap_at', 'dream_at', 'dream_applied_at',
 ] as const
 

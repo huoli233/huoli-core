@@ -37,7 +37,7 @@ async function mount(dir: string, selfEnabled: boolean, withBundle = true): Prom
     healthLogFile: path.join(dir, 'health.log'),
   })
   applySelf(ctx, { enabled: selfEnabled, dir: path.join(dir, 'self'), mainChatKey: 'group:1' })
-  if (withBundle) applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
+  if (withBundle) applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   const memory = qqMemoryOf(ctx)
   const self = qqSelfOf(ctx)
   if (memory === undefined || self === undefined) throw new Error('零件没有装配')
@@ -108,7 +108,7 @@ describe('镜像接进了记忆库', () => {
     vi.useFakeTimers({ now: new Date(2026, 10, 3, 3, 30, 0).getTime() })
     applyBundle(ctx, {
       maxSteps: 5,
-      dailySweepHour: 4,
+      dailySweepAt: '04:00',
       decisionsFile: path.join(dir, 'decisions.jsonl'),
       maintenanceLogFile: path.join(dir, 'maintenance.log'),
     })

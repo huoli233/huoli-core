@@ -58,7 +58,7 @@ async function mount(dir: string): Promise<Mounted> {
     healthLogFile: path.join(dir, 'health.log'),
     queueFile: path.join(dir, 'queue.json'),
   })
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
+  applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return { ctx, tools }
 }
 
@@ -90,7 +90,7 @@ async function mountWithBody(dir: string, body: Partial<VitalsState> = {}): Prom
   await ctx.plugin(SystemPrompt, {})
   applyPacing(ctx, { file: path.join(dir, 'pacing.json') })
   applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
+  applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return ctx
 }
 
@@ -98,6 +98,12 @@ async function mountWithBody(dir: string, body: Partial<VitalsState> = {}): Prom
 async function budgetText(ctx: Context): Promise<string> {
   const assembly = await ctx.systemPrompt.assemble()
   return assembly.sections.find(section => section.name === 'qq:reply-budget')?.text ?? ''
+}
+
+// 取提示词里身体那一句：身体包注册的是变量，装配之后才插值进那一段
+async function vitalsText(ctx: Context): Promise<string> {
+  const assembly = await ctx.systemPrompt.assemble()
+  return assembly.variables.qq_vitals ?? ''
 }
 
 // 发出去就当场结算的假连接，动态那一路不真连网
@@ -139,7 +145,7 @@ async function mountWithChannel(dir: string): Promise<Context> {
   FakeSocket.opened.at(-1)?.open()
   // 阶段停在能放行的那一档，这一组才看得到停手开关那一道
   applySelf(ctx, { dir: path.join(dir, 'self'), enabled: false, settings: { stage: 'P3' } })
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
+  applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qq-bundle-dec-')), 'decisions.jsonl') })
   return ctx
 }
 
@@ -299,5 +305,22 @@ describe('队列节拍', () => {
 
     expect(failing).toHaveBeenCalledTimes(1)
     expect(qqBundleOf(ctx)?.decisions(0, 10)).toHaveLength(1)
+  })
+})
+
+describe('身体那一段真的进了提示词', () => {
+  it('装配之后 prompt 里有 qq:vitals 这一段，内容是这一会儿的身体', async () => {
+    const ctx = await mountWithBody(tempDir(), { thirst: 0.6 })
+
+    const text = await vitalsText(ctx)
+
+    expect(text).not.toBe('')
+    expect(text).toContain('嗓子有点干')
+  })
+
+  it('身体没接上时这一段就不在，不留一个空壳', async () => {
+    const { ctx } = await mount(tempDir())
+
+    expect(await vitalsText(ctx)).toBe('')
   })
 })

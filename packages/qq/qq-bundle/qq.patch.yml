@@ -42,7 +42,7 @@
       name: '@huoli/huoli-qq-bundle'
       config:
         maxSteps: 40
-        dailySweepHour: 4
+        dailySweepAt: '04:00'
         proactiveThrottleMs: 60000
 
 # 中文比英文占 token 多，提前压一点；群聊要留更多最近的原话

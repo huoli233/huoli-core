@@ -30,32 +30,34 @@ function toMinutes(hhmm: string): number {
   return hour * 60 + minute
 }
 
-// 劲头夹进可用区间：没接上身体按满劲头算，接上了也不低于下限
-function biasFactor(bias: number | undefined, config: GateConfig): number {
+// 身体给的读数折回间隔倍率：零对下限、一对上限，没接上按中性的一倍算
+function multiplierOf(bias: number | undefined, config: GateConfig): number {
   if (bias === undefined || !Number.isFinite(bias)) return 1
-  return Math.min(1, Math.max(config.biasFloor, bias))
+  const unit = Math.min(1, Math.max(0, bias))
+  return config.biasMin + unit * (config.biasMax - config.biasMin)
 }
 
 /**
- * 两次开口之间隔多久：冷却区间的中点除以劲头，同样的输入永远得到同样的数
+ * 两次开口之间隔多久：区间中点乘倍率，同样的输入永远得到同样的数
  * @param config - 闸门配置
- * @param bias - 身体给的想开口的劲，零到一，不给按满劲头算
+ * @param bias - 身体给的那条读数，零到一，累与气往久那头走，想人往近那头落，不给按一倍算
  * @returns 毫秒数
  */
 export function cooldownMs(config: GateConfig, bias?: number): number {
   const span = Math.max(0, config.gapMaxMs - config.gapMinMs)
   const base = config.gapMinMs + Math.floor(span / 2)
-  return Math.round(base / biasFactor(bias, config))
+  return Math.round(base * multiplierOf(bias, config))
 }
 
 /**
- * 这一天最多开口几次：额度按劲头缩，最低留下限那么多次
+ * 这一天最多开口几次：倍率越大开口越少，最少留下限那么多次，最多不超过上限
  * @param config - 闸门配置
- * @param bias - 身体给的想开口的劲，零到一，不给按满劲头算
+ * @param bias - 身体给的那条读数，零到一，不给按一倍算
  * @returns 次数
  */
 export function dailyCapOf(config: GateConfig, bias?: number): number {
-  return Math.max(config.dailyFloor, Math.floor(config.dailyMax * biasFactor(bias, config)))
+  const scaled = Math.floor(config.dailyMax / multiplierOf(bias, config))
+  return Math.min(config.dailyMax, Math.max(config.dailyFloor, scaled))
 }
 
 /**

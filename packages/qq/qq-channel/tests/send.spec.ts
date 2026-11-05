@@ -246,3 +246,25 @@ describe('表情回应', () => {
     expect(events.map(event => event.kind)).toEqual(['attempt'])
   })
 })
+
+// 通道自己不留档，发不出去时日志是唯一线索
+describe('发不出去要留一行日志', () => {
+  it('连接不在时记下是哪一次动作', async () => {
+    const { tool, logs } = mount()
+    const socket = FakeSocket.opened.at(-1)
+    if (socket !== undefined) socket.readyState = 3
+
+    await expect(tool('qq_send_message').execute({ text: '在的' }, execOf('group:123')))
+      .rejects.toThrow(/卡在第 1 条：还没连上/u)
+    expect(logs.filter(line => line.includes('发不出去：连接不在时收到 send_group_msg'))).toHaveLength(1)
+  })
+
+  it('对方回非零码时记下码与原文', async () => {
+    const { tool, logs } = mount()
+    FakeSocket.failAt = 1
+
+    await expect(tool('qq_send_message').execute({ text: '在的' }, execOf('group:123')))
+      .rejects.toThrow(/卡在第 1 条/u)
+    expect(logs.filter(line => line.startsWith('发不出去：对方回 100'))).toHaveLength(1)
+  })
+})

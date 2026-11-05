@@ -9,7 +9,7 @@ import { layerOr } from './guard.ts'
 import type { MemoryStore } from './store.ts'
 import { MEMORY_SOURCES, newId, type MemoryItem, type MemorySource, type RememberOptions } from './types.ts'
 
-// 队列文件的结构版本，只随结构变化递增，调参不动它；第二版只多了一个丢弃计数，旧文件读回来按 0 起
+/** 队列文件的结构版本只随结构变化递增；第二版多了丢弃计数，旧文件读回来按 0 起 */
 export const QUEUE_SCHEMA_VERSION = 2
 
 /** 重要度不到门槛的失败码，装配层按它数被丢掉的条数 */

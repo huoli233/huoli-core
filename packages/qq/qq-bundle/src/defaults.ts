@@ -6,8 +6,8 @@ import { DEFAULTS as MEMORY_DEFAULTS } from '@huoli/huoli-qq-memory'
 export const BUNDLE_DEFAULTS = {
   /** 一轮最多走几步 */
   maxSteps: 40,
-  /** 每天几点整理记忆 */
-  dailySweepHour: 4,
+  /** 每天几点做整理与例行开口，形如 00:20 */
+  dailySweepAt: '00:20',
   /** 去重表最多留多少条 */
   seenMax: 256,
   /** 入站之后隔多久才再问一次要不要主动开口 */
@@ -30,6 +30,10 @@ export const BUNDLE_DEFAULTS = {
   mealMemory: true,
   /** 一顿饭写成一条记忆时的重要度，例行的一顿比事件轻，但要过记忆的写入门槛 */
   mealMemoryImportance: 30,
+  /** 喝水写不写进记忆，关掉就一次都不订阅 */
+  drinkMemory: true,
+  /** 喝水写成一条记忆时的重要度，比一顿饭还轻，日常到不值得记太久 */
+  drinkMemoryImportance: 25,
   /** 遗书写不写进记忆，关掉就一次都不订阅 */
   farewellMemory: true,
   /** 一场梦写不写进记忆 */

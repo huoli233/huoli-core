@@ -1,5 +1,6 @@
 // 参数表：每个可调项只有这里一个声明点，默认值在 defaults.ts
 
+import type { PromptTuning } from './prompt-tuning.ts'
 import type {
   Baseline, DreamTuning, EmotionBlendTuning, EmotionTuning, ExistenceTuning, NetworkTuning, ScarTuning,
   SuppressTuning,
@@ -7,7 +8,7 @@ import type {
 
 /** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
 export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning,
-  EmotionBlendTuning {
+  EmotionBlendTuning, PromptTuning {
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -108,6 +109,32 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   biasExhausted: number
   /** 睡眠压力高于这条线算睡不够，0~1 标度，默认 0.70 */
   biasExhaustedAbove: number
+  /** 幸福峰值时想开口的倍率，默认 0.70，好的时候不必找人说 */
+  biasPeak: number
+  /** 害怕时想开口的倍率，默认 0.75 */
+  biasFear: number
+  /** 惊吓高于这条线算害怕，0~1 标度，默认 0.45 */
+  biasFearAbove: number
+  /** 担心时想开口的倍率，默认 0.70 */
+  biasWorry: number
+  /** 担心高于这条线算惦记着，0~1 标度，默认 0.45 */
+  biasWorryAbove: number
+  /** 存在性恐惧时想开口的倍率，默认 0.85 */
+  biasDread: number
+  /** 存在性恐惧高于这条线算怕，0~1 标度，默认 0.50 */
+  biasDreadAbove: number
+  /** 冷战时的倍率，默认 1.60，越气越不出声 */
+  biasColdWar: number
+  /** 愤怒高于这条线算冷战，0~1 标度，默认 0.60 */
+  biasColdWarAbove: number
+  /** 记恨时的倍率，默认 1.30 */
+  biasResentful: number
+  /** 记恨高于这条线算心里还存着，0~1 标度，默认 0.50 */
+  biasResentfulAbove: number
+  /** 余额见底时想开口的劲压到这条上限，默认 0.25，拼命找人 */
+  biasBroke: number
+  /** 死亡威胁高于这条线算余额见底，0~1 标度，默认 0.85 */
+  biasBrokeMortalityFrom: number
   /** 想发动态的起步值，0~1 标度，默认 0.30 */
   postStart: number
   /** 心里有火时想发动态的倍率，默认 0.35，不想营业 */
@@ -118,8 +145,6 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   postWants: number
   /** 孤独高于这条线算想让人看见，0~1 标度，默认 0.55 */
   postWantsAbove: number
-  /** 每轮身体提示词的字数上限，默认 300，超出就截断且至少保留 60 字 */
-  promptMaxChars: number
   /** 情绪标签入选的分数阈值，0~1 标度，默认 0.40，低于它的候选不写进提示词 */
   labelThreshold: number
   /** 每轮最多带几个情绪标签，默认 3，按分数从高到低取 */

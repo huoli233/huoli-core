@@ -64,6 +64,7 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
   const call = (action: string, params: Record<string, unknown>): Promise<SentResult> => {
     const active = socket
     if (active === undefined || active.readyState !== 1) {
+      handlers.log(`发不出去：连接不在时收到 ${action}`)
       return Promise.resolve({ ok: false, code: 'channel.offline', reason: '还没连上' })
     }
     seq += 1
@@ -71,6 +72,7 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
     return new Promise<SentResult>((resolve) => {
       const timer = setTimeout(() => {
         pending.delete(echo)
+        handlers.log(`发不出去：${action} 等回话超时`)
         resolve({ ok: false, code: 'channel.timeout', reason: '等回话超时' })
       }, CALL_TIMEOUT_MS)
       pending.set(echo, { settle: resolve, timer })
@@ -109,6 +111,8 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
             pending.delete(echo)
             const data = raw.data !== null && typeof raw.data === 'object' ? raw.data as Record<string, unknown> : {}
             const retcode = Number(raw.retcode ?? 0)
+            // 对方主动拒收时这一条是唯一线索，别让它只剩一个返回码
+            if (retcode !== 0) handlers.log(`发不出去：对方回 ${retcode} ${asText(raw.wording ?? raw.message ?? '')}`)
             waiting.settle(retcode === 0
               ? { ok: true, ...typeof data.message_id === 'number' || typeof data.message_id === 'string'
                 ? { messageId: String(data.message_id) } : {} }

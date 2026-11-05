@@ -6,6 +6,10 @@ import { fileURLToPath } from 'node:url'
 import type { Context } from '@huoli/cordis'
 import '@huoli/huoli-system-prompt'
 import '@huoli/huoli-agent'
+import type { Agent, AgentHandle } from '@huoli/huoli-agent'
+import { brandString } from '@huoli/huoli-brand'
+import { createUserMessage } from '@huoli/huoli-llm'
+import type { SessionId } from '@huoli/huoli-session'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
 import { qqMaterialOf } from '@huoli/huoli-qq-material'
@@ -16,12 +20,15 @@ import { qqProactiveOf, type Candidate, type DeliverResult, type ProactiveDecisi
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { momentPort, qqSelfOf } from '@huoli/huoli-qq-self'
 import {
-  qqVitalsOf, type DreamFact, type FarewellFact, type MealFact, type QqVitalsSeam, type ScarFact, type VitalsState,
+  qqVitalsOf, type DreamFact, type DrinkFact, type FarewellFact, type MealFact, type QqVitalsSeam, type ScarFact,
+  type VitalsState,
 } from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
 import { createDecisionLog, type DecisionBlock, type DecisionRecord } from './decisions.ts'
 import { dreamImportance, dreamKey, dreamMetadata, dreamText, dreamWritten } from './dream.ts'
+import { drinkMetadata, drinkText, drinkWritten } from './drink.ts'
 import { farewellMetadata, farewellText, farewellWritten } from './farewell.ts'
+import { createLiveness } from './liveness.ts'
 import { defaultMaintenanceLogFile, mirrorPortOf, runMaintenance } from './maintenance.ts'
 import { mealMetadata, mealText, mealWritten } from './meal.ts'
 import { SCAR_TEXT, scarImportance, scarMetadata, scarWritten } from './scar.ts'
@@ -48,7 +55,8 @@ export interface Config {
   /** 说话规矩那个文件放哪 */
   rulesFile?: string
   /** 每天几点整理记忆 */
-  dailySweepHour?: number
+  /** 每天几点做整理与例行开口，形如 00:20 */
+  dailySweepAt?: string
   /** 一轮最多走几步 */
   maxSteps?: number
   /** 去重表最多留多少条 */
@@ -79,6 +87,10 @@ export interface Config {
   mealMemory?: boolean
   /** 一顿饭写成一条记忆时的重要度 */
   mealMemoryImportance?: number
+  /** 喝水写不写进记忆 */
+  drinkMemory?: boolean
+  /** 喝水写成一条记忆时的重要度 */
+  drinkMemoryImportance?: number
   /** 遗书写不写进记忆 */
   farewellMemory?: boolean
   /** 遗书写成一条记忆时的重要度 */
@@ -93,6 +105,10 @@ export interface Config {
   farewellText?: string
   /** 遗书正文的暂存槽放哪，要与通道那一份是同一个文件 */
   farewellFile?: string
+  /** 外部余额系统的档位，越大越宽裕，不给就是没有来源 */
+  balanceLevel?: number
+  /** 启动账放哪，用来算今天重启过几次 */
+  livenessFile?: string
 }
 
 /** 一次投递的结论：没投出去的码与发布入口回来的那一段都摆在这里 */
@@ -156,6 +172,20 @@ function readRules(file: string): string {
   }
 }
 
+// 把 00:20 这种写法拆成时与分；写坏了按默认那一档并记一行，不让整条装配塌掉
+function clockOf(value: string | undefined, fallback: string, ctx: Context): { hour: number; minute: number } {
+  const text = value ?? fallback
+  const parts = text.split(':')
+  const hour = Number(parts[0])
+  const minute = Number(parts[1])
+  const valid = Number.isInteger(hour) && Number.isInteger(minute)
+    && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59
+  if (valid) return { hour, minute }
+  const kept = fallback.split(':')
+  ctx.logger('qq-bundle').warn('整理时刻 %s 认不出来，按 %s 算', text, fallback)
+  return { hour: Number(kept[0]), minute: Number(kept[1]) }
+}
+
 // 条数上限看的事实：都从身体那唯一一份状态里取，不在这里另算
 function replyFactsOf(state: VitalsState): ReplyFacts {
   return {
@@ -164,6 +194,11 @@ function replyFactsOf(state: VitalsState): ReplyFacts {
     energy: state.energy,
     clingy: state.clinginess,
     lonely: state.loneliness,
+    fear: state.fear,
+    dread: state.dread,
+    worry: state.worry,
+    anger: state.anger,
+    resentment: state.resentment,
   }
 }
 
@@ -203,6 +238,12 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 身体先说话，条数紧跟着：这一轮最多几句排在身体之后、规矩之前
   const vitals = qqVitalsOf(ctx)
+  // 余额只有外部系统知道，没配就是没有来源，死亡威胁一动不动也不自己回弹
+  vitals?.setBalance(config.balanceLevel)
+  // 活了多久问得出来；重启次数要有人给账本才数，不给就只报活多久
+  const livenessFile = config.livenessFile
+  const liveness = createLiveness(livenessFile === undefined ? {} : { file: livenessFile })
+  vitals?.setExistence(liveness.facts(Date.now()))
   ctx.systemPrompt.section({
     name: 'qq:reply-budget',
     order: 350,
@@ -331,6 +372,53 @@ export function apply(ctx: Context, config: Config = {}): void {
   const attention = qqAttentionOf(ctx)
   const subject = qqSubjectOf(ctx)
   const channel = qqChannelOf(ctx)
+  // 一个群一条会话：会话编号就是聊天键，各聊各的，谁也不会串到别人那句上
+  const agentSink = ctx.get('agents')
+  const sessions = new Map<string, AgentHandle>()
+  const opening = new Map<string, Promise<Agent | undefined>>()
+  if (channel !== undefined && agentSink === undefined) {
+    ctx.logger('qq-bundle').warn('没有 agent 注册表，入站消息唤不醒任何会话')
+  }
+
+  // 取这个群的会话，没有就现开一条；同一个群同时来两句也只开一次
+  const agentFor = async (chatKey: string): Promise<Agent | undefined> => {
+    const kept = sessions.get(chatKey)
+    if (kept !== undefined) return kept.agent
+    const pending = opening.get(chatKey)
+    if (pending !== undefined) return pending
+    if (agentSink === undefined) return undefined
+    const creating = agentSink.create({ sessionId: brandString<SessionId>(chatKey) })
+      .then((handle: AgentHandle) => {
+        sessions.set(chatKey, handle)
+        return handle.agent
+      })
+      .catch((error: unknown) => {
+        ctx.logger('qq-bundle').warn('这个群的会话没开起来：%s', String(error))
+        return undefined
+      })
+      .finally(() => {
+        opening.delete(chatKey)
+      })
+    opening.set(chatKey, creating)
+    return creating
+  }
+
+  // 一句话交给它自己那个群唤醒；开不起来就这一句不叫醒，也不假装叫过
+  const wake = (chatKey: string, text: string): void => {
+    void agentFor(chatKey).then((agent) => {
+      if (agent === undefined) return
+      agent.followup(createUserMessage({ content: [{ type: 'text', text }], source: { kind: 'user' } }))
+    }).catch((error: unknown) => {
+      ctx.logger('qq-bundle').warn('这一句没叫醒：%s', String(error))
+    })
+  }
+
+  // 卸载时把开过的会话都收掉，不留一条在跑
+  ctx.effect(() => () => {
+    for (const handle of sessions.values()) void handle.dispose()
+    sessions.clear()
+    opening.clear()
+  })
   if (channel !== undefined) {
     // 同一条消息只认一次：按会话加编号留住最近这一段
     const seenMax = Math.max(1, config.seenMax ?? BUNDLE_DEFAULTS.seenMax)
@@ -352,7 +440,11 @@ export function apply(ctx: Context, config: Config = {}): void {
     const offIncoming = channel.onIncoming((message) => {
       if (!firstTime(message)) return
       wakes.set(message.chatKey, 'incoming')
-      if (hasWords(message.text)) vitals?.react(message.text, message.at)
+      if (hasWords(message.text)) {
+        // 先刷新运行环境那两条事实，结算时读到的才是这一刻的
+        vitals?.setExistence(liveness.facts(message.at))
+        vitals?.react(message.text, message.at)
+      }
       attention?.inbox.push(message.chatKey, {
         senderId: message.senderId,
         senderName: message.senderName,
@@ -360,6 +452,8 @@ export function apply(ctx: Context, config: Config = {}): void {
         at: message.at,
       })
       subject?.store.setActive(message.chatKey)
+      // 有人说话就开一轮：这个群有自己的会话，就叫它自己那一条醒来
+      if (hasWords(message.text)) wake(message.chatKey, message.text)
     })
     const offPoke = channel.onPoke((poke) => {
       wakes.set(poke.chatKey, 'poke')
@@ -419,6 +513,41 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
     ctx.effect(() => () => {
       offMeal()
+    })
+  }
+
+  // 一杯水写一条记忆：二十分钟里只要一条，太密就成了喝水流水账
+  const drinkImportance = config.drinkMemoryImportance ?? BUNDLE_DEFAULTS.drinkMemoryImportance
+
+  // 这一杯写成一条记忆：去重看记忆里已有的条，不另建文件
+  const writeDrink = (fact: DrinkFact): void => {
+    if (memory === undefined) return
+    const chatKey = subject?.store.read().lastActive ?? ''
+    if (chatKey === '') {
+      ctx.logger('qq-bundle').warn('喝水记忆没有落点：还没有活跃会话')
+      return
+    }
+    if (drinkWritten(memory.store.all(), chatKey, fact.at)) return
+    memory.write(drinkText(fact), chatKey, {
+      layer: 'episodic',
+      source: 'chat',
+      importance: drinkImportance,
+      at: fact.at,
+      metadata: drinkMetadata(fact),
+    })
+  }
+
+  // 关着时一个监听都不注册，一杯水连回调都不会进来
+  if ((config.drinkMemory ?? BUNDLE_DEFAULTS.drinkMemory) && vitals !== undefined) {
+    const offDrink = vitals.onDrink((fact) => {
+      try {
+        writeDrink(fact)
+      } catch (error) {
+        ctx.logger('qq-bundle').warn('喝水记忆没写进去：%s', String(error))
+      }
+    })
+    ctx.effect(() => () => {
+      offDrink()
     })
   }
 
@@ -678,9 +807,15 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 面板的此刻只问身体：身体那几行压成一句再交过去
   if (self !== undefined && vitals !== undefined) self.useVitals(momentPort(vitals))
   const maintenanceLogFile = config.maintenanceLogFile ?? defaultMaintenanceLogFile(config.home)
-  const hour = Math.max(0, Math.min(23, config.dailySweepHour ?? BUNDLE_DEFAULTS.dailySweepHour))
+  const sweepAt = clockOf(config.dailySweepAt, BUNDLE_DEFAULTS.dailySweepAt, ctx)
+  // 每分钟看一眼：到点那一次做整理与例行开口，同一天只做一次
+  let lastSweepDay = ''
   const idle = setInterval(() => {
-    if (new Date().getHours() !== hour) return
+    const now = new Date()
+    if (now.getHours() !== sweepAt.hour || now.getMinutes() !== sweepAt.minute) return
+    const day = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`
+    if (day === lastSweepDay) return
+    lastSweepDay = day
     try {
       runMaintenance({ at: Date.now(), memory, self, logFile: maintenanceLogFile })
     } catch (error) {
@@ -690,7 +825,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     // 每天这一次也是例行时刻：想发动态的劲攒够了就在这里交给她
     const active = subject?.store.read().lastActive ?? ''
     if (active !== '') considerProactive(active, Date.now(), false, false)
-  }, 60 * 60_000)
+  }, 60_000)
   idle.unref()
   ctx.effect(() => () => {
     clearInterval(idle)

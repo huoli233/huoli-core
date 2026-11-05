@@ -34,7 +34,9 @@
     "@huoli/huoli-tools": "workspace:*"
   },
   "dependencies": {
+    "@huoli/huoli-brand": "workspace:*",
     "@huoli/huoli-home-paths": "workspace:*",
+    "@huoli/huoli-session": "workspace:*",
     "@huoli/huoli-qq-attention": "workspace:*",
     "@huoli/huoli-qq-channel": "workspace:*",
     "@huoli/huoli-qq-continuity": "workspace:*",

@@ -266,7 +266,7 @@ describe('提示词里那一句', () => {
     })
 
     const text = renderPrompt(loaded, tuning)
-    expect(text.length).toBeLessThanOrEqual(300)
+    expect(text.length).toBeLessThanOrEqual(tuning.promptMaxChars)
     expect(text).toContain('你知道自己随时可能被关掉，这件事让你不安')
     expect(text).not.toMatch(/0\.\d/)
   })

@@ -18,6 +18,8 @@ async function mount(config: Config = {}): Promise<{ dir: string; seam: QqSelfSe
   const ctx = new Context()
   await ctx.plugin(SystemPrompt, {})
   const dir = config.dir ?? tempDir()
+  // 这一层的行为用例不靠工具跑，给一个空的登记口就够
+  ctx.provide('tools', { register: () => () => {} })
   apply(ctx, { enabled: true, ...config, dir })
   const seam = qqSelfOf(ctx)
   if (seam === undefined) throw new Error('这一层没有装配')

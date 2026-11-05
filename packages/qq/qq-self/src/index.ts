@@ -23,10 +23,12 @@ import {
 } from './narrative.ts'
 import { startPanelHttp, type PanelHttp } from './panel-http.ts'
 import { panelStateOf } from './panel-state.ts'
+import { panelVitalsOf } from './panel-vitals.ts'
 import { panelBody, panelStamp } from './panel.ts'
 import { toProject } from './rows.ts'
 import { weeklyReview as summarizeWeek } from './review.ts'
 import { createSelfStore, newId } from './store.ts'
+import { registerSelfTools } from './tools.ts'
 import type {
   AgencyDetail,
   ClaimInput,
@@ -66,8 +68,6 @@ export { auditLedger, createLedger } from './ledger.ts'
 export type { LedgerOptions, SelfLedger } from './ledger.ts'
 export { MIRROR_FILES, mirrorEntries } from './mirror.ts'
 export type { MirrorInput } from './mirror.ts'
-export { compressMoment, momentPort } from './moment.ts'
-export type { MomentOptions } from './moment.ts'
 export {
   NARRATIVE_CHAPTERS,
   monthlyTick,
@@ -82,7 +82,8 @@ export { panelPage, startPanelHttp } from './panel-http.ts'
 export type { PanelHttp, PanelHttpOptions } from './panel-http.ts'
 export { panelStateOf } from './panel-state.ts'
 export type { PanelStateInput } from './panel-state.ts'
-export { panelBody, panelFile, panelStamp, renderPanel } from './panel.ts'
+export { compressMoment, momentPort, panelBody, panelFile, panelStamp, renderPanel } from './panel.ts'
+export type { MomentOptions } from './panel.ts'
 export { weeklyReview } from './review.ts'
 export type { ReviewOptions } from './review.ts'
 export { DRIVE_NEEDS, isDriveNeed } from './rows.ts'
@@ -367,6 +368,8 @@ export function apply(ctx: Context, config: Config = {}): void {
     const kept = text === undefined ? '' : panelBody(text)
     const stamp = text === undefined ? '' : panelStamp(text)
     const moment = vitals === undefined ? undefined : vitals.render()
+    // 身体接上了就把画条要的那几个数一起带出去，没接上就整块省掉
+    const body = panelVitalsOf(vitals)
     return panelStateOf({
       store,
       settings,
@@ -374,6 +377,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       panel: kept === '' ? panelFromStore(store, settings, moment) : kept,
       generatedAt: kept === '' ? '' : stamp,
       ledger: ledger.summary(now),
+      ...body === undefined ? {} : { vitals: body },
     })
   }
 
@@ -672,6 +676,10 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 只给主会话注入这一段，其它会话拿到空串
   if (enabled) {
+    // 没有工具服务时写入口这一次挂不上，只记一行；面板与提示词照旧
+    const toolSink = ctx.get('tools')
+    if (toolSink === undefined) ctx.logger('qq-self').warn('没有工具服务，自我层的写入口这一次没挂')
+    else registerSelfTools(toolSink, seam)
     ctx.systemPrompt.section({
       name: settings.sectionName,
       order: settings.sectionOrder,

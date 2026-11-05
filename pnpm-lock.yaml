@@ -13979,6 +13979,9 @@ importers:
 
   packages/qq/qq-bundle:
     dependencies:
+      '@huoli/huoli-brand':
+        specifier: workspace:*
+        version: link:../../util/brand
       '@huoli/huoli-home-paths':
         specifier: workspace:*
         version: link:../../util/home-paths
@@ -14015,6 +14018,9 @@ importers:
       '@huoli/huoli-qq-vitals':
         specifier: workspace:*
         version: link:../qq-vitals
+      '@huoli/huoli-session':
+        specifier: workspace:*
+        version: link:../../core/session
     devDependencies:
       '@huoli/cordis':
         specifier: workspace:~
@@ -14132,6 +14138,9 @@ importers:
       '@huoli/huoli-system-prompt':
         specifier: workspace:*
         version: link:../../core/system-prompt
+      '@huoli/huoli-tools':
+        specifier: workspace:*
+        version: link:../../core/tools
 
   packages/qq/qq-subject:
     dependencies:

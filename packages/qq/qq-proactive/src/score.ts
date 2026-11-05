@@ -66,8 +66,10 @@ export interface GateConfig {
   gapMinMs: number
   /** 冷却区间上限，下一次可开口时刻取区间中点 */
   gapMaxMs: number
-  /** 劲头低于这个数就按这个数算，免得间隔被拉得没边 */
-  biasFloor: number
+  /** 读数折回倍率时的下限，累了生气了倍率往这头涨 */
+  biasMin: number
+  /** 读数折回倍率时的上限，想人想得厉害倍率往这头落 */
+  biasMax: number
   /** 刚被吵醒之后还要安静多久，毫秒，迷糊没过去之前不开口 */
   wakingDelayMs: number
   /** 正忙时多久再看 */
@@ -86,7 +88,8 @@ export const PROACTIVE_DEFAULTS: GateConfig = {
   dailyFloor: 1,
   gapMinMs: 150 * 60_000,
   gapMaxMs: 300 * 60_000,
-  biasFloor: 0.2,
+  biasMin: 0.2,
+  biasMax: 2.5,
   wakingDelayMs: 10 * 60_000,
   busyRetryMs: 60_000,
   talkingRetryMs: 5 * 60_000,

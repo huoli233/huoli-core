@@ -511,22 +511,22 @@ describe('劲头接进冷却与额度', () => {
       ...bias !== undefined ? { proactiveBias: bias } : {},
     })
 
-  it('劲头越低，下一次能开口的时刻越晚', () => {
+  it('读数越高（越累越气），下一次能开口的时刻越晚', () => {
     const low = verdictAt(0.3)
     const high = verdictAt(1)
 
     expect(low.code).toBe('proactive.too_soon')
     expect(high.code).toBe('proactive.too_soon')
-    expect(low.retryAt).toBeGreaterThan(high.retryAt ?? 0)
+    expect(high.retryAt).toBeGreaterThan(low.retryAt ?? 0)
     expect(high.retryAt).toBe(NOW - 60_000 + cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 1))
   })
 
-  it('劲头越低，每天的额度越小', () => {
+  it('读数越高，每天的额度越小', () => {
     const config = { ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 10 }
 
-    expect(dailyCapOf(config, 0.3)).toBeLessThan(dailyCapOf(config, 1))
-    expect(dailyCapOf(config, 0.3)).toBe(3)
-    expect(dailyCapOf(config, 1)).toBe(10)
+    expect(dailyCapOf(config, 1)).toBeLessThan(dailyCapOf(config, 0.3))
+    expect(dailyCapOf(config, 0.3)).toBe(10)
+    expect(dailyCapOf(config, 1)).toBe(4)
   })
 
   it('同一个输入算两次得到同一个下次时刻', () => {
@@ -536,40 +536,36 @@ describe('劲头接进冷却与额度', () => {
     expect(first.retryAt).toBe(second.retryAt)
   })
 
-  it('劲头低于下限就按下限算，间隔不会被拉到没边', () => {
-    const tiny = verdictAt(0.01)
-    const floor = verdictAt(PROACTIVE_DEFAULTS.biasFloor)
+  it('读数贴零就贴近最短那一头，间隔不会被拉到没边', () => {
+    const config = { ...PROACTIVE_DEFAULTS, ...OPEN }
+    const bottom = cooldownMs(config, 0)
 
-    expect(tiny.retryAt).toBe(floor.retryAt)
-    expect(verdictAt(0.01).retryAt).toBe(NOW - 60_000 + cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, PROACTIVE_DEFAULTS.biasFloor))
+    expect((cooldownMs(config, 0.01) - bottom) / bottom).toBeLessThan(0.2)
+    expect(bottom).toBeLessThan(cooldownMs(config, 0.3))
   })
 
-  it('没接上身体就按满劲头算，跟原来一样', () => {
+  it('没接上身体就按中性倍率算，间隔取区间中点', () => {
     expect(verdictAt(undefined).retryAt).toBe(NOW - 60_000 + cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }))
   })
 
-  it('额度按劲头缩，低劲头先撞上今天满了', () => {
-    const config = { ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 10 }
-    const cap = dailyCapOf(config, 0.3)
-
-    const full = verdictAt(0.3, { todayCount: cap, lastSpokenAt: 0 })
-    const room = verdictAt(1, { todayCount: cap, lastSpokenAt: 0 })
+  it('额度按倍率缩，高读数先撞上今天满了', () => {
+    const full = verdictAt(1, { todayCount: 2, lastSpokenAt: 0 })
+    const room = verdictAt(0, { todayCount: 2, lastSpokenAt: 0 })
 
     expect(full.code).toBe('proactive.day_full')
-    expect(room.ok).toBe(true)
+    expect(room.code).not.toBe('proactive.day_full')
   })
 
   it('额度有下限，至少还能有一天一次的余地', () => {
     const config = { ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 4 }
 
-    expect(dailyCapOf(config, 0.01)).toBe(PROACTIVE_DEFAULTS.dailyFloor)
+    expect(dailyCapOf(config, 1)).toBe(PROACTIVE_DEFAULTS.dailyFloor)
   })
 
-  it('劲头能改下限，改完间隔跟着变', () => {
-    const strict = { ...PROACTIVE_DEFAULTS, ...OPEN, biasFloor: 0.5 }
+  it('倍率上下限可配，改完间隔跟着变', () => {
+    const narrow = { ...PROACTIVE_DEFAULTS, ...OPEN, biasMax: 1.2 }
 
-    expect(cooldownMs(strict, 0.2)).toBe(cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 0.5))
-    expect(cooldownMs(strict, 0.2)).toBeLessThan(cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 0.2))
+    expect(cooldownMs(narrow, 1)).toBeLessThan(cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 1))
   })
 })
 

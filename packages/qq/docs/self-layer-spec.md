@@ -25,17 +25,17 @@
 |---|---|---|---|---|---|---|
 | `constitution.md` | Markdown，八条，每条一行 | 宪法 | 人，走两把钥匙 | `qq-self` 注入前只读 | 八条，一条一行 | 已实现 |
 | `panel.md` | Markdown，首行为 `<!-- generated_at: <ISO> -->` | 面板的生成与缓存 | `qq-self` 生成器，每天最多一次 | `qq-self` 注入、人 | 正文 ≤300 预算单位 | 已实现 |
-| `narrative.md` | Markdown，五章 | 叙事，月度更新 | 只由主会话写 | `qq-self`、人 | 每次更新一份，旧版进 `versions/` | 未实现 |
+| `narrative.md` | Markdown，五章 | 叙事，月度更新 | 只由主会话写（模型经 `qq_self_narrative` 工具） | `qq-self`、人 | 每次更新一份，旧版进 `versions/` | 已实现 |
 | `questions.jsonl` | jsonl | 她想弄明白的事 | 主会话 | 面板取一条、人 | 每周 ≤1 条 | 已实现 |
 | `claims.jsonl` | jsonl | 她相信的事，带置信度、证据、反例 | 主会话 | 镜像、面板 | 每条 ≤200 字 | 已实现 |
-| `errors.jsonl` | jsonl | 她判断错的地方与改法 | 主会话 | 周复盘、人 | 每条 ≤200 字 | 未实现 |
+| `errors.jsonl` | jsonl | 她判断错的地方与改法 | 主会话（`qq_self_error` 工具） | 周复盘、人 | 每条 ≤200 字 | 已实现 |
 | `projects.jsonl` | jsonl | 1–2 周的小项目，带失败条件 | 主会话 | 面板取一个、镜像 | 同时最多 2 个未结束 | 已实现 |
 | `commitments.jsonl` | jsonl | 答应过的事 | 主会话 | 镜像 | 每条 ≤200 字 | 已实现 |
 | `ledger.jsonl` | jsonl | drive 与 agency 两档账 | `qq-self` 在运行时记 | 周复盘、验收脚本 | 只追加 | 已实现 |
-| `day.jsonl` | jsonl | 每天三行 | 主会话晚间 | 周复盘 | 每天 ≤1 条，正文恰好三行 | 未实现 |
+| `day.jsonl` | jsonl | 每天三行 | 主会话晚间（`qq_self_day` / `qq_self_skip_day` 工具） | 周复盘 | 每天 ≤1 条，正文恰好三行 | 已实现 |
 | `keys.jsonl` | jsonl | 两把钥匙的申请与结果 | 两把钥匙流程 | 分级判定、验收脚本 | 只追加 | 已实现（只在放行时记一行） |
 | `PAUSE` | 零字节或一行说明 | 停手开关 | 人 | `qq-self`、`qq-proactive` | — | 已实现 |
-| `versions/` | 目录，`panel-YYYYMMDD.md`、`narrative-YYYYMMDD.md` | 旧版本保留 | `qq-self` | 回滚 | 各留最近 5 份 | 未实现 |
+| `versions/` | 目录，`panel-YYYYMMDD.md`、`narrative-YYYYMMDD.md` | 旧版本保留 | `qq-self` | 回滚（`listVersions` / `rollback` / `verifyAfterRollback`） | 默认各留最近 20 份，可配 | 已实现 |
 
 这里没有 `.json` 文件：单值内容（宪法、面板、叙事）用 Markdown，事件流用 jsonl，这样不跟各包自己的 `data/*.json` 争同一份事实源。
 

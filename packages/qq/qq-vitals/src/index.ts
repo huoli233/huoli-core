@@ -58,6 +58,14 @@ export interface MealFact {
   name: string
 }
 
+/** 喝一杯水的事实，交给组合包以后接记忆，本包不写记忆 */
+export interface DrinkFact {
+  /** 这一杯记下的毫秒时间戳 */
+  at: number
+  /** 句子里命中的饮品名，没命中给空串 */
+  name: string
+}
+
 /** 一个应用里的那份身体 */
 export interface QqVitalsSeam {
   /** 读事实：当前这一份状态，别的包不许自己再算 */
@@ -75,6 +83,12 @@ export interface QqVitalsSeam {
   setExistence(facts: ExistenceFacts | undefined): void
   /** 接住每一顿的写回，取消时用返回的那个函数 */
   onMeal(listener: (fact: MealFact) => void): () => void
+  /** 接住每一杯水的写回，冷却挡掉的那次不算，取消时用返回的那个函数 */
+  onDrink(listener: (fact: DrinkFact) => void): () => void
+  /** 周期四个分界日：面板按它把一圈切成五段彩弧 */
+  cycleBounds(): readonly number[]
+  /** 五组双条：哪两条是一对由这一包说了算，面板只照画 */
+  pairs(): readonly { name: string; a: string; av: number; b: string; bv: number }[]
   /** 接住遗书事实：死亡威胁到线那天只通知一次，取消时用返回的那个函数 */
   onFarewell(listener: (fact: FarewellFact) => void): () => void
   /** 接住每场梦的事实：入梦即产一条，平淡梦也在内，一场只产一次，取消时用返回的那个函数 */
@@ -94,6 +108,9 @@ export interface Config {
 }
 
 const seams = new WeakMap<Context, QqVitalsSeam>()
+
+// 同一份状态文件只许一条心跳：第二个装配者不另起一条，卸载时按自己的上下文让位
+const beating = new Map<string, Context>()
 
 /**
  * 取这份身体，没装配时为 undefined
@@ -123,6 +140,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? join(resolveHuoliHome(config.huoliHome), 'data', 'qq-vitals.json')
   const store = createVitalsStore({ file, tuning })
   const meals = new Set<(fact: MealFact) => void>()
+  const drinks = new Set<(fact: DrinkFact) => void>()
   const farewells = new Set<(fact: FarewellFact) => void>()
   const dreams = new Set<(fact: DreamFact) => void>()
   const scars = new Set<(fact: ScarFact) => void>()
@@ -177,11 +195,26 @@ export function apply(ctx: Context, config: Config = {}): void {
       variant += 1
       return text
     },
+    cycleBounds() {
+      return [tuning.cycleMenstrualEnd, tuning.cycleFollicularEnd, tuning.cycleOvulationEnd, tuning.cycleLutealEnd]
+    },
+    pairs() {
+      const now = current()
+      // 拮抗与搭配各成一对：这一对里谁高谁低，画出来比读数字快
+      return [
+        { name: '自主神经', a: '交感', av: now.adrenaline, b: '副交感', bv: now.acetylcholine },
+        { name: '奖赏', a: '想要', av: now.dopamine, b: '满足', bv: now.endorphin },
+        { name: '依恋', a: '亲近', av: now.oxytocin, b: '占有', bv: now.vasopressin },
+        { name: '应激', a: '压力', av: now.cortisol, b: '稳定', bv: now.serotonin },
+        { name: '血糖', a: '血糖', av: now.glucose, b: '胰岛素', bv: now.insulin },
+      ]
+    },
     react(text, at) {
       // 时间戳只往前走，秒级的消息时间不会把上一次记录顶回去
       const raw = store.read()
       const moment = Math.max(at ?? Date.now(), raw.last_update)
       let meal: MealFact | undefined
+      let drink: DrinkFact | undefined
       let dream: DreamFact | undefined
       let scar: ScarFact | undefined
       try {
@@ -195,11 +228,14 @@ export function apply(ctx: Context, config: Config = {}): void {
         if (dream !== undefined) next.dream_applied_at = dream.at
         store.write(next)
         if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text) }
+        // 只在这一杯真写进去了才产事实：冷却挡掉的那次 last_drink 不动
+        if (next.last_drink !== raw.last_drink) drink = { at: next.last_drink, name: next.last_drink_name }
       } catch (error) {
         ctx.logger('qq-vitals').warn('消息写盘失败：%s', String(error))
         return
       }
       if (meal !== undefined) notify(meals, '进食', meal)
+      if (drink !== undefined) notify(drinks, '喝水', drink)
       if (dream !== undefined) notify(dreams, '梦境', dream)
       if (scar !== undefined) notify(scars, '疤痕', scar)
     },
@@ -213,6 +249,12 @@ export function apply(ctx: Context, config: Config = {}): void {
       meals.add(listener)
       return () => {
         meals.delete(listener)
+      }
+    },
+    onDrink(listener) {
+      drinks.add(listener)
+      return () => {
+        drinks.delete(listener)
       }
     },
     onFarewell(listener) {
@@ -244,21 +286,31 @@ export function apply(ctx: Context, config: Config = {}): void {
   })
   ctx.systemPrompt.variable(VARIABLE, () => seam.render())
 
-  // 启动后先等一下，之后每分钟一次
+  // 启动后先等一下，之后每分钟一次；同一份状态文件只许一条心跳在跳
   let timer: ReturnType<typeof setInterval> | undefined
-  const start = setTimeout(() => {
-    beat()
-    timer = setInterval(beat, tuning.beatMs)
-    timer.unref()
-  }, tuning.startDelayMs)
-  start.unref()
+  const holder = beating.get(file)
+  if (holder !== undefined && holder !== ctx.root) {
+    ctx.logger('qq-vitals').warn('这份状态已经有一条心跳在跳，这一次不另起：%s', file)
+  } else {
+    beating.set(file, ctx.root)
+    const start = setTimeout(() => {
+      beat()
+      timer = setInterval(beat, tuning.beatMs)
+      timer.unref()
+    }, tuning.startDelayMs)
+    start.unref()
+    ctx.effect(() => () => {
+      clearTimeout(start)
+    })
+  }
 
   // 卸载时停掉心跳，再写一次盘
   ctx.effect(() => () => {
-    clearTimeout(start)
     if (timer !== undefined) clearInterval(timer)
+    if (beating.get(file) === ctx.root) beating.delete(file)
     store.write(current())
     meals.clear()
+    drinks.clear()
     farewells.clear()
     dreams.clear()
     scars.clear()

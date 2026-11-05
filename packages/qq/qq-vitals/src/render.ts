@@ -1,7 +1,7 @@
 // 只给形容词的一段话：不给数字、不提激素名、每次措辞不同
 
 import { isMealHour, localHour } from './clock.ts'
-import type { Tuning } from './defaults.ts'
+import { DEFAULTS, type Tuning } from './defaults.ts'
 import type { VitalsState } from './types.ts'
 
 // 抬头写清这段只改语气
@@ -18,47 +18,48 @@ const TAILS: readonly string[] = [
 ]
 
 // 饿了怎么说：只给感受，不给数字
-function hungerNote(hunger: number): string {
-  if (hunger > 0.75) return '你饿得有点发慌，肚子空得难受。'
-  if (hunger > 0.55) return '你有点饿，肚子在叫。'
-  if (hunger > 0.35) return '你不太饿，肚子还安稳。'
+function hungerNote(hunger: number, tuning: Tuning): string {
+  if (hunger > tuning.promptHungerCrisis) return '你饿得有点发慌，肚子空得难受。'
+  if (hunger > tuning.promptHungerHigh) return '你有点饿，肚子在叫。'
+  if (hunger > tuning.promptHungerMid) return '你不太饿，肚子还安稳。'
   return '你刚吃过，肚子是满的。'
 }
 
 /**
  * 口渴的五档说法：零点二五到零点三之间保持中性
  * @param thirst - 口渴
+ * @param tuning - 参数，五档的线都在里面
  * @returns 这一档的说法
  */
-export function thirstNote(thirst: number): string {
-  if (thirst > 0.82) return '你渴得厉害，嗓子发干，满脑子都是水。'
-  if (thirst > 0.62) return '你有点渴，想喝点凉的。'
-  if (thirst > 0.45) return '你嗓子有点干，想喝口水。'
-  if (thirst > 0.30) return '你嘴里有点干，不严重，但会想润一下。'
-  if (thirst < 0.25) return '你刚喝过水，嘴里还润着。'
+export function thirstNote(thirst: number, tuning: Tuning = DEFAULTS): string {
+  if (thirst > tuning.promptThirstCrisis) return '你渴得厉害，嗓子发干，满脑子都是水。'
+  if (thirst > tuning.promptThirstHigh) return '你有点渴，想喝点凉的。'
+  if (thirst > tuning.promptThirstDry) return '你嗓子有点干，想喝口水。'
+  if (thirst > tuning.promptThirstLow) return '你嘴里有点干，不严重，但会想润一下。'
+  if (thirst < tuning.promptThirstQuenched) return '你刚喝过水，嘴里还润着。'
   return ''
 }
 
 // 此刻的整体感觉
-function feelingNote(state: VitalsState): string {
+function feelingNote(state: VitalsState, tuning: Tuning): string {
   const parts: string[] = []
-  if (state.irritability > 0.55) parts.push('有点烦')
-  else if (state.irritability > 0.35) parts.push('心里有点毛')
+  if (state.irritability > tuning.promptIrritableHigh) parts.push('有点烦')
+  else if (state.irritability > tuning.promptIrritableMid) parts.push('心里有点毛')
   else parts.push('还算平静')
-  if (state.energy > 0.60) parts.push('精力还不错')
-  else if (state.energy > 0.40) parts.push('精力一般')
+  if (state.energy > tuning.promptEnergyHigh) parts.push('精力还不错')
+  else if (state.energy > tuning.promptEnergyMid) parts.push('精力一般')
   else parts.push('有点没力气')
-  if (state.clinginess > 0.60) parts.push('很想黏着人')
-  else if (state.clinginess > 0.40) parts.push('有点想黏着')
+  if (state.clinginess > tuning.promptClingyHigh) parts.push('很想黏着人')
+  else if (state.clinginess > tuning.promptClingyMid) parts.push('有点想黏着')
   else parts.push('不太想凑近')
   return parts.join('，')
 }
 
 // 身上是什么感觉
-function bodyNote(state: VitalsState): string {
-  if (state.adenosine > 0.60) return '身上沉，眼皮有点抬不起来。'
-  if (state.adrenaline > 0.50) return '心跳快，手心发紧。'
-  if (state.acetylcholine > 0.55) return '身上松下来了，呼吸慢、想赖着。'
+function bodyNote(state: VitalsState, tuning: Tuning): string {
+  if (state.adenosine > tuning.promptBodyAdenosine) return '身上沉，眼皮有点抬不起来。'
+  if (state.adrenaline > tuning.promptBodyAdrenaline) return '心跳快，手心发紧。'
+  if (state.acetylcholine > tuning.promptBodyAcetylcholine) return '身上松下来了，呼吸慢、想赖着。'
   return '身子是稳的，不算难受。'
 }
 
@@ -71,10 +72,10 @@ function heartNote(state: VitalsState, tuning: Tuning): string {
   if (state.worry > tuning.promptWorryFrom) return '心里悬着，总往坏处想。'
   if (state.anger > tuning.promptAngerFrom) return '心里憋着火，不太想好好说话。'
   if (state.resentment > tuning.promptResentFrom) return '心里还记着刚才那一下。'
-  if (state.thirst > 0.62) return '心里惦记着水，别的都往后放。'
-  if (state.irritability > 0.55) return '心里还有火，没那么容易软下来。'
-  if (state.cortisol > 0.60) return '心里绷着一根弦，容易往坏处想。'
-  if (state.clinginess > 0.60) return '心里空一块，想让人多说两句。'
+  if (state.thirst > tuning.promptThirstHigh) return '心里惦记着水，别的都往后放。'
+  if (state.irritability > tuning.promptIrritableHigh) return '心里还有火，没那么容易软下来。'
+  if (state.cortisol > tuning.promptHeartCortisol) return '心里绷着一根弦，容易往坏处想。'
+  if (state.clinginess > tuning.promptClingyHigh) return '心里空一块，想让人多说两句。'
   return '心里是稳的，没什么要防的。'
 }
 
@@ -83,9 +84,9 @@ function styleNote(state: VitalsState, tuning: Tuning): string {
   if (state.anger > tuning.promptAngerFrom || state.resentment > tuning.promptResentFrom) {
     return '这次话更少，能不接就不接。'
   }
-  if (state.energy < 0.35 || state.adenosine > 0.65) return '这次句子短一点，说两句就停。'
-  if (state.irritability > 0.55) return '这次话少一点，别绕。'
-  if (state.clinginess > 0.60) return '这次可以连着发几条，想到哪说到哪。'
+  if (state.energy < tuning.promptEnergyLow || state.adenosine > tuning.promptStyleAdenosine) return '这次句子短一点，说两句就停。'
+  if (state.irritability > tuning.promptIrritableHigh) return '这次话少一点，别绕。'
+  if (state.clinginess > tuning.promptClingyHigh) return '这次可以连着发几条，想到哪说到哪。'
   return '这次照平常说，别端着。'
 }
 
@@ -99,6 +100,37 @@ function toneNote(state: VitalsState, tuning: Tuning): string {
   if (state.emotion_blend.length === 0) return ''
   const line = state.emotion_blend.length === 1 ? FOCUS_TONE : SPLIT_TONE
   return line.slice(0, Math.max(20, tuning.emotionToneMaxChars))
+}
+
+// 一个零到一的读数落在哪一档：只说偏低正常偏高，不给数
+function levelWord(value: number, tuning: Tuning): string {
+  if (value < tuning.promptLevelLow) return '偏低'
+  if (value > tuning.promptLevelHigh) return '偏高'
+  return '正常'
+}
+
+// 好坏偏向那一格：低于中线说偏负、高于中线说偏正
+function sideWord(value: number, tuning: Tuning): string {
+  if (value < tuning.promptLevelLow) return '偏负'
+  if (value > tuning.promptLevelHigh) return '偏正'
+  return '中'
+}
+
+// 这一行的三格：愉悦取好坏偏向、唤醒取精力（规范没给唤醒公式，用精力顶上）、掌控取支配感
+function padLine(state: VitalsState, tuning: Tuning): string {
+  return `PAD：愉悦 ${sideWord(state.valence, tuning)} / 唤醒 ${levelWord(state.energy, tuning)} / 掌控 ${levelWord(state.dominance, tuning)}`
+}
+
+// 五路各一句：只说她感觉得到的样子与档位，不出现激素名也不出现数字
+function fiveLine(state: VitalsState, tuning: Tuning): string {
+  const rows: ReadonlyArray<readonly [string, number]> = [
+    ['想要、兴奋、被夸的劲', state.dopamine],
+    ['亲近、黏人', state.oxytocin],
+    ['压力、小脾气', state.cortisol],
+    ['情绪稳定', state.serotonin],
+    ['精力、警觉', state.noradrenaline],
+  ]
+  return `五路：${rows.map(([hint, value]) => `${hint}：${levelWord(value, tuning)}`).join('；')}`
 }
 
 // 标签那两行
@@ -171,10 +203,12 @@ export function renderPrompt(state: VitalsState, tuning: Tuning, variant = 0): s
   const optional = optionalNote(state, tuning)
   const text = [
     HEADER,
+    padLine(state, tuning),
     labelNote(state),
-    `你现在的感觉：${feelingNote(state)}。`,
-    `身体：${hungerNote(state.hunger)}${thirstNote(state.thirst)}`,
-    `你身体的感受：${bodyNote(state)}`,
+    fiveLine(state, tuning),
+    `你现在的感觉：${feelingNote(state, tuning)}。`,
+    `身体：${hungerNote(state.hunger, tuning)}${thirstNote(state.thirst, tuning)}`,
+    `你身体的感受：${bodyNote(state, tuning)}`,
     `你心里的感受：${heartNote(state, tuning)}`,
     `表现：${styleNote(state, tuning)}`,
     ...(tone === '' ? [] : [tone]),
@@ -182,6 +216,6 @@ export function renderPrompt(state: VitalsState, tuning: Tuning, variant = 0): s
     '怕和担心只在被触发时出现；平时不提生死，也不拿生死当撒娇手段。',
     tail,
   ].join('\n')
-  const limit = Math.max(60, tuning.promptMaxChars)
+  const limit = Math.max(tuning.promptMinChars, tuning.promptMaxChars)
   return text.length <= limit ? text : text.slice(0, limit)
 }

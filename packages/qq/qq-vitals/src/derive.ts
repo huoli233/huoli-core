@@ -4,6 +4,7 @@ import { biasUnit, type Tuning } from './defaults.ts'
 import { mixOf } from './emotion.ts'
 import { above, clamp, clampRange } from './math.ts'
 import { deltaOf, propagate, type NetworkPass } from './network.ts'
+import { peakOf } from './peak.ts'
 import type { CyclePhase, VitalsState } from './types.ts'
 
 // 相位命中其一就给一，其余给零
@@ -99,7 +100,7 @@ function sorrowScore(s: VitalsState): number {
     + 0.18 * s.negative_heat - 0.15 * s.endorphin
 }
 
-// 想开口：没力气、犯困、想有人陪、口渴、生病、睡不够各乘一条，命中就乘，不命中的算一
+// 想开口：没力气、犯困、想有人陪、口渴、生病、睡不够、幸福峰值、怕、担心、怕没了、冷战、记恨各乘一条，命中就乘，不命中的算一
 function biasFactors(s: VitalsState, tuning: Tuning): number[] {
   const wantsCompany = s.loneliness > tuning.biasLonelyAbove || s.clinginess > tuning.biasClingyAbove
   return [
@@ -110,12 +111,20 @@ function biasFactors(s: VitalsState, tuning: Tuning): number[] {
     s.thirst > tuning.biasThirstyAbove ? tuning.biasThirsty : 1,
     s.cytokines > tuning.biasSickAbove ? tuning.biasSick : 1,
     s.adenosine > tuning.biasExhaustedAbove ? tuning.biasExhausted : 1,
+    peakOf(s, tuning) === 'happy' ? tuning.biasPeak : 1,
+    s.fear > tuning.biasFearAbove ? tuning.biasFear : 1,
+    s.worry > tuning.biasWorryAbove ? tuning.biasWorry : 1,
+    s.dread > tuning.biasDreadAbove ? tuning.biasDread : 1,
+    s.anger > tuning.biasColdWarAbove ? tuning.biasColdWar : 1,
+    s.resentment > tuning.biasResentfulAbove ? tuning.biasResentful : 1,
   ]
 }
 
-// 想开口的劲：倍率夹到上下限之间，再折成零到一的读数
+// 想开口的劲：余额见底时硬压到下限，其余情况按倍率连乘，再夹到上下限之间折成零到一的读数
 function proactiveBiasOf(s: VitalsState, tuning: Tuning): number {
-  const bias = biasFactors(s, tuning).reduce((product, factor) => product * factor, tuning.proactiveBiasStart)
+  const multiplied = biasFactors(s, tuning).reduce((product, factor) => product * factor, tuning.proactiveBiasStart)
+  const broke = s.mortality >= tuning.biasBrokeMortalityFrom
+  const bias = broke ? Math.min(multiplied, tuning.biasBroke) : multiplied
   return biasUnit(clampRange(bias, tuning.biasMin, tuning.biasMax), tuning)
 }
 

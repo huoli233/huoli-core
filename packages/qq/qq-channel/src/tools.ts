@@ -64,7 +64,7 @@ function refuseAction(result: ActionResult, fallback: string): never {
   refuse(result.code ?? fallback, result.reason ?? '这一条没发出去', hintOf(result))
 }
 
-// 取这次调用属于哪个会话
+// 取这次调用属于哪个会话：一个群一条会话，会话身份就是聊天键
 function chatKeyOf(exec: { agent?: { id: string } }): string {
   const id = exec.agent?.id
   if (id === undefined || id === '') refuse('channel.no_chat', '这次调用没有会话身份', '从带会话的入口调用工具')

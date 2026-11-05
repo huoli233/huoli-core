@@ -19,6 +19,8 @@ function tempDir(): string {
 async function mount(dir: string): Promise<QqSelfSeam> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt, {})
+  // 这一层的行为用例不靠工具跑，给一个空的登记口就够
+  ctx.provide('tools', { register: () => () => {} })
   apply(ctx, { enabled: true, dir, mainChatKey: 'group:1' })
   const seam = qqSelfOf(ctx)
   if (seam === undefined) throw new Error('这一层没有装配')

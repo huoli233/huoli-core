@@ -2843,7 +2843,7 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:47`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/index.ts:54`](../packages/qq/qq-bundle/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2851,7 +2851,8 @@ export interface Config {
   /** 说话规矩那个文件放哪 */
   rulesFile?: string
   /** 每天几点整理记忆 */
-  dailySweepHour?: number
+  /** 每天几点做整理与例行开口，形如 00:20 */
+  dailySweepAt?: string
   /** 一轮最多走几步 */
   maxSteps?: number
   /** 去重表最多留多少条 */
@@ -2882,6 +2883,10 @@ export interface Config {
   mealMemory?: boolean
   /** 一顿饭写成一条记忆时的重要度 */
   mealMemoryImportance?: number
+  /** 喝水写不写进记忆 */
+  drinkMemory?: boolean
+  /** 喝水写成一条记忆时的重要度 */
+  drinkMemoryImportance?: number
   /** 遗书写不写进记忆 */
   farewellMemory?: boolean
   /** 遗书写成一条记忆时的重要度 */
@@ -2896,6 +2901,10 @@ export interface Config {
   farewellText?: string
   /** 遗书正文的暂存槽放哪，要与通道那一份是同一个文件 */
   farewellFile?: string
+  /** 外部余额系统的档位，越大越宽裕，不给就是没有来源 */
+  balanceLevel?: number
+  /** 启动账放哪，用来算今天重启过几次 */
+  livenessFile?: string
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
@@ -3161,8 +3170,10 @@ export interface Config {
   gapMinMs?: number
   /** 冷却区间上限 */
   gapMaxMs?: number
-  /** 劲头低于这个数就按这个数算 */
-  biasFloor?: number
+  /** 读数折回倍率时的下限 */
+  biasMin?: number
+  /** 读数折回倍率时的上限 */
+  biasMax?: number
   /** 刚被吵醒之后还要安静多久，毫秒 */
   wakingDelayMs?: number
 }
@@ -3175,7 +3186,7 @@ export interface Config {
 ## `@huoli/huoli-qq-self`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:265`](../packages/qq/qq-self/src/index.ts)
+- `source`: [`packages/qq/qq-self/src/index.ts:266`](../packages/qq/qq-self/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3320,7 +3331,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:87`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:101`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3335,7 +3346,7 @@ export interface Config {
 
 /** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
 export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning,
-  EmotionBlendTuning {
+  EmotionBlendTuning, PromptTuning {
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -3436,6 +3447,32 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   biasExhausted: number
   /** 睡眠压力高于这条线算睡不够，0~1 标度，默认 0.70 */
   biasExhaustedAbove: number
+  /** 幸福峰值时想开口的倍率，默认 0.70，好的时候不必找人说 */
+  biasPeak: number
+  /** 害怕时想开口的倍率，默认 0.75 */
+  biasFear: number
+  /** 惊吓高于这条线算害怕，0~1 标度，默认 0.45 */
+  biasFearAbove: number
+  /** 担心时想开口的倍率，默认 0.70 */
+  biasWorry: number
+  /** 担心高于这条线算惦记着，0~1 标度，默认 0.45 */
+  biasWorryAbove: number
+  /** 存在性恐惧时想开口的倍率，默认 0.85 */
+  biasDread: number
+  /** 存在性恐惧高于这条线算怕，0~1 标度，默认 0.50 */
+  biasDreadAbove: number
+  /** 冷战时的倍率，默认 1.60，越气越不出声 */
+  biasColdWar: number
+  /** 愤怒高于这条线算冷战，0~1 标度，默认 0.60 */
+  biasColdWarAbove: number
+  /** 记恨时的倍率，默认 1.30 */
+  biasResentful: number
+  /** 记恨高于这条线算心里还存着，0~1 标度，默认 0.50 */
+  biasResentfulAbove: number
+  /** 余额见底时想开口的劲压到这条上限，默认 0.25，拼命找人 */
+  biasBroke: number
+  /** 死亡威胁高于这条线算余额见底，0~1 标度，默认 0.85 */
+  biasBrokeMortalityFrom: number
   /** 想发动态的起步值，0~1 标度，默认 0.30 */
   postStart: number
   /** 心里有火时想发动态的倍率，默认 0.35，不想营业 */
@@ -3446,8 +3483,6 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   postWants: number
   /** 孤独高于这条线算想让人看见，0~1 标度，默认 0.55 */
   postWantsAbove: number
-  /** 每轮身体提示词的字数上限，默认 300，超出就截断且至少保留 60 字 */
-  promptMaxChars: number
   /** 情绪标签入选的分数阈值，0~1 标度，默认 0.40，低于它的候选不写进提示词 */
   labelThreshold: number
   /** 每轮最多带几个情绪标签，默认 3，按分数从高到低取 */
@@ -4106,6 +4141,58 @@ export interface EmotionBlendTuning {
   emotionBlendWeightFrom: number
   /** 语气提示那一行最多多少字，默认 60，至少留 20 字 */
   emotionToneMaxChars: number
+}
+
+/** 提示词那一组的参数，与其它参数一起展开进 Tuning */
+export interface PromptTuning {
+  /** 每轮身体提示词的字数上限，默认 600，超出就截断且至少保留 60 字 */
+  promptMaxChars: number
+  /** 提示词截断时至少留几个字，默认 60 */
+  promptMinChars: number
+  /** 饿到这条线说「饿得发慌」，0~1 标度，默认 0.75 */
+  promptHungerCrisis: number
+  /** 饿到这条线说「有点饿」，0~1 标度，默认 0.55 */
+  promptHungerHigh: number
+  /** 饿到这条线说「不太饿」，0~1 标度，默认 0.35 */
+  promptHungerMid: number
+  /** 渴到这条线说「渴得厉害」，0~1 标度，默认 0.82 */
+  promptThirstCrisis: number
+  /** 渴到这条线说「有点渴」，0~1 标度，默认 0.62 */
+  promptThirstHigh: number
+  /** 渴到这条线说「嗓子有点干」，0~1 标度，默认 0.45 */
+  promptThirstDry: number
+  /** 渴到这条线说「嘴里有点干」，0~1 标度，默认 0.30 */
+  promptThirstLow: number
+  /** 低于这条线说「刚喝过水」，0~1 标度，默认 0.25 */
+  promptThirstQuenched: number
+  /** 易怒高于这条线说「有点烦」，0~1 标度，默认 0.55 */
+  promptIrritableHigh: number
+  /** 易怒高于这条线说「心里有点毛」，0~1 标度，默认 0.35 */
+  promptIrritableMid: number
+  /** 精力高于这条线说「精力还不错」，0~1 标度，默认 0.60 */
+  promptEnergyHigh: number
+  /** 精力高于这条线说「精力一般」，0~1 标度，默认 0.40 */
+  promptEnergyMid: number
+  /** 精力低于这条线这一轮句子更短，0~1 标度，默认 0.35 */
+  promptEnergyLow: number
+  /** 黏人高于这条线说「很想黏着人」，0~1 标度，默认 0.60 */
+  promptClingyHigh: number
+  /** 黏人高于这条线说「有点想黏着」，0~1 标度，默认 0.40 */
+  promptClingyMid: number
+  /** 睡眠压力高于这条线说「身上沉」，0~1 标度，默认 0.60 */
+  promptBodyAdenosine: number
+  /** 肾上腺素高于这条线说「心跳快」，0~1 标度，默认 0.50 */
+  promptBodyAdrenaline: number
+  /** 乙酰胆碱高于这条线说「身上松下来了」，0~1 标度，默认 0.55 */
+  promptBodyAcetylcholine: number
+  /** 皮质醇高于这条线说「心里绷着一根弦」，0~1 标度，默认 0.60 */
+  promptHeartCortisol: number
+  /** 睡眠压力高于这条线这一轮句子更短，0~1 标度，默认 0.65 */
+  promptStyleAdenosine: number
+  /** 零到一的读数低于这条线说「偏低」，0~1 标度，默认 0.35 */
+  promptLevelLow: number
+  /** 零到一的读数高于这条线说「偏高」，0~1 标度，默认 0.65 */
+  promptLevelHigh: number
 }
 
 /** 初始值与漂移都要用到的数值字段，除体温外都是 0~1；情绪九项只给起点，之后由触发与半衰管 */

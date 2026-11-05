@@ -3,6 +3,7 @@ import { request } from 'node:http'
 import { createServer } from 'node:net'
 import os from 'node:os'
 import path from 'node:path'
+import { Script } from 'node:vm'
 import { Context } from '@huoli/cordis'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -122,6 +123,8 @@ async function bindable(port: number): Promise<boolean> {
 async function mount(config: Config): Promise<{ ctx: Context; seam: QqSelfSeam }> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt, {})
+  // 这一层的行为用例不靠工具跑，给一个空的登记口就够
+  ctx.provide('tools', { register: () => () => {} })
   apply(ctx, config)
   const seam = qqSelfOf(ctx)
   if (seam === undefined) throw new Error('这一层没有装配')
@@ -206,9 +209,10 @@ describe('三个路由', () => {
     expect(page).toContain('嗓子发干')
     expect(page).toContain(`生成时间：${STAMP}`)
     expect(page).toContain('not_sure：说不好，但还记得她')
-    expect(page).toContain('<meta http-equiv="refresh" content="10">')
+    expect(page).toContain('setInterval(tick,3000)')
+    expect(page).toContain('/api/state')
     expect(page).not.toContain('<link')
-    expect(page).not.toContain('<script')
+    expect(page).not.toContain('<script src')
   })
 
   it('GET /api/state 给面板、主张、两档账、近七天与健康', async () => {
@@ -296,9 +300,9 @@ describe('页面', () => {
     expect(page).toMatch(/<h3>情绪来由<\/h3>/)
   })
 
-  it('水罐水位按渴的反面画，档位词跟着分三档', () => {
+  it('水罐水位按渴的反面画，颜色按水位分三档', () => {
     const very = panelPage({ ...STATE, vitals: { thirst: 0.8 } })
-    const some = panelPage({ ...STATE, vitals: { thirst: 0.5 } })
+    const some = panelPage({ ...STATE, vitals: { thirst: 0.6 } })
     const none = panelPage({ ...STATE, vitals: { thirst: 0.1 } })
 
     expect(countOf(very, 'tank')).toBe(1)
@@ -306,13 +310,60 @@ describe('页面', () => {
     expect(very).toContain('>很渴<')
     expect(very).toContain('water-low')
 
-    expect(some).toContain('height:50%')
-    expect(some).toContain('>有点渴<')
-    expect(some).toContain('water-half')
+    expect(some).toContain('height:40%')
+    expect(some).toContain('water-mid')
 
     expect(none).toContain('height:90%')
     expect(none).toContain('>不渴<')
-    expect(none).toContain('water-full')
+    expect(none).toContain('water-high')
+  })
+
+  it('水罐只用三种蓝，颜色只由水位决定，与渴的档位词无关', () => {
+    // 同一档蓝色的两次渲染之间颜色词不跟着渴的措辞变；只看水罐元素上的类
+    const lowWater = panelPage({ ...STATE, vitals: { thirst: 0.9 } })
+    const alsoLowWater = panelPage({ ...STATE, vitals: { thirst: 0.8 } })
+
+    expect(lowWater).toContain('tank-water water-low')
+    expect(alsoLowWater).toContain('tank-water water-low')
+    expect(lowWater).not.toContain('tank-water water-mid')
+    expect(lowWater).not.toContain('tank-water water-high')
+  })
+
+  it('水罐、体内环境、周期盘各有画布，属性带的是这一刻的数', () => {
+    const page = panelPage({
+      ...STATE,
+      vitals: {
+        thirst: 0.5, tired: 0.4, temp: 36.8, fever: 0, immunity: 0.2, pain: 0.1, estrogen: 0.3,
+        cycleDay: 12, cycleLen: 30, cyclePhase: 'ovulation', cycleBounds: [5, 12, 15, 23],
+      },
+    })
+
+    expect(page).toContain('canvas class="water"')
+    expect(page).toContain('data-thirst="0.5"')
+    expect(page).toContain('data-keys="tired,temp,fever,immunity,pain,estrogen"')
+    expect(page).toContain('data-phase="ovulation"')
+    expect(page).toContain('data-bounds="5,12,15,23"')
+    expect(page).toContain('体内环境')
+    expect(page).toContain('睡眠压力')
+  })
+
+  it('体内环境只画拿得到的那几条，缺的不占位', () => {
+    const page = panelPage({ ...STATE, vitals: { thirst: 0.5, temp: 36.8, pain: 0.1 } })
+
+    expect(page).toContain('data-keys="temp,pain"')
+  })
+
+  it('五组双条画成两条并排的横条，名字与读数都在', () => {
+    const page = panelPage({
+      ...STATE,
+      vitals: { thirst: 0.5, pairs: [{ name: '自主神经', a: '交感', av: 0.6, b: '副交感', bv: 0.3 }] },
+    })
+
+    expect(page).toContain('神经-体液')
+    expect(page).toContain('交感')
+    expect(page).toContain('副交感')
+    expect(page).toContain('width:60%')
+    expect(page).toContain('width:30%')
   })
 
   it('没有身体读数时这几块整块省掉，只说身体没接上', () => {
@@ -324,14 +375,32 @@ describe('页面', () => {
     expect(countOf(page, 'body-bar')).toBe(0)
   })
 
-  it('画了条也还是内联一页，不拉外部资源，照旧十秒刷一次', () => {
+  it('画布是页内脚本画的，不拉任何外部资源，三秒自己去取一次', () => {
     const page = panelPage({ ...STATE, vitals: VITALS })
 
-    expect(page).toContain('<meta http-equiv="refresh" content="10">')
+    // 脚本必须是内联的：只允许页内脚本，外链一个都不许
+    expect(page).toContain('setInterval(tick,3000)')
+    expect(page).not.toContain('<script src')
     expect(page).not.toContain('<link')
-    expect(page).not.toContain('<script')
     expect(page).not.toMatch(/<(img|iframe|object|embed)\b/)
     expect(page).not.toMatch(/url\(/)
+  })
+
+  it('页内脚本不会把她的原话当代码执行：尖括号先转义', () => {
+    const vitals: PanelVitals = { thirst: 0.5, emotion: [{ why: '</script><b>x</b>', weight: 1 }] }
+    const page = panelPage({ ...STATE, vitals })
+
+    expect(page).not.toContain('</script><b>x</b>')
+    expect(page).toContain('&lt;/script&gt;')
+  })
+
+  it('页内脚本每一段都能解析，语法错不留给浏览器', () => {
+    const page = panelPage({ ...STATE, vitals: VITALS })
+    const blocks = [...page.matchAll(/<script>([\s\S]*?)<\/script>/gu)].map(match => match[1] ?? '')
+
+    expect(blocks.length).toBeGreaterThan(0)
+    // 只编译不执行：过了这一关说明语法没坏，浏览器那边不会白屏
+    for (const code of blocks) expect(() => new Script(code)).not.toThrow()
   })
 
   it('情绪来由里的尖括号一样转义', () => {
@@ -368,6 +437,34 @@ describe('内容边界', () => {
       expect(text).not.toContain('public.say')
       expect(text).not.toContain('user_ok')
     }
+  })
+
+  it('接上身体之后 /api/state 真的带出身体读数', async () => {
+    const dir = tempDir()
+    seed(dir)
+    const port = await freePort()
+    const { seam } = await mountFiber({ enabled: true, dir, mainChatKey: 'group:1', panelPort: port })
+    await waitPort(seam, port)
+    seam.useVitals({
+      render: () => '嗓子发干。',
+      read: () => ({ thirst: 0.7, energy: 0.3, valence: 0.4, loneliness: 0.2, proactive_bias: 0.6 }),
+    })
+
+    const state = JSON.parse(await (await get(port, '/api/state')).text()) as PanelState
+
+    expect(state.vitals).toEqual({ thirst: 0.7, energy: 0.3, mood: 0.4, boredom: 0.2, socialHunger: 0.6 })
+  })
+
+  it('没接上身体时整块省掉，不给一份假的读数', async () => {
+    const dir = tempDir()
+    seed(dir)
+    const port = await freePort()
+    const { seam } = await mountFiber({ enabled: true, dir, mainChatKey: 'group:1', panelPort: port })
+    await waitPort(seam, port)
+
+    const state = JSON.parse(await (await get(port, '/api/state')).text()) as PanelState
+
+    expect(state.vitals).toBeUndefined()
   })
 
   it('目录里什么都没有时也给一份内容', () => {

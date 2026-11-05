@@ -120,7 +120,7 @@ async function mount(config: Config = {}, options: MountOptions = {}): Promise<M
       off()
     }
   }
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(dir, 'decisions.jsonl'), ...config })
+  applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(dir, 'decisions.jsonl'), ...config })
   return {
     ctx,
     memory,

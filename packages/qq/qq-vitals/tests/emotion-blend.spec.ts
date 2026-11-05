@@ -145,7 +145,7 @@ describe('语气开关', () => {
     }
     // 混合层本身不进正文：权重与来由一个字都不出现
     expect(onText).not.toContain('带一点')
-    expect(onText.length).toBeLessThanOrEqual(300)
+    expect(onText.length).toBeLessThanOrEqual(tuning.promptMaxChars)
   })
 
   it('一路压过其余时那一行换成话短的版本', () => {

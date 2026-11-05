@@ -26,7 +26,7 @@ interface Mounted {
 function bundleConfig(dir: string) {
   return {
     maxSteps: 5,
-    dailySweepHour: 4,
+    dailySweepAt: '04:00',
     decisionsFile: path.join(dir, 'decisions.jsonl'),
     maintenanceLogFile: path.join(dir, 'maintenance.log'),
   }

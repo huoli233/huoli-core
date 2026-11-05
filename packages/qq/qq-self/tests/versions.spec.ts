@@ -30,6 +30,8 @@ function openStore(dir: string, overrides?: Partial<SelfSettings>): SelfStore {
 async function mount(dir: string, settings?: Partial<SelfSettings>, enabled = true): Promise<QqSelfSeam> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt, {})
+  // 这一层的行为用例不靠工具跑，给一个空的登记口就够
+  ctx.provide('tools', { register: () => () => {} })
   apply(ctx, { enabled, dir, mainChatKey: 'group:1', ...(settings === undefined ? {} : { settings }) })
   const seam = qqSelfOf(ctx)
   if (seam === undefined) throw new Error('这一层没有装配')

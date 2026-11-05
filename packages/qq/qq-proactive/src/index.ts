@@ -104,8 +104,10 @@ export interface Config {
   gapMinMs?: number
   /** 冷却区间上限 */
   gapMaxMs?: number
-  /** 劲头低于这个数就按这个数算 */
-  biasFloor?: number
+  /** 读数折回倍率时的下限 */
+  biasMin?: number
+  /** 读数折回倍率时的上限 */
+  biasMax?: number
   /** 刚被吵醒之后还要安静多久，毫秒 */
   wakingDelayMs?: number
 }
@@ -150,7 +152,8 @@ export function apply(ctx: Context, config: Config = {}): void {
     ...config.quietEnd !== undefined ? { quietEnd: config.quietEnd } : {},
     ...config.gapMinMs !== undefined ? { gapMinMs: config.gapMinMs } : {},
     ...config.gapMaxMs !== undefined ? { gapMaxMs: config.gapMaxMs } : {},
-    ...config.biasFloor !== undefined ? { biasFloor: config.biasFloor } : {},
+    ...config.biasMin !== undefined ? { biasMin: config.biasMin } : {},
+    ...config.biasMax !== undefined ? { biasMax: config.biasMax } : {},
     ...config.wakingDelayMs !== undefined ? { wakingDelayMs: config.wakingDelayMs } : {},
   }
   const enabled = config.enabled ?? PROACTIVE_DEFAULTS.enabled

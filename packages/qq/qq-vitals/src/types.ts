@@ -206,6 +206,8 @@ export interface VitalsState extends Baseline {
   farewell_applied_at: number
   /** 上一顿饭写回的时刻，毫秒时间戳，零表示还没记过，兼作两顿饭之间的冷却起点 */
   meal_applied_at: number
+  /** 开经日写回的时刻，毫秒时间戳，兼作同一周期只产一次的幂等标记 */
+  cycle_start_applied_at: number
   last_drink_name: string
   last_taste: TasteRecord | null
   last_user_text: string

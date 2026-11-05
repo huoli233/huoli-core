@@ -107,7 +107,7 @@ async function mount(patch: { banned?: readonly string[] } = {}): Promise<Mounte
     quietEnd: '00:00',
     ...patch.banned === undefined ? {} : { banned: patch.banned },
   })
-  applyBundle(ctx, { maxSteps: 5, dailySweepHour: 4, decisionsFile: file })
+  applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: file })
   const socket = FakeSocket.opened.at(-1)
   if (socket === undefined) throw new Error('通道没有装起来')
   socket.open()

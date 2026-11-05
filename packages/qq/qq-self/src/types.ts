@@ -20,8 +20,48 @@ export interface VitalsReadout {
   loneliness?: number
   /** 想开口的劲，零到一 */
   proactive_bias?: number
+  /** 饥饿，零到一 */
+  hunger?: number
+  /** 急性愤怒，零到一 */
+  anger?: number
+  /** 记恨，零到一 */
+  resentment?: number
+  /** 睡眠压力，零到一 */
+  adenosine?: number
+  /** 当前周期第几天 */
+  cycle_day?: number
+  /** 这个周期共几天 */
+  cycle_len?: number
+  /** 周期处在哪一段 */
+  cycle_phase?: string
+  /** 发烧程度，零到一 */
+  fever?: number
+  /** 免疫反应，零到一 */
+  cytokines?: number
+  /** 疼痛，零到一 */
+  pain?: number
+  /** 雌激素，零到一 */
+  estrogen?: number
+  /** 孕激素，零到一 */
+  progesterone?: number
+  /** 体温，摄氏度 */
+  core_temp?: number
   /** 混合层的几条，按分数从高到低 */
   emotion_blend?: readonly VitalsBlendLine[]
+}
+
+/** 一组双条：两条拮抗的量画在同一行，谁高谁低一眼看得出 */
+export interface PanelPair {
+  /** 这一对叫什么 */
+  name: string
+  /** 左边那条的名字 */
+  a: string
+  /** 左边那条的读数，零到一 */
+  av: number
+  /** 右边那条的名字 */
+  b: string
+  /** 右边那条的读数，零到一 */
+  bv: number
 }
 
 /** 身体露给面板的那一面，只读 */
@@ -30,6 +70,10 @@ export interface VitalsPort {
   render(): string
   /** 画条要用的那几个数，身体给不出读数时不给这一面 */
   read?(): VitalsReadout
+  /** 周期几个阶段各在第几天分开，面板按它画彩弧；不给就只画当天那一格 */
+  bounds?(): readonly number[]
+  /** 五组双条，哪两条是一对由身体说了算 */
+  pairs?(): readonly PanelPair[]
 }
 
 /** 面板的四个来源，缺哪个就省哪一行 */
@@ -548,6 +592,36 @@ export interface PanelVitals {
   boredom?: number
   /** 想说话，零到一，取身体的想开口的劲 */
   socialHunger?: number
+  /** 饥饿，零到一，画成另一只环 */
+  hunger?: number
+  /** 怒气，零到一，火舌高度按它算 */
+  anger?: number
+  /** 记恨，零到一，火底余烬按它算 */
+  resentment?: number
+  /** 累，零到一，取睡眠压力 */
+  tired?: number
+  /** 周期第几天 */
+  cycleDay?: number
+  /** 这个周期共几天 */
+  cycleLen?: number
+  /** 周期处在哪一段 */
+  cyclePhase?: string
+  /** 周期几个阶段的分界日，四刀切出五段 */
+  cycleBounds?: readonly number[]
+  /** 五组双条 */
+  pairs?: readonly PanelPair[]
+  /** 体温，摄氏度，画曲线时再归一 */
+  temp?: number
+  /** 发烧程度，零到一 */
+  fever?: number
+  /** 免疫反应，零到一 */
+  immunity?: number
+  /** 疼痛，零到一 */
+  pain?: number
+  /** 雌激素，零到一 */
+  estrogen?: number
+  /** 孕激素，零到一 */
+  progesterone?: number
   /** 混合层的每条，按分数从高到低 */
   emotion?: readonly PanelEmotionBar[]
 }

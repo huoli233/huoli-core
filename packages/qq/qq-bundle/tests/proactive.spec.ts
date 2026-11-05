@@ -110,7 +110,7 @@ async function mount(options: MountOptions): Promise<Mounted> {
   applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999' })
   applyBundle(ctx, {
     maxSteps: 5,
-    dailySweepHour: 4,
+    dailySweepAt: '04:00',
     decisionsFile: path.join(dir, 'qq-decisions.jsonl'),
     ...options.throttleMs !== undefined ? { proactiveThrottleMs: options.throttleMs } : {},
     ...(options.bundle ?? {}),

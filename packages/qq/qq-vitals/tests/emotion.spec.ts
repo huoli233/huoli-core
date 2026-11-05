@@ -318,7 +318,7 @@ describe('提示词的措辞', () => {
     })
     const text = renderPrompt(heavy, tuning, 0)
 
-    expect(text.length).toBeLessThanOrEqual(300)
+    expect(text.length).toBeLessThanOrEqual(tuning.promptMaxChars)
     expect(text).toContain('怕和担心只在被触发时出现')
     expect(/\d/u.test(text)).toBe(false)
     for (const name of HORMONE_NAMES) expect(text).not.toContain(name)

@@ -97,7 +97,7 @@ async function mountStack(options: { vitals?: boolean } = {}): Promise<Context> 
   fs.mkdirSync(path.join(dir, 'self'), { recursive: true })
   fs.writeFileSync(path.join(dir, 'self', 'PAUSE'), '')
   await mountRow(root, selfRow, { dir: path.join(dir, 'self'), enabled: false, settings: { stage: 'P3' } })
-  await mountRow(root, bundleRow, { maxSteps: 5, dailySweepHour: 4, decisionsFile: path.join(dir, 'decisions.jsonl') })
+  await mountRow(root, bundleRow, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(dir, 'decisions.jsonl') })
   return root
 }
 
