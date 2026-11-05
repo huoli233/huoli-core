@@ -158,16 +158,25 @@ function nudgeField<T extends { updatedAt: number }>(state: T, field: keyof T, d
 
 export { nudgeField as nudgeGlobal, nudgeField as nudgeChat }
 
+/** 称呼的分档线：高过哪里就叫哪个词，只换说法不下结论 */
+export const WORD_THRESHOLDS = {
+  /** 心情：不错 / 还行 / 一般 / 偏低 / 低落 */
+  mood: { good: 0.75, fine: 0.55, plain: 0.4, low: 0.2 },
+  /** 熟悉度：很熟 / 熟人 / 认识 / 有点印象 / 还不太认识 */
+  familiarity: { close: 0.8, known: 0.55, met: 0.3, hint: 0.1 },
+}
+
 /**
  * 心情的称呼
  * @param mood - 心情
  * @returns 拼好的话
  */
 export function moodWord(mood: number): string {
-  if (mood >= 0.75) return '不错'
-  if (mood >= 0.55) return '还行'
-  if (mood >= 0.4) return '一般'
-  if (mood >= 0.2) return '偏低'
+  const line = WORD_THRESHOLDS.mood
+  if (mood >= line.good) return '不错'
+  if (mood >= line.fine) return '还行'
+  if (mood >= line.plain) return '一般'
+  if (mood >= line.low) return '偏低'
   return '低落'
 }
 
@@ -177,9 +186,10 @@ export function moodWord(mood: number): string {
  * @returns 拼好的话
  */
 export function familiarityWord(value: number): string {
-  if (value >= 0.8) return '很熟'
-  if (value >= 0.55) return '熟人'
-  if (value >= 0.3) return '认识'
-  if (value >= 0.1) return '有点印象'
+  const line = WORD_THRESHOLDS.familiarity
+  if (value >= line.close) return '很熟'
+  if (value >= line.known) return '熟人'
+  if (value >= line.met) return '认识'
+  if (value >= line.hint) return '有点印象'
   return '还不太认识'
 }

@@ -11,6 +11,18 @@ export interface SnapshotInput {
   maxChars?: number
 }
 
+/** 快照这一层的默认值：部署要改就改这里，别在函数里留字面量 */
+export const SNAPSHOT_DEFAULTS = {
+  /** 一段快照最多多少字 */
+  maxChars: 300,
+  /** 字数的下限，再小就写不出完整一句 */
+  minChars: 60,
+  /** 睡意高过这条就提醒回话会短 */
+  sleepyFrom: 0.7,
+  /** 精力低于这条就提醒提不起劲 */
+  lowEnergyBelow: 0.3,
+} as const
+
 // 百分比写法
 function pct(value: number): string {
   const safe = Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0
@@ -23,15 +35,15 @@ function pct(value: number): string {
  * @returns 拼好的话
  */
 export function renderSelfSnapshot(input: SnapshotInput): string {
-  const limit = Math.max(60, input.maxChars ?? 300)
+  const limit = Math.max(SNAPSHOT_DEFAULTS.minChars, input.maxChars ?? SNAPSHOT_DEFAULTS.maxChars)
   const global = input.global
   const lines: string[] = [
     `【此刻的我】心情 ${moodWord(global.mood)}（${pct(global.mood)}）｜精力 ${pct(global.energy)}`
       + `｜无聊 ${pct(global.boredom)}｜想说话 ${pct(global.socialHunger)}`,
   ]
 
-  if (global.sleepPressure > 0.7) lines.push('这会儿有点困，回话会短。')
-  else if (global.energy < 0.3) lines.push('有点提不起劲。')
+  if (global.sleepPressure > SNAPSHOT_DEFAULTS.sleepyFrom) lines.push('这会儿有点困，回话会短。')
+  else if (global.energy < SNAPSHOT_DEFAULTS.lowEnergyBelow) lines.push('有点提不起劲。')
 
   if (input.chat !== undefined) {
     const name = input.chatName !== undefined && input.chatName !== '' ? input.chatName : '对方'

@@ -5,7 +5,7 @@ import type { Context } from '@huoli/cordis'
 import '@huoli/huoli-system-prompt'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { createSubjectStore, type SubjectStore } from './store.ts'
-import { renderSelfSnapshot, type SnapshotInput } from './snapshot.ts'
+import { renderSelfSnapshot, SNAPSHOT_DEFAULTS, type SnapshotInput } from './snapshot.ts'
 
 export type { ChatState, GlobalState, SubjectState } from './state.ts'
 export { emptyChat, emptySubject, familiarityWord, moodWord } from './state.ts'
@@ -51,9 +51,6 @@ export const inject = ['systemPrompt']
 // 提示词里的占位名
 const VARIABLE = 'qq_self'
 
-// 一段状态最多多少字
-const DEFAULT_MAX_CHARS = 300
-
 /**
  * 装配状态与提示词那一段
  * @param ctx - 运行环境
@@ -61,7 +58,7 @@ const DEFAULT_MAX_CHARS = 300
  */
 export function apply(ctx: Context, config: Config = {}): void {
   const file = config.file ?? path.join(resolveHuoliHome(config.home), 'data', 'qq-subject.json')
-  const maxChars = Math.max(60, config.maxChars ?? DEFAULT_MAX_CHARS)
+  const maxChars = Math.max(SNAPSHOT_DEFAULTS.minChars, config.maxChars ?? SNAPSHOT_DEFAULTS.maxChars)
   const chatNames = config.chatNames ?? {}
   const store = createSubjectStore({ file })
 
