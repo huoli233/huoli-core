@@ -13,6 +13,8 @@ export interface DecisionBlock {
 
 /** 一轮的记录，只有事实与理由码，没有模型原文与用户原文 */
 export interface DecisionRecord {
+  /** 这一行是什么：跑完的一轮，还是主动开口的一次考虑 */
+  kind?: 'round' | 'considered'
   /** 这一轮开始的时刻 */
   at: number
   /** 哪个会话 */
@@ -107,7 +109,8 @@ function parseLine(line: string): DecisionRecord | null {
     sent: Number.isFinite(sent) ? sent : 0,
     blocked,
   }
-  // 老记录里没有这两栏，读回来也不凭空补，免得旧日志看起来像新的
+  // 老记录里没有这几栏，读回来也不凭空补，免得旧日志看起来像新的
+  if (row.kind === 'round' || row.kind === 'considered') record.kind = row.kind
   const steps = Number(row.steps)
   if (row.steps !== undefined && Number.isFinite(steps)) record.steps = steps
   if (row.wrapped === true) record.wrapped = true
@@ -181,7 +184,7 @@ export function appendConsidered(
     ? null
     : { code, retryAt: verdict.retryAt ?? null, ...verdict.hint === undefined ? {} : { hint: verdict.hint } }
   try {
-    log.append({ at, chatKey, awake: false, reason: reasonOf(code), attempted: false, sent: 0, blocked })
+    log.append({ kind: 'considered', at, chatKey, awake: false, reason: reasonOf(code), attempted: false, sent: 0, blocked })
   } catch (error) {
     warn.warn('主动开口的记录写不进去：%s', String(error))
   }

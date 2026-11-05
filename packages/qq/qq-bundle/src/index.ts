@@ -172,7 +172,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (round.sent > 0) enqueueSaid(ctx, memory, chatKey, round)
     try {
       const { at, awake, reason, attempted, sent, blocked, steps, wrapped, lastTool } = round
-      decisions.append({ at, chatKey, awake, reason, attempted, sent, blocked, steps, wrapped, lastTool })
+      decisions.append({ kind: 'round', at, chatKey, awake, reason, attempted, sent, blocked, steps, wrapped, lastTool })
     } catch (error) {
       ctx.logger('qq-bundle').warn('轮次记录写不进去：%s', String(error))
     }

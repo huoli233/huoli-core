@@ -12,6 +12,7 @@ import { apply as applySubject } from '@huoli/huoli-qq-subject'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apply as applyBundle, qqBundleOf, type DecisionRecord } from '../src/index.ts'
+import { appendConsidered, createDecisionLog } from '../src/decisions.ts'
 
 type SocketHandler = (event: { data?: string }) => void
 
@@ -354,6 +355,27 @@ describe('快到上限时提醒收尾', () => {
     await seat.ctx.waterfall('agent/pre-step', stepOf(6), next)
 
     expect(only(seat).lastTool).toBe('read_messages')
+  })
+})
+
+describe('两种行分得开', () => {
+  it('跑完的一轮记成 round', async () => {
+    const seat = await mount()
+
+    await oneRound(seat, '在的呀，怎么了')
+
+    expect(only(seat).kind).toBe('round')
+  })
+
+  it('主动开口的一次考虑记成 considered，它那栏 awake 不代表没被叫醒', () => {
+    const log = createDecisionLog({ file: path.join(tempDir(), 'd.jsonl') })
+
+    appendConsidered(log, { warn: () => {} }, CHAT, 1, { ok: false, code: 'proactive.quiet' })
+
+    const [row] = log.read(0, 10)
+    expect(row?.kind).toBe('considered')
+    expect(row?.awake).toBe(false)
+    expect(row?.blocked?.code).toBe('proactive.quiet')
   })
 })
 
