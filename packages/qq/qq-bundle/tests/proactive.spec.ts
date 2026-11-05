@@ -394,7 +394,22 @@ describe('想发动态的劲', () => {
 
     const delivered = await qqBundleOf(ctx)?.deliver('group:1', kept.id, '今天风大，在河边站了一会儿')
 
-    expect(publish).toHaveBeenCalledWith('post', '今天风大，在河边站了一会儿', { chatKey: 'group:1' })
+    expect(publish).toHaveBeenCalledWith('post', '今天风大，在河边站了一会儿', { chatKey: 'group:1', level: 'public' })
+    expect(delivered?.ok).toBe(true)
+  })
+
+  it('动态级别可以由配置改成 routine，发布入口照单收到', async () => {
+    const { ctx, proactive } = await mount({ enabled: true, body: SHARE_BODY, bundle: { postLevel: 'routine' } })
+    const channel = qqChannelOf(ctx)
+    if (channel === undefined) throw new Error('通道没装上')
+    const publish = vi.spyOn(channel, 'publish').mockResolvedValue({ ok: true, at: Date.now() })
+    await endTurn(ctx)
+    const kept = shareWants(proactive)[0]
+    if (kept === undefined) throw new Error('没有攒住动态候选')
+
+    const delivered = await qqBundleOf(ctx)?.deliver('group:1', kept.id, '今天风大，在河边站了一会儿')
+
+    expect(publish).toHaveBeenCalledWith('post', '今天风大，在河边站了一会儿', { chatKey: 'group:1', level: 'routine' })
     expect(delivered?.ok).toBe(true)
   })
 

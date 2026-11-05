@@ -87,6 +87,7 @@ async function mountWithBody(dir: string, body: Partial<VitalsState> = {}): Prom
   const file = path.join(dir, 'vitals.json')
   createVitalsStore({ file, tuning }).write({ ...emptyState(tuning, Date.now() - 60_000), ...body })
   const ctx = new Context()
+  ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applyPacing(ctx, { file: path.join(dir, 'pacing.json') })
   applyVitals(ctx, { file, tuning: { startDelayMs: 60 * 60_000 } })

@@ -22,6 +22,12 @@ export const BUNDLE_DEFAULTS = {
   memoryInjectMaxItems: MEMORY_DEFAULTS.injectMaxItems,
   /** 同一段在最近多少轮内不重复注入，与记忆包同一份默认值 */
   memoryInjectRepeatTurns: MEMORY_DEFAULTS.injectRepeatTurns,
+  /** 公共动态报上去的级别，公开发布要过阶段与两把钥匙 */
+  postLevel: 'public',
+  /** 多久之内有人说过话就算群里正热闹，只用来给闸门报事实 */
+  humanActiveWindowMs: 120_000,
+  /** 主动开口去重时最多回想几条已发正文 */
+  deliveredHistoryMax: 20,
   /** 想发动态的读数高过这条线就攒一条动态候选，0~1 标度，取平常那一档，只有涨上去才攒 */
   addPostWantFrom: 0.30,
   /** 同一个会话一天最多攒几条动态候选，攒到就不再看读数 */
@@ -34,6 +40,10 @@ export const BUNDLE_DEFAULTS = {
   drinkMemory: true,
   /** 喝水写成一条记忆时的重要度，比一顿饭还轻，日常到不值得记太久 */
   drinkMemoryImportance: 25,
+  /** 开经日写不写进记忆，关掉就一次都不订阅 */
+  cycleMemory: true,
+  /** 开经日写成一条记忆时的重要度，一个周期一次，比喝水重一点 */
+  cycleMemoryImportance: 35,
   /** 遗书写不写进记忆，关掉就一次都不订阅 */
   farewellMemory: true,
   /** 一场梦写不写进记忆 */

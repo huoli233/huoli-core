@@ -71,7 +71,7 @@ function blockOf(raw: unknown): DecisionBlock | null {
 function parseLine(line: string): DecisionRecord | null {
   let raw: unknown
   try {
-    raw = JSON.parse(line) as unknown
+    raw = JSON.parse(line)
   } catch {
     return null
   }

@@ -1,8 +1,6 @@
 // 把各个零件装到一起：规则、每天该做的事、收消息往哪放、每轮留下什么痕迹
 
-import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import type { Context } from '@huoli/cordis'
 import '@huoli/huoli-system-prompt'
 import '@huoli/huoli-agent'
@@ -12,28 +10,25 @@ import { createUserMessage } from '@huoli/huoli-llm'
 import type { SessionId } from '@huoli/huoli-session'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
+import { qqContinuityOf } from '@huoli/huoli-qq-continuity'
 import { qqMaterialOf } from '@huoli/huoli-qq-material'
 import { buildInjectBlock, injectIntoUserText, localDay, qqMemoryOf, shouldInject } from '@huoli/huoli-qq-memory'
-import { hasWords, qqChannelOf, readFarewellSlot, defaultFarewellSlotFile, farewellTextAt, type ActionResult, type IncomingMessage } from '@huoli/huoli-qq-channel'
-import { replyBudget, type ReplyFacts } from '@huoli/huoli-qq-pacing'
-import { qqProactiveOf, type Candidate, type DeliverResult, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
+import { hasWords, qqChannelOf, defaultFarewellSlotFile, type IncomingMessage } from '@huoli/huoli-qq-channel'
+import { qqProactiveOf, type Candidate, type ProactiveDecision } from '@huoli/huoli-qq-proactive'
 import { qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { momentPort, qqSelfOf } from '@huoli/huoli-qq-self'
-import {
-  qqVitalsOf, type DreamFact, type DrinkFact, type FarewellFact, type MealFact, type QqVitalsSeam, type ScarFact,
-  type VitalsState,
-} from '@huoli/huoli-qq-vitals'
+import { qqVitalsOf, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
-import { createDecisionLog, type DecisionBlock, type DecisionRecord } from './decisions.ts'
-import { dreamImportance, dreamKey, dreamMetadata, dreamText, dreamWritten } from './dream.ts'
-import { drinkMetadata, drinkText, drinkWritten } from './drink.ts'
-import { farewellMetadata, farewellText, farewellWritten } from './farewell.ts'
+import { budgetLine, budgetOf, clockOf, defaultRulesPath, readRules, registerAttentionPrompt, registerMaterialPrompts, sleepFactsOf } from './facts.ts'
+import { createDecisionLog, type DecisionBlock } from './decisions.ts'
 import { createLiveness } from './liveness.ts'
 import { defaultMaintenanceLogFile, mirrorPortOf, runMaintenance } from './maintenance.ts'
-import { mealMetadata, mealText, mealWritten } from './meal.ts'
-import { SCAR_TEXT, scarImportance, scarMetadata, scarWritten } from './scar.ts'
+import { registerMemoryEvents } from './memory-events.ts'
 import { registerToolWhitelist } from './tool-whitelist.ts'
+import { pendingSection, refusalOf, registerProactiveTools, type PendingLine } from './proactive-tools.ts'
+import type { Config, QqBundleSeam } from './types.ts'
 
+export type { Config, BundleDelivery, QqBundleSeam } from './types.ts'
 export type { DecisionBlock, DecisionLog, DecisionRecord } from './decisions.ts'
 export { createDecisionLog } from './decisions.ts'
 export { BUNDLE_DEFAULTS } from './defaults.ts'
@@ -49,81 +44,6 @@ export {
 } from './maintenance.ts'
 export type { MaintenanceFacts, MaintenanceInput } from './maintenance.ts'
 export { registerToolWhitelist, TOOL_WHITELIST_OPEN } from './tool-whitelist.ts'
-
-/** 这一行接受的配置 */
-export interface Config {
-  /** 说话规矩那个文件放哪 */
-  rulesFile?: string
-  /** 每天几点整理记忆 */
-  /** 每天几点做整理与例行开口，形如 00:20 */
-  dailySweepAt?: string
-  /** 一轮最多走几步 */
-  maxSteps?: number
-  /** 去重表最多留多少条 */
-  seenMax?: number
-  /** 轮次记录放哪，不填就用主目录下的 data */
-  decisionsFile?: string
-  /** 每日维护日志放哪，不填就用主目录下的 data */
-  maintenanceLogFile?: string
-  /** 入站之后隔多久才再问一次要不要主动开口 */
-  proactiveThrottleMs?: number
-  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
-  home?: string
-  /** 允许调用的工具名，空表示不限制 */
-  allowedTools?: readonly string[]
-  /** 每轮是否把召回到的记忆接在用户原话之后，关掉就一次都不召回 */
-  memoryInject?: boolean
-  /** 注入整串的字数上限 */
-  memoryInjectMaxChars?: number
-  /** 一次注入最多几条 */
-  memoryInjectMaxItems?: number
-  /** 同一段在最近多少轮内不重复注入 */
-  memoryInjectRepeatTurns?: number
-  /** 想发动态的读数高过这条线就攒一条动态候选 */
-  addPostWantFrom?: number
-  /** 同一个会话一天最多攒几条动态候选 */
-  postCandidateDailyMax?: number
-  /** 一顿饭写不写进记忆 */
-  mealMemory?: boolean
-  /** 一顿饭写成一条记忆时的重要度 */
-  mealMemoryImportance?: number
-  /** 喝水写不写进记忆 */
-  drinkMemory?: boolean
-  /** 喝水写成一条记忆时的重要度 */
-  drinkMemoryImportance?: number
-  /** 遗书写不写进记忆 */
-  farewellMemory?: boolean
-  /** 遗书写成一条记忆时的重要度 */
-  farewellMemoryImportance?: number
-  /** 一场梦写不写进记忆 */
-  dreamMemory?: boolean
-  /** 美梦与噩梦发不发出去，平淡梦一律不发 */
-  dreamPublish?: boolean
-  /** 疤写不写进记忆 */
-  scarMemory?: boolean
-  /** 调用方给的模型文本，模型自己没写过时遗书正文用它，再没有就写一句中性的话 */
-  farewellText?: string
-  /** 遗书正文的暂存槽放哪，要与通道那一份是同一个文件 */
-  farewellFile?: string
-  /** 外部余额系统的档位，越大越宽裕，不给就是没有来源 */
-  balanceLevel?: number
-  /** 启动账放哪，用来算今天重启过几次 */
-  livenessFile?: string
-}
-
-/** 一次投递的结论：没投出去的码与发布入口回来的那一段都摆在这里 */
-export interface BundleDelivery extends DeliverResult {
-  /** 走发布入口的结果，只有想发动态的那一条才有 */
-  published?: ActionResult
-}
-
-/** 排查用的接口，不进模型可见上下文 */
-export interface QqBundleSeam {
-  /** 从某一时刻起的轮次记录 */
-  decisions(sinceAt: number, limit: number): DecisionRecord[]
-  /** 把待发里的一条投出去：先预览再投递由主动性把着，动态那一路再交发布入口 */
-  deliver(chatKey: string, id: string, body?: string): Promise<BundleDelivery>
-}
 
 /** 插件的行名 */
 export const name = 'qq-bundle'
@@ -153,74 +73,6 @@ export function qqBundleOf(ctx: Context): QqBundleSeam | undefined {
   return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
-// 规则文件的位置
-function defaultRulesPath(): string {
-  try {
-    const here = path.dirname(fileURLToPath(import.meta.url))
-    return path.join(here, '..', 'prompts', 'rules.md')
-  } catch {
-    return path.join(process.cwd(), 'prompts', 'rules.md')
-  }
-}
-
-// 读规则，读不到就用一句兜底
-function readRules(file: string): string {
-  try {
-    return fs.readFileSync(file, 'utf8').trim()
-  } catch {
-    return '你是群里的一个人，说话简短，说完就停。'
-  }
-}
-
-// 把 00:20 这种写法拆成时与分；写坏了按默认那一档并记一行，不让整条装配塌掉
-function clockOf(value: string | undefined, fallback: string, ctx: Context): { hour: number; minute: number } {
-  const text = value ?? fallback
-  const parts = text.split(':')
-  const hour = Number(parts[0])
-  const minute = Number(parts[1])
-  const valid = Number.isInteger(hour) && Number.isInteger(minute)
-    && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59
-  if (valid) return { hour, minute }
-  const kept = fallback.split(':')
-  ctx.logger('qq-bundle').warn('整理时刻 %s 认不出来，按 %s 算', text, fallback)
-  return { hour: Number(kept[0]), minute: Number(kept[1]) }
-}
-
-// 条数上限看的事实：都从身体那唯一一份状态里取，不在这里另算
-function replyFactsOf(state: VitalsState): ReplyFacts {
-  return {
-    tired: state.adenosine,
-    annoyed: state.irritability,
-    energy: state.energy,
-    clingy: state.clinginess,
-    lonely: state.loneliness,
-    fear: state.fear,
-    dread: state.dread,
-    worry: state.worry,
-    anger: state.anger,
-    resentment: state.resentment,
-  }
-}
-
-// 睡眠那三项事实原样转述：睡着、预计醒来的时刻、刚被吵醒，判不判由被动那一边的闸门定
-function sleepFactsOf(state: VitalsState): { asleep: boolean; wakeAfter: number; waking: boolean } {
-  return { asleep: state.asleep, wakeAfter: state.wake_after, waking: state.sleep_state === 'waking' }
-}
-
-// 身体没接上时按中性的身体算，上限照样是一个数
-const NEUTRAL_FACTS: ReplyFacts = { tired: 0.5, annoyed: 0.5, energy: 0.5, clingy: 0.5, lonely: 0.5 }
-
-// 这一段只说这一轮最多几句，不说该不该回；动态那一路也照这条走
-function budgetOf(vitals: QqVitalsSeam | undefined): number {
-  const facts = vitals === undefined ? NEUTRAL_FACTS : replyFactsOf(vitals.read())
-  return replyBudget(facts)
-}
-
-// 提示词里那一句与发送路径读的是同一个数，两处不会对不上
-function budgetLine(vitals: QqVitalsSeam | undefined): string {
-  return `【这一轮的条数】这一轮最多说 ${budgetOf(vitals)} 条，说完就停，不追问，也不凑满。想发动态时把这条交给发布入口。`
-}
-
 /**
  * 把零件装到一起
  * @param ctx - 运行环境
@@ -228,6 +80,18 @@ function budgetLine(vitals: QqVitalsSeam | undefined): string {
  */
 export function apply(ctx: Context, config: Config = {}): void {
   const rules = readRules(config.rulesFile ?? defaultRulesPath())
+  const postLevel = config.postLevel ?? BUNDLE_DEFAULTS.postLevel
+  const humanActiveWindowMs = Math.max(0, config.humanActiveWindowMs ?? BUNDLE_DEFAULTS.humanActiveWindowMs)
+  const deliveredHistoryMax = Math.max(1, config.deliveredHistoryMax ?? BUNDLE_DEFAULTS.deliveredHistoryMax)
+  // 已发过的正文只留最近这几条，给候选去重比对用，不落盘
+  const deliveredHistory = new Map<string, string[]>()
+  const rememberDelivered = (chatKey: string, text: string): void => {
+    const kept = deliveredHistory.get(chatKey) ?? []
+    const fingerprint = text.trim()
+    if (fingerprint === '') return
+    deliveredHistory.set(chatKey, [...kept, fingerprint].slice(-deliveredHistoryMax))
+  }
+  const historyOf = (chatKey: string): string[] => deliveredHistory.get(chatKey) ?? []
 
   // 规则放在提示词靠后的位置，压住前面那些通用话术
   ctx.systemPrompt.section({
@@ -270,8 +134,6 @@ export function apply(ctx: Context, config: Config = {}): void {
       // 先预览再投递这条规矩由主动性把着，这里不另判一遍
       const delivered = proactive.deliver(chatKey, id)
       if (!delivered.ok || delivered.item === undefined) return delivered
-      // 不是想发动态的那一条就到此为止：投递这一步本身已经完成
-      if (delivered.item.facts.postWant === undefined) return delivered
       const text = (body ?? delivered.item.text).trim()
       if (text === '') {
         return { ok: false, code: 'bundle.no_body', reason: '这一条还没有正文', hint: '先把想发的那段写出来再投' }
@@ -279,16 +141,17 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (channel === undefined) {
         return { ok: false, code: 'bundle.no_channel', reason: '没有能发出去的通道', hint: '装上通道那一行再来' }
       }
-      // 分级与放行都归发布入口，这里只给类别与正文
-      const published = await channel.publish('post', text, { chatKey })
-      if (published.ok) return { ...delivered, published }
-      return {
-        ok: false,
-        ...published.code === undefined ? {} : { code: published.code },
-        ...published.reason === undefined ? {} : { reason: published.reason },
-        ...published.hint === undefined ? {} : { hint: published.hint },
-        published,
+      // 不是想发动态的那一条就发到当前群：公开动态一律不碰，这是定下来的口径
+      if (delivered.item.facts.postWant === undefined) {
+        const sent = await channel.send(text, chatKey)
+        if (!sent.ok) return refusalOf(sent, '等连上再说，或者换一句短点的')
+        rememberDelivered(chatKey, text)
+        return delivered
       }
+      // 级别由配置给，发布入口拿它去过阶段与两把钥匙，缺级别只会撞上看不懂的 post.level
+      const published = await channel.publish('post', text, { chatKey, level: postLevel })
+      if (published.ok) return { ...delivered, published }
+      return { ...refusalOf(published, '过一会儿再发'), published }
     },
   }
   seams.set(ctx.root, seam)
@@ -372,6 +235,8 @@ export function apply(ctx: Context, config: Config = {}): void {
   const attention = qqAttentionOf(ctx)
   const subject = qqSubjectOf(ctx)
   const channel = qqChannelOf(ctx)
+  // 注意力只把事实写进提示词，判不判由模型定
+  registerAttentionPrompt(ctx, { attention, activeChatKey: () => subject?.store.read().lastActive ?? '' })
   // 一个群一条会话：会话编号就是聊天键，各聊各的，谁也不会串到别人那句上
   const agentSink = ctx.get('agents')
   const sessions = new Map<string, AgentHandle>()
@@ -438,6 +303,8 @@ export function apply(ctx: Context, config: Config = {}): void {
     }
 
     const offIncoming = channel.onIncoming((message) => {
+      // 自己发出去的那条会作为 message_sent 推回来，认出来就不再当别人说话叫醒自己
+      if (message.selfSent) return
       if (!firstTime(message)) return
       wakes.set(message.chatKey, 'incoming')
       if (hasWords(message.text)) {
@@ -450,6 +317,8 @@ export function apply(ctx: Context, config: Config = {}): void {
         senderName: message.senderName,
         text: message.text,
         at: message.at,
+        atMe: message.atMe,
+        replyToBot: message.replyToBot,
       })
       subject?.store.setActive(message.chatKey)
       // 有人说话就开一轮：这个群有自己的会话，就叫它自己那一条醒来
@@ -462,6 +331,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         senderName: poke.userId,
         text: '戳了戳我',
         at: poke.at,
+        isPoke: true,
       })
       subject?.store.setActive(poke.chatKey)
     })
@@ -480,220 +350,54 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
   }
 
-  // 一顿饭写一条记忆：会话取当前活跃的那个，同一天同一顿只写一条
-  const mealImportance = config.mealMemoryImportance ?? BUNDLE_DEFAULTS.mealMemoryImportance
-
-  // 这一顿写成一条记忆：去重看记忆里已有的条，不另建文件；写不进去只抛给上面那层记一行
-  const writeMeal = (fact: MealFact): void => {
-    if (memory === undefined) return
-    const chatKey = subject?.store.read().lastActive ?? ''
-    if (chatKey === '') {
-      ctx.logger('qq-bundle').warn('进食记忆没有落点：还没有活跃会话')
-      return
-    }
-    if (mealWritten(memory.store.all(), chatKey, fact.at)) return
-    memory.write(mealText(fact), chatKey, {
-      layer: 'episodic',
-      source: 'chat',
-      importance: mealImportance,
-      at: fact.at,
-      metadata: mealMetadata(fact),
-    })
-  }
-
-  // 关着时一个监听都不注册，一顿饭连回调都不会进来
-  if ((config.mealMemory ?? BUNDLE_DEFAULTS.mealMemory) && vitals !== undefined) {
-    // 记不住这一顿不影响这一轮：写记忆失手只记一行，回调照常返回
-    const offMeal = vitals.onMeal((fact) => {
-      try {
-        writeMeal(fact)
-      } catch (error) {
-        ctx.logger('qq-bundle').warn('进食记忆没写进去：%s', String(error))
-      }
-    })
-    ctx.effect(() => () => {
-      offMeal()
-    })
-  }
-
-  // 一杯水写一条记忆：二十分钟里只要一条，太密就成了喝水流水账
-  const drinkImportance = config.drinkMemoryImportance ?? BUNDLE_DEFAULTS.drinkMemoryImportance
-
-  // 这一杯写成一条记忆：去重看记忆里已有的条，不另建文件
-  const writeDrink = (fact: DrinkFact): void => {
-    if (memory === undefined) return
-    const chatKey = subject?.store.read().lastActive ?? ''
-    if (chatKey === '') {
-      ctx.logger('qq-bundle').warn('喝水记忆没有落点：还没有活跃会话')
-      return
-    }
-    if (drinkWritten(memory.store.all(), chatKey, fact.at)) return
-    memory.write(drinkText(fact), chatKey, {
-      layer: 'episodic',
-      source: 'chat',
-      importance: drinkImportance,
-      at: fact.at,
-      metadata: drinkMetadata(fact),
-    })
-  }
-
-  // 关着时一个监听都不注册，一杯水连回调都不会进来
-  if ((config.drinkMemory ?? BUNDLE_DEFAULTS.drinkMemory) && vitals !== undefined) {
-    const offDrink = vitals.onDrink((fact) => {
-      try {
-        writeDrink(fact)
-      } catch (error) {
-        ctx.logger('qq-bundle').warn('喝水记忆没写进去：%s', String(error))
-      }
-    })
-    ctx.effect(() => () => {
-      offDrink()
-    })
-  }
-
-  // 遗书写一条记忆：会话取当前活跃的那个，同一天同一个人只写一条
-  const farewellImportance = config.farewellMemoryImportance ?? BUNDLE_DEFAULTS.farewellMemoryImportance
-  const farewellFile = config.farewellFile ?? defaultFarewellSlotFile(config.home)
-
-  // 模型自己在暂存槽里写过的那一句：槽在却读不动只记一行，接着按没写过办
-  const modelWords = (fact: FarewellFact): string | undefined => {
-    try {
-      return farewellTextAt(readFarewellSlot(farewellFile), fact.at)
-    } catch (error) {
-      ctx.logger('qq-bundle').warn('遗书的暂存槽没读出来：%s', String(error))
-      return undefined
-    }
-  }
-
-  // 这一条写成一条记忆：正文先用模型自己写的，没写才用配置或中性那句，去重看记忆里已有的条
-  const writeFarewell = (fact: FarewellFact): void => {
-    if (memory === undefined) return
-    const chatKey = subject?.store.read().lastActive ?? ''
-    if (chatKey === '') {
-      ctx.logger('qq-bundle').warn('遗书没有落点：还没有活跃会话')
-      return
-    }
-    if (farewellWritten(memory.store.all(), chatKey, fact.at)) return
-    const authored = modelWords(fact)
-    memory.write(farewellText(authored ?? config.farewellText), chatKey, {
-      layer: 'semantic',
-      source: 'chat',
-      importance: farewellImportance,
-      at: fact.at,
-      metadata: farewellMetadata(fact, authored === undefined ? 'fallback' : 'model'),
-    })
-  }
-
-  // 关着时一个监听都不注册，到线那天连回调都不会进来
-  if ((config.farewellMemory ?? BUNDLE_DEFAULTS.farewellMemory) && vitals !== undefined) {
-    // 写不进去不影响消息路径：只记一行，回调照常返回
-    const offFarewell = vitals.onFarewell((fact) => {
-      try {
-        writeFarewell(fact)
-      } catch (error) {
-        ctx.logger('qq-bundle').warn('遗书没写进去：%s', String(error))
-      }
-    })
-    ctx.effect(() => () => {
-      offFarewell()
-    })
-  }
-
-  // 一场梦写一条记忆，美梦与噩梦再发一次：会话取当前活跃的那个，同一天同一场只写一条、只发一次
-  const dreamMemory = config.dreamMemory ?? BUNDLE_DEFAULTS.dreamMemory
-  const dreamPublish = config.dreamPublish ?? BUNDLE_DEFAULTS.dreamPublish
-  // 已经试过的那几场：事实本身一辈子只产一次，进程里记一份就够，同一条不会连发两遍
-  const publishedDreams = new Set<string>()
-
-  // 这一场写成一条记忆：正文与重要度都取事实里的，去重看记忆里已有的条
-  const writeDream = (fact: DreamFact, chatKey: string): void => {
-    if (memory === undefined) return
-    if (dreamWritten(memory.store.all(), chatKey, fact)) return
-    memory.write(dreamText(fact), chatKey, {
-      layer: 'episodic',
-      source: 'chat',
-      importance: dreamImportance(fact),
-      at: fact.at,
-      metadata: dreamMetadata(fact),
-    })
-  }
-
-  // 发出去这一步：正文原样交给发布入口，分级、体检、冷却与额度都归它判
-  const publishDream = async (fact: DreamFact, chatKey: string): Promise<void> => {
-    if (channel === undefined) {
-      ctx.logger('qq-bundle').warn('梦境没有发布入口：通道那一行没装上')
-      return
-    }
-    const key = dreamKey(fact)
-    if (publishedDreams.has(key)) return
-    publishedDreams.add(key)
-    try {
-      await channel.publish('post', dreamText(fact), { chatKey })
-    } catch (error) {
-      ctx.logger('qq-bundle').warn('梦境没发出去：%s', String(error))
-    }
-  }
-
-  // 两个开关都关着时一个监听都不注册，一场梦连回调都不会进来
-  if ((dreamMemory || dreamPublish) && vitals !== undefined) {
-    // 写与发各走各的：一条失手只记一行，另一条与别的订阅者都不受影响
-    const offDream = vitals.onDream((fact) => {
-      const chatKey = subject?.store.read().lastActive ?? ''
-      if (chatKey === '') {
-        ctx.logger('qq-bundle').warn('梦境没有落点：还没有活跃会话')
-        return
-      }
-      if (dreamMemory) {
-        try {
-          writeDream(fact, chatKey)
-        } catch (error) {
-          ctx.logger('qq-bundle').warn('梦境记忆没写进去：%s', String(error))
-        }
-      }
-      // 平淡梦一律不发，只有事实说可发布的那两档才走发布入口
-      if (dreamPublish && fact.publishable) void publishDream(fact, chatKey)
-    })
-    ctx.effect(() => () => {
-      offDream()
-    })
-  }
-
-  // 疤写成一条长期印象：同一小时里只写一次，写不进去只记一行
-  const writeScar = (fact: ScarFact): void => {
-    if (memory === undefined) return
-    const chatKey = subject?.store.read().lastActive ?? ''
-    if (chatKey === '') {
-      ctx.logger('qq-bundle').warn('疤痕记忆没有落点：还没有活跃会话')
-      return
-    }
-    if (scarWritten(memory.store.all(), chatKey, fact.at)) return
-    memory.write(SCAR_TEXT, chatKey, {
-      layer: 'semantic',
-      source: 'chat',
-      importance: scarImportance(fact),
-      at: fact.at,
-      metadata: scarMetadata(fact),
-    })
-  }
-
-  // 关着时一个监听都不注册，抬起来的疤连回调都不会进来
-  if ((config.scarMemory ?? BUNDLE_DEFAULTS.scarMemory) && vitals !== undefined) {
-    // 记不住这道疤不影响这一拍：写记忆失手只记一行，回调照常返回
-    const offScar = vitals.onScar((fact) => {
-      try {
-        writeScar(fact)
-      } catch (error) {
-        ctx.logger('qq-bundle').warn('疤痕没写进去：%s', String(error))
-      }
-    })
-    ctx.effect(() => () => {
-      offScar()
-    })
-  }
+  // 身体那六类事实统一在另一个文件里接线，这里只把已经解析好的依赖递过去
+  registerMemoryEvents(ctx, {
+    config,
+    defaults: BUNDLE_DEFAULTS,
+    memory,
+    subject,
+    vitals,
+    channel,
+    postLevel,
+    farewellFile: config.farewellFile ?? defaultFarewellSlotFile(config.home),
+  })
 
   // 主动开口：每轮收尾与每次入站后（按节流）问一次要不要开口，它关着就一次都不问
   const proactive = qqProactiveOf(ctx)
   const material = qqMaterialOf(ctx)
+  const continuity = qqContinuityOf(ctx)
+  // 现场素材与上次的话头也只当事实说给模型，接不接由它定
+  const activeChatKey = (): string => subject?.store.read().lastActive ?? ''
+  registerMaterialPrompts(ctx, {
+    activeChatKey,
+    material,
+    continuity,
+    recent: chatKey => attention?.inbox.recent(chatKey, 30) ?? [],
+  })
+
+  // 攒着的由头要真的进提示词，模型才看得见；投递也注册成工具，别让它只停在 seam 上
+  const proactivePorts = {
+    activeChatKey: (): string => subject?.store.read().lastActive ?? '',
+    pending: (chatKey: string): readonly PendingLine[] => proactive === undefined
+      ? []
+      : proactive.pending.live(chatKey).map(item => ({ id: item.id, why: item.why, text: item.text })),
+    deliver: async (chatKey: string, id: string, body?: string) => {
+      const result = await seam.deliver(chatKey, id, body)
+      return {
+        ok: result.ok,
+        ...result.code === undefined ? {} : { code: result.code },
+        ...result.reason === undefined ? {} : { reason: result.reason },
+        ...result.hint === undefined ? {} : { hint: result.hint },
+      }
+    },
+  }
+  ctx.systemPrompt.section({
+    name: 'qq:proactive-pending',
+    order: 360,
+    text: () => pendingSection(proactivePorts, proactivePorts.activeChatKey()),
+  })
+  ctx.effect(() => registerProactiveTools(ctx, proactivePorts))
+
   const throttleMs = Math.max(0, config.proactiveThrottleMs ?? BUNDLE_DEFAULTS.proactiveThrottleMs)
   const lastConsidered = new Map<string, number>()
   const addPostWantFrom = config.addPostWantFrom ?? BUNDLE_DEFAULTS.addPostWantFrom
@@ -758,6 +462,13 @@ export function apply(ctx: Context, config: Config = {}): void {
     }
   }
 
+  // 群里正热闹只是一条事实：收件箱里这一段时间有人说过话，判不判交给闸门
+  const humanActiveOf = (chatKey: string, at: number): boolean => {
+    if (attention === undefined) return false
+    return attention.inbox.recent(chatKey, 40).some(message =>
+      message.senderId !== '' && at - message.at >= 0 && at - message.at < humanActiveWindowMs)
+  }
+
   const considerProactive = (chatKey: string, at: number, busy: boolean, throttled: boolean): void => {
     if (proactive === undefined || !proactive.enabled) return
     const last = lastConsidered.get(chatKey) ?? 0
@@ -769,8 +480,8 @@ export function apply(ctx: Context, config: Config = {}): void {
       chatKey,
       candidates: candidatesOf(chatKey),
       ...postWant === undefined ? {} : { external: [postWant] },
-      history: [],
-      humanActive: false,
+      history: historyOf(chatKey),
+      humanActive: humanActiveOf(chatKey, at),
       botBusy: busy,
       hasChannel: channel !== undefined,
       ...body !== undefined ? { proactiveBias: body.proactive_bias, ...sleepFactsOf(body) } : {},
@@ -793,6 +504,8 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 入站之后按节流再问一次：消息密的时候不必每条都问
   if (channel !== undefined) {
     const offIncomingProactive = channel.onIncoming((message) => {
+      // 自己发出去的那条不算“有人刚说完话”，不然会拿它当开口的由头
+      if (message.selfSent) return
       considerProactive(message.chatKey, Date.now(), rounds.has(message.chatKey), true)
     })
     ctx.effect(() => () => {

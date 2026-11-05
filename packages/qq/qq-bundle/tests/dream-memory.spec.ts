@@ -199,8 +199,8 @@ describe('梦境发布', () => {
     await settle()
 
     expect(publish).toHaveBeenCalledTimes(2)
-    expect(publish).toHaveBeenNthCalledWith(1, 'post', SWEET_TEXT, { chatKey: CHAT })
-    expect(publish).toHaveBeenNthCalledWith(2, 'post', NIGHTMARE_TEXT, { chatKey: CHAT })
+    expect(publish).toHaveBeenNthCalledWith(1, 'post', SWEET_TEXT, { chatKey: CHAT, level: 'public' })
+    expect(publish).toHaveBeenNthCalledWith(2, 'post', NIGHTMARE_TEXT, { chatKey: CHAT, level: 'public' })
     expect(memory.store.all()).toHaveLength(2)
   })
 

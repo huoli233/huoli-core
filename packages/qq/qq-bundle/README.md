@@ -11,9 +11,28 @@ kind: "package-bundle"
 
 ## Table of Contents
 
+- [怎么挂进启动面](#怎么挂进启动面)
 - [模型体验](#model-experience)
 - [已知限制与延期工作](#known-limitations-and-deferred-work)
 - [开发备注](#dev-note)
+
+## 怎么挂进启动面
+
+这一行不是随发行版启动的默认组合，要由 profile 点名才会挂上。清单里已经声明 `huoli.bundle.patch` 指向 `qq.patch.yml`，所以装法与内核其它组合包一样：先把本包链接到运行环境，再把包名写进该 profile 的 `huoli.profile.bundles`，顺序排在 `@huoli/huoli-base` 之后。
+
+```json
+{
+  "huoli": {
+    "profile": {
+      "bundles": ["@huoli/huoli-base", "@huoli/huoli-qq-bundle"]
+    }
+  }
+}
+```
+
+连 OneBot 那头的三个值由环境变量给：`QQ_ONEBOT_URL`（默认 `ws://127.0.0.1:6700`）、`QQ_SELF_ID`、`QQ_ACCESS_TOKEN`。`QQ_SELF_ID` 要填机器人自己的号，入站才能认出自己发出去的消息，不当成别人说话再叫醒自己。出厂配置里 `qq-proactive` 与 `qq-self` 都是 `enabled: false`，主动开口与自我层（含只读面板）默认不露出来；要用时在该 profile 的 `cordis.patch.yml` 里按 id 覆盖这两行，并给 `qq-self` 配 `panelPort`（默认 0 为不监听）。
+
+`tests/mount.spec.ts` 用装载器同一套 `entryListSchema` 与 `applyEntryPatches` 证明：清单声明的 patch 解得开、十一个零件行都插进基线、装配行排在最后、压缩那一行被覆盖；没把本包列进 profile 时一条 QQ 行都没有。
 
 ## Model Experience
 
@@ -21,7 +40,7 @@ kind: "package-bundle"
 
 #### What the model sees
 
-提示词末尾多一段说话规矩；每轮走多少步由 `maxSteps` 管，超了就停。规矩前面还有一段 `qq:reply-budget`（`order` 350），写的是这一轮最多说几条：数字由 `qq-pacing` 的 `replyBudget` 按身体那份状态算出来，只说上限，不说该不该回；这一段末尾还有一句「想发动态时把这条交给发布入口」，只指路，不改人设也不新增段落。用户原话那条消息的尾部会多一小段背景：`agent/pre-step` 里拿这一轮用户的原话去召回，命中就用 `buildInjectBlock` 拼成「你记得的一些事，只作参考」那段，再由 `injectIntoUserText` 接在原话之后，中间隔一个空行；没有命中就不加，一个占位字都不补，这段夹在用户消息里，不进系统提示词，也不进工具结果。
+提示词末尾多一段说话规矩；每轮走多少步由 `maxSteps` 管，超了就停。规矩前面还有一段 `qq:reply-budget`（`order` 350），写的是这一轮最多说几条：数字由 `qq-pacing` 的 `replyBudget` 按身体那份状态算出来，只说上限，不说该不该回；这一段末尾还有一句「想发动态时把这条交给发布入口」，只指路，不改人设也不新增段落。另有四段只陈述事实的短段，接不接、说不说都由模型自己定：`qq:proactive-pending`（`order` 360）列出攒着的由头与编号、`qq:attention`（340）写谁在叫她、现场多热以及她给自己设的唤醒偏好、`qq:material`（330）写现场素材、`qq:continuity`（320）写上次收尾的话头与事后回想；四段都没有内容时整段不出现，一个占位字都不留。用户原话那条消息的尾部会多一小段背景：`agent/pre-step` 里拿这一轮用户的原话去召回，命中就用 `buildInjectBlock` 拼成「你记得的一些事，只作参考」那段，再由 `injectIntoUserText` 接在原话之后，中间隔一个空行；没有命中就不加，一个占位字都不补，这段夹在用户消息里，不进系统提示词，也不进工具结果。投递这一头多一个模型可见工具 `qq_deliver_proactive`，参数是候选编号与可选的改写正文。
 
 #### Token effect
 
@@ -41,10 +60,9 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 
 ## Known Limitations and Deferred Work
 
-- 每天整理是每小时看一眼时间，不是真正的定时器。
+- 每天整理是每分钟看一眼时间，到点那一次只做一遍，不是独立的定时器。
 - 压缩只调了参数，没有换成聊天口吻的摘要。
 - 每个包的数据文件各自一个，还没统一到一处。
-- 自己发出去的消息（`message_sent`）也会当入站算一次，装配层这边没有自己的号可以判。
 - 步数用满被拒时那一轮的 `blocked.retryAt` 是空的：下一轮由下一次唤醒开，这里给不出时刻。
 - 提示词里那句「把这条交给发布入口」现在指得到工具：`qq-channel` 注册了 `qq_publish_post`，参数只有正文与级别。级别只报 `routine` 或 `public` 两级，工具不替模型判该不该发。
 - 注入只在带用户原话的那一步发生：被主动唤醒、没有用户消息的那一轮不召回，也不补占位文字。
@@ -52,10 +70,9 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 - 注入的查询只用这一步的用户原话，不回头读注意力收件箱里更早的入站。
 - 决策痕迹只在轮次边界落盘，进程被强杀时手上那一轮会丢。
 - 工具白名单只按工具名判，不看参数。
-- 主动开口的候选只来自心里惦记着的事，去重靠素材仓自己删，还没拿已经说过的话再筛一遍。
+- 主动开口的候选来自心里惦记着的事与身体那股想发动态的劲；已发正文只在本进程里留最近二十条给去重，重启后从头记。
 - 主动开口只在轮次收尾与入站之后问，没有独立的定时唤醒：很久没人说话时她不会自己开口。
 - 动态候选只有由头与读数，没有正文：正文要在投递时给，没给就回 `bundle.no_body`，不拿由头当正文发出去。
-- 发布入口要级别、话题与两把钥匙，而这一处只给类别与正文，所以这条路径现在多半被 `post.level` 拒；级别该由谁给还没定。
 - 投递被发布入口拒了，待发里那一条已经划掉，冷却与今天那一次开口额度也算用掉。
 - 「今天攒过动态候选」只记在本进程里：进程重启后同一天会再攒一次。
 - 每日维护那一次看的是当前活跃会话，一次活跃会话都没有时这条路径不攒候选。
@@ -77,7 +94,7 @@ reason 放唤醒理由码（incoming、poke），blocked 只放闸门码与下�
 
 队列节拍的接线：`agent/turn-stopping` 每轮先落一行轮次记录，再调一次 `memory.tick(Date.now())` 推进待写队列（每 4 轮排空、每 10 轮反思）。这一步失手只记一行告警、不拦这一轮，也不回滚已经落下的那一行；每日维护仍走 `maintain`，它内部已经排过空，`tick` 到点那一轮见队列空着就不再排一遍。
 
-想发动态的接线：`postWantCandidateOf` 从 `qq-vitals` 的 seam 读 `post_want`，高过 `addPostWantFrom`（默认 0.30，可被 `Config` 覆盖）就攒一条候选——`kind` 取 `share`、`why` 写清由这股劲与眼下状态、`postWant` 带上读数、正文留白——再从 `consider` 的可选入参 `external` 递进去，只走闸门，不评分、不排序、不决定发不发。同一天同一个会话最多攒 `postCandidateDailyMax`（默认 1）条，而且只有攒成（闸门放行）才算数，被闸门拦下时同一天还有机会。主动性关着时既不读也不写。投递走 `qqBundleOf(ctx)` 的 `deliver(chatKey, id, 正文)`：先由主动性判它有没有先 `preview` 过，过了再交给 `qq-channel` 的 `publish('post', 正文, { chatKey })`，分级与放行都归发布入口，本处只给类别与正文。
+想发动态的接线：`postWantCandidateOf` 从 `qq-vitals` 的 seam 读 `post_want`，高过 `addPostWantFrom`（默认 0.30，可被 `Config` 覆盖）就攒一条候选——`kind` 取 `share`、`why` 写清由这股劲与眼下状态、`postWant` 带上读数、正文留白——再从 `consider` 的可选入参 `external` 递进去，只走闸门，不评分、不排序、不决定发不发。同一天同一个会话最多攒 `postCandidateDailyMax`（默认 1）条，而且只有攒成（闸门放行）才算数，被闸门拦下时同一天还有机会。主动性关着时既不读也不写。投递走 `qqBundleOf(ctx)` 的 `deliver(chatKey, id, 正文)`：先由主动性判它有没有先 `preview` 过；想发动态的那一条交给 `qq-channel` 的 `publish('post', 正文, { chatKey, level })`，级别取 `postLevel`（默认 `public`）；不是动态的那一条（例如心里惦记着的事）走同一条链上的 `send(正文, chatKey)`，只过出站体检、频控与切分，公开动态那套级别与钥匙一条都不碰。
 
 条数那一段的接线：`replyFactsOf` 把累（`adenosine`）、烦（`irritability`）、精力、黏、孤独照抄成 `ReplyFacts`，交给 `replyBudget` 取上限；身体没装上时用一份中性事实，上限照样是一个数。同一个数既渲染成提示词里那句「这一轮最多说几条」，也经 `qq-channel` 的 `useReplyCap(provide)` 交给发送路径，两处读的是同一个函数，不会对不上。
 

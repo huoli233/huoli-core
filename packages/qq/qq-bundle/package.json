@@ -28,10 +28,12 @@
   },
   "devDependencies": {
     "@huoli/cordis": "workspace:~",
+    "@huoli/cordis-plugin-include": "workspace:~",
     "@huoli/huoli-agent": "workspace:*",
     "@huoli/huoli-llm": "workspace:*",
     "@huoli/huoli-system-prompt": "workspace:*",
-    "@huoli/huoli-tools": "workspace:*"
+    "@huoli/huoli-tools": "workspace:*",
+    "js-yaml": "^4.3.2"
   },
   "dependencies": {
     "@huoli/huoli-brand": "workspace:*",
