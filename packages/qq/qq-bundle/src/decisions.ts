@@ -27,6 +27,10 @@ export interface DecisionRecord {
   sent: number
   /** 被哪条关卡拦下、给了什么下次时间 */
   blocked: DecisionBlock | null
+  /** 这一轮走到第几步，排查空转用 */
+  steps?: number
+  /** 有没有给过收尾提醒 */
+  wrapped?: boolean
 }
 
 /** 建记录要用的东西 */
@@ -92,7 +96,7 @@ function parseLine(line: string): DecisionRecord | null {
     blocked = blockOf(row.blocked)
     if (blocked === null) return null
   }
-  return {
+  const record: DecisionRecord = {
     at,
     chatKey,
     awake: row.awake === true,
@@ -101,6 +105,11 @@ function parseLine(line: string): DecisionRecord | null {
     sent: Number.isFinite(sent) ? sent : 0,
     blocked,
   }
+  // 老记录里没有这两栏，读回来也不凭空补，免得旧日志看起来像新的
+  const steps = Number(row.steps)
+  if (row.steps !== undefined && Number.isFinite(steps)) record.steps = steps
+  if (row.wrapped === true) record.wrapped = true
+  return record
 }
 
 /**

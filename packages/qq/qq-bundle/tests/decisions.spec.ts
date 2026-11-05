@@ -297,3 +297,36 @@ describe('排查用的入口', () => {
     expect(seat.records()).toHaveLength(2)
   })
 })
+
+describe('快到上限时提醒收尾', () => {
+  it('提醒那一句把两条路都写明白', async () => {
+    const seat = await mount()
+
+    const decision = await seat.ctx.waterfall('agent/pre-step', stepOf(3), next)
+
+    expect(decision.kind).toBe('enter')
+    const said = JSON.stringify(decision)
+    expect(said).toContain('该收尾了')
+    expect(said).toContain('qq_send_message')
+  })
+
+  it('平常那几步不打扰', async () => {
+    const seat = await mount()
+
+    const decision = await seat.ctx.waterfall('agent/pre-step', stepOf(2), next)
+
+    expect(JSON.stringify(decision)).not.toContain('该收尾了')
+  })
+
+  it('记录里留下走到第几步、提醒过没有', async () => {
+    const seat = await mount()
+
+    await seat.ctx.waterfall('agent/pre-step', stepOf(3), next)
+    await seat.ctx.waterfall('agent/pre-step', stepOf(6), next)
+
+    const record = only(seat)
+    expect(record.steps).toBe(6)
+    expect(record.wrapped).toBe(true)
+    expect(record.blocked?.code).toBe('bundle.step_cap')
+  })
+})

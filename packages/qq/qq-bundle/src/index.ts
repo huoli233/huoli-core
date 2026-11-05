@@ -21,7 +21,7 @@ import { momentPort, qqSelfOf } from '@huoli/huoli-qq-self'
 import { qqVitalsOf, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
 import { budgetLine, budgetOf, clockOf, defaultRulesPath, readRules, registerAttentionPrompt, registerMaterialPrompts, sleepFactsOf } from './facts.ts'
-import { bodyEventText, registerBodyTools } from './body-tools.ts'
+import { bodyEventText, registerBodyTools, WRAP_UP_LINE } from './body-tools.ts'
 import { appendConsidered, createDecisionLog, type DecisionBlock, type Verdict } from './decisions.ts'
 import { createLiveness } from './liveness.ts'
 import { defaultMaintenanceLogFile, mirrorPortOf, runMaintenance } from './maintenance.ts'
@@ -62,6 +62,10 @@ interface RoundFacts {
   attempted: boolean
   sent: number
   blocked: DecisionBlock | null
+  /** 这一轮走到第几步 */
+  steps: number
+  /** 有没有给过收尾提醒 */
+  wrapped: boolean
 }
 
 const seams = new WeakMap<Context, QqBundleSeam>()
@@ -166,59 +170,51 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (round === undefined) return
     rounds.delete(chatKey)
     try {
-      decisions.append({
-        at: round.at,
-        chatKey: round.chatKey,
-        awake: round.awake,
-        reason: round.reason,
-        attempted: round.attempted,
-        sent: round.sent,
-        blocked: round.blocked,
-      })
+      const { at, awake, reason, attempted, sent, blocked, steps, wrapped } = round
+      decisions.append({ at, chatKey, awake, reason, attempted, sent, blocked, steps, wrapped })
     } catch (error) {
       ctx.logger('qq-bundle').warn('轮次记录写不进去：%s', String(error))
     }
   }
 
+  // 开一轮的空壳：唤醒理由给空就是没被叫醒
+  const blankRound = (at: number, chatKey: string, reason: string | null): RoundFacts =>
+    ({ at, chatKey, awake: reason !== null, reason, attempted: false, sent: 0, blocked: null, steps: 0, wrapped: false })
+
   // 手上没有这一轮就补一条空白，关卡拦下时也要能落一行
   const roundOf = (chatKey: string, at: number): RoundFacts => {
     const existing = rounds.get(chatKey)
     if (existing !== undefined) return existing
-    const opened: RoundFacts = { at, chatKey, awake: false, reason: null, attempted: false, sent: 0, blocked: null }
+    const opened = blankRound(at, chatKey, null)
     rounds.set(chatKey, opened)
     return opened
   }
 
   // 开一轮：把攒着的唤醒事实收进来，收完就清掉
   const openRound = (chatKey: string, at: number): void => {
-    const reason = wakes.get(chatKey)
+    const reason = wakes.get(chatKey) ?? null
     wakes.delete(chatKey)
-    rounds.set(chatKey, {
-      at,
-      chatKey,
-      awake: reason !== undefined,
-      reason: reason ?? null,
-      attempted: false,
-      sent: 0,
-      blocked: null,
-    })
+    rounds.set(chatKey, blankRound(at, chatKey, reason))
   }
 
   // 每轮最多走几步：走太多就是在空转，停掉比继续烧钱好
   const maxSteps = Math.max(1, config.maxSteps ?? BUNDLE_DEFAULTS.maxSteps)
+  // 离上限还有几步时提醒一次，不提醒模型能一直调工具，到顶整轮被丢掉
+  const wrapUpAt = maxSteps - Math.min(BUNDLE_DEFAULTS.wrapUpSteps, Math.max(1, Math.floor(maxSteps / 2)))
   ctx.on('agent/pre-step', async (payload, next) => {
     const chatKey = payload.agent.id
     if (payload.step === 1) openRound(chatKey, Date.now())
-    if (payload.step > maxSteps) {
-      roundOf(chatKey, Date.now()).blocked = {
-        code: 'bundle.step_cap',
-        retryAt: null,
-        hint: '这一轮已经走到步数上限，下一轮再说',
-      }
-      flush(chatKey)
-      return { kind: 'reject' as const }
+    const round = roundOf(chatKey, Date.now())
+    round.steps = payload.step
+    if (payload.step === wrapUpAt) {
+      round.wrapped = true
+      const nudge = createUserMessage({ content: [{ type: 'text', text: WRAP_UP_LINE }], source: { kind: 'user' } })
+      return { kind: 'enter' as const, messages: [...payload.messages, nudge] }
     }
-    return next()
+    if (payload.step <= maxSteps) return next()
+    round.blocked = { code: 'bundle.step_cap', retryAt: null, hint: '这一轮已经走到步数上限，下一轮再说' }
+    flush(chatKey)
+    return { kind: 'reject' as const }
   })
 
   // 记忆那头要用的东西先拿到手：每轮收尾与每天整理都要用

@@ -4,6 +4,8 @@ import { DEFAULTS as MEMORY_DEFAULTS } from '@huoli/huoli-qq-memory'
 
 /** 组合包的默认值 */
 export const BUNDLE_DEFAULTS = {
+  /** 离步数上限还有几步时提醒一次收尾 */
+  wrapUpSteps: 8,
   /** 一轮最多走几步 */
   maxSteps: 40,
   /** 每天几点做整理与例行开口，形如 00:20 */
