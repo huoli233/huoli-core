@@ -31,6 +31,8 @@ export interface DecisionRecord {
   steps?: number
   /** 有没有给过收尾提醒 */
   wrapped?: boolean
+  /** 最后调的是哪个工具，没调过就是空 */
+  lastTool?: string
 }
 
 /** 建记录要用的东西 */
@@ -109,6 +111,7 @@ function parseLine(line: string): DecisionRecord | null {
   const steps = Number(row.steps)
   if (row.steps !== undefined && Number.isFinite(steps)) record.steps = steps
   if (row.wrapped === true) record.wrapped = true
+  if (typeof row.lastTool === 'string' && row.lastTool !== '') record.lastTool = row.lastTool
   return record
 }
 

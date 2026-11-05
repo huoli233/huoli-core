@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import type { Agent, PreStepDecision } from '@huoli/huoli-agent'
+import type { Session, SessionEvent } from '@huoli/huoli-session'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import { apply as applyAttention } from '@huoli/huoli-qq-attention'
 import { apply as applyChannel } from '@huoli/huoli-qq-channel'
@@ -328,5 +329,16 @@ describe('快到上限时提醒收尾', () => {
     expect(record.steps).toBe(6)
     expect(record.wrapped).toBe(true)
     expect(record.blocked?.code).toBe('bundle.step_cap')
+  })
+
+  it('记下这一轮最后调的是哪个工具', async () => {
+    const seat = await mount()
+
+    await seat.ctx.waterfall('agent/pre-step', stepOf(1), next)
+    const call = { type: 'tool/call', seq: 1, time: Date.now(), data: { turn: 1, step: 1, callId: 'c1', name: 'read_messages', arguments: '{}' } }
+    seat.ctx.emit('session/event', { id: CHAT } as Session, call as SessionEvent)
+    await seat.ctx.waterfall('agent/pre-step', stepOf(6), next)
+
+    expect(only(seat).lastTool).toBe('read_messages')
   })
 })

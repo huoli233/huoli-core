@@ -66,6 +66,8 @@ interface RoundFacts {
   steps: number
   /** 有没有给过收尾提醒 */
   wrapped: boolean
+  /** 最后调的是哪个工具，没有就是空 */
+  lastTool: string
 }
 
 const seams = new WeakMap<Context, QqBundleSeam>()
@@ -170,8 +172,8 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (round === undefined) return
     rounds.delete(chatKey)
     try {
-      const { at, awake, reason, attempted, sent, blocked, steps, wrapped } = round
-      decisions.append({ at, chatKey, awake, reason, attempted, sent, blocked, steps, wrapped })
+      const { at, awake, reason, attempted, sent, blocked, steps, wrapped, lastTool } = round
+      decisions.append({ at, chatKey, awake, reason, attempted, sent, blocked, steps, wrapped, lastTool })
     } catch (error) {
       ctx.logger('qq-bundle').warn('轮次记录写不进去：%s', String(error))
     }
@@ -179,27 +181,21 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 开一轮的空壳：唤醒理由给空就是没被叫醒
   const blankRound = (at: number, chatKey: string, reason: string | null): RoundFacts =>
-    ({ at, chatKey, awake: reason !== null, reason, attempted: false, sent: 0, blocked: null, steps: 0, wrapped: false })
+    ({ at, chatKey, awake: reason !== null, reason, attempted: false, sent: 0, blocked: null, steps: 0, wrapped: false, lastTool: '' })
 
-  // 手上没有这一轮就补一条空白，关卡拦下时也要能落一行
   const roundOf = (chatKey: string, at: number): RoundFacts => {
-    const existing = rounds.get(chatKey)
-    if (existing !== undefined) return existing
-    const opened = blankRound(at, chatKey, null)
-    rounds.set(chatKey, opened)
-    return opened
+    const kept = rounds.get(chatKey) ?? blankRound(at, chatKey, null)
+    rounds.set(chatKey, kept)
+    return kept
   }
 
   // 开一轮：把攒着的唤醒事实收进来，收完就清掉
   const openRound = (chatKey: string, at: number): void => {
-    const reason = wakes.get(chatKey) ?? null
+    rounds.set(chatKey, blankRound(at, chatKey, wakes.get(chatKey) ?? null))
     wakes.delete(chatKey)
-    rounds.set(chatKey, blankRound(at, chatKey, reason))
   }
-
-  // 每轮最多走几步：走太多就是在空转，停掉比继续烧钱好
+  // 每轮最多走几步；离上限还差 wrapUpSteps 步时提醒一次收尾，不提醒模型能一直调工具
   const maxSteps = Math.max(1, config.maxSteps ?? BUNDLE_DEFAULTS.maxSteps)
-  // 离上限还有几步时提醒一次，不提醒模型能一直调工具，到顶整轮被丢掉
   const wrapUpAt = maxSteps - Math.min(BUNDLE_DEFAULTS.wrapUpSteps, Math.max(1, Math.floor(maxSteps / 2)))
   ctx.on('agent/pre-step', async (payload, next) => {
     const chatKey = payload.agent.id
@@ -215,6 +211,14 @@ export function apply(ctx: Context, config: Config = {}): void {
     round.blocked = { code: 'bundle.step_cap', retryAt: null, hint: '这一轮已经走到步数上限，下一轮再说' }
     flush(chatKey)
     return { kind: 'reject' as const }
+  })
+
+  // 记下最后调的是哪个工具：出事时才知道是哪几个在空转
+  ctx.on('session/event', (session, event) => {
+    if (event.type === 'tool/call') {
+      const round = rounds.get(String(session.id))
+      if (round !== undefined) round.lastTool = event.data.name
+    }
   })
 
   // 记忆那头要用的东西先拿到手：每轮收尾与每天整理都要用
