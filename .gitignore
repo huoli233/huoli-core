@@ -56,3 +56,8 @@ native/system/test/bin/
 .tmp/
 .opt3.mjs
 .qq-dump.txt
+
+# tsc 会把凭证包的产物掉进 src，忽略掉
+packages/credentials/credentials/src/*.js
+packages/credentials/credentials/src/*.d.ts
+packages/credentials/credentials/src/*.map
