@@ -21,13 +21,19 @@ export interface GateInput {
   waking?: boolean
 }
 
+/** 一小时多少分钟，单位换算，不随配置改 */
+const MINUTES_PER_HOUR = 60
+
+/** 一小时的毫秒数，单位换算，不随配置改 */
+const MS_PER_HOUR = 60 * 60_000
+
 // 时分转成当天的分钟数
 function toMinutes(hhmm: string): number {
   const parts = hhmm.split(':')
   const hour = Number(parts[0])
   const minute = Number(parts[1])
   if (!Number.isFinite(hour) || !Number.isFinite(minute)) return -1
-  return hour * 60 + minute
+  return hour * MINUTES_PER_HOUR + minute
 }
 
 // 身体给的读数折回间隔倍率：零对下限、一对上限，没接上按中性的一倍算
@@ -72,7 +78,7 @@ export function inQuietHours(now: number, start: string, end: string): boolean {
   const to = toMinutes(end)
   if (from < 0 || to < 0 || from === to) return false
   const date = new Date(now)
-  const at = date.getHours() * 60 + date.getMinutes()
+  const at = date.getHours() * MINUTES_PER_HOUR + date.getMinutes()
   return from < to ? (at >= from && at < to) : (at >= from || at < to)
 }
 
@@ -133,9 +139,10 @@ export function runGates(input: GateInput): GateVerdict {
  */
 export function endOfQuiet(now: number, end: string): number {
   const to = toMinutes(end)
-  if (to < 0) return now + 60 * 60_000
+  if (to < 0) return now + MS_PER_HOUR
   const date = new Date(now)
-  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate(), Math.floor(to / 60), to % 60, 0, 0)
+  const hour = Math.floor(to / MINUTES_PER_HOUR)
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, to % MINUTES_PER_HOUR, 0, 0)
   if (target.getTime() <= now) target.setDate(target.getDate() + 1)
   return target.getTime()
 }
