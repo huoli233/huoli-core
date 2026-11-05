@@ -7,7 +7,7 @@ import type { Session, SessionEvent } from '@huoli/huoli-session'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import { apply as applyAttention } from '@huoli/huoli-qq-attention'
 import { apply as applyChannel } from '@huoli/huoli-qq-channel'
-import { apply as applyMemory } from '@huoli/huoli-qq-memory'
+import { apply as applyMemory, qqMemoryOf } from '@huoli/huoli-qq-memory'
 import { apply as applySubject } from '@huoli/huoli-qq-subject'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -74,6 +74,8 @@ interface Mounted {
   socket: FakeSocket
   tool: (name: string) => ToolDefinition
   records(): DecisionRecord[]
+  /** 记忆仓那一面，看她说了话有没有攒进队列 */
+  memory: NonNullable<ReturnType<typeof qqMemoryOf>>
 }
 
 // 静默时段两头写成一样等于关掉，免得用例跑在深夜时被它拦下
@@ -117,7 +119,19 @@ async function mount(patch: { banned?: readonly string[] } = {}): Promise<Mounte
     if (found === undefined) throw new Error(`没有注册工具 ${name}`)
     return found
   }
-  return { ctx, file, socket, tool, records: () => qqBundleOf(ctx)?.decisions(0, 100) ?? [] }
+  const memory = qqMemoryOf(ctx)
+  if (memory === undefined) throw new Error('记忆没有装起来')
+  return { ctx, file, socket, tool, memory, records: () => qqBundleOf(ctx)?.decisions(0, 100) ?? [] }
+}
+
+// 造一条 tool/call 事实，跟真跑时内核发的一样
+function toolCall(name: string, args: Record<string, unknown>): SessionEvent {
+  return {
+    type: 'tool/call',
+    seq: 1,
+    time: Date.now(),
+    data: { turn: 1, step: 1, callId: 'c1', name, arguments: JSON.stringify(args) },
+  } as SessionEvent
 }
 
 // 工具体只读会话编号与取消信号，其余字段由内核在真实调用时给
@@ -335,10 +349,38 @@ describe('快到上限时提醒收尾', () => {
     const seat = await mount()
 
     await seat.ctx.waterfall('agent/pre-step', stepOf(1), next)
-    const call = { type: 'tool/call', seq: 1, time: Date.now(), data: { turn: 1, step: 1, callId: 'c1', name: 'read_messages', arguments: '{}' } }
-    seat.ctx.emit('session/event', { id: CHAT } as Session, call as SessionEvent)
+    const call = toolCall('read_messages', {})
+    seat.ctx.emit('session/event', { id: CHAT } as Session, call)
     await seat.ctx.waterfall('agent/pre-step', stepOf(6), next)
 
     expect(only(seat).lastTool).toBe('read_messages')
+  })
+})
+
+describe('说出去的话攒进记忆队列', () => {
+  it('一轮真说了话，队列里就有一条', async () => {
+    const seat = await mount()
+    seat.socket.deliver(groupMessage('在吗', 1))
+
+    await seat.ctx.waterfall('agent/pre-step', stepOf(1), next)
+    seat.ctx.emit('session/event', { id: CHAT } as Session, toolCall('qq_send_message', { text: '在的呀，怎么了' }))
+    await seat.tool('qq_send_message').execute({ text: '在的呀，怎么了' }, execOf(CHAT))
+    await seat.ctx.serial('agent/turn-stopping', { agent: AGENT, turn: 1, signal: new AbortController().signal })
+
+    expect(seat.memory.pending()).toBe(1)
+  })
+
+  it('排空之后记忆里能找回来', async () => {
+    const seat = await mount()
+    seat.socket.deliver(groupMessage('在吗', 2))
+
+    await seat.ctx.waterfall('agent/pre-step', stepOf(1), next)
+    seat.ctx.emit('session/event', { id: CHAT } as Session, toolCall('qq_send_message', { text: '我在听你说呢' }))
+    await seat.tool('qq_send_message').execute({ text: '我在听你说呢' }, execOf(CHAT))
+    await seat.ctx.serial('agent/turn-stopping', { agent: AGENT, turn: 1, signal: new AbortController().signal })
+    seat.memory.flushQueue(Date.now())
+
+    const hits = seat.memory.find('我在听你说', CHAT, 5)
+    expect(hits.length).toBeGreaterThan(0)
   })
 })

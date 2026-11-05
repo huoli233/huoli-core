@@ -96,6 +96,8 @@ reason 放唤醒理由码（incoming、poke），blocked 只放关卡码与下�
 
 队列节拍的接线：`agent/turn-stopping` 每轮先落一行轮次记录，再调一次 `memory.tick(Date.now())` 推进待写队列（每 4 轮排空、每 10 轮反思）。这一步失手只记一行告警、不拦这一轮，也不回滚已经落下的那一行；每日维护仍走 `maintain`，它内部已经排过空，`tick` 到点那一轮见队列空着就不再排一遍。
 
+队列的入队那头：一轮真把话发出去（`sent > 0`）时，收尾会把她让我发的那句 `enqueue` 进记忆队列，参数是 `layer: 'episodic'`、`source: 'chat'`、`at` 取这一轮开始时刻。要发的话从 `session/event` 里的 `tool/call` 取：只有 `qq_send_message` 的参数 `text` 算数，取不到就当这一轮没说话。入队沿用记忆包自己的门槛——短过 `minTextChars`（默认 4 字）、长过 `maxTextChars`、重要度低于 `writeMinImportance` 的那几种会被拒，拒了不报错，只在记忆包的 `droppedLow` 与队列文件里计数。
+
 想发动态的接线：`postWantCandidateOf` 从 `qq-vitals` 的 seam 读 `post_want`，高过 `addPostWantFrom`（默认 0.30，可被 `Config` 覆盖）就攒一条候选——`kind` 取 `share`、`why` 写清由这股劲与眼下状态、`postWant` 带上读数、正文留白——再从 `consider` 的可选入参 `external` 递进去，只走关卡，不评分、不排序、不决定发不发。同一天同一个会话最多攒 `postCandidateDailyMax`（默认 1）条，而且只有攒成（关卡放行）才算数，被关卡拦下时同一天还有机会。主动性关着时既不读也不写。投递走 `qqBundleOf(ctx)` 的 `deliver(chatKey, id, 正文)`：先由主动性判它有没有先 `preview` 过；想发动态的那一条交给 `qq-channel` 的 `publish('post', 正文, { chatKey, level })`，级别取 `postLevel`（默认 `public`）；不是动态的那一条（例如心里惦记着的事）走同一条链上的 `send(正文, chatKey)`，只过出站体检、频控与切分，公开动态那套级别与钥匙一条都不碰。
 
 条数那一段的接线：`replyFactsOf` 把累（`adenosine`）、烦（`irritability`）、精力、黏、孤独照抄成 `ReplyFacts`，交给 `replyBudget` 取上限；身体没装上时用一份中性事实，上限照样是一个数。同一个数既渲染成提示词里那句「这一轮最多说几条」，也经 `qq-channel` 的 `useReplyCap(provide)` 交给发送路径，两处读的是同一个函数，不会对不上。

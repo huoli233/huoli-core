@@ -21,6 +21,7 @@ import { momentPort, qqSelfOf } from '@huoli/huoli-qq-self'
 import { qqVitalsOf, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { BUNDLE_DEFAULTS } from './defaults.ts'
 import { budgetLine, budgetOf, clockOf, defaultRulesPath, readRules, registerAttentionPrompt, registerMaterialPrompts, sleepFactsOf } from './facts.ts'
+import { enqueueSaid, saidTextOf } from './memory-events.ts'
 import { bodyEventText, registerBodyTools, WRAP_UP_LINE } from './body-tools.ts'
 import { appendConsidered, createDecisionLog, type DecisionBlock, type Verdict } from './decisions.ts'
 import { createLiveness } from './liveness.ts'
@@ -68,6 +69,8 @@ interface RoundFacts {
   wrapped: boolean
   /** 最后调的是哪个工具，没有就是空 */
   lastTool: string
+  /** 这一轮她让我发出去的那句话，没调发送就是空 */
+  said: string
 }
 
 const seams = new WeakMap<Context, QqBundleSeam>()
@@ -102,11 +105,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const historyOf = (chatKey: string): string[] => deliveredHistory.get(chatKey) ?? []
 
   // 规则放在提示词靠后的位置，压住前面那些通用话术
-  ctx.systemPrompt.section({
-    name: 'qq:rules',
-    order: 500,
-    text: rules,
-  })
+  ctx.systemPrompt.section({ name: 'qq:rules', order: 500, text: rules })
 
   // 身体先说话，条数紧跟着：这一轮最多几句排在身体之后、规矩之前
   const vitals = qqVitalsOf(ctx)
@@ -116,11 +115,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const livenessFile = config.livenessFile
   const liveness = createLiveness(livenessFile === undefined ? {} : { file: livenessFile })
   vitals?.setExistence(liveness.facts(Date.now()))
-  ctx.systemPrompt.section({
-    name: 'qq:reply-budget',
-    order: 350,
-    text: () => budgetLine(vitals),
-  })
+  ctx.systemPrompt.section({ name: 'qq:reply-budget', order: 350, text: () => budgetLine(vitals) })
   ctx.systemPrompt.section({ name: 'qq:body-events', order: 355, text: () => bodyEventText(memory, vitals, subject) })
   if (vitals !== undefined) ctx.effect(() => registerBodyTools(ctx, vitals))
 
@@ -166,11 +161,15 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
   seams.set(ctx.root, seam)
 
+  // 记忆那一头：收尾时把她真说出去的话攒进队列，攒够再合成一条
+  const memory = qqMemoryOf(ctx)
+
   // 收一轮：追加一行，收完就从表里拿掉，同一轮不会写两次
   const flush = (chatKey: string): void => {
     const round = rounds.get(chatKey)
     if (round === undefined) return
     rounds.delete(chatKey)
+    if (round.sent > 0) enqueueSaid(ctx, memory, chatKey, round)
     try {
       const { at, awake, reason, attempted, sent, blocked, steps, wrapped, lastTool } = round
       decisions.append({ at, chatKey, awake, reason, attempted, sent, blocked, steps, wrapped, lastTool })
@@ -181,7 +180,7 @@ export function apply(ctx: Context, config: Config = {}): void {
 
   // 开一轮的空壳：唤醒理由给空就是没被叫醒
   const blankRound = (at: number, chatKey: string, reason: string | null): RoundFacts =>
-    ({ at, chatKey, awake: reason !== null, reason, attempted: false, sent: 0, blocked: null, steps: 0, wrapped: false, lastTool: '' })
+    ({ at, chatKey, awake: reason !== null, reason, attempted: false, sent: 0, blocked: null, steps: 0, wrapped: false, lastTool: '', said: '' })
 
   const roundOf = (chatKey: string, at: number): RoundFacts => {
     const kept = rounds.get(chatKey) ?? blankRound(at, chatKey, null)
@@ -213,16 +212,14 @@ export function apply(ctx: Context, config: Config = {}): void {
     return { kind: 'reject' as const }
   })
 
-  // 记下最后调的是哪个工具：出事时才知道是哪几个在空转
+  // 记下最后调的是哪个工具、以及她让我发出去的那句话
   ctx.on('session/event', (session, event) => {
-    if (event.type === 'tool/call') {
-      const round = rounds.get(String(session.id))
-      if (round !== undefined) round.lastTool = event.data.name
-    }
+    if (event.type !== 'tool/call') return
+    const round = rounds.get(String(session.id))
+    if (round === undefined) return
+    round.lastTool = event.data.name
+    if (event.data.name === 'qq_send_message') round.said = saidTextOf(event.data.arguments)
   })
-
-  // 记忆那头要用的东西先拿到手：每轮收尾与每天整理都要用
-  const memory = qqMemoryOf(ctx)
 
   // 队列每轮走一拍：到点排空、到点反思；失手只记一行，不拦这一轮
   const tickQueue = (): void => {

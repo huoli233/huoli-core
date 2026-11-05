@@ -28,6 +28,40 @@ export interface MemoryEventDeps {
   farewellFile: string
 }
 
+/** 从工具参数里取出她要说的话，取不到就是空串 */
+export function saidTextOf(argumentsJson: string): string {
+  try {
+    const parsed: unknown = JSON.parse(argumentsJson)
+    if (parsed === null || typeof parsed !== 'object') return ''
+    const text = (parsed as Record<string, unknown>).text
+    return typeof text === 'string' ? text.trim() : ''
+  } catch {
+    // 参数不是 JSON 就当这一句没说过，别的照旧
+    return ''
+  }
+}
+
+/**
+ * 把她真说出去的那一句攒进记忆队列，攒够由队列自己合成一条
+ * @param ctx - 运行环境
+ * @param memory - 记忆那一面，没接上就什么都不做
+ * @param chatKey - 哪个会话
+ * @param round - 这一轮的事实：说过什么、什么时候
+ */
+export function enqueueSaid(
+  ctx: Context,
+  memory: QqMemorySeam | undefined,
+  chatKey: string,
+  round: { said: string; at: number },
+): void {
+  if (memory === undefined || round.said === '') return
+  try {
+    memory.enqueue(round.said, chatKey, { layer: 'episodic', source: 'chat', at: round.at })
+  } catch (error) {
+    ctx.logger('qq-bundle').warn('这一句没攒进记忆：%s', String(error))
+  }
+}
+
 /** 没有活跃会话就只记一行，不让这一拍的其它挂上去的那些跟着断掉 */
 function activeOf(ctx: Context, subject: QqSubjectSeam | undefined, what: string): string {
   const chatKey = subject?.store.read().lastActive ?? ''
