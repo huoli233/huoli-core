@@ -14025,6 +14025,9 @@ importers:
       '@huoli/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
+      '@huoli/cordis-plugin-include':
+        specifier: workspace:~
+        version: link:../../../vendor/include
       '@huoli/huoli-agent':
         specifier: workspace:*
         version: link:../../core/agent
@@ -14037,6 +14040,9 @@ importers:
       '@huoli/huoli-tools':
         specifier: workspace:*
         version: link:../../core/tools
+      js-yaml:
+        specifier: ^4.3.2
+        version: 4.3.2
 
   packages/qq/qq-channel:
     dependencies:

@@ -2822,7 +2822,7 @@ export type Config = LocalConfig
 ## `@huoli/huoli-qq-attention`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-attention/src/index.ts:27`](../packages/qq/qq-attention/src/index.ts)
+- `source`: [`packages/qq/qq-attention/src/index.ts:29`](../packages/qq/qq-attention/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2843,14 +2843,13 @@ export interface Config {
 ## `@huoli/huoli-qq-bundle`
 
 - `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/index.ts:54`](../packages/qq/qq-bundle/src/index.ts)
+- `source`: [`packages/qq/qq-bundle/src/types.ts:8`](../packages/qq/qq-bundle/src/types.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
   /** 说话规矩那个文件放哪 */
   rulesFile?: string
-  /** 每天几点整理记忆 */
   /** 每天几点做整理与例行开口，形如 00:20 */
   dailySweepAt?: string
   /** 一轮最多走几步 */
@@ -2879,6 +2878,12 @@ export interface Config {
   addPostWantFrom?: number
   /** 同一个会话一天最多攒几条动态候选 */
   postCandidateDailyMax?: number
+  /** 公共动态报上去的级别，默认 public，走到发布入口才会判阶段与两把钥匙 */
+  postLevel?: string
+  /** 多久之内有人说过话就算群里正热闹 */
+  humanActiveWindowMs?: number
+  /** 主动开口去重时最多回想几条已发正文 */
+  deliveredHistoryMax?: number
   /** 一顿饭写不写进记忆 */
   mealMemory?: boolean
   /** 一顿饭写成一条记忆时的重要度 */
@@ -2887,6 +2892,10 @@ export interface Config {
   drinkMemory?: boolean
   /** 喝水写成一条记忆时的重要度 */
   drinkMemoryImportance?: number
+  /** 开经日写不写进记忆 */
+  cycleMemory?: boolean
+  /** 开经日写成一条记忆时的重要度 */
+  cycleMemoryImportance?: number
   /** 遗书写不写进记忆 */
   farewellMemory?: boolean
   /** 遗书写成一条记忆时的重要度 */
@@ -2915,7 +2924,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:59`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:61`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2994,7 +3003,7 @@ export interface Config {
 ## `@huoli/huoli-qq-continuity`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-continuity/src/index.ts:24`](../packages/qq/qq-continuity/src/index.ts)
+- `source`: [`packages/qq/qq-continuity/src/index.ts:26`](../packages/qq/qq-continuity/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3125,7 +3134,7 @@ export interface Tuning extends DecayParams, RecoverParams {
 
 ## `@huoli/huoli-qq-pacing`
 
-- `source`: [`packages/qq/qq-pacing/src/index.ts:27`](../packages/qq/qq-pacing/src/index.ts)
+- `source`: [`packages/qq/qq-pacing/src/index.ts:26`](../packages/qq/qq-pacing/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3138,6 +3147,14 @@ export interface Config {
   maxParts?: number
   /** 每条最多几个字 */
   maxCharsPerPart?: number
+  /** 一小时最多说几句 */
+  perHour?: number
+  /** 一天最多说几句 */
+  perDay?: number
+  /** 同一句隔多久才算说旧了 */
+  repeatWindowMs?: number
+  /** 留最近几句用来认重复 */
+  recentKeep?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-pacing -->
@@ -3176,131 +3193,11 @@ export interface Config {
   biasMax?: number
   /** 刚被吵醒之后还要安静多久，毫秒 */
   wakingDelayMs?: number
+  /** 一条候选攒着多久就过期，毫秒 */
+  pendingTtlMs?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-proactive -->
-
-<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-self -->
-<a id="huolihuoli-qq-self"></a>
-
-## `@huoli/huoli-qq-self`
-
-- `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-self/src/index.ts:266`](../packages/qq/qq-self/src/index.ts)
-
-```ts config-catalog
-/** 这一行接受的配置 */
-export interface Config {
-  /** 打开这一层，默认关 */
-  enabled?: boolean
-  /** SELF_DIR 放哪，不给就落在数据根目录下的 data/qq-self */
-  dir?: string
-  /** 数据根目录，不给就用默认的家目录 */
-  huoliHome?: string
-  /** 主会话的键，不配就哪个会话都不注入 */
-  mainChatKey?: string
-  /** 只读面板出口绑哪个端口，默认 0 表示不开；开了只绑回环地址，没有鉴权 */
-  panelPort?: number
-  /** 想改哪些默认参数 */
-  settings?: Partial<SelfSettings>
-}
-
-/** 这一层的参数表，Config.settings 可以逐项覆盖 */
-export interface SelfSettings {
-  /** 面板正文最多几个字 */
-  panelMaxChars: number
-  /** 面板复用多久之后才重做 */
-  panelMaxAgeMs: number
-  /** 此刻那一句最多几个字 */
-  momentMaxChars: number
-  /** 项目名最多几个字 */
-  projectMaxChars: number
-  /** 下一步最多几个字 */
-  nextMaxChars: number
-  /** 想问的事最多几个字 */
-  questionMaxChars: number
-  /** did 那一句最多几个字 */
-  didMaxChars: number
-  /** 原话最多几个字 */
-  verbatimMaxChars: number
-  /** 相信的事最多几个字 */
-  claimMaxChars: number
-  /** 一条相信的事最多挂几个证据 */
-  claimEvidenceMax: number
-  /** 身份主张的理由最多几个字 */
-  identityWhyMaxChars: number
-  /** 一条身份主张最多挂几个证据 */
-  identityEvidenceMax: number
-  /** 答应的事最多几个字 */
-  commitmentMaxChars: number
-  /** 每天固定几行 */
-  dayLines: number
-  /** 每天那三行每行最多几个字，跳过原因也按它截 */
-  dayLineMaxChars: number
-  /** 错处与改法最多几个字 */
-  errorMaxChars: number
-  /** 叙事每段最多几个字 */
-  narrativeParaMaxChars: number
-  /** 叙事每章最多几段 */
-  narrativeParasMax: number
-  /** 面板与叙事各留最近几份旧版本 */
-  versionsKeep: number
-  /** 同时最多几个没结束的项目 */
-  openProjectMax: number
-  /** 一周最多问几条 */
-  questionPerWeekMax: number
-  /** 一周多长 */
-  weekMs: number
-  /** 判据四看的窗口，超过这么久没有一条失败就算违规 */
-  auditFailedWindowMs: number
-  /** 镜像进记忆时给多少重要度 */
-  mirrorImportance: number
-  /** 一条镜像正文最多几个字 */
-  mirrorMaxChars: number
-  /** 没有主会话键时镜像落到哪个会话 */
-  mirrorScope: string
-  /** 身体的四种需要 */
-  driveNeeds: readonly DriveNeed[]
-  /** 身份级动作清单，逐字匹配 */
-  identityActions: readonly string[]
-  /** 现在处在哪个阶段，形如 P2 */
-  stage: string
-  /** 公开展示（动态与评论）最早从哪个阶段开始 */
-  publicMinStage: string
-  /** 私信最早从哪个阶段开始 */
-  privateMinStage: string
-  /** 阶段的先后顺序，比高低只看这张表的次序 */
-  stages: readonly string[]
-  /** 提示词里的段落名 */
-  sectionName: string
-  /** 提示词里的占位名 */
-  variableName: string
-  /** 段落排在什么位置 */
-  sectionOrder: number
-  /** 面板每行的抬头 */
-  labels: PanelLabels
-}
-
-/** 身体的四种需要，与身体那边的字段名逐字相同 */
-export type DriveNeed = 'hunger' | 'thirst' | 'adenosine' | 'energy'
-
-/** 面板每行的抬头 */
-export interface PanelLabels {
-  /** 首行的标题 */
-  header: string
-  /** 此刻 */
-  moment: string
-  /** 我在做 */
-  doing: string
-  /** 下一步 */
-  next: string
-  /** 我想弄明白 */
-  question: string
-  /** 收尾那句 */
-  refuse: string
-}
-```
-<!-- END GENERATED config-catalog:@huoli/huoli-qq-self -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-subject -->
 <a id="huolihuoli-qq-subject"></a>
@@ -3331,7 +3228,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:101`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:111`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -6517,6 +6414,7 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 | `@huoli/huoli-plugin-detail` | — | [`packages/util/plugin-detail/src/index.ts`](../packages/util/plugin-detail/src/index.ts) |
 | `@huoli/huoli-plugin-market-index` | — | [`packages/util/plugin-market-index/src/index.ts`](../packages/util/plugin-market-index/src/index.ts) |
 | `@huoli/huoli-qq-policy` | — | [`packages/qq/qq-policy/src/index.ts`](../packages/qq/qq-policy/src/index.ts) |
+| `@huoli/huoli-qq-self` | — | [`packages/qq/qq-self/src/index.ts`](../packages/qq/qq-self/src/index.ts) |
 | `@huoli/huoli-remote-mock` | — | [`packages/test-support/remote-mock/src/index.ts`](../packages/test-support/remote-mock/src/index.ts) |
 | `@huoli/huoli-sandbox-windows-acl` | — | [`packages/sandbox/sandbox-windows-acl/src/index.ts`](../packages/sandbox/sandbox-windows-acl/src/index.ts) |
 | `@huoli/huoli-scope` | — | [`packages/core/scope/src/index.ts`](../packages/core/scope/src/index.ts) |

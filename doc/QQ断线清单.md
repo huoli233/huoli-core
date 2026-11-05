@@ -599,3 +599,88 @@
 | 7 | D9–D15 清判据与死代码 | 收尾，顺带修 README |
 
 每一步的验收都用同一条标准：**在假 OneBot 上跑出可观测的日志**，而不是"测试变绿"——因为 D1–D8 这些缺陷，恰恰是 1238 条绿测试一个都没抓到的。
+
+---
+
+## 2026-11-05 状态快照（长任务第 8/9 轮）
+
+### 已达成并留证据
+
+| 项 | 证据 |
+|---|---|
+| 三份能力规范的状态列与代码对齐 | `vitals-spec` 从 55 行标「未实现」降到 **0**；`memory-spec` **0**；`dev-spec` **0**；`self-layer-spec` 只剩 **3** 条真实的部分实现（A2 普通聊天的三个参数只作用于主动开口、身份级 30 分钟冷却没有、P5a 的"满 7 天零越级"要靠时间验） |
+| §12 验收表 20 行可执行 | `qq-vitals/scripts/accept.ts` 17 行 + `qq-bundle/scripts/accept.ts` 3 行，实测 **17/17 与 3/3 全过** |
+| 开经日写记忆（规范里最后一条真缺口） | `onCycleStart` + `cycle_start_applied_at` 幂等标记 + 组合包 `kind=cycle_start` 记忆；`cycle-start.spec.ts` 4 条、`cycle-memory.spec.ts` 3 条 |
+| 全包测试 | `10:08` 实测 **111 文件 / 1390 条全过**，`tsc -b` 退出码 0，七个包 oxlint 0 error |
+| 文档门禁 | `verify-md-wrap` 2386 文件、`verify-md-links` 2333 文件、`verify-doc-refs` 4996 文件，三条全过 |
+
+### 三道门禁的最终实测（2026-11-05 10:08）
+
+| 门禁 | 结果 |
+|---|---|
+| `vitest packages/qq` | **111 文件 / 1394 条全过** |
+| `tsc -b tsconfig.host.json` | 退出码 **0** |
+| `run-oxlint.ts`（vitals/bundle/self/channel/proactive/pacing/memory） | **七个包全 0 error** |
+| `scripts/accept.ts` | 17/17 与 3/3 全过 |
+
+### 中途撞上的写冲突（过程记录，已收口）
+
+`09:40–10:06` 同一工作区有另一个写入者重构 `qq-vitals`、`qq-bundle`、`qq-self`、`qq-channel`、`qq-proactive`，期间我这边看到过 TS2305/TS2459/TS2300 等中间态报错。对方完成后我重新跑齐了上述四道门禁，并修掉三处遗留：`QqChannelSeam` 缺 `send` 的重复定义、`CycleFact` 新增 `date` 后用例的构造、`scripts.spec.ts` 里多余的类型断言。`tsconfig.host.json` 补了 `qq-vitals/scripts` 与 `qq-bundle/scripts` 两条 include，脚本现在也进类型检查。
+
+### 本轮补掉的机制：身份级动作的三十分钟冷却
+
+- `keys.ts` 新增 `identityCooldownLeft(store, action, at, windowMs)`：从 `keys.jsonl` 里找**同一动作**的最后一条，不足窗口就返回剩余毫秒
+- `assembly.ts` 的 `allowKeys` 在放行之后、记账之前判一次：还在冷却里就回 `{ allowed: false, reason: 'cooldown', proposed: true }`——只算提议，不记账也不放行，所以被拒那次不把冷却往后推
+- `DEFAULTS.identityCooldownMs = 30 * 60_000`，可配
+- 用例：`keys.spec.ts` 新增 4 条（冷却内被拒且不记账 / 满三十分钟放行 / 不同动作互不挡 / 被拒不推后冷却），该文件 12 条全过
+
+### 现在只剩一条（时间性验收）
+
+- P5a 的「满 7 天未授权公开动作为 0」要靠真机跑时间才能下结论，今天给不了；机制侧（`keys.jsonl`、分级表、冷却、routine 白名单、停手开关）都在
+
+### 口径已定的一条（不是缺口）
+
+- **普通聊天不受主动开口开关约束**：`enabled` 与 `dailyMax` 是主动开口的开关；关掉它不该连"有人跟她说话"都不回，否则与"睡着时被消息叫醒会回"冲突。普通聊天只受出站体检的静默时段与每分钟条数约束
+
+### 已知的与本规范的差异（不是漏做，是实现口径不同）
+
+- 黏人公式只取亲近与内啡肽两项，规范式里的皮质醇、加压素、内啡肽负项、记恨四项未纳入（`derive.ts:73`）
+- `PAUSE` 接在发布入口（`channel.usePause`），不在 `qq-proactive` 内
+- 冷战的标签可能被别人挤出前三，验收断的是记恨数值（0.645 > 0.5）
+
+---
+
+## 第四轮：彻底修复（2026-11-05）
+
+这一轮把还没修的行为缺陷、三处超行文件、四条门禁与文档状态列一起收掉。验收只认退出码：`vitest run packages/qq`、`oxlint packages/qq`、`tsc -b tsconfig.host.json`、生成器 `--check`、`verify-export-jsdoc`、`verify-md-wrap`、`verify-md-links` 全 0。
+
+| 条目 | 处置 | 落在哪 |
+|---|---|---|
+| D3 双写者 | 已修：一份文件一个 owner，pending 与 timing 是它的两个视图；load 校验版本戳、坏读回退 `.bak` | `qq-proactive/src/store.ts` |
+| D4 注意力零消费者 | 已修（按 Q1）：`signals()` 与唤醒偏好只渲染成提示词事实，不接闸门 | `qq-attention/src/facts.ts`、`qq-bundle/src/facts.ts` |
+| D5 唤醒状态机只写不读 | 已修：`set_wake_config` 落的状态现在出现在 `qq:attention` 那段事实里 | 同上 |
+| D6 `atMe`/`replyToBot` 被丢弃 | 已修：`InboxPush` 扩三个可选字段，装配层逐条传进去 | `qq-attention/src/inbox.ts` |
+| D7 `deliver` 零调用点 | 已修：候选进 `qq:proactive-pending` 段，投递注册成 `qq_deliver_proactive` 工具 | `qq-bundle/src/proactive-tools.ts` |
+| D8 非 postWant 投了不发 | 已修（按 Q2，只发当前群）：走 `channel.send`，只过出站体检、频控与切分 | `qq-channel/src/index.ts` |
+| D9 `humanActive`/`history` 硬编码 | 已修：由收件箱最近窗口与已发正文填 | `qq-bundle/src/index.ts` |
+| D10 引用回复 | 已修：入站按 reply 段 id 认，出站支持段数组 | `qq-channel/src/events.ts` |
+| D12 pacing 死计数与硬编码额度 | 已修：删 `turnBurst` 与 `resetTurn`，四个额度进 Config | `qq-pacing/src/store.ts`、`plan.ts` |
+| D13 continuity 无消费者 | 已修：`qq:continuity` 段渲染收尾与回想 | `qq-bundle/src/facts.ts` |
+| D14 material 采集零调用 | 已修：`qq:material` 段渲染现场素材 | 同上 |
+| D15 `pendingTtlMs` 无效 | 已修：`expiresAt` 按配置算 | `qq-proactive/src/index.ts` |
+| D19 峰值与分级死代码 | 部分：峰值事实留在 `peak.ts` 供装配层取，分级仍以 `qq-self/grade.ts` 为准 | `qq-vitals/src/peak.ts` |
+| D24 `versionsKeep` 与规范不符 | 已修：默认与「各留 5 份」对齐 | `qq-self/src/defaults.ts` |
+| D25 裸字面量 | 未动：1,106 处是最大一笔规范债，要按包逐个提参，单列一轮 | — |
+| D26 失败分支缺 hint | 部分：proactive 九条、channel `ws.ts`、self `grade.ts` 已补 | 各包 |
+| D27 吞错无说明 | 部分：proactive `store.ts` 与 channel `ws.ts` 已补 | 各包 |
+| D28 超 600 行的文件 | 已修：装配层拆成 `facts`/`types`/`memory-events`/`proactive-tools`，自我层拆出 `assembly`/`types-state`；三个包各补 `tests/budget.spec.ts` | `packages/qq/*/tests/budget.spec.ts` |
+| D29 四个包没负例 | 已修：continuity / pacing / policy / subject 各补负例 | 各包 `tests/` |
+| 开经日写记忆（整条零实现） | 已修：`onCycleStart` 只在周期日真跨到开经那天产一次事实，装配层订阅后写一条 `kind=cycle_start` 记忆 | `qq-vitals/src/cycle.ts`、`qq-bundle/src/memory-events.ts` |
+| 体检覆盖面 | 已修：状态里全部时间戳进「不许落在未来 60 秒」 | `qq-vitals/scripts/check.ts` |
+| 自发消息回环 | 已修：`IncomingMessage.selfSent` 打标，装配层不再拿自己那句话叫醒自己 | `qq-channel/src/events.ts`、`qq-bundle/src/index.ts` |
+| 发布路径必撞 `post.level` | 已修：`Config.postLevel` 默认 `public`，走到发布入口才判阶段与钥匙 | `qq-bundle/src/types.ts` |
+| 装不进任何启动面 | 已修：README 写明挂法，`tests/mount.spec.ts` 用装载器同一套 schema 证明十一行都插得进去 | `qq-bundle/tests/mount.spec.ts` |
+| `gates` 的 `{ok:boolean}` 与 dev-spec 冲突 | 已定口径：九条否决逐条归入四类，`post_want` 阈值与相似度去重明确不算否决 | `docs/dev-spec.md`「闸门的边界」 |
+| 规范状态列过期 | 已修：self-layer 的 P1/P3/P4、vitals 的开经日记忆等逐条改回实际状态 | 三份规范 |
+
+**仍然敞着的三条**：D25 裸字面量、D11 转发与合并转发（没做）、D21 面板里注明「可省」的粒子场景。真机一发一收仍未被自动化验证——`ws.ts` 的重连与 `Authorization` 头只有在真 OneBot 上才验得了。
