@@ -62,7 +62,7 @@ docs/
   subsystems/
 ```
 
-Treat this as a target map, not permission for an opportunistic mass move. Move one coherent topic at a time, repair every inbound link and website mapping atomically, preserve public routes or aliases, and keep `subsystems/` flat because its pages are logically parallel.
+Treat this as a target map, not permission for an opportunistic mass move. Move one coherent topic at a time, repair every inbound link atomically, and keep `subsystems/` flat because its pages are logically parallel.
 
 `docs/scratch/` contains tracked, expiring discussion that must survive a handoff. Each scratch page names its owner, creation date, expiry, and promotion target. Local disposable notes remain ignored and uncommitted.
 

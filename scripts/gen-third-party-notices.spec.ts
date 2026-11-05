@@ -151,7 +151,7 @@ describe('tierExternalDeps', () => {
       'package.json': { dependencies: { 'root-runtime-looking': '^1' }, devDependencies: { 'lint-tool': '^1' } },
       'packages/test-support/loader-smoke/package.json': { name: '@huoli/huoli-loader-smoke', dependencies: { 'smoke-helper': '^1' } },
       'packages/test-support/client-runtime/package.json': { name: '@huoli/huoli-client-test-runtime', dependencies: { 'test-lib': '^1' } },
-      'website/package.json': { devDependencies: { 'site-tool': '^1' } },
+      'native/system/package.json': { devDependencies: { 'launcher-tool': '^1' } },
       // A plugin package's runtime dependency ships even when no app mounts it by default.
       'packages/mcp/mcp-client/package.json': { name: '@huoli/huoli-mcp-client', dependencies: { 'protocol-sdk': '^1' }, devDependencies: { 'protocol-fixture-server': '^1' } },
       'apps/cli/package.json': { name: '@huoli/huoli-cli', dependencies: { 'cli-lib': '^1', '@huoli/huoli-mcp-client': 'workspace:^' } },
@@ -163,7 +163,7 @@ describe('tierExternalDeps', () => {
       ['lint-tool', false],
       ['smoke-helper', false],
       ['test-lib', false],
-      ['site-tool', false],
+      ['launcher-tool', false],
       ['protocol-sdk', true],
       ['protocol-fixture-server', false],
       ['cli-lib', true],

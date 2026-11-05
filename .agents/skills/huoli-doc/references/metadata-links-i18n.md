@@ -61,7 +61,7 @@ Weak: `The best and most advanced session storage implementation with lots of op
 
 Keep link destinations machine-checkable and mentions context-relative. Use fragment-only links for the current page's menu. Use full URLs for external resources.
 
-The desired internal-link model names a target from the repository root, but a leading `/docs/...` Markdown URL resolves outside the repository on GitHub, remains untouched by the website projector, and is skipped by `verify-md-links`. Until a repository-owned resolver supports root paths in every renderer, use the current renderer-valid relative URL in Markdown links and write logical path mentions such as `docs/` or `packages/session/` relative to the discussion. Never adopt an unchecked leading-slash link merely to resemble an absolute path.
+The desired internal-link model names a target from the repository root, but a leading `/docs/...` Markdown URL resolves outside the repository on GitHub and is skipped by `verify-md-links`. Until a repository-owned resolver supports root paths in every renderer, use the current renderer-valid relative URL in Markdown links and write logical path mentions such as `docs/` or `packages/session/` relative to the discussion. Never adopt an unchecked leading-slash link merely to resemble an absolute path.
 
 ## Bilingual line alignment
 

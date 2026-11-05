@@ -251,9 +251,7 @@
     "packages/qq/qq-self/scripts/**/*.ts",
     "packages/qq/qq-vitals/scripts/**/*.ts",
     "packages/qq/qq-bundle/scripts/**/*.ts",
-    "scripts/**/*.ts",
-    "website/**/*.ts",
-    "website/.vitepress/**/*.ts"
+    "scripts/**/*.ts"
   ],
   // Under packages/client and benchmarks, a test file names the face it covers:
   // `*.client.*` belongs to the Client aggregate, `*.host.spec.ts` to this one. The two
