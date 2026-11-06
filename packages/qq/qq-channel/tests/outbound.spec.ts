@@ -156,3 +156,31 @@ describe('每分钟条数', () => {
     expect(check.check({ chatKey: 'group:1', text: '再来一句' }).ok).toBe(true)
   })
 })
+
+describe('两条之间留一点空', () => {
+  it('没配间隔时不拦', () => {
+    const { check } = checker(NOON)
+    check.record(NOON)
+
+    expect(check.check({ chatKey: 'group:1', text: '再来一句' }).ok).toBe(true)
+  })
+
+  it('配了间隔时上一条刚发就拒，下次时间是上一条加间隔', () => {
+    const { check } = checker(NOON, { sendGapMs: 4_000 })
+    check.record(NOON)
+
+    const verdict = check.check({ chatKey: 'group:1', text: '再来一句' })
+
+    expect(verdict.ok).toBe(false)
+    expect(verdict.code).toBe('outbound.too_soon')
+    expect(verdict.retryAt).toBe(NOON + 4_000)
+  })
+
+  it('隔够了就放行', () => {
+    const { check, at } = checker(NOON, { sendGapMs: 4_000 })
+    check.record(NOON)
+    at(NOON + 4_000)
+
+    expect(check.check({ chatKey: 'group:1', text: '再来一句' }).ok).toBe(true)
+  })
+})

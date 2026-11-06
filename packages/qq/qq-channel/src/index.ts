@@ -96,6 +96,8 @@ export interface Config {
   perMinute?: number
   /** 条数往回看的窗口 */
   windowMs?: number
+  /** 上一条与这一条之间至少隔多久，毫秒，默认 0 不拦 */
+  sendGapMs?: number
   /** 静默时段从几点开始 */
   quietStart?: string
   /** 静默时段到几点结束 */
@@ -169,6 +171,7 @@ function resolveOutbound(config: Config): OutboundTuning {
     maxChars: Math.max(1, config.maxChars ?? OUTBOUND_DEFAULTS.maxChars),
     perMinute: Math.max(1, config.perMinute ?? OUTBOUND_DEFAULTS.perMinute),
     windowMs: Math.max(1, config.windowMs ?? OUTBOUND_DEFAULTS.windowMs),
+    sendGapMs: Math.max(0, config.sendGapMs ?? OUTBOUND_DEFAULTS.sendGapMs),
     quietStart: config.quietStart ?? OUTBOUND_DEFAULTS.quietStart,
     quietEnd: config.quietEnd ?? OUTBOUND_DEFAULTS.quietEnd,
     banned: config.banned ?? OUTBOUND_DEFAULTS.banned,

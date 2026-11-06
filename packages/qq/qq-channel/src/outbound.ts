@@ -14,6 +14,8 @@ export const OUTBOUND_DEFAULTS = {
   perMinute: 6,
   /** 条数往回看的窗口 */
   windowMs: 60_000,
+  /** 上一条与这一条之间至少隔多久，毫秒，默认 0 不拦 */
+  sendGapMs: 0,
   /** 静默时段从几点开始 */
   quietStart: '23:30',
   /** 静默时段到几点结束 */
@@ -108,6 +110,17 @@ export function createOutboundCheck(
       if (sent.length >= tuning.perMinute) {
         const oldest = sent[0] ?? at
         return { ok: false, code: 'outbound.rate', reason: '这一分钟发得太密', hint: '歇一分钟再发', retryAt: oldest + tuning.windowMs }
+      }
+      // 上一条与这一条之间留一点空：连发几条像人在打字，不是一口气刷出来
+      const last = sent.at(-1)
+      if (last !== undefined && tuning.sendGapMs > 0 && at - last < tuning.sendGapMs) {
+        return {
+          ok: false,
+          code: 'outbound.too_soon',
+          reason: '上一条刚发出去',
+          hint: '隔一会儿再说，别一口气连着发',
+          retryAt: last + tuning.sendGapMs,
+        }
       }
       return { ok: true }
     },
