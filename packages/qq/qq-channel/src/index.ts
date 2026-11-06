@@ -513,12 +513,12 @@ export function apply(ctx: Context, config: Config): void {
       message: messageId => readMessage(channel, messageId),
     },
     stickers: {
-      list: (tag, limit) => Promise.resolve(listStickers(stickerFile, tag, limit)),
+      list: limit => Promise.resolve(listStickers(stickerFile, limit)),
       pick: id => Promise.resolve(stickerOf(stickerFile, id)),
       send: (file, chatKey) => channel.send([{ type: 'image', data: { file } }], chatKey),
     },
     voices: {
-      list: (tag, limit) => Promise.resolve(listVoices(voiceFile, tag, limit)),
+      list: limit => Promise.resolve(listVoices(voiceFile, limit)),
       pick: id => Promise.resolve(voiceOf(voiceFile, id)),
       send: (file, chatKey) => channel.send([{ type: 'record', data: { file } }], chatKey),
     },
@@ -587,11 +587,11 @@ export function apply(ctx: Context, config: Config): void {
       return { ok: true, sent }
     },
     slang: {
-      find: (query, limit) => Promise.resolve(findSlangs(slangFile, query, limit)),
+      find: limit => Promise.resolve(findSlangs(slangFile, limit)),
       add: (word, meaning, from, at) => Promise.resolve(addSlang(slangFile, word, meaning, from, at)),
     },
     sayings: {
-      find: (query, limit) => Promise.resolve(findSayings(sayingFile, query, limit)),
+      find: limit => Promise.resolve(findSayings(sayingFile, limit)),
       add: (text, when, from, at) => Promise.resolve(addSaying(sayingFile, text, when, from, at)),
     },
     unsend: messageId => channel.unsend(messageId),

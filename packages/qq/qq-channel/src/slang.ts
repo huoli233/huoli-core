@@ -59,17 +59,13 @@ export function readSlangs(file: string): Slang[] {
 }
 
 /**
- * 按词查，词里含这个字串就算命中
+ * 把词表列出来，哪个用得上由模型自己挑，代码不按字串猜
  * @param file 词表文件在哪
- * @param query 想查什么，空串就列全部
  * @param limit 最多几条
- * @returns 命中的几条
+ * @returns 列出来的几条
  */
-export function findSlangs(file: string, query: string, limit: number): Slang[] {
-  const wanted = query.trim()
-  const all = readSlangs(file)
-  const picked = wanted === '' ? all : all.filter(slang => slang.word.includes(wanted) || slang.meaning.includes(wanted))
-  return picked.slice(0, Math.max(1, Math.floor(limit)))
+export function findSlangs(file: string, limit: number): Slang[] {
+  return readSlangs(file).slice(0, Math.max(1, Math.floor(limit)))
 }
 
 /**

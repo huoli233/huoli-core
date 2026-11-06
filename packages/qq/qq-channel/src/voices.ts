@@ -55,17 +55,16 @@ export function readVoices(file: string): Voice[] {
 
 /**
  * 按标签列几段出来，标签空着就全列
+ * 把库列出来，哪段合适由模型自己挑，代码不按词猜
  * @param file 库文件在哪
- * @param tag 想找哪个标签
  * @param limit 最多几段
  * @returns 列出来的几段
  */
-export function listVoices(file: string, tag: string, limit: number): VoiceListOutcome {
+export function listVoices(file: string, limit: number): VoiceListOutcome {
   const all = readVoices(file)
-  const wanted = tag.trim()
-  const picked = (wanted === '' ? all : all.filter(voice => voice.tag.includes(wanted))).slice(0, Math.max(1, Math.floor(limit)))
+  const picked = all.slice(0, Math.max(1, Math.floor(limit)))
   return picked.length === 0
-    ? { ok: false, code: 'voice.none', reason: wanted === '' ? '一段声音都没存' : '没找到这个标签的声音', hint: '换个标签，或者先往库里加几段' }
+    ? { ok: false, code: 'voice.none', reason: '一段声音都没存', hint: '先往库里加几段' }
     : { ok: true, voices: picked }
 }
 

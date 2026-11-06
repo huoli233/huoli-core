@@ -65,7 +65,7 @@ export interface ChannelToolDeps {
   }
   /** 表情包：按标签列、按编号取；没接上就回一个能看懂的码 */
   stickers?: {
-    list: (tag: string, limit: number) => Promise<StickerListOutcome>
+    list: (limit: number) => Promise<StickerListOutcome>
     pick: (id: string) => Promise<StickerPickOutcome>
     send: (file: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
   }
@@ -73,7 +73,7 @@ export interface ChannelToolDeps {
   poke?: (chatKey: string, userId: string) => Promise<{ ok: boolean; code?: string; reason?: string }>
   /** 语音：按标签列、按编号取、发出去 */
   voices?: {
-    list: (tag: string, limit: number) => Promise<VoiceListOutcome>
+    list: (limit: number) => Promise<VoiceListOutcome>
     pick: (id: string) => Promise<VoicePickOutcome>
     send: (file: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
   }
@@ -83,7 +83,7 @@ export interface ChannelToolDeps {
   burst?: (lines: readonly string[], gapsMs: readonly number[], chatKey: string) => Promise<BurstOutcome>
   /** 学到的词：查、记 */
   slang?: {
-    find: (query: string, limit: number) => Promise<Slang[]>
+    find: (limit: number) => Promise<Slang[]>
     add: (word: string, meaning: string, from: string, at: number) => Promise<SlangWriteOutcome>
   }
   /** 撤回自己刚发出去的那一条 */
@@ -96,7 +96,7 @@ export interface ChannelToolDeps {
   noteCorrection?: (wrong: string, better: string, at: number) => void
   /** 学来的说法：查、记 */
   sayings?: {
-    find: (query: string, limit: number) => Promise<Saying[]>
+    find: (limit: number) => Promise<Saying[]>
     add: (text: string, when: string, from: string, at: number) => Promise<SayingWriteOutcome>
   }
 }
@@ -448,9 +448,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
 
   ctx.tools.register(defineTool({
     name: 'qq_list_stickers',
-    description: '看看手上有哪些表情图，给编号、标签与放哪。可以按标签找，比如「困」「开心」；不填标签就列全部。挑中哪张，把它的编号交给 qq_send_sticker。',
+    description: '把表情包库列出来，给编号、标签与放哪。哪张合适由你自己挑，代码不替你按词找。挑中哪张，把它的编号交给 qq_send_sticker。',
     parameters: {
-      tag: { type: 'string', description: '想找哪个标签，不填就列全部。' },
       limit: { type: 'number', description: '最多列几张，不填给十张。' },
     },
     output: {
@@ -458,9 +457,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
     async execute(args) {
-      const tag = typeof args.tag === 'string' ? args.tag : ''
       const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 10
-      const outcome = await stickerBox().list(tag, asked)
+      const outcome = await stickerBox().list(asked)
       if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
       return { count: outcome.stickers.length, items: outcome.stickers }
     },
@@ -518,9 +516,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
 
   ctx.tools.register(defineTool({
     name: 'qq_list_voices',
-    description: '看看手上有哪些语音，给编号、标签与放哪。可以按标签找；不填标签就列全部。挑中哪段，把编号交给 qq_send_voice。',
+    description: '把语音库列出来，给编号、标签与放哪。哪段合适由你自己挑，代码不替你按词找。挑中哪段，把编号交给 qq_send_voice。',
     parameters: {
-      tag: { type: 'string', description: '想找哪个标签，不填就列全部。' },
       limit: { type: 'number', description: '最多列几段，不填给十段。' },
     },
     output: {
@@ -528,9 +525,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
     async execute(args) {
-      const tag = typeof args.tag === 'string' ? args.tag : ''
       const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 10
-      const outcome = await voiceBox().list(tag, asked)
+      const outcome = await voiceBox().list(asked)
       if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
       return { count: outcome.voices.length, items: outcome.voices }
     },
@@ -640,9 +636,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
 
   ctx.tools.register(defineTool({
     name: 'qq_slang_query',
-    description: '查一下群里学来的词都是什么意思。可以按词查，也可以按意思查；不填就列全部。词只是记下来的说法，用不用、怎么用由你自己判。',
+    description: '把群里学来的词列出来，给词、意思与在哪儿听来的。哪个用得上由你自己挑，代码不替你按字串找；用不用、怎么用也由你判。',
     parameters: {
-      query: { type: 'string', description: '想查哪个词或哪句意思，不填就列全部。' },
       limit: { type: 'number', description: '最多几条，不填给十条。' },
     },
     output: {
@@ -650,9 +645,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
     async execute(args) {
-      const query = typeof args.query === 'string' ? args.query : ''
       const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 10
-      const items = await slangOf().find(query, asked)
+      const items = await slangOf().find(asked)
       return { count: items.length, items }
     },
   }))
@@ -698,9 +692,20 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
 
   ctx.tools.register(defineTool({
     name: 'qq_send_messy',
-    description: '像真人打字那样一句一句来：可以发一句，过几秒撤回来，再发改好的那一句；也可以把打快了、拼音没打完、短句口头禅直接发出去。steps 一行一步，写成「发 内容」「撤」「换 内容」；换就是先把上一句撤了再发这一句。说成什么样由你自己写，代码不改字、不替你编。每一步都过发言那道体检。',
+    description: '像真人打字那样一句一句来：可以发一句，过几秒撤回来，再发改好的那一句；也可以把打快了、拼音没打完、短句口头禅直接发出去。每一步自己声明做什么：send 发、withdraw 撤上一句、replace 撤了再发这一句。说成什么样由你自己写，代码不改字、不替你编。每一步都过发言那道体检。',
     parameters: {
-      steps: { type: 'string', description: '一行一步：「发 要发的话」／「撤」／「换 改好的话」。最多八步。' },
+      steps: {
+        type: 'array',
+        description: '按顺序走的几步，最多八步；每步给 kind 与 text。',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            kind: { type: 'string', enum: ['send', 'withdraw', 'replace'], description: '这一步做什么。' },
+            text: { type: 'string', description: '这一步要说的话；withdraw 时不填也行。' },
+          },
+        },
+      },
       gap_ms: { type: 'number', description: '两步之间隔多久，毫秒，不填给一千二毫秒，像打快了又停下来改。' },
     },
     output: {
@@ -709,15 +714,17 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
     },
     async execute(args, exec) {
       const chatKey = chatKeyOf(exec)
-      const raw = typeof args.steps === 'string' ? args.steps : ''
-      const parsed = raw.split('\n').map(line => line.trim()).filter(line => line !== '').slice(0, 8).map((line): { action: 'send' | 'withdraw' | 'replace'; text: string } => {
-        if (line === '撤') return { action: 'withdraw', text: '' }
-        if (line.startsWith('换 ')) return { action: 'replace', text: line.slice(2).trim() }
-        if (line.startsWith('发 ')) return { action: 'send', text: line.slice(2).trim() }
-        return { action: 'send', text: line }
-      })
-      if (parsed.length === 0) refuse('messy.empty', '一步都没有', '一行写一步，比如「发 打飞鱼」「撤」「换 大肥鱼」')
-      if (parsed.some(step => step.action !== 'withdraw' && step.text === '')) refuse('messy.empty_text', '有一步没写内容', '「发」和「换」后面都要写话')
+      const raw = Array.isArray(args.steps) ? args.steps : []
+      const parsed: { action: 'send' | 'withdraw' | 'replace'; text: string }[] = []
+      for (const row of raw.slice(0, 8)) {
+        const step = row as Record<string, unknown>
+        const kind = step.kind
+        if (kind !== 'send' && kind !== 'withdraw' && kind !== 'replace') refuse('messy.bad_kind', '有一步没说清做什么', 'kind 只能是 send、withdraw、replace')
+        const text = typeof step.text === 'string' ? step.text.trim() : ''
+        if (kind !== 'withdraw' && text === '') refuse('messy.empty_text', '有一步没写内容', 'send 和 replace 都要写话')
+        parsed.push({ action: kind, text })
+      }
+      if (parsed.length === 0) refuse('messy.empty', '一步都没有', '给一个 steps 数组，每步写 kind 与 text')
       const gapMs = typeof args.gap_ms === 'number' && Number.isFinite(args.gap_ms) ? Math.max(0, Math.floor(args.gap_ms)) : 1200
       // 每一句要发的都先过体检与去重额度，被拦就一步都不做
       for (const step of parsed) {
@@ -741,9 +748,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
 
   ctx.tools.register(defineTool({
     name: 'qq_saying_query',
-    description: '查一下群里常听到的短句、口头禅、谚语，给原话与大概什么时候用。可以按字串找，不填就列全部。这些只是听来的说法，用不用、怎么用由你自己判，别每轮都往里塞。',
+    description: '把群里常听到的短句、口头禅、谚语列出来，给原话与大概什么时候用。哪句用得上由你自己挑，代码不替你按字串找；别每轮都往里塞。',
     parameters: {
-      query: { type: 'string', description: '想找哪句或哪种场合，不填就列全部。' },
       limit: { type: 'number', description: '最多几句，不填给十句。' },
     },
     output: {
@@ -751,9 +757,8 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
     async execute(args) {
-      const query = typeof args.query === 'string' ? args.query : ''
       const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 10
-      const items = await sayingOf().find(query, asked)
+      const items = await sayingOf().find(asked)
       return { count: items.length, items }
     },
   }))

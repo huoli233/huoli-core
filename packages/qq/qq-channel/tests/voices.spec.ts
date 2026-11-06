@@ -27,22 +27,18 @@ const LIBRARY = [
 ]
 
 describe('语音库', () => {
-  it('按标签找得到，标签空着就全列', () => {
+  it('把整份库列出来，哪段合适由调用方自己挑', () => {
     const file = tempFile(LIBRARY)
 
-    const found = listVoices(file, '困', 10)
+    const found = listVoices(file, 10)
+
     expect(found.ok).toBe(true)
     if (!found.ok) return
-    expect(found.voices[0]?.id).toBe('yawn')
-
-    const all = listVoices(file, '', 10)
-    expect(all.ok).toBe(true)
-    if (!all.ok) return
-    expect(all.voices).toHaveLength(2)
+    expect(found.voices.map(row => row.id)).toEqual(['yawn', 'hi'])
   })
 
-  it('没有就给码与下一步', () => {
-    const found = listVoices(tempFile(LIBRARY), '生气', 10)
+  it('一份库都没有就给码与下一步', () => {
+    const found = listVoices(tempFile([]), 10)
 
     expect(found.ok).toBe(false)
     if (found.ok) return

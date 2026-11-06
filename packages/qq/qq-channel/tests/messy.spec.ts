@@ -28,7 +28,7 @@ describe('学来的说法', () => {
     if (!added.ok) return
     expect(added.created).toBe(true)
 
-    const found = findSayings(file, '有一说一', 10)
+    const found = findSayings(file, 10)
     expect(found[0]?.when).toBe('要先肯定再转折')
   })
 
@@ -48,13 +48,13 @@ describe('学来的说法', () => {
     expect(long.code).toBe('saying.too_long')
   })
 
-  it('按场合也能查，空串列全部，库坏了不抛', () => {
+  it('整份说法库列出来，库坏了不抛', () => {
     const file = tempFile()
     addSaying(file, '有一说一', '先肯定再转折', 'group:1', 1000)
     addSaying(file, '乐', '不想多说', 'group:1', 2000)
 
-    expect(findSayings(file, '转折', 10)[0]?.text).toBe('有一说一')
-    expect(findSayings(file, '', 10)).toHaveLength(2)
+    expect(findSayings(file, 10)[0]?.text).toBe('有一说一')
+    expect(findSayings(file, 10)).toHaveLength(2)
     expect(readSayings('/没有这份.json')).toEqual([])
   })
 
@@ -139,7 +139,14 @@ describe('打岔与说法的工具', () => {
     const messy = tools.get('qq_send_messy')
     if (messy === undefined) throw new Error('没挂上打岔工具')
 
-    const result = await messy.execute({ steps: '发 你再叫我一次打飞鱼\n撤\n换 你再叫我一次大肥鱼', gap_ms: 0 }, execOf('group:1')) as { steps: number; sent: number }
+    const result = await messy.execute({
+      steps: [
+        { kind: 'send', text: '你再叫我一次打飞鱼' },
+        { kind: 'withdraw' },
+        { kind: 'replace', text: '你再叫我一次大肥鱼' },
+      ],
+      gap_ms: 0,
+    }, execOf('group:1')) as { steps: number; sent: number }
 
     expect(result.steps).toBe(3)
     expect(result.sent).toBe(2)
@@ -154,7 +161,7 @@ describe('打岔与说法的工具', () => {
     const messy = tools.get('qq_send_messy')
     if (messy === undefined) throw new Error('没挂上打岔工具')
 
-    const result = await messy.execute({ steps: '发 pe', gap_ms: 0 }, execOf('group:1'))
+    const result = await messy.execute({ steps: [{ kind: 'send', text: 'pe' }], gap_ms: 0 }, execOf('group:1'))
 
     expect(result).toHaveProperty('sent', 1)
     expect(actions()).toEqual([{ action: 'send_group_msg', text: 'pe' }])
@@ -165,7 +172,15 @@ describe('打岔与说法的工具', () => {
     const messy = tools.get('qq_send_messy')
     if (messy === undefined) throw new Error('没挂上打岔工具')
 
-    await expect(messy.execute({ steps: '撤', gap_ms: 0 }, execOf('group:1'))).rejects.toThrow(/messy.nothing_to_withdraw/u)
+    await expect(messy.execute({ steps: [{ kind: 'withdraw' }], gap_ms: 0 }, execOf('group:1'))).rejects.toThrow(/messy.nothing_to_withdraw/u)
+  })
+
+  it('步骤没说清做什么就在参数那层被拒，不靠猜字面', async () => {
+    const tools = mount()
+    const messy = tools.get('qq_send_messy')
+    if (messy === undefined) throw new Error('没挂上打岔工具')
+
+    await expect(messy.execute({ steps: [{ kind: '发', text: '一句话' }], gap_ms: 0 }, execOf('group:1'))).rejects.toThrow(/invalid arguments/u)
   })
 
   it('记一句群里的说法再查得到', async () => {

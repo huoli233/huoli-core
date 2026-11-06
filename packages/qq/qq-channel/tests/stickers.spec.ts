@@ -27,22 +27,18 @@ const LIBRARY = [
 ]
 
 describe('表情包库', () => {
-  it('按标签找得到，标签空着就全列', () => {
+  it('把整份库列出来，谁合适由调用方自己挑', () => {
     const file = tempFile(LIBRARY)
 
-    const found = listStickers(file, '困', 10)
+    const found = listStickers(file, 10)
+
     expect(found.ok).toBe(true)
     if (!found.ok || !('stickers' in found)) return
-    expect(found.stickers[0]?.id).toBe('tired')
-
-    const all = listStickers(file, '', 10)
-    expect(all.ok).toBe(true)
-    if (!all.ok || !('stickers' in all)) return
-    expect(all.stickers).toHaveLength(2)
+    expect(found.stickers.map(row => row.id)).toEqual(['tired', 'happy'])
   })
 
-  it('一个都没找到就给码与下一步', () => {
-    const found = listStickers(tempFile(LIBRARY), '生气', 10)
+  it('一份库都没有就给码与下一步', () => {
+    const found = listStickers(tempFile([]), 10)
 
     expect(found.ok).toBe(false)
     if (found.ok) return

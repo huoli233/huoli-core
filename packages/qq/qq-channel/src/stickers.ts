@@ -57,18 +57,16 @@ export function readStickers(file: string): Sticker[] {
 }
 
 /**
- * 按标签列几张出来，标签空着就全列
+ * 把库列出来，哪张合适由模型自己挑，代码不按词猜
  * @param file 库文件在哪
- * @param tag 想找哪个标签
  * @param limit 最多几张
  * @returns 列出来的几张
  */
-export function listStickers(file: string, tag: string, limit: number): StickerListOutcome {
+export function listStickers(file: string, limit: number): StickerListOutcome {
   const all = readStickers(file)
-  const wanted = tag.trim()
-  const picked = (wanted === '' ? all : all.filter(sticker => sticker.tag.includes(wanted))).slice(0, Math.max(1, Math.floor(limit)))
+  const picked = all.slice(0, Math.max(1, Math.floor(limit)))
   return picked.length === 0
-    ? { ok: false, code: 'sticker.none', reason: wanted === '' ? '一份图都没存' : '没找到这个标签的图', hint: '换个标签，或者先往库里加几张' }
+    ? { ok: false, code: 'sticker.none', reason: '一份图都没存', hint: '先往库里加几张' }
     : { ok: true, stickers: picked }
 }
 

@@ -59,17 +59,13 @@ export function readSayings(file: string): Saying[] {
 }
 
 /**
- * 按字串找说法，句子里含这个字串就算命中
+ * 把库列出来，哪句用得上由模型自己挑，代码不按字串猜
  * @param file 库文件在哪
- * @param query 想查什么，空串就列全部
  * @param limit 最多几句
- * @returns 命中的几句
+ * @returns 列出来的几句
  */
-export function findSayings(file: string, query: string, limit: number): Saying[] {
-  const wanted = query.trim()
-  const all = readSayings(file)
-  const picked = wanted === '' ? all : all.filter(saying => saying.text.includes(wanted) || saying.when.includes(wanted))
-  return picked.slice(0, Math.max(1, Math.floor(limit)))
+export function findSayings(file: string, limit: number): Saying[] {
+  return readSayings(file).slice(0, Math.max(1, Math.floor(limit)))
 }
 
 /**

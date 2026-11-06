@@ -28,7 +28,7 @@ describe('学到的词', () => {
     if (!added.ok) return
     expect(added.created).toBe(true)
 
-    const found = findSlangs(file, '摸鱼', 10)
+    const found = findSlangs(file, 10)
     expect(found[0]?.meaning).toBe('上班时偷偷歇着')
     expect(found[0]?.from).toBe('group:1')
   })
@@ -45,13 +45,13 @@ describe('学到的词', () => {
     expect(readSlangs(file)).toHaveLength(1)
   })
 
-  it('按意思也能查，空串列全部', () => {
+  it('整份词表列出来，哪个用得上由调用方自己挑', () => {
     const file = tempFile()
     addSlang(file, '摸鱼', '上班时偷偷歇着', 'group:1', 1000)
     addSlang(file, '开黑', '一起打游戏', 'group:1', 2000)
 
-    expect(findSlangs(file, '歇着', 10)[0]?.word).toBe('摸鱼')
-    expect(findSlangs(file, '', 10)).toHaveLength(2)
+    expect(findSlangs(file, 10)[0]?.word).toBe('摸鱼')
+    expect(findSlangs(file, 10)).toHaveLength(2)
   })
 
   it('空词、太长的词、写不进去都给码与下一步', () => {
