@@ -13,6 +13,7 @@ import { createActionGate } from './action-gate.ts'
 import { createActionStore } from './action-store.ts'
 import { createFarewellSlotStore, defaultFarewellSlotFile } from './farewell-slot.ts'
 import { registerChannelTools } from './tools.ts'
+import { readHistory, readMembers, readMessage } from './read.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
 export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
@@ -473,6 +474,11 @@ export function apply(ctx: Context, config: Config): void {
     requestConfirm: (kind, text, at) => seam.requestConfirm(kind, text, at),
     confirm: (confirmId, at) => seam.confirm(confirmId, at),
     stageFarewell: (text, at) => farewell.stage(text, at),
+    read: {
+      history: (chatKey, count) => readHistory(channel, chatKey, count),
+      members: (chatKey, limit) => readMembers(channel, chatKey, limit),
+      message: messageId => readMessage(channel, messageId),
+    },
   })
 
   channel.start()

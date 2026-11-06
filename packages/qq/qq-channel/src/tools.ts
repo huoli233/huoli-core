@@ -1,4 +1,4 @@
-// 七个工具：说一句、给个表情回应、发一条动态、公开评论、发私信，用两张票把后两类接上，再把遗书正文收下来
+// 说话、回应、发动态、公开评论、私信、两张确认票、遗书正文，再加三个读记录的工具
 
 import type { Context } from '@huoli/cordis'
 import { defineTool } from '@huoli/huoli-tools'
@@ -9,6 +9,7 @@ import { CONFIRM_KINDS } from './actions.ts'
 import type { ActionFacts, ActionKind, ActionResult } from './actions.ts'
 import type { FarewellStage } from './farewell-slot.ts'
 import type { ForwardNode } from './forward.ts'
+import type { HistoryOutcome, MembersOutcome, MessageOutcome } from './read.ts'
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
@@ -44,6 +45,12 @@ export interface ChannelToolDeps {
   confirm: (confirmId: string, at: number) => ActionResult
   /** 把遗书正文收进暂存槽，同一天只收一次 */
   stageFarewell: (text: string, at: number) => FarewellStage
+  /** 翻群里的记录、列群成员、看具体那一条；没接上就回一个能看懂的码 */
+  read?: {
+    history: (chatKey: string, count: number) => Promise<HistoryOutcome>
+    members: (chatKey: string, limit: number) => Promise<MembersOutcome>
+    message: (messageId: string) => Promise<MessageOutcome>
+  }
 }
 
 // 两把钥匙在这里只是这次调用的声明：用户那把由确认票背书，她自己那把由这次调用背书，放不放行仍由发布入口判
@@ -319,6 +326,69 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       const result = deps.stageFarewell(text, Date.now())
       if (!result.ok) refuse(result.code ?? 'farewell.write_failed', result.reason ?? '这句话没存进去', result.hint ?? '别换个说法重写，就当已经说完了')
       return Promise.resolve({ ok: true, at: result.at ?? Date.now() })
+    },
+  }))
+
+  const read = deps.read
+  // 没接上读这一路时也给一个能看懂的码，别让模型以为自己忘了传参数
+  const readable = (): NonNullable<typeof read> => {
+    if (read === undefined) refuse('channel.read_unavailable', '这会儿翻不了记录', '等连接那一路接上再问')
+    return read
+  }
+
+  ctx.tools.register(defineTool({
+    name: 'qq_read_history',
+    description: '翻这个群最近说过的话。只翻群，不翻私聊；一次最多给三十条，从旧到新。想接着看某一条就拿它的编号去调 qq_read_message。',
+    parameters: {
+      count: { type: 'number', description: '想看几条，不填给十条，最多三十条。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const asked = typeof args.count === 'number' && Number.isFinite(args.count) ? args.count : 10
+      const outcome = await readable().history(chatKey, asked)
+      if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
+      return { count: outcome.items.length, items: outcome.items }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_read_members',
+    description: '看这个群里都有谁，给编号、名字与在群里的身份。只列群，不列私聊；最多给两百个。',
+    parameters: {
+      limit: { type: 'number', description: '最多列几个，不填给五十个，最多两百个。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 50
+      const outcome = await readable().members(chatKey, asked)
+      if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
+      return { count: outcome.members.length, items: outcome.members }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_read_message',
+    description: '按编号看具体那一条消息，能拿到是谁说的、什么时候说的和正文。编号从群记录里拿。',
+    parameters: {
+      message_id: { type: 'string', description: '消息编号，从 qq_read_history 给的那几条里挑一个。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args) {
+      const messageId = textArg(args.message_id, 'channel.read_no_id', '没给编号', '从群记录里拿一个编号再问')
+      const outcome = await readable().message(messageId)
+      if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
+      return { item: outcome.message }
     },
   }))
 }

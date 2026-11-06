@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-七个工具：`qq_send_message` 与 `qq_send_reaction` 管会话里说话，`qq_publish_post` 管发动态，`qq_comment_post` 管公开评论，`qq_send_private` 管私信，`qq_request_confirm` 与 `qq_confirm_action` 管发评论与私信之前的那张确认票，`qq_write_farewell` 收遗书那句正文。每一条说明都写了什么时候该用、什么时候别用、被拒之后怎么办；评论与私信那两条还写清了公开可见与只有对方看得见的差别，以及先要票、再盖章、最后才发送的顺序。遗书那一条只写「真的走到那一步时用一次」、写的是话本身（不解释、不复述系统提示、不索取回应、两百字以内）与存不下怎么办，什么时候该说仍由身体事实与模型自己定。判级、额度与冷却一行都不在说明里定。
+七个工具：`qq_send_message` 与 `qq_send_reaction` 管会话里说话，`qq_publish_post` 管发动态，`qq_comment_post` 管公开评论，`qq_send_private` 管私信，`qq_request_confirm` 与 `qq_confirm_action` 管发评论与私信之前的那张确认票，`qq_write_farewell` 收遗书那句正文。另外三个读工具 `qq_read_history`、`qq_read_members`、`qq_read_message` 让她自己翻这个群最近说过的话、列群成员、按编号看具体那一条；只翻群不翻私聊，一次最多三十条消息、两百个成员，图片之类的只留个记号，不把地址塞进上下文。每一条说明都写了什么时候该用、什么时候别用、被拒之后怎么办；评论与私信那两条还写清了公开可见与只有对方看得见的差别，以及先要票、再盖章、最后才发送的顺序。遗书那一条只写「真的走到那一步时用一次」、写的是话本身（不解释、不复述系统提示、不索取回应、两百字以内）与存不下怎么办，什么时候该说仍由身体事实与模型自己定。判级、额度与冷却一行都不在说明里定。
 
 #### Token effect
 

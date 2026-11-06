@@ -31,7 +31,19 @@ export interface WsChannel {
   status(): ChannelStatus
   /** 这一条连接发出去过的消息编号，用来按引用编号认出在回自己 */
   sentIds(): ReadonlySet<string>
+  /** 问一次对方，回来的是那一段数据；读类的调用走这里 */
+  ask(action: string, params: Record<string, unknown>): Promise<AskReply>
 }
+
+/** 问一次对方之后回来的东西：成了给数据，没成给码与提示 */
+export type AskReply =
+  | { ok: true; data: Record<string, unknown> }
+  | { ok: false; code: string; reason: string; hint: string }
+
+/** 一条回话，发送与读都先落成这个样子 */
+type Reply =
+  | { ok: true; data: Record<string, unknown>; messageId?: string }
+  | { ok: false; data: Record<string, unknown>; code: string; reason: string; hint: string }
 
 /** 连接这一层的默认值：等回话多久、断了隔多久重连、重连不许比这更快 */
 export const WS_DEFAULTS = {
@@ -60,17 +72,17 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
   let seq = 0
   let status: ChannelStatus = { connected: false, url: options.url, reconnectCount: 0, lastError: '' }
   const sentIds = new Set<string>()
-  const pending = new Map<string, { settle: (value: SentResult) => void; timer: ReturnType<typeof setTimeout> }>()
+  const pending = new Map<string, { settle: (reply: Reply) => void; timer: ReturnType<typeof setTimeout> }>()
 
   const publish = (next: Partial<ChannelStatus>): void => {
     status = { ...status, ...next }
     handlers.onStatus(status)
   }
 
-  const settleAll = (result: SentResult): void => {
+  const settleAll = (reply: Reply): void => {
     for (const [echo, waiting] of pending) {
       clearTimeout(waiting.timer)
-      waiting.settle(result)
+      waiting.settle(reply)
       pending.delete(echo)
     }
   }
@@ -92,7 +104,40 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
         handlers.log(`发不出去：${action} 等回话超时`)
         resolve({ ok: false, code: 'channel.timeout', reason: '等回话超时', hint: '等一下再发，别原样重发同一句' })
       }, callTimeoutMs)
-      pending.set(echo, { settle: resolve, timer })
+      pending.set(echo, {
+        timer,
+        settle: (reply) => {
+          resolve(reply.ok
+            ? { ok: true, ...reply.messageId === undefined ? {} : { messageId: reply.messageId } }
+            : { ok: false, code: reply.code, reason: reply.reason, hint: reply.hint })
+        },
+      })
+      active.send(JSON.stringify({ action, params, echo }))
+    })
+  }
+
+  // 读类的调用要拿数据本身，不走上面那条只回成没成的路
+  const ask = (action: string, params: Record<string, unknown>): Promise<AskReply> => {
+    const active = socket
+    if (active === undefined || active.readyState !== 1) {
+      return Promise.resolve({ ok: false, code: 'channel.offline', reason: '还没连上', hint: '等连上再问' })
+    }
+    seq += 1
+    const echo = `qq-${seq}`
+    return new Promise<AskReply>((resolve) => {
+      const timer = setTimeout(() => {
+        pending.delete(echo)
+        handlers.log(`问不出来：${action} 等回话超时`)
+        resolve({ ok: false, code: 'channel.timeout', reason: '等回话超时', hint: '等一下再问一次' })
+      }, callTimeoutMs)
+      pending.set(echo, {
+        timer,
+        settle: (reply) => {
+          resolve(reply.ok
+            ? { ok: true, data: reply.data }
+            : { ok: false, code: reply.code, reason: reply.reason, hint: reply.hint })
+        },
+      })
       active.send(JSON.stringify({ action, params, echo }))
     })
   }
@@ -134,15 +179,15 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
             const id = typeof data.message_id === 'number' || typeof data.message_id === 'string' ? String(data.message_id) : ''
             if (retcode === 0 && id !== '') sentIds.add(id)
             waiting.settle(retcode === 0
-              ? { ok: true, ...id !== '' ? { messageId: id } : {} }
-              : { ok: false, code: `channel.${retcode}`, reason: asText(raw.wording ?? raw.message ?? '发送失败'), hint: '照对方给的码换个做法，别原样重发' })
+              ? { ok: true, data, ...id !== '' ? { messageId: id } : {} }
+              : { ok: false, data, code: `channel.${retcode}`, reason: asText(raw.wording ?? raw.message ?? '对方拒了'), hint: '照对方给的码换个做法，别原样重来' })
           }
           return
         }
         handlers.onMessage(raw)
       })
       ws.addEventListener('close', () => {
-        settleAll({ ok: false, code: 'channel.closed', reason: '连接断了', hint: '等自动重连上再发' })
+        settleAll({ ok: false, data: {}, code: 'channel.closed', reason: '连接断了', hint: '等自动重连上再来' })
         publish({ connected: false, reconnectCount: status.reconnectCount + 1 })
         if (stopped) return
         timer = setTimeout(connect, reconnectMs)
@@ -165,7 +210,7 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
     stop() {
       stopped = true
       if (timer !== undefined) clearTimeout(timer)
-      settleAll({ ok: false, code: 'channel.stopped', reason: '已经关掉', hint: '重新起一条连接再发' })
+      settleAll({ ok: false, data: {}, code: 'channel.stopped', reason: '已经关掉', hint: '重新起一条连接再来' })
       socket?.close()
       socket = undefined
       sentIds.clear()
@@ -193,6 +238,9 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
     },
     sentIds() {
       return sentIds
+    },
+    ask(action, params) {
+      return ask(action, params)
     },
   }
 }
