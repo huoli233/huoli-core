@@ -6,6 +6,7 @@ import { renderConstitution } from './constitution.ts'
 import { FILES } from './files.ts'
 import { panelBody, panelFile } from './panel.ts'
 import type {
+  InDirVersionKind,
   RollbackCheck,
   RollbackOutcome,
   SelfSettings,
@@ -70,13 +71,13 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
 }
 
 // 能回滚的两种文件：版本名前缀与正本都从这张表取
-const VERSION_FILES: Readonly<Record<VersionKind, string>> = {
+const VERSION_FILES: Readonly<Record<InDirVersionKind, string>> = {
   panel: FILES.panel,
   narrative: FILES.narrative,
 }
 
 // 版本名只认这一种写法，末尾的序号是同一分钟里存的第二份、第三份；名字是回滚入口的输入，写法固定不随配置改
-const VERSION_NAME = /^(panel|narrative)-(\d{8})-(\d{4})(?:-(\d+))?\.md$/
+const VERSION_NAME = /^(panel|narrative|rules)-(\d{8})-(\d{4})(?:-(\d+))?\.md$/
 
 // 一份版本文件的印象，外加同一分钟里排先后用的序号
 interface VersionRow extends VersionEntry {
@@ -103,7 +104,7 @@ function versionAt(stamp: string, minute: string): number {
 }
 
 // 文件正本对应哪种版本，宪法这类不参与回滚
-function versionKindOf(name: string): VersionKind | undefined {
+function versionKindOf(name: string): InDirVersionKind | undefined {
   if (name === VERSION_FILES.panel) return 'panel'
   if (name === VERSION_FILES.narrative) return 'narrative'
   return undefined
@@ -149,7 +150,7 @@ function freeVersionName(dir: string, kind: VersionKind, at: number): string {
 }
 
 // 把正本按原始字节抄进 versions/，再按份数滚一次；正本还没写出来时没有旧版可留
-function archiveVersion(dir: string, settings: SelfSettings, kind: VersionKind, at: number): string | undefined {
+function archiveVersion(dir: string, settings: SelfSettings, kind: InDirVersionKind, at: number): string | undefined {
   const raw = readRaw(path.join(dir, VERSION_FILES[kind]))
   if (raw === undefined) return undefined
   const name = freeVersionName(dir, kind, at)
@@ -213,9 +214,13 @@ export interface SelfStore {
   /** 一个种类的旧版本，最近的在前 */
   listVersions(kind: VersionKind): VersionEntry[]
   /** 回滚到某一份旧版本，回滚前先把现场也存一份 */
-  rollback(kind: VersionKind, name: string): RollbackOutcome
+  rollback(kind: InDirVersionKind, name: string): RollbackOutcome
   /** 回滚之后逐字核对当前文件与那一份版本 */
-  verifyAfterRollback(kind: VersionKind, name: string): RollbackCheck
+  verifyAfterRollback(kind: InDirVersionKind, name: string): RollbackCheck
+  /** 把外面那份人格规矩存一版，内容与最新一版相同时不存 */
+  snapshotRules(file: string, at: number): string | undefined
+  /** 用某一版人格规矩盖回外面那个文件，盖之前先把现场存一版 */
+  restoreRules(file: string, name: string): RollbackOutcome
 }
 
 /**
@@ -328,8 +333,7 @@ export function createSelfStore(options: SelfStoreOptions): SelfStore {
       writeAtomic(pathOf(VERSION_FILES[kind]), raw)
       return saved === undefined ? { ok: true, restoredFrom: name } : { ok: true, restoredFrom: name, savedCurrent: saved }
     },
-    verifyAfterRollback(kind, name) {
-      const matched = VERSION_NAME.exec(name)
+    verifyAfterRollback(kind, name) {      const matched = VERSION_NAME.exec(name)
       if (path.basename(name) !== name || matched === null || matched[1] !== kind) {
         return {
           same: false,
@@ -347,6 +351,46 @@ export function createSelfStore(options: SelfStoreOptions): SelfStore {
       const right = kept.toString('utf8')
       if (left === right) return { same: true, line: 0 }
       return { same: false, line: firstDiffLine(left, right) }
+    },
+    snapshotRules(file, at) {
+      const raw = readRaw(file)
+      // 外面那份还没有时没有旧版可留
+      if (raw === undefined) return undefined
+      const newest = this.listVersions('rules')[0]
+      if (newest !== undefined) {
+        const kept = readRaw(path.join(dir, FILES.versions, newest.name))
+        // 一字没改就不用再存一版，省得把份数滚没了
+        if (kept !== undefined && kept.equals(raw)) return undefined
+      }
+      const name = freeVersionName(dir, 'rules', at)
+      writeAtomic(path.join(dir, FILES.versions, name), raw)
+      const keep = Math.max(0, Math.floor(settings.versionsKeep))
+      for (const row of this.listVersions('rules').slice(keep)) {
+        fs.rmSync(path.join(dir, FILES.versions, row.name), { force: true })
+      }
+      return name
+    },
+    restoreRules(file, name) {
+      const matched = VERSION_NAME.exec(name)
+      if (path.basename(name) !== name || matched === null || matched[1] !== 'rules') {
+        return {
+          ok: false,
+          code: 'versions.name_invalid',
+          reason: `${name} 不是人格规矩的版本名，这种名字形如 rules-20261104-1830.md`,
+          hint: '照 listVersions 给的名字逐字写',
+        }
+      }
+      const raw = readRaw(path.join(dir, FILES.versions, name))
+      if (raw === undefined) {
+        return { ok: false, code: 'versions.missing', reason: `versions/ 里没有 ${name}`, hint: '先列一遍版本看看还剩哪几份' }
+      }
+      if (raw.toString('utf8').trim() === '') {
+        return { ok: false, code: 'versions.empty', reason: `${name} 是空的，拿它盖回去等于把人格清空`, hint: '换一份有正文的版本' }
+      }
+      // 盖之前先把现在这份也存一版，改错了还能退回来
+      const saved = this.snapshotRules(file, Date.now())
+      writeAtomic(file, raw)
+      return saved === undefined ? { ok: true, restoredFrom: name } : { ok: true, restoredFrom: name, savedCurrent: saved }
     },
   }
 }

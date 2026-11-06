@@ -38,6 +38,7 @@ export type {
   SelfMirrorPort,
   SelfMirrorWrite,
   VersionEntry,
+  InDirVersionKind,
   VersionKind,
   WeeklyReview,
   WriteOutcome,

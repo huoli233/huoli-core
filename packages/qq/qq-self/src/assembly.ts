@@ -71,6 +71,16 @@ export function apply(ctx: Context, config: Config = {}): void {
   const ledger = createLedger({ store, settings })
   const enabled = config.enabled ?? false
   const mainChatKey = config.mainChatKey ?? ''
+  // 人格规矩那份在目录外面：启动时存一版，改坏了还能拿旧版盖回来
+  const rulesFile = config.rulesFile ?? ''
+  if (rulesFile !== '') {
+    try {
+      store.ensure()
+      store.snapshotRules(rulesFile, Date.now())
+    } catch (error) {
+      ctx.logger('qq-self').warn('人格规矩没存下这一版：%s', String(error))
+    }
+  }
   // 出口的端口只认 0 到 65535 的整数，别的写法按不开算
   const wantedPort = config.panelPort ?? 0
   const panelPort = Number.isInteger(wantedPort) && wantedPort >= 0 && wantedPort <= 65_535 ? wantedPort : 0
@@ -468,6 +478,17 @@ export function apply(ctx: Context, config: Config = {}): void {
     },
     verifyAfterRollback(kind, name) {
       return store.verifyAfterRollback(kind, name)
+    },
+    rulesVersions() {
+      return store.listVersions('rules')
+    },
+    restoreRules(name) {
+      const stop = off()
+      if (stop !== undefined) return { ok: false, code: 'versions.disabled', reason: '这一层关着，回滚不落盘', hint: '先把 Config.enabled 打开' }
+      if (rulesFile === '') {
+        return { ok: false, code: 'versions.no_rules_file', reason: '没配人格规矩那份文件在哪', hint: '在 Config 里填 rulesFile，指到那份规矩文件' }
+      }
+      return store.restoreRules(rulesFile, name)
     },
   }
   seams.set(ctx.root, seam)

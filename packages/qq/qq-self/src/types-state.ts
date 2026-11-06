@@ -85,8 +85,13 @@ export interface WriteOutcome {
   reason?: WriteReason
 }
 
-/** 会按版本留存的那两种单值文件 */
-export type VersionKind = 'panel' | 'narrative'
+/**
+ * 会按版本留存的东西：面板与叙事这两份正本在目录里，人格规矩那份在目录外面
+ */
+export type VersionKind = 'panel' | 'narrative' | 'rules'
+
+/** 目录里自己维护正本的那两种，人格规矩那份不在此列 */
+export type InDirVersionKind = Exclude<VersionKind, 'rules'>
 
 /** versions/ 里的一份旧版本 */
 export interface VersionEntry {

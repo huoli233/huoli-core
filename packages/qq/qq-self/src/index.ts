@@ -10,6 +10,7 @@ import type {
   ErrorRow,
   IdentityClaim,
   IdentityRow,
+  InDirVersionKind,
   KeysOutcome,
   LedgerSummary,
   LedgerViolation,
@@ -109,6 +110,7 @@ export type {
   SelfMirrorWrite,
   SelfSettings,
   StageOutcome,
+  InDirVersionKind,
   VersionEntry,
   VersionKind,
   VitalsPort,
@@ -236,14 +238,25 @@ export interface QqSelfSeam {
    * @param name - listVersions 给的名字，逐字相同
    * @returns 从哪一份恢复、现场存成了哪一份，或一个带原因与提示的码
    */
-  rollback(kind: VersionKind, name: string): RollbackOutcome
+  rollback(kind: InDirVersionKind, name: string): RollbackOutcome
   /**
    * 回滚之后逐字核对当前文件与那一份版本
    * @param kind - 面板还是叙事
    * @param name - 要比对的那一份版本名
    * @returns 是否逐字相同，以及首处不同的行号
    */
-  verifyAfterRollback(kind: VersionKind, name: string): RollbackCheck
+  verifyAfterRollback(kind: InDirVersionKind, name: string): RollbackCheck
+  /**
+   * 人格规矩存下来的那几版，最近的在前
+   * @returns 每份版本的名字、种类、时刻与字节数
+   */
+  rulesVersions(): VersionEntry[]
+  /**
+   * 用某一版人格规矩盖回配置文件里那份，盖之前先把现场存一版
+   * @param name - rulesVersions 给的名字，逐字相同
+   * @returns 从哪一份恢复、现场存成了哪一份，或一个带原因与提示的码
+   */
+  restoreRules(name: string): RollbackOutcome
 }
 
 /** 这一行接受的配置 */
@@ -254,6 +267,8 @@ export interface Config {
   dir?: string
   /** 数据根目录，不给就用默认的家目录 */
   huoliHome?: string
+  /** 人格规矩那份文件在哪，填了就在启动时存一版，改坏了能拿旧版盖回来 */
+  rulesFile?: string
   /** 主会话的键，不配就哪个会话都不放进 */
   mainChatKey?: string
   /** 只读面板出口绑哪个端口，默认 0 表示不开；开了只绑回环地址 */
