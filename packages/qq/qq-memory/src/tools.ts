@@ -8,6 +8,7 @@ import { layerOr } from './guard.ts'
 import type { MemoryStore } from './store.ts'
 import { newId, type MemoryItem, type MemoryLayer } from './types.ts'
 import { renderRecall, type RecallHit } from './recall.ts'
+import { redactSecrets } from './redact.ts'
 import { touch } from './sweep.ts'
 
 /** 工具要用到的东西 */
@@ -62,7 +63,8 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
     },
     execute(args, exec) {
       const chatKey = chatKeyOf(exec)
-      const text = typeof args.text === 'string' ? args.text.trim() : ''
+      // 凭证与长号码进门就抹掉，后面查重与落库都看抹过的这一版
+      const text = redactSecrets(typeof args.text === 'string' ? args.text.trim() : '')
       if (text.length < 2) refuse('memory.too_short', '内容太短', '写清一件事，至少几个字')
       if (text.length > 500) refuse('memory.too_long', '一条最多 500 字', '长事拆成几条记')
 

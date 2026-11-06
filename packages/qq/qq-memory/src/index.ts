@@ -10,6 +10,7 @@ import { recall, recallByFeeling, encodeVector, type FeelingFacts, type RecallHi
 import { edgesFileOf, linkTogether, readEdges } from './edges.ts'
 import { openVectorStore, type VectorHit, type VectorStore } from './vector-store.ts'
 import { createEmbedder, type EmbeddingConfig, type Embedder } from './embed.ts'
+import { redactSecrets } from './redact.ts'
 import { findWithVectors } from './find-async.ts'
 import { registerMemoryTools } from './tools.ts'
 import { resolveTuning, type Tuning } from './defaults.ts'
@@ -346,7 +347,8 @@ export function apply(ctx: Context, config: Config = {}): void {
     const metadata = metadataOr(options.metadata)
     return {
       id: newId(at),
-      text,
+      // 进库之前先把凭证与长号码抹掉：记进去容易，删干净难
+      text: redactSecrets(text),
       layer,
       scope: scopeOf(chatKey),
       importance: importanceOf(chatKey, options),
