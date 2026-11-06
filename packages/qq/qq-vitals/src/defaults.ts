@@ -295,6 +295,20 @@ export const DEFAULTS: Tuning = {
   // 递质回归：白天与夜里的半衰期、各递质回落目标里的夜色项
   transmitterNightHalfHours: 0.45,
   transmitterHalfHours: 0.75,
+  // 褪黑素比递质回落得慢一点
+  melatoninHalfHours: 0.70,
+  // 去甲按时段换基线：凌晨最松、上午最紧，最后一档兜住剩下的时段
+  noradrenalineBands: [
+    { until: 6, value: 0.22 },
+    { until: 9, value: 0.45 },
+    { until: 12, value: 0.72 },
+    { until: 14, value: 0.55 },
+    { until: 18, value: 0.70 },
+    { until: 22, value: 0.60 },
+    { until: 24, value: 0.35 },
+  ],
+  // 体温保留两位小数就够读
+  coreTempDecimals: 2,
   transmitterDopamineBase: 0.50,
   transmitterDopamineNightDrop: 0.16,
   transmitterOxytocinBase: 0.45,

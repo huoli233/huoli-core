@@ -162,16 +162,16 @@ export function nightness(hour: number, tuning: Tuning): number {
 /**
  * 去甲肾上腺素的时段基线
  * @param hour - 本地小时数
+ * @param tuning - 参数
  * @returns 基线值
  */
-export function noradrenalineBaseline(hour: number): number {
-  if (hour < 6) return 0.22
-  if (hour < 9) return 0.45
-  if (hour < 12) return 0.72
-  if (hour < 14) return 0.55
-  if (hour < 18) return 0.70
-  if (hour < 22) return 0.60
-  return 0.35
+export function noradrenalineBaseline(hour: number, tuning: Tuning): number {
+  const bands = tuning.noradrenalineBands
+  for (const band of bands) {
+    if (hour < band.until) return band.value
+  }
+  // 超过最后一档的边界就用最后一档，没配任何档就按零
+  return bands.at(-1)?.value ?? 0
 }
 
 /**

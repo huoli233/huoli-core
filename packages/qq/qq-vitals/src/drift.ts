@@ -16,7 +16,7 @@ import type { CyclePhase, VitalsState } from './types.ts'
 // 递质回基线：皮质醇不在这里，它只由 HPA 轴管
 function settleTransmitters(next: VitalsState, hours: number, night: number, hour: number, tuning: Tuning): void {
   const halfLife = night >= tuning.nightFullFrom ? tuning.transmitterNightHalfHours : tuning.transmitterHalfHours
-  const naBase = noradrenalineBaseline(hour)
+  const naBase = noradrenalineBaseline(hour, tuning)
   const dopamineTarget = tuning.transmitterDopamineBase - tuning.transmitterDopamineNightDrop * night
   const oxytocinTarget = tuning.transmitterOxytocinBase + tuning.transmitterOxytocinNightRise * night
   const serotoninTarget = tuning.transmitterSerotoninBase - tuning.transmitterSerotoninNightDrop * night
@@ -153,7 +153,9 @@ function settleInner(next: VitalsState, hours: number, hour: number, night: numb
   next.cytokines = clamp(decay(next.cytokines, hours, tuning.cytokinesHalfHours))
   const feverTarget = clamp(next.cytokines * tuning.feverCytokinesGain)
   next.fever = clamp(follow(next.fever, feverTarget, tuning.feverHalfHours, hours))
-  next.core_temp = Math.round(coreTempOf(next, night, tuning) * 100) / 100
+  // 体温按配置的小数位收一下，读数别一长串
+  const tempScale = 10 ** Math.max(0, Math.floor(tuning.coreTempDecimals))
+  next.core_temp = Math.round(coreTempOf(next, night, tuning) * tempScale) / tempScale
   next.pain = clamp(decay(next.pain, Math.min(tuning.painHoursCap, hours), tuning.painHalfHours))
 }
 
@@ -369,7 +371,7 @@ export function drift(
   settleAutonomic(next, hours, night, load, tuning)
   settleReward(next, hours, tuning)
   settleAttachment(next, hours, tuning)
-  next.melatonin = clamp(follow(next.melatonin, melatoninTarget(hour, tuning), 0.70, hours))
+  next.melatonin = clamp(follow(next.melatonin, melatoninTarget(hour, tuning), tuning.melatoninHalfHours, hours))
   settleHunger(next, hours, hour, (at - next.last_meal) / 3_600_000, tuning)
   settleWater(next, hours, hour, tuning)
   settleGlucose(next, hours, tuning)

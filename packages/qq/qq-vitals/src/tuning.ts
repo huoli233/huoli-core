@@ -13,6 +13,14 @@ export type TuningOverride = Partial<Omit<Tuning, 'words'>> & {
   words?: Partial<WordLists>
 }
 
+/** 去甲肾上腺素的一档：到几点之前用哪个基线 */
+export interface NoradrenalineBand {
+  /** 到这个小时之前（不含）用这一档 */
+  until: number
+  /** 这一档的基线，0~1 标度 */
+  value: number
+}
+
 /** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
 export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning,
   EmotionBlendTuning, PromptTuning {
@@ -283,6 +291,12 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   transmitterNightHalfHours: number
   /** 白天回基线的半衰期，小时，默认 0.75 */
   transmitterHalfHours: number
+  /** 褪黑素的半衰期，小时，默认 0.70，比递质慢 */
+  melatoninHalfHours: number
+  /** 去甲肾上腺素的时段基线，按「到几点之前」分段，最后一档兜底 */
+  noradrenalineBands: readonly NoradrenalineBand[]
+  /** 体温保留几位小数，默认 2 */
+  coreTempDecimals: number
   /** 多巴胺的白天回落目标，0~1 标度，默认 0.50 */
   transmitterDopamineBase: number
   /** 夜色把多巴胺目标压下去多少，默认 0.16，按夜色浓度打折 */
