@@ -132,7 +132,7 @@
 
 合并规则：同一 `id` 在两路都出现时取相似度较大的一路，不叠加、不重复计分；候选集按 `id` 去重后再排序。
 
-状态：两路都已实现——`keyGrams()` 切片段、`encodeVector()` 与 `cosineSimilarity()` 走向量；向量路是 1024 维字面哈希编码，不带含义模型，意思相近但用字不同的两句仍然对不上，条目多时要换成预算好的索引，现在每次召回按需重算。
+状态：两路都已实现——`keyGrams()` 切片段、`encodeVector()` 与 `cosineSimilarity()` 走向量；向量路默认是 1024 维字面哈希编码，不带含义模型，意思相近但用字不同的两句仍然对不上。配了 `embedding` 之后改用本机嵌入服务（如 Ollama 的 `bge-m3`）算真语义向量，服务不可用时自动退回哈希那套，条目多时要换成预算好的索引，现在每次召回按需重算。
 
 ### 打分与排序
 
@@ -354,7 +354,7 @@
 
 不外传：记忆正文、记录表、人格文本不出本机；向量编码必须在本地完成；任何远程请求体与日志都不得携带 `text` 原文，只允许携带 `id`、长度与计数。
 
-状态：不动人格、不覆盖、不混用、不外传四条有代码支撑——记忆包不挂上提示词段，写入只有追加与改单条两种形态，召回与放进按 `scope` 过滤，编码全在本地算；只读探测在 `scripts/probe.ts`，只读打开记忆与记录表，跑前跑后文件一字不动。
+状态：不动人格、不覆盖、不混用、不外传四条有代码支撑——记忆包不挂上提示词段，写入只有追加与改单条两种形态，召回与放进按 `scope` 过滤，编码全在本地算（配了嵌入服务也只接本机地址，`createEmbedder` 直接拒绝非本机地址）；只读探测在 `scripts/probe.ts`，只读打开记忆与记录表，跑前跑后文件一字不动。
 
 ## 验收
 
@@ -440,6 +440,7 @@
 | 召回 | `packages/qq/qq-memory/src/recall.ts:recall` |
 | 关键词路 | `packages/qq/qq-memory/src/recall.ts:keyGrams` |
 | 向量路 | `packages/qq/qq-memory/src/recall.ts:encodeVector`、`packages/qq/qq-memory/src/recall.ts:cosineSimilarity` |
+| 本机嵌入 | `packages/qq/qq-memory/src/embed.ts:createEmbedder`（只收本机地址）、`packages/qq/qq-memory/src/find-async.ts:findWithVectors` |
 | 放进模板 | `packages/qq/qq-memory/src/inject.ts:buildInjectBlock`、`packages/qq/qq-memory/src/inject.ts:injectIntoUserText` |
 | 放进去重 | `packages/qq/qq-memory/src/inject.ts:shouldInject` |
 | 记录表 | `packages/qq/qq-memory/src/ledger.ts:initBook`、`packages/qq/qq-memory/src/ledger.ts:syncBook`、`packages/qq/qq-memory/src/ledger.ts:verifyBook` |

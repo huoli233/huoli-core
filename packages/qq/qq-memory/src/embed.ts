@@ -30,6 +30,9 @@ export interface Embedder {
 /** 一次最多等多久 */
 const DEFAULT_TIMEOUT_MS = 6000
 
+/** 只认本机地址：记忆正文不许出这台机器 */
+const LOOPBACK = /^https?:\/\/(?:127\.0\.0\.1|localhost|\[::1\])(?::\d+)?(?:\/|$)/u
+
 /** 服务回的东西里我们要的那一段 */
 interface EmbeddingResponse {
   data?: { embedding?: unknown }[]
@@ -39,9 +42,14 @@ interface EmbeddingResponse {
  * 做一把嵌入器
  * @param config 服务地址、模型、key 从哪来
  * @returns 可以反复用的嵌入器
+ * @throws 地址不在本机时直接拒绝：记忆正文不许发出去
  */
 export function createEmbedder(config: EmbeddingConfig): Embedder {
   const base = config.baseURL.replace(/\/+$/, '')
+  // 这条是硬边界，不是偏好：正文出本机就违反了记忆层的约定
+  if (!LOOPBACK.test(base)) {
+    throw new Error(`嵌入服务只能接本机地址，不给 ${config.baseURL}：记忆正文不出本机`)
+  }
   const timeoutMs = Math.max(1, Math.floor(config.timeoutMs ?? DEFAULT_TIMEOUT_MS))
   // 写死的先用，没写才去环境里找
   const keyNow = (): string | undefined => {
@@ -55,10 +63,12 @@ export function createEmbedder(config: EmbeddingConfig): Embedder {
     async embed(texts) {
       if (texts.length === 0) return []
       const key = keyNow()
-      if (key === undefined) throw new Error(`嵌入服务没配 key：${config.apiKeyEnv ?? 'apiKey'}`)
+      // 本机服务常常不校验 key，没配就不带这个头
+      const headers: Record<string, string> = { 'content-type': 'application/json' }
+      if (key !== undefined) headers.authorization = `Bearer ${key}`
       const response = await fetch(`${base}/embeddings`, {
         method: 'POST',
-        headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+        headers,
         body: JSON.stringify({ model: config.model, input: [...texts] }),
         signal: AbortSignal.timeout(timeoutMs),
       })

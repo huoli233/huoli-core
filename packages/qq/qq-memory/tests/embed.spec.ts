@@ -64,10 +64,45 @@ describe('嵌入服务', () => {
     await expect(embedder.embed(['一句', '两句'])).rejects.toThrow(/条数对不上/u)
   })
 
-  it('没配 key 直接拒绝，不去打服务', async () => {
-    const embedder = createEmbedder({ baseURL: 'http://127.0.0.1:1/v1', model: 'fake' })
+  it('没配 key 就不带许可头，本机服务照样能答', async () => {
+    const seen: (string | undefined)[] = []
+    const server = createServer((request, response) => {
+      seen.push(request.headers.authorization)
+      request.resume()
+      request.on('end', () => {
+        response.writeHead(200, { 'content-type': 'application/json' })
+        response.end(JSON.stringify({ data: [{ embedding: [1, 0, 1] }] }))
+      })
+    })
+    servers.push(server)
+    await new Promise<void>((resolve) => { server.listen(0, '127.0.0.1', resolve) })
+    const address = server.address()
+    if (address === null || typeof address === 'string') throw new Error('假服务没起来')
 
-    await expect(embedder.embed(['一句话'])).rejects.toThrow(/没配 key/u)
+    const embedder = createEmbedder({ baseURL: `http://127.0.0.1:${String(address.port)}/v1`, model: 'fake' })
+    const vectors = await embedder.embed(['一句话'])
+
+    expect(vectors).toEqual([[1, 0, 1]])
+    expect(seen).toEqual([undefined])
+  })
+
+  it('非本机地址一律拒绝：记忆正文不出本机', () => {
+    expect(() => createEmbedder({
+      baseURL: 'https://api.siliconflow.cn/v1',
+      model: 'BAAI/bge-m3',
+      apiKey: 'test-key',
+    })).toThrow(/只能接本机地址/u)
+
+    expect(() => createEmbedder({
+      baseURL: 'http://192.168.1.9:11434/v1',
+      model: 'bge-m3',
+    })).toThrow(/只能接本机地址/u)
+  })
+
+  it('本机的几种写法都放行', () => {
+    for (const baseURL of ['http://127.0.0.1:11434/v1', 'http://localhost:11434/v1', 'http://[::1]:11434/v1']) {
+      expect(() => createEmbedder({ baseURL, model: 'bge-m3' })).not.toThrow()
+    }
   })
 })
 
