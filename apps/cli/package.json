@@ -86,7 +86,6 @@
     "@huoli/huoli-tool-todo": "workspace:*",
     "@huoli/huoli-tool-web": "workspace:*",
     "@huoli/huoli-tool-workflow": "workspace:*",
-    "@huoli/huoli-web-app": "workspace:*",
     "@huoli/huoli-workflow-ptc": "workspace:*",
     "@huoli/schemastery": "workspace:~",
     "commander": "^15.0.0",

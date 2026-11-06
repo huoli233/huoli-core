@@ -135,7 +135,7 @@ The external Liveshare server's service, stores, OAuth provider, and deployment 
 
 - [LiveShare subsystem](../../../docs/subsystems/liveshare.md)
 - [Owner decision record](../../../.agents/notes/implemented/feature/2026-09-13-liveshare-protocol-and-owner-surfaces.md)
-- [Web bundle](../../bundle/web-app/README.md)
+- Web bundle
 
 -----
 

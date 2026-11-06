@@ -7,8 +7,11 @@ import type {
   SuppressTuning,
 } from './types.ts'
 
-/** 覆盖项：词表按表覆盖，别的字段按字段覆盖 */
-export type TuningOverride = Partial<Omit<Tuning, 'words'>> & { words?: Partial<WordLists> }
+/** 覆盖项：别的字段按字段覆盖，词表按表覆盖 */
+export type TuningOverride = Partial<Omit<Tuning, 'words'>> & {
+  /** 只改这几张词表，没提的那张还用默认 */
+  words?: Partial<WordLists>
+}
 
 /** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
 export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning,

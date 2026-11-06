@@ -104,26 +104,6 @@ describe('application entrypoints', () => {
     ])
   })
 
-  it('rejects a start:web script that bypasses the huoli launcher', () => {
-    const root = fixture()
-    write(root, 'package.json', JSON.stringify({ scripts: { 'start:web': 'node packages/example/app/src/bin.ts web' } }))
-
-    expect(applicationEntrypointViolations(root)).toEqual([
-      'package.json scripts.start:web: application launcher script must launch apps/cli/src/bin.ts',
-      'package.json scripts.start:web: application launcher script must not launch a package entry directly',
-    ])
-  })
-
-  it('rejects a dev:web wrapper that serves without the huoli launcher', () => {
-    const root = fixture()
-    write(root, 'package.json', JSON.stringify({ scripts: { 'dev:web': 'tsx scripts/dev-web.ts --poll' } }))
-    write(root, 'scripts/dev-web.ts', "execa('vite', ['build', '--watch'])\n")
-
-    expect(applicationEntrypointViolations(root)).toEqual([
-      'scripts/dev-web.ts: application launcher wrapper must launch apps/cli/src/bin.ts',
-    ])
-  })
-
   it('rejects a new root demo until its launch role is classified', () => {
     const root = fixture()
     write(root, 'package.json', JSON.stringify({ scripts: { 'demo:new-app': 'huoli --profile new-app' } }))

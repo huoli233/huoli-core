@@ -85,7 +85,6 @@
     "@huoli/huoli-settings": "workspace:*",
     "@huoli/huoli-subagent": "workspace:*",
     "@huoli/huoli-typert-protocol": "workspace:*",
-    "@huoli/huoli-web-app": "workspace:*",
     "@types/js-yaml": "^4.0.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

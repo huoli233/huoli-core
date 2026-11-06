@@ -105,7 +105,7 @@ For model-reviewed full-access execution, explicitly enable [Auto review for hea
 
 ### When to use it
 
-Use headless for scripted or automated huoli runs — CI steps, batch jobs, quick answers from a terminal. Avoid it when you need a multi-turn interactive session or a GUI; the browser surface ([huoli-web-app](../web-app/README.md)) serves that. The process stays alive only for the run, opens no listening port, and exits on its own, so it fits pipelines that wait on the process. When a supervisor needs progress rather than just the answer, `--json` gives it the event stream and `--session-id` lets a later invocation continue the same conversation.
+Use headless for scripted or automated huoli runs — CI steps, batch jobs, quick answers from a terminal. Avoid it when you need a multi-turn interactive session or a GUI; the browser surface (huoli-web-app) serves that. The process stays alive only for the run, opens no listening port, and exits on its own, so it fits pipelines that wait on the process. When a supervisor needs progress rather than just the answer, `--json` gives it the event stream and `--session-id` lets a later invocation continue the same conversation.
 
 ### Help and task errors
 
@@ -156,7 +156,7 @@ Read these pages when you want to go deeper into the shared core, the sibling GU
 
 - [Bundle package map](../README.md) — the surfaces built on the same core.
 - [huoli-base](../base/README.md) — the shared core headless runs on.
-- [huoli-web-app](../web-app/README.md) — the interactive browser sibling for multi-turn work.
+- huoli-web-app — the interactive browser sibling for multi-turn work.
 - [huoli-cmdline](../../boot/cmdline/README.md) — how the launcher hands the command line to the app.
 - [Generated configuration catalog](../../../docs/config-catalog.md#huolihuoli-headless) — every accepted config field and its source declaration.
 

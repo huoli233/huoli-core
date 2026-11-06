@@ -89,7 +89,7 @@ Reviewer 以固定策略作为 system prompt，随后依次发送：一条仅含
 ## 进一步探索
 
 - [实验包](../README.zh.md)——发布策略与依赖隔离。
-- [Web bundle](../../bundle/web-app/README.zh.md)——此 patch 扩展的稳定 profile。
+- Web bundle——此 patch 扩展的稳定 profile。
 - [Auto review 决策](../../../.agents/notes/implemented/feature/2026-08-28-auto-review.zh.md)——固定风险策略、权威与生命周期。
 - [Tools](../../core/tools/README.zh.md)——执行、取消与 PTC 结果传播。
 

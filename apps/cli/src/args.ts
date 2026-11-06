@@ -89,13 +89,11 @@ function rejectElectronProfile(program: Command, profile: string): void {
 /** The launcher's own help text; each app prints its own. */
 const HELP_EXAMPLES = `
 Examples:
-  huoli web                                   boot the web profile (same as: huoli --profile web)
-  huoli rescue --from-default-profile web
-                                            recreate rescue from the shipped web template, then boot it
   huoli headless "run the tests"              answer one task, print the result, and exit
+  huoli rescue --from-default-profile headless
+                                            recreate rescue from the shipped headless template, then boot it
   huoli tui --patch ./extra.yml               boot a custom profile with one extra overlay
   huoli tui --resume <session>                arguments after the launcher flags reach the app
-  huoli web --help                            the web app's own flags and help
   huoli plugin --profile tui add <package>    install a plugin into the tui profile
 `
 

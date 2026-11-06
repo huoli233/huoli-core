@@ -426,7 +426,7 @@
 | 五档来源 | `packages/qq/qq-memory/src/types.ts:MEMORY_SOURCES`、`packages/qq/qq-memory/src/guard.ts:sourceOr` |
 | 来源与 metadata 校验 | `packages/qq/qq-memory/src/guard.ts:metadataOr` |
 | 写入入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf` |
-| 镜像入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf`、`packages/qq/qq-memory/src/mirror.ts:mirroredSelfIds` |
+| 镜像入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf`、`packages/qq/qq-memory/src/index.ts:mirroredSelfIds` |
 | 两个工具 | `packages/qq/qq-memory/src/tools.ts:registerMemoryTools` |
 | 往上挪一层 | `packages/qq/qq-memory/src/sweep.ts:promoteAll` |
 | 变淡与清空正文 | `packages/qq/qq-memory/src/sweep.ts:sweepOnce` |

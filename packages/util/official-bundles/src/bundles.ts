@@ -11,9 +11,6 @@ export const PROFILE_TEMPLATES: Record<string, ProfileTemplate> = {
   acp: {
     bundles: ['@huoli/huoli-base', '@huoli/huoli-acp-app'],
   },
-  web: {
-    bundles: ['@huoli/huoli-base', '@huoli/huoli-web-app'],
-  },
   headless: {
     bundles: ['@huoli/huoli-base', '@huoli/huoli-headless'],
   },
@@ -38,6 +35,8 @@ export const RETIRED_BUNDLES: ReadonlySet<string> = new Set([
   // The Web composition mounts Schedule itself
   // ([upgrade guide](../../../../docs/upgrade-guide/v0.2.0-rc.2/schedule-bundle-retired/guide.md)).
   '@huoli/huoli-experimental-schedule-bundle',
+  // 网页端整个不再提供，老 profile 里遗留的这个包名要清掉
+  '@huoli/huoli-web-app',
 ])
 
 /** The bundle list a `huoli plugin` init uses for a name with no shipped template. */

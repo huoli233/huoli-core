@@ -9,7 +9,7 @@ The [document package family](../../packages/document/README.md) converts Office
 | Owner | Responsibility |
 |---|---|
 | [office-to-pdf](../../packages/document/office-to-pdf/README.md) | `ctx.officeToPdf`: shared LibreOffice conversion, bounded admission, and PDF caching |
-| [Web bundle](../../packages/bundle/web-app/README.md) | One configurable conversion provider shared by Host consumers |
+| Web bundle | One configurable conversion provider shared by Host consumers |
 | [Office preview Client](../../packages/client/ui-sidebar-documentpreview/README.md#office-preview) | Office extension selection, PDF reuse, and missing-font notices |
 
 ## Requests and results

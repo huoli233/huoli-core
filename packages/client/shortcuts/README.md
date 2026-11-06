@@ -62,7 +62,7 @@ Desktop native menus and embedded frames use the same command registry as DOM in
 
 - [Web Client](../../../docs/subsystems/web-client.md)
 - [UI primitives](../ui-primitives/README.md)
-- [Web app bundle](../../bundle/web-app/README.md)
+- Web app bundle
 
 -----
 

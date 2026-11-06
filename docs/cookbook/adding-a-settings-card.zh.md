@@ -69,4 +69,4 @@ ctx.slots.inject('plugins.detail.badge', () => ctx.slots.register({
 }
 ```
 
-内置命名空间的伴生包就是同样的浏览器半侧放在一个纯客户端包里，宿主 `apply` 为空，列入 Web 组合的插件花名册（[`packages/bundle/web-app/cordis.patch.yml`](../../packages/bundle/web-app/cordis.patch.yml)），并通过 `ctx.configForms.whileServed` 注册进 `plugins.item`，页面因此恰好在 Host 服务该命名空间期间存在。
+内置命名空间的伴生包就是同样的浏览器半侧放在一个纯客户端包里，宿主 `apply` 为空，列入 Web 组合的插件花名册（`packages/bundle/web-app/cordis.patch.yml`），并通过 `ctx.configForms.whileServed` 注册进 `plugins.item`，页面因此恰好在 Host 服务该命名空间期间存在。

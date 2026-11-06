@@ -17,7 +17,6 @@
 - [`huoli headless`](#huoli-headless)
 - [`huoli sdk`](#huoli-sdk)
 - [`huoli sdk-minimal`](#huoli-sdk-minimal)
-- [`huoli web`](#huoli-web)
 
 <a id="huoli"></a>
 ## `huoli`
@@ -49,13 +48,11 @@ Options:
                                  or --patch overlays and exit
 
 Examples:
-  huoli web                                   boot the web profile (same as: huoli --profile web)
-  huoli rescue --from-default-profile web
-                                            recreate rescue from the shipped web template, then boot it
   huoli headless "run the tests"              answer one task, print the result, and exit
+  huoli rescue --from-default-profile headless
+                                            recreate rescue from the shipped headless template, then boot it
   huoli tui --patch ./extra.yml               boot a custom profile with one extra overlay
   huoli tui --resume <session>                arguments after the launcher flags reach the app
-  huoli web --help                            the web app's own flags and help
   huoli plugin --profile tui add <package>    install a plugin into the tui profile
 
 ```
@@ -169,45 +166,5 @@ Options:
 
 Example:
   huoli --profile sdk-minimal     serve one SDK runtime until its client disconnects
-
-```
-
-<a id="huoli-web"></a>
-## `huoli web`
-
-调用方式: `huoli web --help`, `huoli --profile web --help`
-
-```text
-Usage: huoli --profile web [options]
-
-Serve the Huoli Core browser UI.
-
-Options:
-  --host <host>                  bind address: one concrete IPv4 or IPv6 literal
-                                 of a local interface; wildcard addresses are
-                                 rejected
-  --no-open                      do not open the Web UI in the default browser
-  --port <port>                  listen port; pass 0 to let the OS pick a free
-                                 one
-  --public-url <url>             advertise this HTTP(S) root in the printed,
-                                 opened, runtime-context, and HUOLI_WEB_URL
-                                 forms; grants no trust
-  --trusted-host <authority...>  extra authority the /api browser-trust fence
-                                 accepts (host or host:port; repeatable)
-  --tls-cert <file>              PEM server certificate chain; requires
-                                 --tls-key
-  --tls-key <file>               unencrypted PEM private key; requires
-                                 --tls-cert
-  -h, --help                     show this help
-
-Examples:
-  huoli --profile web                          serve on the composed host and port
-  huoli --profile web --no-open                serve without opening a browser
-  huoli --profile web --port 8080              serve on another port
-  huoli --profile web --host 10.0.0.7          bind one local interface address
-  huoli --profile web --public-url https://app.example/ui/ --trusted-host app.example
-                                             advertise a prefix-stripping HTTPS proxy entry and admit its authority
-  huoli --profile web --tls-cert ./server-chain.pem --tls-key ./server-key.pem
-                                             serve HTTPS with an existing certificate and key
 
 ```

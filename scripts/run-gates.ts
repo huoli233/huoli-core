@@ -310,7 +310,7 @@ export function gatesForMode(selected: Mode): Gate[] {
     case 'ci-primary':
       return ciPrimaryGates()
     case 'ci-linux-primary':
-      return [...ciPrimaryGates(), webSnapshotGate(['build'])]
+      return ciPrimaryGates()
     case 'ci-static':
       return ciStaticGates({ ownsBuild: false })
     case 'ci-lint-contracts-ready':
@@ -357,7 +357,6 @@ export function gatesForMode(selected: Mode): Gate[] {
         snapshotGate(),
         expectedOutputGate(),
         pnpmScript('build', 'build'),
-        pnpmScript('build:web', 'build:web'),
         ...hygieneLeafGates({ artifactNeeds: ['build'] }),
         ...docSyncLeafGates({
           docTypecheckNeeds: ['build'],
@@ -535,17 +534,6 @@ function ciArtifactGates(): Gate[] {
 
 function ciConsumerGates(): Gate[] {
   const builtTree = ['build']
-  // The HMR web test starts `dev:web`, which rewrites the shared `lib/` and
-  // `apps/web/dist/` trees. Let every build-artifact reader settle before that
-  // writer starts; `after` preserves the web diagnostic even if a reader fails.
-  const buildArtifactReaders = [
-    'publint',
-    'snapshot',
-    'expected-output',
-    'doc-typecheck',
-    'node-next-types',
-    'built-bin-smoke',
-  ]
   return [
     ciArtifactBuildGate(),
     pnpmScript('node-compat', 'check:node-compat', {
@@ -555,7 +543,6 @@ function ciConsumerGates(): Gate[] {
     pnpmScript('publint', 'publint', { needs: builtTree }),
     snapshotGate(builtTree),
     expectedOutputGate(builtTree),
-    webSnapshotGate(builtTree, buildArtifactReaders),
     pnpmScript('doc-typecheck', 'doc-typecheck:contracts-ready', {
       needs: builtTree,
       env: { HUOLI_DOC_TYPECHECK_USE_BUILD_OUTPUT: '1' },
@@ -566,30 +553,6 @@ function ciConsumerGates(): Gate[] {
     }),
     builtBinSmokeGate(builtTree),
   ]
-}
-
-function webSnapshotGate(needs: string[], after?: string[]): Gate {
-  const order = after === undefined ? { needs } : { needs, after }
-  const workerRaw = process.env.HUOLI_WEB_SNAPSHOT_WORKERS
-  if (workerRaw !== undefined && workerRaw !== '') {
-    const workers = Number.parseInt(workerRaw, 10)
-    if (!Number.isSafeInteger(workers) || workers < 1 || String(workers) !== workerRaw) {
-      throw new Error(`run-gates: HUOLI_WEB_SNAPSHOT_WORKERS must be a positive integer, got ${JSON.stringify(workerRaw)}.`)
-    }
-    return pnpmScript('web-snapshot', 'test:web:ci', {
-      label: 'web browser snapshot',
-      displayCommand: `HUOLI_SNAPSHOT=replay HUOLI_WEB_SNAPSHOT_WORKERS=${workers} pnpm run test:web:ci`,
-      env: { HUOLI_SNAPSHOT: 'replay' },
-      ...order,
-      streamOutput: true,
-    })
-  }
-  return pnpmScript('web-snapshot', 'test:web:built', {
-    label: 'web browser snapshot',
-    displayCommand: 'HUOLI_SNAPSHOT=replay pnpm run test:web:built',
-    env: { HUOLI_SNAPSHOT: 'replay' },
-    ...order,
-  })
 }
 
 function ciWindowsBlockingGates(): Gate[] {

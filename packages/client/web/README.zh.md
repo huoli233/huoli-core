@@ -31,7 +31,7 @@ kind: "package-library"
 
 外壳基础样式会在支持的浏览器中为普通内容自动添加中西文间距。语义化代码以及终端、diff、读取和搜索输出容器会保留源码中的原始间距和列对齐；不支持 `text-autospace` 的浏览器会忽略这两项声明。
 
-Web 和 Desktop 的数学公式渲染要求支持 WOFF2。[Web 构建](../../../apps/web/katex-fonts.ts)以 WOFF2 保留全部 KaTeX 字体样式，并排除 WOFF/TTF 后备格式；任一字体样式缺少 WOFF2 都会使构建失败。字体的字形、字重、样式和布局规则保持不变。
+Web 和 Desktop 的数学公式渲染要求支持 WOFF2。Web 构建以 WOFF2 保留全部 KaTeX 字体样式，并排除 WOFF/TTF 后备格式；任一字体样式缺少 WOFF2 都会使构建失败。字体的字形、字重、样式和布局规则保持不变。
 
 ### 启动过程是怎样的
 

@@ -28,7 +28,11 @@ export interface MemoryEventDeps {
   farewellFile: string
 }
 
-/** 从工具参数里取出她要说的话，取不到就是空串 */
+/**
+ * 从工具参数里取出她要说的话，取不到就是空串
+ * @param argumentsJson 工具调用带的参数原文
+ * @returns 去掉首尾空白的那句话，没写或不是 JSON 时是空串
+ */
 export function saidTextOf(argumentsJson: string): string {
   try {
     const parsed: unknown = JSON.parse(argumentsJson)

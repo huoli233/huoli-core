@@ -86,8 +86,6 @@ describe('exactEditState', () => {
 describe('product identifiers', () => {
   it.each([
     'apps/cli/tests/optional-bundle-transitions.e2e.ts',
-    'apps/web/tests/agent-preset-selection.e2e.ts',
-    'apps/web/tests/developer-tools-settings.e2e.ts',
     'docs/subsystems/extensions.md',
     'docs/subsystems/extensions.zh.md',
     'docs/upgrade-guide/v0.2.0-rc.2/schedule-bundle-retired/guide.md',
@@ -96,7 +94,6 @@ describe('product identifiers', () => {
     'docs/upgrade-guide/v0.2.1-alpha.1/subagent-preset-composition/guide.zh.md',
     'docs/user/guide/schedule.md',
     'docs/user/guide/schedule.zh.md',
-    'packages/bundle/web-app/cordis.patch.yml',
     'packages/client/ui-agent-preset/src/client/CreatePluginMenuItem.tsx',
     'packages/client/ui-agent-preset/src/client/analytics.ts',
     'packages/client/ui-agent-preset/tests/analytics.client.spec.ts',
@@ -187,7 +184,6 @@ describe('product identifiers', () => {
     const text = `# The 'cordis' preset.\n- name: ${name} # 'cordis' stays product data\n`
     const scoped = `# The 'cordis' preset.\n- name: ${name.replace('cordis', '@huoli/cordis')} # 'cordis' stays product data\n`
     for (const [file, wrap] of [
-      ['packages/bundle/web-app/cordis.patch.yml', (value: string) => value],
       ['docs/subsystems/extensions.md', (value: string) => `The \`cordis\` preset.\n\`\`\`yaml\n${value}\`\`\`\n`],
     ] as const) {
       expectRoundTrip(file, wrap(text), wrap(scoped), 1)

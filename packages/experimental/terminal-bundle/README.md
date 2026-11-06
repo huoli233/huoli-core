@@ -25,7 +25,7 @@ Add six experimental global terminal tools to every Agent. The bundle owns an is
 <a id="use-this-package"></a>
 ## Use this package
 
-In `$HUOLI_HOME/profiles/<name>/package.json` (default home: `~/.huoli`), add `@huoli/huoli-experimental-terminal-bundle` to `huoli.profile.bundles` to enable its profile layer; remove it from that list to disable it. Restart that profile to apply the change; see the [profile reference](../../../apps/cli/reference/README.md#profile-boot). The [minimal preset](../../bundle/web-app/presets/minimal.patch.yml) loads its own persistent shell independently of this bundle.
+In `$HUOLI_HOME/profiles/<name>/package.json` (default home: `~/.huoli`), add `@huoli/huoli-experimental-terminal-bundle` to `huoli.profile.bundles` to enable its profile layer; remove it from that list to disable it. Restart that profile to apply the change; see the [profile reference](../../../apps/cli/reference/README.md#profile-boot). The minimal preset loads its own persistent shell independently of this bundle.
 
 The selected layer adds its global tools to every Agent in the Host, in every preset including minimal. Hiding the management entry preserves existing selections; the [upgrade guide](../../../docs/upgrade-guide/v0.2.1-rc.2/persistent-terminal-controls/guide.md) explains how to disable a previously enabled layer.
 

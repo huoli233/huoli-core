@@ -89,7 +89,7 @@ Unloading closes selection and review admission. If the application root remains
 ## Further Exploration
 
 - [Experimental packages](../README.md) — publication policy and dependency isolation.
-- [Web bundle](../../bundle/web-app/README.md) — the stable profile this patch extends.
+- Web bundle — the stable profile this patch extends.
 - [Auto review decision](../../../.agents/notes/implemented/feature/2026-08-28-auto-review.md) — fixed risk policy, authority, and lifecycle.
 - [Tools](../../core/tools/README.md) — execution, cancellation, and PTC result propagation.
 

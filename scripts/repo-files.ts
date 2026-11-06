@@ -34,6 +34,9 @@ export function isArchivedAgentNotePath(path: string): boolean {
   return path.replaceAll('\\', '/').startsWith('.agents/notes/archived/')
 }
 
+/** 一条完整的外链地址，里面的路径不当作仓库路径 */
+const ABSOLUTE_URL = /https?:\/\/\S+/g
+
 /**
  * Whether a pattern segment matches a directory or file name. Supports `*` and
  * `?` inside a segment and mirrors node's glob `dot: false`: a segment whose
@@ -284,8 +287,8 @@ export function findReferenceViolations(
   const excluded = excludedRange?.(file, source)
   for (let i = 0; i < lines.length; i++) {
     if (excluded !== undefined && i >= excluded[0] && i < excluded[1]) continue
-    const line = lines[i]
-    if (line === undefined) continue
+    // 外链地址里的路径不属于本仓库，扫之前先抹掉
+    const line = (lines[i] ?? '').replaceAll(ABSOLUTE_URL, ' ')
     for (const match of line.matchAll(pattern)) {
       const ref = normalize(match[0])
       if (isViolation(ref)) out.push({ file, line: i + 1, ref })

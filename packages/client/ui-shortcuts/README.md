@@ -56,7 +56,7 @@ All fixed actions come from the service's observable fixed catalog. Conversation
 
 - [Web Client](../../../docs/subsystems/web-client.md)
 - [UI primitives](../ui-primitives/README.md)
-- [Web app bundle](../../bundle/web-app/README.md)
+- Web app bundle
 
 -----
 

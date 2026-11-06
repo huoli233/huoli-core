@@ -46,7 +46,7 @@ kind: "package-reference"
 
 [`apply`](src/client/index.ts) 通过 `ctx.slots.inject` 以 id `entry-customization` 把 [`EntryMenuContent`](src/client/EntryMenuContent.tsx) 注册到 `sidebar.panellist.actions`、`conversation.session.header.views.actions` 和 `sidebar.right.tab.guide.actions`，每个注册项跟随所在区域声明的生命周期。各区域在自己的 `Menu` 中渲染这些 slot；菜单行先调用 `onDismiss`，再执行浏览或创建操作。仅会话菜单消费 owner 提供的收起入口列表及导航回调；Pin 回调不被消费。
 
-每个注册项的 `inject` 提供所属区域与两个回调。每个回调先调用 `ctx.get('productAnalytics')?.track('more_menu_item_click', { region, action })`。浏览随后调用 `ctx.get('pluginNavigation')?.openList()`；ui-plugin-manager 只在插件页有权限时提供该服务，因此本包按可选方式读取，不把它写进 `inject`。创建随后按区域取本地化提示语，调用 `uiWorkspace.startSession(undefined, { agentPreset: 'cordis', prompt, whenDraftExists: 'append' })`；该调用不经过 `ui-agent-preset`，预设标签不播放介绍动画。[`huoli-web-app` bundle patch](../../bundle/web-app/cordis.patch.yml) 挂载浏览器插件。
+每个注册项的 `inject` 提供所属区域与两个回调。每个回调先调用 `ctx.get('productAnalytics')?.track('more_menu_item_click', { region, action })`。浏览随后调用 `ctx.get('pluginNavigation')?.openList()`；ui-plugin-manager 只在插件页有权限时提供该服务，因此本包按可选方式读取，不把它写进 `inject`。创建随后按区域取本地化提示语，调用 `uiWorkspace.startSession(undefined, { agentPreset: 'cordis', prompt, whenDraftExists: 'append' })`；该调用不经过 `ui-agent-preset`，预设标签不播放介绍动画。`huoli-web-app` bundle patch 挂载浏览器插件。
 
 </details>
 

@@ -284,21 +284,6 @@ describe('client build environment', () => {
     const node = configs.find(config => config.name === '@huoli/huoli-client-ui-sidebar')
     expect(node?.define).toMatchObject({ [PROBE_KEY]: '"shared-value"' })
     expect(node?.define).not.toHaveProperty(['process.env'])
-
-    const viteConfigPath = '../apps/web/vite.config.ts'
-    const viteModule: unknown = await import(viteConfigPath)
-    if (typeof viteModule !== 'object' || viteModule === null) {
-      throw new TypeError('web Vite config module must be an object')
-    }
-    const viteConfig: unknown = Reflect.get(viteModule, 'default')
-    if (typeof viteConfig === 'function') throw new TypeError('web Vite config must be an object')
-    if (typeof viteConfig !== 'object' || viteConfig === null) {
-      throw new TypeError('web Vite config must be an object')
-    }
-    expect(Reflect.get(viteConfig, 'define')).toMatchObject({
-      'process.env': '{}',
-      [PROBE_KEY]: '"shared-value"',
-    })
   })
 
   it('binds the recorded environment to a complete set of client artifacts', () => {

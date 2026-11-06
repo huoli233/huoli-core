@@ -310,5 +310,5 @@ P5a 先做，它只决定"能不能发"，不改她怎么想、怎么说，先�
 | 镜像的证据核对与长文拆分 | `packages/qq/qq-self/src/mirror.ts:mirrorEntries` |
 | 镜像前后核对与维护日志 | `packages/qq/qq-bundle/src/maintenance.ts:runMaintenance`、`packages/qq/qq-bundle/src/maintenance.ts:maintenanceLine` |
 | 放进与端口接线 | `packages/qq/qq-self/src/index.ts:apply`、`packages/qq/qq-self/src/index.ts:qqSelfOf` |
-| 记忆侧镜像入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf`、`packages/qq/qq-memory/src/mirror.ts:mirroredSelfIds` |
+| 记忆侧镜像入口 | `packages/qq/qq-memory/src/index.ts:qqMemoryOf`、`packages/qq/qq-memory/src/index.ts:mirroredSelfIds` |
 | 组合包接线 | `packages/qq/qq-bundle/src/index.ts:apply` |

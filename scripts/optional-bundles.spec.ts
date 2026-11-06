@@ -38,17 +38,11 @@ const lightweight = [
   '@huoli/huoli-experimental-session-titles-bundle',
 ]
 
-function presetRows(entries: EntryOptions[], id: string): EntryOptions[] {
-  const preset = entries.find(entry => entry.id === id)
-  if (preset === undefined) throw new Error(`missing preset ${id}`)
-  return (preset.config as { plugins: EntryOptions[] }).plugins
-}
-
 function flattenRows(entries: EntryOptions[]): EntryOptions[] {
   return entries.flatMap(entry => [entry, ...entry.group && Array.isArray(entry.config) ? flattenRows(entry.config as EntryOptions[]) : []])
 }
 
-function profileLayers(surface: 'web' | 'headless'): ReturnType<typeof loadOverlayPatches>[] {
+function profileLayers(surface: 'headless' | 'acp'): ReturnType<typeof loadOverlayPatches>[] {
   const directory = mkdtempSync(join(tmpdir(), 'huoli-bundle-compatibility-'))
   onTestFinished(() => { rmSync(directory, { recursive: true, force: true }) })
   initProfile(directory, PROFILE_TEMPLATES[surface]!.bundles)
@@ -57,7 +51,7 @@ function profileLayers(surface: 'web' | 'headless'): ReturnType<typeof loadOverl
   return names.map(name => bundle(name).patches)
 }
 
-describe.each(['web', 'headless'] as const)('%s optional bundle overrides', (surface) => {
+describe.each(['headless', 'acp'] as const)('%s optional bundle overrides', (surface) => {
   const selectedNames = ['@huoli/huoli-experimental-badge-skill-bundle', '@huoli/huoli-experimental-ralph-bundle']
 
   it('keeps established selectors for later configuration and disabled overrides', () => {
@@ -93,7 +87,7 @@ describe('optional bundles', () => {
   it('admits Computer Use only on macOS Hosts', () => {
     expect(bundles.get('@huoli/huoli-cua-bundle')?.manifest.huoli?.bundle?.platforms).toEqual(['darwin'])
   })
-  const shipped = ['@huoli/huoli-base', '@huoli/huoli-web-app'].map(name => bundle(name).patches)
+  const shipped = ['@huoli/huoli-base', '@huoli/huoli-headless'].map(name => bundle(name).patches)
 
   it('ships at least one bundle switched off', () => {
     expect(OPTIONAL_BUNDLES.length).toBeGreaterThan(0)
@@ -180,17 +174,13 @@ describe('optional bundles', () => {
     }
   })
 
-  it('composes every lightweight selection as Host rows without changing any preset', () => {
-    const baseline = composeEntries(shipped)
+  it('composes every lightweight selection as Host rows without duplicate ids', () => {
     const layers = lightweight.map(name => bundle(name).patches)
     for (let mask = 0; mask < 2 ** lightweight.length; mask += 1) {
       const selected = layers.filter((_layer, index) => (mask & 2 ** index) !== 0)
       const warnings: string[] = []
       const composed = composeEntries([...shipped, ...selected], warning => warnings.push(warning))
       expect(warnings).toEqual([])
-      for (const id of ['preset-standard', 'preset-cordis', 'preset-ptc', 'preset-minimal']) {
-        expect(presetRows(composed, id)).toEqual(presetRows(baseline, id))
-      }
       const ids = flattenRows(composed).map(row => row.id)
       expect(new Set(ids).size).toBe(ids.length)
     }
@@ -215,58 +205,6 @@ describe('optional bundles', () => {
     expect(composed.find(row => row.id === 'session-title-llm')?.disabled).toBe(true)
     expect(composed.find(row => row.id === 'optional-session-title-all-prompts')?.name)
       .toBe('@huoli/huoli-session-title-all-prompts-llm')
-  })
-
-  it('delivers the Schedule service and task page without a Host clock row', () => {
-    const composed = composeEntries(shipped)
-    // The delivered composition carries the Host Schedule service and its task
-    // page enabled; the clock stays preset-level, so no Host row declares it.
-    for (const row of [
-      { id: 'schedule', name: '@huoli/huoli-schedule' },
-      { id: 'ui-schedule', name: '@huoli/huoli-client-ui-schedule' },
-    ]) {
-      expect(composed.filter(entry => entry.id === row.id && entry.name === row.name && entry.disabled !== true))
-        .toHaveLength(1)
-    }
-    expect(composed.some(entry => entry.id === 'time-context')).toBe(false)
-  })
-
-  it('keeps the clock and the reminder tools on the presets that declare them', () => {
-    const composed = composeEntries(shipped)
-    type PresetRow = { id?: string; name?: string; disabled?: boolean; config?: unknown }
-    const presetPlugins = (id: string): PresetRow[] => {
-      const row = composed.find(entry => entry.id === id)
-      if (row === undefined) throw new Error(`missing delivered preset row ${id}`)
-      const flat: PresetRow[] = []
-      // A `cordis:group` row nests its children in its own `config` array.
-      const walk = (rows: PresetRow[]): void => {
-        for (const entry of rows) {
-          flat.push(entry)
-          if (Array.isArray(entry.config)) walk(entry.config as PresetRow[])
-        }
-      }
-      walk((row.config as { plugins: PresetRow[] }).plugins)
-      return flat
-    }
-    for (const id of ['preset-standard', 'preset-cordis', 'preset-ptc']) {
-      const plugins = presetPlugins(id)
-      for (const plugin of [
-        { id: 'time-context', name: '@huoli/huoli-time-context' },
-        { id: 'tool-schedule', name: '@huoli/huoli-tool-schedule' },
-      ]) {
-        const matches = plugins.filter(row => row.id === plugin.id && row.name === plugin.name)
-        expect(matches).toHaveLength(1)
-        expect(matches[0]?.disabled).not.toBe(true)
-      }
-    }
-    for (const id of ['preset-standard', 'preset-cordis', 'preset-ptc']) {
-      for (const rowId of ['tool-subagent', 'tool-subagent-fork']) {
-        expect(presetPlugins(id).find(plugin => plugin.id === rowId)?.config).not.toHaveProperty('toolFilter')
-      }
-    }
-    // `minimal` declares neither, so it composes no clock reading and no reminder tool.
-    expect(presetPlugins('preset-minimal').some(row => row.name === '@huoli/huoli-time-context'
-      || row.name === '@huoli/huoli-tool-schedule')).toBe(false)
   })
 
   it.each(OPTIONAL_BUNDLES)('%s resolves a title, description, and icon in both shipped languages', (name) => {

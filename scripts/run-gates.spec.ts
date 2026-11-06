@@ -277,7 +277,7 @@ describe('gate graph validation', () => {
       displayCommand: 'pnpm exec tsx scripts/run-ci-bench.ts',
       args: ['/private/pnpm.cjs', 'exec', 'tsx', 'scripts/run-ci-bench.ts'],
     })
-    expect(scripts['test:bench']).toBe('npm run build:bench && npm run build:web && npm run test:bench:built')
+    expect(scripts['test:bench']).toBe('npm run build:bench && npm run test:bench:built')
     expect(scripts['build:bench']).toBe(
       'npm run build:native-system && npm run build:lib && tsdown --config-loader native --config benchmarks/tsdown.config.ts',
     )
@@ -901,7 +901,6 @@ describe('Node 24 lane ownership', () => {
       'publint',
       'snapshot',
       'expected-output',
-      'web-snapshot',
       'doc-typecheck',
       'node-next-types',
       'built-bin-smoke',
@@ -919,7 +918,6 @@ describe('Node 24 lane ownership', () => {
     for (const id of [
       'snapshot',
       'expected-output',
-      'web-snapshot',
       'doc-typecheck',
       'node-next-types',
       'built-bin-smoke',
@@ -941,31 +939,6 @@ describe('Node 24 lane ownership', () => {
         'packages/experimental/agent-team/tests/built-lib.e2e.ts',
       ]),
     )
-    expect(subject.find(item => item.id === 'web-snapshot')).toMatchObject({
-      displayCommand: 'HUOLI_SNAPSHOT=replay pnpm run test:web:built',
-      env: { HUOLI_SNAPSHOT: 'replay' },
-      after: [
-        'publint',
-        'snapshot',
-        'expected-output',
-        'doc-typecheck',
-        'node-next-types',
-        'built-bin-smoke',
-      ],
-    })
-  })
-})
-
-describe('Linux primary graph', () => {
-  it('adds the same compare-only web gate after built client artifacts', () => {
-    const subject = withPnpmEntrypoint(() => gatesForMode('ci-linux-primary'))
-    const web = subject.find(item => item.id === 'web-snapshot')
-
-    expect(web).toMatchObject({
-      displayCommand: 'HUOLI_SNAPSHOT=replay pnpm run test:web:built',
-      env: { HUOLI_SNAPSHOT: 'replay' },
-      needs: ['build'],
-    })
   })
 })
 

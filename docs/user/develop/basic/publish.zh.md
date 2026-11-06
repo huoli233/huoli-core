@@ -130,7 +130,7 @@ huoli --profile demo
 
 后应用的层按行胜出，且 patch 会替换目标行的整个 `config` 值，而不是深度合并各键。这给组合包作者带来两个推论：
 
-- 你的 patch 可以按 `id` 覆盖前面各层的行——就像 [`huoli-web-app` 组合包](../../../../packages/bundle/web-app/cordis.patch.yml)覆盖 `huoli-base` 的行那样——但必须重述该行需要的每一个键，而不是只写改动的那个。
+- 你的 patch 可以按 `id` 覆盖前面各层的行——就像 `huoli-web-app` 组合包覆盖 `huoli-base` 的行那样——但必须重述该行需要的每一个键，而不是只写改动的那个。
 - 用户可以在自己 profile 的 `cordis.patch.yml` 中覆盖你的行，无需改动你的包，所以优先给出用户大概率会保留的配置默认值，其余交给 schema 承担。
 
 内置组合包名称始终从 huoli 安装目录本身解析；pnpm 只管理树外的包，所以你的组合包可以放心依赖 `@huoli/huoli-base` 存在且与安装保持一致。

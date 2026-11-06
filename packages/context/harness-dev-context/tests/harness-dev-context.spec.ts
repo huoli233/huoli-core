@@ -1,4 +1,4 @@
-/** Prompt stability of the harness checkout and Web GUI URL across processes, checkouts, and ports. */
+/** Prompt stability of the harness checkout across processes and checkouts. */
 
 import { describe, expect, it, onTestFinished } from 'vitest'
 import { Context } from '@huoli/cordis'
@@ -9,32 +9,13 @@ import {
   type GenerateOptions, type LlmResolvedModelInfo, type StreamChunk, type SystemPromptUpdate,
 } from '@huoli/huoli-llm'
 import { SessionId, type Session } from '@huoli/huoli-session'
-import { renderContextSnapshot, renderPrompt } from '@huoli/huoli-system-prompt'
+import { renderContextSnapshot } from '@huoli/huoli-system-prompt'
 import * as HarnessDevContext from '../src/index.ts'
 
 const SOURCE_PROMPT = 'The runtime context names the Huoli Core implementation checkout. The checkout location and current working directory are separate values and may differ; never infer the working directory from the checkout path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend HUOLI itself.'
-const WEB_GUIDANCE = 'When the user refers to "this page", "this GUI", or "this app" without naming another target, they mean this GUI. '
-  + 'The browser provides no implicit DOM, route, or screenshot context. '
-  + 'The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while '
-  + '`pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. '
-  + 'Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. '
-  + 'Starting another server does not update this GUI. '
-  + 'The apps/web Vite entry builds the shell but is not a standalone application because only huoli web injects window.__HUOLI_BOOT__. '
-  + 'Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.'
-const WEB_PROMPT = `You are interacting with the user through the Huoli Core Web GUI whose URL the runtime context names. ${WEB_GUIDANCE}`
 
 /** The value-bearing paragraphs earlier releases rendered. */
 const LEGACY_SOURCE = 'The Huoli Core implementation checkout is at /old/checkout/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend HUOLI itself.'
-// Frozen as earlier releases rendered it, independent of the current guidance.
-const LEGACY_WEB = 'You are interacting with the user through the Huoli Core Web GUI at http://127.0.0.1:3100. '
-  + 'When the user refers to "this page", "this GUI", or "this app" without naming another target, they mean this GUI. '
-  + 'The browser provides no implicit DOM, route, or screenshot context. '
-  + 'The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while '
-  + '`pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. '
-  + 'Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. '
-  + 'Starting another server does not update this GUI. '
-  + 'The apps/web Vite entry builds the shell but is not a standalone application because only huoli web injects window.__HUOLI_BOOT__. '
-  + 'Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.'
 
 /** Records every request and answers each with one short text reply. */
 class RecordingAdapter extends LlmAdapter {
@@ -63,20 +44,10 @@ class RecordingAdapter extends LlmAdapter {
 
 const ROUTE = { provider: 'route', model: 'model' }
 
-/** The Web GUI service with a port the test can move, as restarted processes see it. */
-function provideWebServices(ctx: Context): { port: number } {
-  const listener = { port: 4567 }
-  ctx.provide('webApp', {
-    getAdvertisedUrl: () => `http://127.0.0.1:${String(listener.port)}`,
-  } satisfies Context['webApp'])
-  return listener
-}
-
 /** A production AgentLoop with this plugin mounted. */
 async function promptLoop(systemPromptUpdate: SystemPromptUpdate | undefined) {
   const ctx = new Context()
   onTestFinished(() => ctx.fiber.dispose())
-  const listener = provideWebServices(ctx)
   await mountAgentLoopTestDependencies(ctx)
   const adapter = new RecordingAdapter(systemPromptUpdate)
   ctx.llm.registerAdapter([ROUTE.provider], adapter)
@@ -86,15 +57,14 @@ async function promptLoop(systemPromptUpdate: SystemPromptUpdate | undefined) {
   const resume = async (session: Session, id: string): Promise<Agent> => (await ctx.agents.create({
     sessionId: SessionId(id), agentOptions: ROUTE, seed: [...session.snapshotEvents()],
   })).agent
-  /** One turn under an earlier release: the given paragraphs and no value contexts. */
-  const earlierSession = async (source = LEGACY_SOURCE, web = LEGACY_WEB): Promise<Agent> => {
+  /** One turn under an earlier release: the given paragraph and no value contexts. */
+  const earlierSession = async (source = LEGACY_SOURCE): Promise<Agent> => {
     const earlierRelease = ctx.on('system-prompt/assemble', async (_assembly, _context, next) => {
       const assembly = await next()
       return {
         ...assembly,
-        sections: assembly.sections.map(section => section.name === 'harness:source' ? { ...section, text: source }
-          : section.name === 'app:web-surface' ? { ...section, text: web } : section),
-        contexts: assembly.contexts.filter(entry => entry.name !== 'harness:source' && entry.name !== 'app:web-surface'),
+        sections: assembly.sections.map(section => section.name === 'harness:source' ? { ...section, text: source } : section),
+        contexts: assembly.contexts.filter(entry => entry.name !== 'harness:source'),
       }
     })
     const agent = await harness.create(SessionId('earlier'), ROUTE)
@@ -102,7 +72,7 @@ async function promptLoop(systemPromptUpdate: SystemPromptUpdate | undefined) {
     earlierRelease()
     return agent
   }
-  return { ctx, listener, adapter, harness, resume, earlierSession }
+  return { ctx, adapter, harness, resume, earlierSession }
 }
 
 async function send(agent: Agent, text: string): Promise<void> {
@@ -130,48 +100,41 @@ function requestSystemPrompts(request: GenerateOptions | undefined): string[] {
 }
 
 describe('harness-dev-context', () => {
-  it('registers value-free sections and reports the checkout and Web GUI URL as runtime context', async () => {
+  it('registers a value-free section and reports the checkout as runtime context', async () => {
     const ctx = new Context()
     onTestFinished(() => ctx.fiber.dispose())
-    provideWebServices(ctx)
     await mountAgentLoopTestDependencies(ctx)
     const fiber = ctx.plugin(HarnessDevContext)
     await fiber
     const assembly = await ctx.systemPrompt.assemble()
-    expect(assembly.sections.filter(entry => entry.name === 'harness:source' || entry.name === 'app:web-surface')
-      .map(entry => entry.text)).toEqual([SOURCE_PROMPT, WEB_PROMPT])
-    expect(renderPrompt(assembly)).not.toContain('127.0.0.1')
+    expect(assembly.sections.filter(entry => entry.name === 'harness:source')
+      .map(entry => entry.text)).toEqual([SOURCE_PROMPT])
     expect(renderContextSnapshot(assembly).split('\n\n').slice(1)).toEqual([
       expect.stringMatching(/^Current Huoli Core implementation checkout: ".+"\.$/u),
-      'Current Huoli Core Web GUI URL: "http://127.0.0.1:4567".',
     ])
 
     await fiber.dispose()
     const disposed = await ctx.systemPrompt.assemble()
-    expect(disposed.sections.some(entry => entry.name === 'harness:source' || entry.name === 'app:web-surface')).toBe(false)
+    expect(disposed.sections.some(entry => entry.name === 'harness:source')).toBe(false)
     expect(disposed.contexts).toEqual([])
   })
 
   it.each([
     { route: 'replace-only', systemPromptUpdate: undefined },
     { route: 'in-history', systemPromptUpdate: 'in-history' as const },
-  ])('resumes an earlier-format Session on other ports without rewriting its system prompt ($route)', async ({ systemPromptUpdate }) => {
+  ])('resumes an earlier-format Session without rewriting its system prompt ($route)', async ({ systemPromptUpdate }) => {
     const h = await promptLoop(systemPromptUpdate)
     const original = await h.earlierSession()
     const logged = systemPrompts(original.session)
     expect(logged).toHaveLength(1)
     expect(logged[0]).toContain(LEGACY_SOURCE)
-    expect(logged[0]).toContain(LEGACY_WEB)
 
     let session = original.session
-    for (const port of [4568, 4569]) {
-      h.listener.port = port
-      const resumed = await h.resume(session, `earlier-on-${String(port)}`)
-      await send(resumed, `after the upgrade on ${String(port)}`)
+    for (const round of [1, 2]) {
+      const resumed = await h.resume(session, `earlier-${String(round)}`)
+      await send(resumed, `after the upgrade on ${String(round)}`)
       expect(systemPrompts(resumed.session)).toEqual(logged)
       expect(requestSystemPrompts(h.adapter.requests.at(-1))).toEqual(logged)
-      expect(latestRuntimeContext(resumed.session))
-        .toContain(`Current Huoli Core Web GUI URL: "http://127.0.0.1:${String(port)}".`)
       expect(latestRuntimeContext(resumed.session)).toContain('Current Huoli Core implementation checkout: "')
       session = resumed.session
     }
@@ -202,7 +165,7 @@ describe('harness-dev-context', () => {
     { variant: 'a paragraph broken across lines', source: LEGACY_SOURCE.replace('/old/checkout/', '/old/\ncheckout/') },
   ])('replaces text that only resembles an earlier paragraph: $variant', async ({ source }) => {
     const h = await promptLoop(undefined)
-    const original = await h.earlierSession(source, WEB_PROMPT)
+    const original = await h.earlierSession(source)
     const resumed = await h.resume(original.session, 'resembling')
     await send(resumed, 'after the upgrade')
     const current = systemPrompts(resumed.session).at(-1)
@@ -210,21 +173,17 @@ describe('harness-dev-context', () => {
     expect(current).not.toContain('/old/')
   })
 
-  it('keeps a new Session system prompt free of process values across ports', async () => {
+  it('keeps a new Session system prompt free of process values', async () => {
     const h = await promptLoop(undefined)
     const agent = await h.harness.create(SessionId('fresh'), ROUTE)
     await send(agent, 'first')
     const logged = systemPrompts(agent.session)
     expect(logged).toHaveLength(1)
     expect(logged[0]).toContain(SOURCE_PROMPT)
-    expect(logged[0]).toContain(WEB_PROMPT)
-    expect(logged[0]).not.toContain('127.0.0.1')
-    expect(latestRuntimeContext(agent.session)).toContain('Current Huoli Core Web GUI URL: "http://127.0.0.1:4567".')
 
-    h.listener.port = 4568
-    const resumed = await h.resume(agent.session, 'fresh-on-4568')
+    const resumed = await h.resume(agent.session, 'fresh-again')
     await send(resumed, 'second')
     expect(systemPrompts(resumed.session)).toEqual(logged)
-    expect(latestRuntimeContext(resumed.session)).toContain('Current Huoli Core Web GUI URL: "http://127.0.0.1:4568".')
+    expect(latestRuntimeContext(resumed.session)).toContain('Current Huoli Core implementation checkout: "')
   })
 })

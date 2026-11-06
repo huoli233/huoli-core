@@ -69,4 +69,4 @@ The built `./client` file must be in the client module system's lazy-CJS factory
 }
 ```
 
-A companion package for a built-in namespace is the same browser half in a client-only package with an empty Host `apply`, listed in the web composition's plugin roster ([`packages/bundle/web-app/cordis.patch.yml`](../../packages/bundle/web-app/cordis.patch.yml)) and registering into `plugins.item` through `ctx.configForms.whileServed`, so the page exists exactly while the Host serves the namespace.
+A companion package for a built-in namespace is the same browser half in a client-only package with an empty Host `apply`, listed in the web composition's plugin roster (`packages/bundle/web-app/cordis.patch.yml`) and registering into `plugins.item` through `ctx.configForms.whileServed`, so the page exists exactly while the Host serves the namespace.

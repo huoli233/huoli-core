@@ -56,7 +56,7 @@ Web 应用 bundle 将此包与 `shortcuts` 一同挂载。速查仅展示已注�
 
 - [Web Client](../../../docs/subsystems/web-client.zh.md)
 - [UI primitives](../ui-primitives/README.zh.md)
-- [Web app bundle](../../bundle/web-app/README.zh.md)
+- Web app bundle
 
 -----
 

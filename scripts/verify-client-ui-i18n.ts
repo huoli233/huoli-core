@@ -313,7 +313,6 @@ function sourceFiles(): string[] {
     ...globSync('packages/client/ui-*/src/**/*.{ts,tsx}', { cwd: root }),
     ...[...clientComponentRoots].flatMap(clientRoot =>
       globSync(`${clientRoot}/**/*.{ts,tsx}`, { cwd: root })),
-    ...globSync('apps/web/src/**/*.{ts,tsx}', { cwd: root }),
   ])]
     .map(file => file.replaceAll('\\', '/'))
     .filter(file => !file.endsWith('.d.ts'))

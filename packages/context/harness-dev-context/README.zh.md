@@ -70,7 +70,7 @@ kind: "package-reference"
 
 - [进程相关值改走运行时上下文](../../../.agents/notes/implemented/bug-fix/2026-10-11-process-specific-prompt-values-in-runtime-context.zh.md)——这些值为什么离开系统提示词，以及早期会话如何保持稳定。
 - [会话投影子系统](../../../docs/subsystems/session-projection.zh.md)——早期格式状态使用的投影约定。
-- [Web app bundle](../../bundle/web-app/README.zh.md)——`webApp` 服务与挂载本插件的行。
+- Web app bundle——`webApp` 服务与挂载本插件的行。
 - [Context 组地图](../README.zh.md)——同组的请求上下文包。
 
 -----

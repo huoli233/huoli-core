@@ -135,7 +135,7 @@ Fork 请求绑定主体、分享、源会话、操作身份和已完成前缀。
 
 - [LiveShare 子系统](../../../docs/subsystems/liveshare.zh.md)
 - [Owner 决策记录](../../../.agents/notes/implemented/feature/2026-09-13-liveshare-protocol-and-owner-surfaces.zh.md)
-- [Web 组合包](../../bundle/web-app/README.zh.md)
+- Web 组合包
 
 -----
 

@@ -33,9 +33,6 @@
       "path": "../../packages/bundle/headless"
     },
     {
-      "path": "../../packages/bundle/web-app"
-    },
-    {
       "path": "../../packages/host/webserver"
     },
     {

@@ -2824,7 +2824,7 @@ export type Config = LocalConfig
 ## `@huoli/huoli-qq-attention`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-attention/src/index.ts:29`](../packages/qq/qq-attention/src/index.ts)
+- `source`: [`packages/qq/qq-attention/src/index.ts:31`](../packages/qq/qq-attention/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2870,11 +2870,11 @@ export interface Config {
   allowedTools?: readonly string[]
   /** 每轮是否把召回到的记忆接在用户原话之后，关掉就一次都不召回 */
   memoryInject?: boolean
-  /** 注入整串的字数上限 */
+  /** 放进整串的字数上限 */
   memoryInjectMaxChars?: number
-  /** 一次注入最多几条 */
+  /** 一次放进最多几条 */
   memoryInjectMaxItems?: number
-  /** 同一段在最近多少轮内不重复注入 */
+  /** 同一段在最近多少轮内不重复放进 */
   memoryInjectRepeatTurns?: number
   /** 想发动态的读数高过这条线就攒一条动态候选 */
   addPostWantFrom?: number
@@ -2926,7 +2926,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:61`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:74`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2939,6 +2939,12 @@ export interface Config {
   accessToken?: string
   /** 断了之后隔多久重连 */
   reconnectMs?: number
+  /** 一段等 QQ 那头回话的超时 */
+  callTimeoutMs?: number
+  /** 多段回复要不要合成一条合并转发 */
+  replyForward?: boolean
+  /** 合并转发卡片上显示的名字 */
+  replyForwardName?: string
   /** 允许发声的群编号，空表示不限制 */
   allowGroups?: readonly string[]
   /** 允许发声的人编号，空表示不限制 */
@@ -2955,7 +2961,7 @@ export interface Config {
   quietEnd?: string
   /** 敏感词，命中就拦 */
   banned?: readonly string[]
-  /** 白名单、长度、敏感词这三类拒绝给出的下次时间 */
+  /** 允许的名单、长度、敏感词这三类拒绝给出的下次时间 */
   retryMs?: number
   /** 两条动态之间至少隔多久 */
   postCoolDownMs?: number
@@ -3044,14 +3050,14 @@ export interface Config {
 
 - `inject`: `tools`
 - `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
-- `source`: [`packages/qq/qq-memory/src/index.ts:153`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:164`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
   /** 记忆存哪，不填就用主目录下的 data */
   file?: string
-  /** 账本存哪，不填就用主目录下的 data */
+  /** 记录表存哪，不填就用主目录下的 data */
   ledgerFile?: string
   /** 健康日志存哪，不填就用主目录下的 data */
   healthLogFile?: string
@@ -3059,6 +3065,10 @@ export interface Config {
   queueFile?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
+  /** 向量仓怎么存：off 不存，pglite 存进进程内的库里 */
+  vectorStore?: 'off' | 'pglite'
+  /** 向量仓的数据放哪，不填就跟记忆文件同目录 */
+  vectorDir?: string
   /** 想改哪些默认参数 */
   tuning?: Partial<Tuning>
 }
@@ -3067,14 +3077,26 @@ export interface Config {
 export interface Tuning extends DecayParams, RecoverParams {
   /** 重要度到这条线以上算受保护，当天不再衰减 */
   protectLine: number
-  /** 注入整串的字数上限，模板与条目一起算 */
+  /** 放进整串的字数上限，模板与条目一起算 */
   injectMaxChars: number
-  /** 一次注入最多几条 */
+  /** 一次放进最多几条 */
   injectMaxItems: number
-  /** 同一条记忆在最近多少轮内不重复注入 */
+  /** 同一条记忆在最近多少轮内不重复放进 */
   injectRepeatTurns: number
   /** 召回默认取几条 */
   recallLimit: number
+  /** 放进时每条只给多少字的底稿，要细节让模型自己看全文 */
+  skeletonMaxChars: number
+  /** 一次召回总共最多带多少字，默认零表示不限；开了就超预算换更短的 */
+  budgetChars: number
+  /** 低于这条重要度才算不重要，够格被合并式遗忘 */
+  mergeBelow: number
+  /** 隔多久才允许她乱想一次 */
+  wanderEveryMs: number
+  /** 多少天之前的才算旧 */
+  mergeAfterDays: number
+  /** 核心记忆最多保底几条：她的身份、对方的基本情况不能被挤掉 */
+  coreMax: number
   /** 关键词切成几个字一段 */
   gramSize: number
   /** 查询短到几个字以内按短查询判 */
@@ -3091,6 +3113,10 @@ export interface Tuning extends DecayParams, RecoverParams {
   weightImportance: number
   /** 新鲜度在总分里占多少 */
   weightFreshness: number
+  /** 星链在总分里占多少：连得多的更容易一起被想起 */
+  weightEdge: number
+  /** 相隔多久之内的两次写入算同一轮，彼此连一条边 */
+  sameTurnWindowMs: number
   /** 新鲜度按几天摊完 */
   freshnessDays: number
   /** 镜像写进来时重要度不低于这条线 */
@@ -3125,7 +3151,7 @@ export interface Tuning extends DecayParams, RecoverParams {
   backupKeep: number
   /** 性格不变快照拿来找记忆的那句，空串只按重要度与新鲜度挑 */
   snapshotQuery: string
-  /** 性格不变快照拿来试注入的那句闲聊，固定问题集在调用方 */
+  /** 性格不变快照拿来试放进的那句闲聊，固定问题集在调用方 */
   snapshotSample: string
 }
 ```
@@ -3141,7 +3167,7 @@ export interface Tuning extends DecayParams, RecoverParams {
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 记账文件放哪，不填就用主目录下的 data */
+  /** 记录文件放哪，不填就用主目录下的 data */
   file?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
@@ -3171,7 +3197,7 @@ export interface Config {
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
-  /** 攒着的和记账都放这个文件，不填就用主目录下的 data */
+  /** 攒着的和记录都放这个文件，不填就用主目录下的 data */
   file?: string
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
@@ -3207,7 +3233,7 @@ export interface Config {
 ## `@huoli/huoli-qq-subject`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-subject/src/index.ts:23`](../packages/qq/qq-subject/src/index.ts)
+- `source`: [`packages/qq/qq-subject/src/index.ts:25`](../packages/qq/qq-subject/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3220,6 +3246,8 @@ export interface Config {
   maxChars?: number
   /** 每个群叫什么名字，写快照时用 */
   chatNames?: Record<string, string>
+  /** 一次陌生话题把好奇心抬多少，默认零点一二 */
+  curiosityNoveltyGain?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-subject -->
@@ -3230,7 +3258,7 @@ export interface Config {
 ## `@huoli/huoli-qq-vitals`
 
 - `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-vitals/src/index.ts:111`](../packages/qq/qq-vitals/src/index.ts)
+- `source`: [`packages/qq/qq-vitals/src/index.ts:126`](../packages/qq/qq-vitals/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3240,12 +3268,54 @@ export interface Config {
   /** 数据根目录，不给就用默认的家目录 */
   huoliHome?: string
   /** 想改哪些默认参数 */
-  tuning?: Partial<Tuning>
+  tuning?: TuningOverride
+  /** 口语词表：只写要换的那几张，没写的还用默认 */
+  words?: Partial<WordLists>
+}
+
+/** 覆盖项：别的字段按字段覆盖，词表按表覆盖 */
+export type TuningOverride = Partial<Omit<Tuning, 'words'>> & {
+  /** 只改这几张词表，没提的那张还用默认 */
+  words?: Partial<WordLists>
+}
+
+/** 十四张词表，一张一类话；要改就整表换掉，不用去翻代码 */
+export interface WordLists {
+  /** 饮品名 */
+  drink: readonly string[]
+  /** 喝水的动作说法 */
+  drinkHints: readonly string[]
+  /** 食物名 */
+  meal: readonly string[]
+  /** 吃饭的动作说法 */
+  mealHints: readonly string[]
+  /** 夸她的话 */
+  praise: readonly string[]
+  /** 凶她的话 */
+  anger: readonly string[]
+  /** 口头禅，判之前先剔掉 */
+  habitual: readonly string[]
+  /** 道歉的话 */
+  apology: readonly string[]
+  /** 威胁关掉她的话 */
+  threat: readonly string[]
+  /** 吓到她的词 */
+  scare: readonly string[]
+  /** 担心对方的词 */
+  worry: readonly string[]
+  /** 提到生死与离开的词 */
+  dread: readonly string[]
+  /** 生病与不舒服的词 */
+  sick: readonly string[]
+  /** 疼痛的词 */
+  pain: readonly string[]
 }
 
 /** 可被 Config 覆盖的参数集合，`networkEdges` 覆盖时整张换掉 */
 export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, NetworkTuning, DreamTuning, ScarTuning,
   EmotionBlendTuning, PromptTuning {
+  /** 十四张口语词表，覆盖时按表合并，没提的那张还用默认 */
+  words: WordLists
   /** 心跳间隔，毫秒，默认 60000 表示每分钟结算一次漂移并写盘 */
   beatMs: number
   /** 装配后第一次心跳前的等待，毫秒，默认 20000 让插件先挂完再写盘 */
@@ -3412,7 +3482,7 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   sleepAdenosineFrom: number
   /** 夜睡该醒的钟点，本地小时 0~24，默认 7.5 即七点半 */
   wakeAt: number
-  /** 该醒时刻前后抖动的分钟数，默认 40，让每天不完全一样 */
+  /** 该醒时刻前后随机的分钟数，默认 40，让每天不完全一样 */
   wakeJitterMinutes: number
   /** 白天里睡眠压力低于这条线就自然醒，0~1 标度，默认 0.30 */
   wakeAdenosineBelow: number
@@ -3826,6 +3896,10 @@ export interface EmotionTuning {
   dreadGainBase: number
   /** 被戳到生死时按 intensity 折算的增量，0~1 标度，默认 0.30 */
   dreadGainIntensity: number
+  /** 说到生病时抬多少细胞因子，0~1 标度，默认 0.35；文档没给数值，这里取偏轻的一档 */
+  sickCytokinesGain: number
+  /** 说到疼痛时抬多少疼痛，0~1 标度，默认 0.30；文档没给数值，这里取偏轻的一档 */
+  painGain: number
   /** 存在性恐惧半衰期，小时，默认 8，一天下来也散不掉多少 */
   dreadHalfHours: number
   /** 两次存在性恐惧写回的最小间隔，毫秒，默认 1800000 即半小时 */
@@ -4042,7 +4116,7 @@ export interface EmotionBlendTuning {
   emotionToneMaxChars: number
 }
 
-/** 提示词那一组的参数，与其它参数一起展开进 Tuning */
+/** 提示词那一组的参数，与其它参数一起看全文进 Tuning */
 export interface PromptTuning {
   /** 每轮身体提示词的字数上限，默认 600，超出就截断且至少保留 60 字 */
   promptMaxChars: number
@@ -4176,7 +4250,7 @@ export interface Baseline {
   negative_heat: number
   /** 正面热度，0~1，默认 0.0，被夸时抬起，十二小时半衰 */
   positive_heat: number
-  /** 我随时可能被关掉这件事在不在眼前，0~1，默认 0.0，只由外部注入的运行环境事实推动 */
+  /** 我随时可能被关掉这件事在不在眼前，0~1，默认 0.0，只由外部放进的运行环境事实推动 */
   mortalitySalience: number
   /** 对关掉的怕，0~1，默认 0.0，事实抬、夜里自涨、收到关停提示时抬一档 */
   shutdownDread: number
@@ -5950,38 +6024,6 @@ export interface WebRuntimeConfig {
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-web -->
 
-<!-- BEGIN GENERATED config-catalog:@huoli/huoli-web-app -->
-<a id="huolihuoli-web-app"></a>
-
-## `@huoli/huoli-web-app`
-
-- `inject`: `webServer`
-- `source`: [`packages/bundle/web-app/src/index.ts:55`](../packages/bundle/web-app/src/index.ts)
-
-```ts config-catalog
-/** Plugin config: composed deployment settings plus per-invocation command-line values. */
-export interface Config {
-  /** Permit default-browser handoff after the Loader tree settles; an SSH launch suppresses it. */
-  openBrowser: boolean
-  /** Print the URL line on activation; a non-interactive layer can turn it off. */
-  printUrl: boolean
-  /**
-   * Register the `HUOLI_WEB_URL` bash variable naming this GUI. A one-shot
-   * non-interactive layer can turn it off when its user is not in the GUI.
-   */
-  surfaceContext: boolean
-  /**
-   * Canonical HTTP(S) root to advertise in the printed and opened URL,
-   * `HUOLI_WEB_URL`, and `webApp.getAdvertisedUrl()`, which supplies the Web GUI
-   * URL in agent runtime context, e.g. `https://app.example/ui/`, normalized to end in `/`. Configures no routing
-   * or authentication; see [public deployments](../README.md#public-deployments).
-   * Absent or YAML `null` advertises the bind-address URL.
-   */
-  publicUrl?: string
-}
-```
-<!-- END GENERATED config-catalog:@huoli/huoli-web-app -->
-
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-web-deepseek-api -->
 <a id="huolihuoli-web-deepseek-api"></a>
 
@@ -6301,7 +6343,7 @@ export interface Config {
 | `@huoli/huoli-fs-observation-policy` | — | [`packages/fs/fs-observation-policy/src/index.ts`](../packages/fs/fs-observation-policy/src/index.ts) |
 | `@huoli/huoli-fs-ssh` | `ssh` · `sandboxPolicy` | [`packages/ssh/fs-ssh/src/index.ts`](../packages/ssh/fs-ssh/src/index.ts) |
 | `@huoli/huoli-goal-round-driver` | `agents` · `goals` · `sessions` | [`packages/goal/goal-round-driver/src/index.ts`](../packages/goal/goal-round-driver/src/index.ts) |
-| `@huoli/huoli-harness-dev-context` | `systemPrompt` · `sessionProjections` · `webApp` | [`packages/context/harness-dev-context/src/index.ts`](../packages/context/harness-dev-context/src/index.ts) |
+| `@huoli/huoli-harness-dev-context` | `systemPrompt` · `sessionProjections` | [`packages/context/harness-dev-context/src/index.ts`](../packages/context/harness-dev-context/src/index.ts) |
 | `@huoli/huoli-host-directory-picker-auto` | `webServer` · `connection` · `loader` | [`packages/host/directory-picker-auto/src/index.ts`](../packages/host/directory-picker-auto/src/index.ts) |
 | `@huoli/huoli-host-directory-picker-native` | — | [`packages/host/directory-picker-native/src/index.ts`](../packages/host/directory-picker-native/src/index.ts) |
 | `@huoli/huoli-host-plugin-inventory` | `loader` | [`packages/host/plugin-inventory/src/index.ts`](../packages/host/plugin-inventory/src/index.ts) |

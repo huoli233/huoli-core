@@ -13,7 +13,6 @@ import { fileURLToPath } from 'node:url'
 import type { Context } from '@huoli/cordis'
 import { z as zod } from 'zod'
 import type {} from '@huoli/huoli-agent'
-import type {} from '@huoli/huoli-web-app'
 import type { SessionEvent } from '@huoli/huoli-session'
 import type {} from '@huoli/huoli-session-projection'
 import type { AssembleContext } from '@huoli/huoli-system-prompt'
@@ -21,8 +20,8 @@ import type { AssembleContext } from '@huoli/huoli-system-prompt'
 /** Stable Cordis plugin name. */
 export const name = 'harness-dev-context'
 
-/** Prompt registries, the projection registry, and the Web GUI whose URL the model learns. */
-export const inject = ['systemPrompt', 'sessionProjections', 'webApp']
+/** Prompt registries and the projection registry. */
+export const inject = ['systemPrompt', 'sessionProjections']
 
 /** This installation's root, four directories above this package's source or built entry. */
 const SOURCE_ROOT = fileURLToPath(new URL('../../../..', import.meta.url))
@@ -30,25 +29,11 @@ const SOURCE_ROOT = fileURLToPath(new URL('../../../..', import.meta.url))
 /** Prompt-section and runtime-context name for the implementation checkout. */
 const HARNESS_SOURCE = 'harness:source'
 
-/** Prompt-section and runtime-context name for the Web GUI orientation and its URL. */
-const WEB_SURFACE = 'app:web-surface'
-
 const HARNESS_SOURCE_GUIDANCE = 'The checkout location and current working directory are separate values and may differ; '
   + 'never infer the working directory from the checkout path. Use pwd to determine the current working directory. '
   + 'Use this checkout only to inspect or extend HUOLI itself.'
 
 const HARNESS_SOURCE_PROMPT = `The runtime context names the Huoli Core implementation checkout. ${HARNESS_SOURCE_GUIDANCE}`
-
-const WEB_SURFACE_GUIDANCE = 'When the user refers to "this page", "this GUI", or "this app" without naming another target, they mean this GUI. '
-  + 'The browser provides no implicit DOM, route, or screenshot context. '
-  + 'The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while '
-  + '`pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. '
-  + 'Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. '
-  + 'Starting another server does not update this GUI. '
-  + 'The apps/web Vite entry builds the shell but is not a standalone application because only huoli web injects window.__HUOLI_BOOT__. '
-  + 'Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.'
-
-const WEB_SURFACE_PROMPT = `You are interacting with the user through the Huoli Core Web GUI whose URL the runtime context names. ${WEB_SURFACE_GUIDANCE}`
 
 /**
  * Fixed text around the value in each paragraph that embedded it, frozen as
@@ -142,17 +127,5 @@ export async function apply(ctx: Context): Promise<void> {
     order: ctx.systemPrompt.getContextOrder('HARNESS_SOURCE'),
     interpolate: false,
     text: `Current Huoli Core implementation checkout: ${JSON.stringify(SOURCE_ROOT)}.`,
-  })
-  ctx.systemPrompt.section({
-    name: WEB_SURFACE,
-    order: ctx.systemPrompt.getSectionOrder('WEB_SURFACE'),
-    interpolate: false,
-    text: context => admitted(context).web ?? WEB_SURFACE_PROMPT,
-  })
-  ctx.systemPrompt.context({
-    name: WEB_SURFACE,
-    order: ctx.systemPrompt.getContextOrder('WEB_SURFACE'),
-    interpolate: false,
-    text: () => `Current Huoli Core Web GUI URL: ${JSON.stringify(ctx.webApp.getAdvertisedUrl())}.`,
   })
 }

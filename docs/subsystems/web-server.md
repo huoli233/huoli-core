@@ -182,22 +182,6 @@ Types: [Principal](typert.md)
 
 Source: [`packages/client/connection/src/rpc.ts`](../../packages/client/connection/src/rpc.ts)
 
-<a id="ctxwebapp--webapp"></a>
-
-### `ctx.webApp` — `WebApp`
-
-The Web GUI this process serves, provided by the `web-runtime` row.
-
-```ts cordis-catalog
-/**
- * The URL this GUI advertises, also used for `HUOLI_WEB_URL` and the startup URL line.
- * @returns the configured `publicUrl`, otherwise the listener origin.
- */
-getAdvertisedUrl(): string
-```
-
-Source: [`packages/bundle/web-app/src/index.ts`](../../packages/bundle/web-app/src/index.ts)
-
 <a id="ctxwebserver--webserver"></a>
 
 ### `ctx.webServer` — `WebServer`

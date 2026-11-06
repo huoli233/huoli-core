@@ -1,7 +1,0 @@
-# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
-# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
-# After editing either side, bring the other along and re-record with:
-#   pnpm run verify-translation-pairing --write apps/web/tests/fixtures/plugins/fixture-bundle/README.md
-/fixture-bundle:
-  en: c7c76bc012cd26bb
-  zh: c8714fde1c36e00b

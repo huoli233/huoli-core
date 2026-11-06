@@ -14,7 +14,6 @@ import * as yaml from 'js-yaml'
 import { parse as parseToml, type TomlTableWithoutBigInt, type TomlValueWithoutBigInt } from 'smol-toml'
 import parseSpdx from 'spdx-expression-parse'
 import primaryRuntimeLock from './primary-runtime/lock.json' with { type: 'json' }
-import { browserBundledExternals } from './browser-bundled-externals.ts'
 import { DEVTOOLS_NPM_VERSION, DEVTOOLS_SOURCE_REVISION } from '../packages/experimental/inspector/scripts/devtools/source.ts'
 
 const root = resolve(import.meta.dirname, '..')
@@ -752,7 +751,8 @@ ${rows.join('\n')}
  * @returns The exact bytes THIRD_PARTY_NOTICES.md must hold after resolving browser inputs.
  */
 export async function render(): Promise<string> {
-  const browser = await browserBundledExternals(root)
+  // 网页端删掉之后，打进浏览器产物的第三方包只剩 Inspector 自带的那份
+  const browser = new Set<string>()
   // The Inspector's Host build hook compiles this standalone frontend outside the Client bundle graph.
   browser.add('chrome-devtools-frontend')
   // The linked-manifest cache is keyed by name only, so it must not outlive

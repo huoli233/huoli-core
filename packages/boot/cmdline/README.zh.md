@@ -108,7 +108,7 @@ kind: "package-library"
 当包级约定不够用时阅读以下页面。它们从交接机制逐步进入消费它的应用。
 
 - [huoli-app-boot](../app-boot/README.zh.md)——提供这些启动器值的启动序列。
-- [huoli-web-app 组合包](../../bundle/web-app/README.zh.md)——通过此包持有 Web flag 家族的应用。
+- huoli-web-app 组合包——通过此包持有 Web flag 家族的应用。
 - [huoli-headless 组合包](../../bundle/headless/README.zh.md)——从命令行读取任务的一次性 runner。
 
 -----

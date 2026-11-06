@@ -613,7 +613,6 @@
       "@huoli/huoli-user-approval": ["./packages/interaction/user-approval/src"],
       "@huoli/huoli-user-questions": ["./packages/interaction/user-questions/src"],
       "@huoli/huoli-web": ["./packages/web/web/src"],
-      "@huoli/huoli-web-app": ["./packages/bundle/web-app/src"],
       "@huoli/huoli-web-deepseek-api": ["./packages/web/web-deepseek-api/src"],
       "@huoli/huoli-web-fetch-http": ["./packages/web/web-fetch-http/src"],
       "@huoli/huoli-web-search-deepseek": ["./packages/web/web-search-deepseek/src"],

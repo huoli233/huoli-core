@@ -45,7 +45,6 @@
     "@huoli/huoli-llm": "workspace:*",
     "@huoli/huoli-session": "workspace:*",
     "@huoli/huoli-session-projection": "workspace:*",
-    "@huoli/huoli-system-prompt": "workspace:*",
-    "@huoli/huoli-web-app": "workspace:*"
+    "@huoli/huoli-system-prompt": "workspace:*"
   }
 }

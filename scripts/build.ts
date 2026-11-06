@@ -9,7 +9,7 @@
  * and both aggregate programs without bundling.
  */
 
-import { existsSync, rmSync } from 'node:fs'
+import { rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import {
@@ -98,9 +98,6 @@ export function buildGates(
     gates.push(pnpmGate('native', 'native addon', ['run', 'build:native-system'], [], env))
     for (const step of libraryBuildSteps(root, 'all')) {
       gates.push(libraryGate(step, step.id === 'host-src' ? ['native', ...step.needs] : step.needs, env))
-    }
-    if (existsSync(resolve(root, 'apps/web'))) {
-      gates.push(pnpmGate('web', 'Web build', ['run', 'build:web'], ['client-bundle'], env))
     }
   }
   if (scope === 'typecheck') {

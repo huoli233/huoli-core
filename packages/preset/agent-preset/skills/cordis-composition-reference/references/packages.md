@@ -53,7 +53,6 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@huoli/huoli-acp-app` | no | The huoli ACP profile bundle: automation-only JSON-RPC stdio and process lifecycle over huoli-base |
 | `@huoli/huoli-headless` | yes | The huoli one-shot bundle: a direct core Agent/Session runner over huoli-base with no Host, HTTP, or browser layer |
 | `@huoli/huoli-sdk-app` | yes | The huoli SDK profile bundle: stdio JSON-RPC serving and process lifecycle over huoli-base |
-| `@huoli/huoli-web-app` | yes | The huoli browser-surface bundle: the web patch layer over huoli-base plus the runtime glue plugin (frontend dist serving, bash runtime variables, URL line) |
 
 ## client
 
@@ -370,7 +369,6 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@huoli/huoli-qq-memory` | yes | 记事情：四层记忆、会慢慢变淡、能按关键词找回来 |
 | `@huoli/huoli-qq-pacing` | yes | 说话的规矩：一条拆几条、隔多久、今天还能说几句 |
 | `@huoli/huoli-qq-proactive` | yes | 主动开口：攒理由、过闸门、先给你看，说不说由模型定 |
-| `@huoli/huoli-qq-self` | yes | 自我层：一份独占目录、一段只读面板、两档账、两把钥匙 |
 | `@huoli/huoli-qq-subject` | yes | 自己的状态：心情、精力、关系，写成一段话放进每轮提示词 |
 | `@huoli/huoli-qq-vitals` | yes | 生命状态：一份身体状态、一条心跳、一段只给形容词的语气提示 |
 

@@ -55,8 +55,6 @@ const EXECUTABLE_SOURCE_ALLOWLIST = new Map<string, string>([
 const ROOT_LAUNCHER_POLICIES = new Map<string, LauncherPolicy>([
   ['demo:ptc', { kind: 'huoli-wrapper', wrapper: 'scripts/demo-ptc.mjs' }],
   ['demo:inspector', { kind: 'huoli-direct' }],
-  ['start:web', { kind: 'huoli-direct' }],
-  ['dev:web', { kind: 'huoli-wrapper', wrapper: 'scripts/dev-web.ts' }],
 ])
 
 const SOURCE_PATTERNS = [

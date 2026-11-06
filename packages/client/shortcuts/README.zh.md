@@ -62,7 +62,7 @@ Desktop 原生菜单和内嵌 frame 使用与 DOM 输入相同的命令注册表
 
 - [Web Client](../../../docs/subsystems/web-client.zh.md)
 - [UI primitives](../ui-primitives/README.zh.md)
-- [Web app bundle](../../bundle/web-app/README.zh.md)
+- Web app bundle
 
 -----
 

@@ -4326,19 +4326,6 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
-    key: 'webApp',
-    summary: 'The Web GUI this process serves, provided by the `web-runtime` row.',
-    description: 'The Web GUI this process serves, provided by the `web-runtime` row.',
-    methods: [
-      {
-        signature: 'getAdvertisedUrl(): string',
-        description: 'The URL this GUI advertises, also used for `HUOLI_WEB_URL` and the startup URL line.',
-        parameters: [],
-        returns: 'the configured `publicUrl`, otherwise the listener origin.',
-      },
-    ],
-  },
-  {
     key: 'webhookRuntime',
     summary: 'Fire-and-forget rule runtime.',
     description: 'Fire-and-forget rule runtime. Session creation is the only built-in action.',
@@ -6689,7 +6676,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'IncomingMessage',
-    declaration: 'export interface IncomingMessage {\n    chatKey: string;\n    senderId: string;\n    senderName: string;\n    text: string;\n    at: number;\n    atMe: boolean;\n    isPoke: boolean;\n    replyToBot: boolean;\n    messageId: string;\n}',
+    declaration: 'export interface IncomingMessage {\n    chatKey: string;\n    senderId: string;\n    senderName: string;\n    text: string;\n    at: number;\n    atMe: boolean;\n    isPoke: boolean;\n    replyToBot: boolean;\n    messageId: string;\n    readonly selfSent: boolean;\n}',
   },
   {
     name: 'IncompatiblePlugin',
