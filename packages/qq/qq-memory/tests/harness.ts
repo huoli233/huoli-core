@@ -4,6 +4,7 @@ import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { apply, qqMemoryOf, type QqMemorySeam } from '../src/index.ts'
+import type { EmbeddingConfig } from '../src/embed.ts'
 import type { Tuning } from '../src/defaults.ts'
 
 // 工具体只读会话编号，其余字段由内核在真实调用时给
@@ -27,6 +28,8 @@ export interface MountOptions {
   vectorStore?: 'off' | 'pglite'
   /** 向量仓的数据放哪 */
   vectorDir?: string
+  /** 嵌入服务：用例里用一个假服务器顶上 */
+  embedding?: EmbeddingConfig
 }
 
 const tempDirs: string[] = []
@@ -83,6 +86,7 @@ export function mount(options: MountOptions): Mounted {
     ...options.tuning !== undefined ? { tuning: options.tuning } : {},
     ...options.vectorStore !== undefined ? { vectorStore: options.vectorStore } : {},
     ...options.vectorDir !== undefined ? { vectorDir: options.vectorDir } : {},
+    ...options.embedding !== undefined ? { embedding: options.embedding } : {},
   })
   const seam = qqMemoryOf(ctx)
   if (seam === undefined) throw new Error('记忆没有装配')

@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createServer, type Server } from 'node:http'
 import { resolveTuning } from '../src/defaults.ts'
 import { createEmbedder } from '../src/embed.ts'
+import { findWithVectors } from '../src/find-async.ts'
 import { recall } from '../src/recall.ts'
+import type { VectorStore } from '../src/vector-store.ts'
 import { cleanupTempDirs, mount, tempFile } from './harness.ts'
 
 const NOW = new Date(2026, 10, 1, 12, 0).getTime()
@@ -106,5 +108,44 @@ describe('向量分给回想用', () => {
     expect(hits.map(hit => hit.id)).toEqual([one.id])
     expect(hits[0]?.reasons.vectorSim).toBeCloseTo(0.9)
     expect(hits.some(hit => hit.id === two.id)).toBe(false)
+  })
+
+  it('向量仓给的候选，和关键词那条路合到一个排序里', async () => {
+    const { seam } = mount({ file: tempFile() })
+    const tired = seam.remember('今天有点累，想早点睡', 'group:1', { importance: 40 })
+    const climb = seam.remember('周三一起去爬山吧', 'group:1', { importance: 40 })
+
+    // 一个假向量仓：只按编号给远近，不碰真的数据库
+    const asked: string[] = []
+    const fakeVectors: VectorStore = {
+      async search(embedding) {
+        // 「累死我了」在假服务里换回 [1,0,1]，这里就直接照这个返回
+        expect(embedding).toEqual([1, 0, 1])
+        return [{ id: tired.id, score: 0.97 }, { id: climb.id, score: 0.42 }]
+      },
+      async upsert() {},
+      async remove() {},
+      async count() { return 2 },
+      async close() {},
+    }
+    const embed = async (text: string): Promise<readonly number[]> => {
+      asked.push(text)
+      return [1, 0, 1]
+    }
+
+    const hits = await findWithVectors({
+      store: seam.store,
+      vectors: fakeVectors,
+      embed,
+      query: '累死我了',
+      scope: 'group:1',
+      limit: 5,
+      tuning: resolveTuning(),
+      edges: [],
+    })
+
+    expect(asked).toEqual(['累死我了'])
+    expect(hits[0]?.id).toBe(tired.id)
+    expect(hits[0]?.reasons.vectorSim).toBeCloseTo(0.97)
   })
 })
