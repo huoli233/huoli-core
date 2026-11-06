@@ -346,6 +346,7 @@
     { "path": "./packages/qq/qq-channel" },
     { "path": "./packages/qq/qq-self" },
     { "path": "./packages/qq/qq-bundle" },
+    { "path": "./packages/qq/qq-balance" },
     { "path": "./packages/guard/repeat-tool-reminder" },
     { "path": "./packages/extensions/cordis-host-runner" },
     { "path": "./packages/extensions/tool-cordis" },

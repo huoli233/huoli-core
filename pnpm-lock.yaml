@@ -13164,6 +13164,15 @@ importers:
         specifier: workspace:*
         version: link:../../core/tools
 
+  packages/qq/qq-balance:
+    devDependencies:
+      '@huoli/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@huoli/huoli-qq-vitals':
+        specifier: workspace:*
+        version: link:../qq-vitals
+
   packages/qq/qq-bundle:
     dependencies:
       '@huoli/huoli-brand':

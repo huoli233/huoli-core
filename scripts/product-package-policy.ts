@@ -156,6 +156,7 @@ export const PRODUCT_PACKAGE_POLICY: Readonly<Record<string, ProductPackagePolic
   'packages/qq/qq-self': { category: 'optional', reason: 'Maintained library; no shipped product mounts it today.' },
   'packages/qq/qq-subject': { category: 'optional', reason: 'Maintained library; no shipped product mounts it today.' },
   'packages/qq/qq-vitals': { category: 'optional', reason: 'Maintained library; no shipped product mounts it today.' },
+  'packages/qq/qq-balance': { category: 'optional', reason: 'Maintained library; only the qq profile mounts it, no shipped bundle does.' },
   'packages/session-query/session-log-export': { category: 'optional', reason: 'Maintained library; no shipped product mounts it today.' },
   'packages/session/message-quotes': { category: 'optional', reason: 'Maintained library; no shipped product mounts it today.' },
   'packages/session/session-stats': { category: 'optional', reason: 'Maintained library; no shipped product mounts it today.' },
