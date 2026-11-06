@@ -16,6 +16,8 @@
 | 自主生物钟 | 每 60 秒 tick，自己排下一次醒 | `schedule` 加 `tool-schedule` | 已补：她自己排「过多久再想这件事」，到期把那句话送进自己的会话；进程关着期间到期的不会补发，下次启动不重放 |
 | QQ 桥接 | 收发消息 | `qq-channel` | 已有；原先只会发，现在补了三个读工具 |
 | 翻记录与成员 | 看群历史、成员、具体那一条 | `qq_read_history` / `qq_read_members` / `qq_read_message` | 已补：只翻群不翻私聊，一次最多三十条消息、两百个成员，图片只留记号；用例在 `qq-channel/tests/read.spec.ts` |
+| 表情包 | 按标签挑一张发出去 | `qq_list_stickers` / `qq_send_sticker` | 已补：库是本机一份 JSON，按编号发图，发之前照样过出站体检；用例在 `qq-channel/tests/stickers.spec.ts` |
+| 戳一戳 | 轻轻戳一下群里的某个人 | `qq_send_poke` | 已补：`pokeEnabled` 默认关，私聊一律不戳 |
 | 角色存档 | 人格快照与回滚 | `qq-self` 的 `persona.md` 与版本 | 已补：人格是文件，启动存一版，改坏了能盖回去 |
 | 人格卡拆分 | 一次模型调用把人格卡拆四层 | — | 不做：人格是我们自己写的，没有「导入别人的人格卡」这一步 |
 | 跨平台身份对齐 | QQ 与别的平台认同一个人 | — | 不适用：只有一个平台 |

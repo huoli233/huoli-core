@@ -14,6 +14,7 @@ import { createActionStore } from './action-store.ts'
 import { createFarewellSlotStore, defaultFarewellSlotFile } from './farewell-slot.ts'
 import { registerChannelTools } from './tools.ts'
 import { readHistory, readMembers, readMessage } from './read.ts'
+import { defaultStickerFile, listStickers, stickerOf } from './stickers.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
 export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
@@ -145,6 +146,10 @@ export interface Config {
   actionsFile?: string
   /** 遗书正文的暂存槽放哪，不填就落在数据根目录下的 data */
   farewellFile?: string
+  /** 表情包库放哪，不填就落在数据根目录下的 data */
+  stickerFile?: string
+  /** 准不准戳人，默认不准；开了也只是多一个动作，不改变判级 */
+  pokeEnabled?: boolean
 }
 
 const seams = new WeakMap<Context, QqChannelSeam>()
@@ -315,6 +320,8 @@ export function apply(ctx: Context, config: Config): void {
 
   // 遗书正文的暂存槽与三类动作的状态各一份文件，互不影响
   const farewell = createFarewellSlotStore({ file: config.farewellFile ?? defaultFarewellSlotFile() })
+  // 表情包库是另一份文件，没存过就当一张都没有
+  const stickerFile = config.stickerFile ?? defaultStickerFile()
 
   // 拆句直接用说话规矩里的纯函数，不依赖它有没有先装好
   const pacing = qqPacingOf(ctx)
@@ -479,6 +486,17 @@ export function apply(ctx: Context, config: Config): void {
       members: (chatKey, limit) => readMembers(channel, chatKey, limit),
       message: messageId => readMessage(channel, messageId),
     },
+    stickers: {
+      list: (tag, limit) => Promise.resolve(listStickers(stickerFile, tag, limit)),
+      pick: id => Promise.resolve(stickerOf(stickerFile, id)),
+      send: (file, chatKey) => channel.send([{ type: 'image', data: { file } }], chatKey),
+    },
+    ...config.pokeEnabled === true ? { poke: async (chatKey: string, userId: string) => {
+      const group = chatKey.startsWith('group:') ? Number(chatKey.slice('group:'.length)) : 0
+      if (group <= 0) return { ok: false, code: 'poke.not_group', reason: '私聊不戳人', hint: '只在群里戳' }
+      const reply = await channel.ask('send_poke', { user_id: Number(userId), group_id: group })
+      return reply.ok ? { ok: true } : { ok: false, code: reply.code, reason: reply.reason }
+    } } : {},
   })
 
   channel.start()

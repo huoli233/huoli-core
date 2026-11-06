@@ -10,6 +10,7 @@ import type { ActionFacts, ActionKind, ActionResult } from './actions.ts'
 import type { FarewellStage } from './farewell-slot.ts'
 import type { ForwardNode } from './forward.ts'
 import type { HistoryOutcome, MembersOutcome, MessageOutcome } from './read.ts'
+import type { StickerListOutcome, StickerPickOutcome } from './stickers.ts'
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
@@ -51,6 +52,14 @@ export interface ChannelToolDeps {
     members: (chatKey: string, limit: number) => Promise<MembersOutcome>
     message: (messageId: string) => Promise<MessageOutcome>
   }
+  /** 表情包：按标签列、按编号取；没接上就回一个能看懂的码 */
+  stickers?: {
+    list: (tag: string, limit: number) => Promise<StickerListOutcome>
+    pick: (id: string) => Promise<StickerPickOutcome>
+    send: (file: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
+  }
+  /** 戳一下某个人，参数是群号与被戳的人；没接上或没开就回一个码 */
+  poke?: (chatKey: string, userId: string) => Promise<{ ok: boolean; code?: string; reason?: string }>
 }
 
 // 两把钥匙在这里只是这次调用的声明：用户那把由确认票背书，她自己那把由这次调用背书，放不放行仍由发布入口判
@@ -389,6 +398,77 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       const outcome = await readable().message(messageId)
       if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
       return { item: outcome.message }
+    },
+  }))
+
+  // 表情包没接上时给个能看懂的码，别让模型以为是自己少传了参数
+  const stickerBox = (): NonNullable<typeof deps.stickers> => {
+    if (deps.stickers === undefined) refuse('sticker.unavailable', '这会儿翻不了表情包', '等装配时把表情包库接上再问')
+    return deps.stickers
+  }
+
+  ctx.tools.register(defineTool({
+    name: 'qq_list_stickers',
+    description: '看看手上有哪些表情图，给编号、标签与放哪。可以按标签找，比如「困」「开心」；不填标签就列全部。挑中哪张，把它的编号交给 qq_send_sticker。',
+    parameters: {
+      tag: { type: 'string', description: '想找哪个标签，不填就列全部。' },
+      limit: { type: 'number', description: '最多列几张，不填给十张。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args) {
+      const tag = typeof args.tag === 'string' ? args.tag : ''
+      const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 10
+      const outcome = await stickerBox().list(tag, asked)
+      if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
+      return { count: outcome.stickers.length, items: outcome.stickers }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_send_sticker',
+    description: '在这个会话里发一张表情图。编号从 qq_list_stickers 给的那几张里挑，别自己编。发之前照样过发言那一道体检。',
+    parameters: {
+      sticker_id: { type: 'string', description: '图的编号，从列出来的几张里挑一个。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const id = textArg(args.sticker_id, 'sticker.no_id', '没给编号', '先用 qq_list_stickers 列一遍，照它给的编号挑')
+      const inspection = deps.inspect(chatKey, '')
+      if (!inspection.ok) refuse(inspection.code ?? 'outbound.blocked', inspection.reason ?? '现在不能发', nextStep(inspection))
+      const picked = await stickerBox().pick(id)
+      if (!picked.ok) refuse(picked.code, picked.reason, picked.hint)
+      const sent = await stickerBox().send(picked.sticker.file, chatKey)
+      if (!sent.ok) refuse(sent.code ?? 'channel.send_failed', sent.reason ?? '这张没发出去', '等一下再试，别连着发同一张')
+      return { ok: true, ...sent.messageId === undefined ? {} : { messageId: sent.messageId } }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_send_poke',
+    description: '轻轻戳一下群里的某个人。只在群里用，私聊不戳；没开这个动作时会回一个码，照码办，别换个说法重试。',
+    parameters: {
+      user_id: { type: 'string', description: '要戳的人的编号，从群成员里拿。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const userId = textArg(args.user_id, 'poke.no_id', '没给要戳谁', '先用 qq_read_members 拿编号')
+      const inspection = deps.inspect(chatKey, '')
+      if (!inspection.ok) refuse(inspection.code ?? 'outbound.blocked', inspection.reason ?? '现在不能戳', nextStep(inspection))
+      if (deps.poke === undefined) refuse('poke.unavailable', '这会儿不准戳人', '把 pokeEnabled 打开再来')
+      const sent = await deps.poke(chatKey, userId)
+      if (!sent.ok) refuse(sent.code ?? 'poke.failed', sent.reason ?? '没戳成', '等一下再试，别连着戳同一个人')
+      return { ok: true }
     },
   }))
 }
