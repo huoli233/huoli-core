@@ -15,6 +15,7 @@ import { createFarewellSlotStore, defaultFarewellSlotFile } from './farewell-slo
 import { registerChannelTools } from './tools.ts'
 import { readHistory, readMembers, readMessage } from './read.ts'
 import { defaultStickerFile, listStickers, stickerOf } from './stickers.ts'
+import { defaultVoiceFile, listVoices, voiceOf } from './voices.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
 export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
@@ -148,6 +149,8 @@ export interface Config {
   farewellFile?: string
   /** 表情包库放哪，不填就落在数据根目录下的 data */
   stickerFile?: string
+  /** 语音库放哪，不填就落在数据根目录下的 data */
+  voiceFile?: string
   /** 准不准戳人，默认不准；开了也只是多一个动作，不改变判级 */
   pokeEnabled?: boolean
 }
@@ -320,8 +323,9 @@ export function apply(ctx: Context, config: Config): void {
 
   // 遗书正文的暂存槽与三类动作的状态各一份文件，互不影响
   const farewell = createFarewellSlotStore({ file: config.farewellFile ?? defaultFarewellSlotFile() })
-  // 表情包库是另一份文件，没存过就当一张都没有
+  // 表情包库与语音库各一份文件，没存过就当一张、一段都没有
   const stickerFile = config.stickerFile ?? defaultStickerFile()
+  const voiceFile = config.voiceFile ?? defaultVoiceFile()
 
   // 拆句直接用说话规矩里的纯函数，不依赖它有没有先装好
   const pacing = qqPacingOf(ctx)
@@ -491,6 +495,12 @@ export function apply(ctx: Context, config: Config): void {
       pick: id => Promise.resolve(stickerOf(stickerFile, id)),
       send: (file, chatKey) => channel.send([{ type: 'image', data: { file } }], chatKey),
     },
+    voices: {
+      list: (tag, limit) => Promise.resolve(listVoices(voiceFile, tag, limit)),
+      pick: id => Promise.resolve(voiceOf(voiceFile, id)),
+      send: (file, chatKey) => channel.send([{ type: 'record', data: { file } }], chatKey),
+    },
+    reply: (messageId, text, chatKey) => channel.send([{ type: 'reply', data: { id: messageId } }, { type: 'text', data: { text } }], chatKey),
     ...config.pokeEnabled === true ? { poke: async (chatKey: string, userId: string) => {
       const group = chatKey.startsWith('group:') ? Number(chatKey.slice('group:'.length)) : 0
       if (group <= 0) return { ok: false, code: 'poke.not_group', reason: '私聊不戳人', hint: '只在群里戳' }

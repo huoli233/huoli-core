@@ -11,6 +11,7 @@ import type { FarewellStage } from './farewell-slot.ts'
 import type { ForwardNode } from './forward.ts'
 import type { HistoryOutcome, MembersOutcome, MessageOutcome } from './read.ts'
 import type { StickerListOutcome, StickerPickOutcome } from './stickers.ts'
+import type { VoiceListOutcome, VoicePickOutcome } from './voices.ts'
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
@@ -60,6 +61,14 @@ export interface ChannelToolDeps {
   }
   /** 戳一下某个人，参数是群号与被戳的人；没接上或没开就回一个码 */
   poke?: (chatKey: string, userId: string) => Promise<{ ok: boolean; code?: string; reason?: string }>
+  /** 语音：按标签列、按编号取、发出去 */
+  voices?: {
+    list: (tag: string, limit: number) => Promise<VoiceListOutcome>
+    pick: (id: string) => Promise<VoicePickOutcome>
+    send: (file: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
+  }
+  /** 引用着某一条回一句 */
+  reply?: (messageId: string, text: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
 }
 
 // 两把钥匙在这里只是这次调用的声明：用户那把由确认票背书，她自己那把由这次调用背书，放不放行仍由发布入口判
@@ -469,6 +478,92 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       const sent = await deps.poke(chatKey, userId)
       if (!sent.ok) refuse(sent.code ?? 'poke.failed', sent.reason ?? '没戳成', '等一下再试，别连着戳同一个人')
       return { ok: true }
+    },
+  }))
+
+  const voiceBox = (): NonNullable<typeof deps.voices> => {
+    if (deps.voices === undefined) refuse('voice.unavailable', '这会儿翻不了语音', '等装配时把语音库接上再问')
+    return deps.voices
+  }
+
+  ctx.tools.register(defineTool({
+    name: 'qq_list_voices',
+    description: '看看手上有哪些语音，给编号、标签与放哪。可以按标签找；不填标签就列全部。挑中哪段，把编号交给 qq_send_voice。',
+    parameters: {
+      tag: { type: 'string', description: '想找哪个标签，不填就列全部。' },
+      limit: { type: 'number', description: '最多列几段，不填给十段。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args) {
+      const tag = typeof args.tag === 'string' ? args.tag : ''
+      const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 10
+      const outcome = await voiceBox().list(tag, asked)
+      if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
+      return { count: outcome.voices.length, items: outcome.voices }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_send_voice',
+    description: '在这个会话里发一段语音。编号从 qq_list_voices 给的那几段里挑，别自己编。发之前照样过发言那一道体检。',
+    parameters: {
+      voice_id: { type: 'string', description: '语音的编号，从列出来的几段里挑一个。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const id = textArg(args.voice_id, 'voice.no_id', '没给编号', '先用 qq_list_voices 列一遍，照它给的编号挑')
+      const inspection = deps.inspect(chatKey, '')
+      if (!inspection.ok) refuse(inspection.code ?? 'outbound.blocked', inspection.reason ?? '现在不能发', nextStep(inspection))
+      const picked = await voiceBox().pick(id)
+      if (!picked.ok) refuse(picked.code, picked.reason, picked.hint)
+      const sent = await voiceBox().send(picked.voice.file, chatKey)
+      if (!sent.ok) refuse(sent.code ?? 'channel.send_failed', sent.reason ?? '这段没发出去', '等一下再试，别连着发同一段')
+      return { ok: true, ...sent.messageId === undefined ? {} : { messageId: sent.messageId } }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_reply',
+    description: '引用着群里某一条消息回一句。编号从群记录里拿，正文照平常说话写。发之前照样过发言那一道体检。',
+    parameters: {
+      message_id: { type: 'string', description: '要引用哪一条，编号从 qq_read_history 给的那几条里挑。' },
+      text: { type: 'string', description: '要回的话。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const messageId = textArg(args.message_id, 'reply.no_id', '没给要引用哪一条', '先用 qq_read_history 拿编号')
+      const text = textArg(args.text, 'reply.empty', '没话可说', '要回就写点东西')
+      const inspection = deps.inspect(chatKey, text)
+      if (!inspection.ok) refuse(inspection.code ?? 'outbound.blocked', inspection.reason ?? '现在不能回', nextStep(inspection))
+      if (deps.reply === undefined) refuse('reply.unavailable', '这会儿引用不了', '等装配时把这一路接上再回')
+      const sent = await deps.reply(messageId, text, chatKey)
+      if (!sent.ok) refuse(sent.code ?? 'reply.failed', sent.reason ?? '没回成', '等一下再试，别连着回同一条')
+      return { ok: true, ...sent.messageId === undefined ? {} : { messageId: sent.messageId } }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_channel_status',
+    description: '看一眼 QQ 这头连上没有、重连过几次、上一次是什么错。只报事实，不改变什么。',
+    parameters: {},
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    execute() {
+      const now = deps.status()
+      return Promise.resolve({ connected: now.connected, url: now.url, reconnectCount: now.reconnectCount, lastError: now.lastError })
     },
   }))
 }
