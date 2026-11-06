@@ -86,6 +86,12 @@ export interface ChannelToolDeps {
     find: (query: string, limit: number) => Promise<Slang[]>
     add: (word: string, meaning: string, from: string, at: number) => Promise<SlangWriteOutcome>
   }
+  /** 撤回自己刚发出去的那一条 */
+  unsend?: (messageId: string) => Promise<{ ok: boolean; code?: string; reason?: string }>
+  /** 最近自己发出去的几条，只给编号、会话与时刻 */
+  recent?: () => readonly { messageId: string; chatKey: string; at: number }[]
+  /** 记一笔「刚说错了、怎么改的」，接上了才记，不接就只撤回与更正 */
+  noteCorrection?: (wrong: string, better: string, at: number) => void
 }
 
 // 两把钥匙在这里只是这次调用的声明：用户那把由确认票背书，她自己那把由这次调用背书，放不放行仍由发布入口判
@@ -661,6 +667,73 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       const outcome = await slangOf().add(word, meaning, chatKeyOf(exec), Date.now())
       if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
       return { ok: true, word: outcome.word, created: outcome.created }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_unsend',
+    description: '把刚才自己发出去的那一句撤回来。只撤自己刚发的，编号从 qq_send_message 回的 messageIds 或 qq_recent_sends 里拿。刚说错了、说重了、不该说，就用一次。撤不了会给一个码，照码办，别换说法重发同一句。',
+    parameters: {
+      message_id: { type: 'string', description: '要撤的那条的编号，从刚才的发送回执里拿。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args) {
+      const messageId = textArg(args.message_id, 'unsend.no_id', '没给要撤哪一条', '从刚才的发送回执里拿编号')
+      if (deps.unsend === undefined) refuse('unsend.unavailable', '这会儿撤不了', '等连接那一路接上再撤')
+      const result = await deps.unsend(messageId)
+      if (!result.ok) refuse(result.code ?? 'unsend.failed', result.reason ?? '没撤成', '照码办，别换个说法重发同一句')
+      return { ok: true, messageId }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_recent_sends',
+    description: '看一眼自己刚才发出去的几条，给编号、发到哪、什么时候。想撤哪一条就从这里拿编号交给 qq_unsend。',
+    parameters: {},
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    execute() {
+      const items = deps.recent?.() ?? []
+      const rows = items.map(row => ({ messageId: row.messageId, chatKey: row.chatKey, at: row.at }))
+      return Promise.resolve({ count: items.length, items: rows })
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_correct',
+    description: '刚说错了、说重了、说岔了，用一次把那一句撤回来，再引用着补一句更正的话。只撤自己刚发的；撤回不了会给码，照码办，别换个说法重发同一句。也可以只更正不撤。',
+    parameters: {
+      message_id: { type: 'string', description: '说错的那条编号；不填就只补一句更正，不撤。' },
+      text: { type: 'string', description: '更正的那句话，写清现在怎么想。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const text = textArg(args.text, 'correct.empty', '没写更正的话', '说清现在怎么想，别只说「算了」')
+      const messageId = typeof args.message_id === 'string' && args.message_id.trim() !== '' ? args.message_id.trim() : ''
+      let withdrawn = false
+      if (messageId !== '') {
+        if (deps.unsend === undefined) refuse('unsend.unavailable', '这会儿撤不了', '等连接那一路接上再撤')
+        const undone = await deps.unsend(messageId)
+        if (!undone.ok) refuse(undone.code ?? 'unsend.failed', undone.reason ?? '没撤成', '照码办，别换个说法重发同一句')
+        withdrawn = true
+      }
+      const inspection = deps.inspect(chatKey, text)
+      if (!inspection.ok) refuse(inspection.code ?? 'outbound.blocked', inspection.reason ?? '现在不能更正', nextStep(inspection))
+      if (deps.reply === undefined) refuse('reply.unavailable', '这会儿引用不了', '等装配时把这一路接上再回')
+      const sent = await deps.reply(messageId, text, chatKey)
+      if (!sent.ok) refuse(sent.code ?? 'reply.failed', sent.reason ?? '更正没发出去', '等一下再试')
+      // 接上了就记一笔，让自我层知道刚才改过口；没接上不影响这一句更正
+      if (deps.noteCorrection !== undefined) deps.noteCorrection(messageId === '' ? '刚才那句' : `编号 ${messageId} 那句`, text, Date.now())
+      return { ok: true, withdrawn, ...sent.messageId === undefined ? {} : { messageId: sent.messageId } }
     },
   }))
 }

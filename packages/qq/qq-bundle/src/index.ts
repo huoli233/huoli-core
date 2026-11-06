@@ -559,6 +559,8 @@ export function apply(ctx: Context, config: Config = {}): void {
   channel?.usePause(() => self?.isPaused() ?? false)
   // 阶段只由自我层说：私信那一档按它判能不能发，没接上就按那一层默认值表里最保守的一档
   if (self !== undefined) channel?.useStage(() => self.stage())
+  // 刚改过口就记一笔，让自我层的复盘看得到，别只当没发生过
+  if (self !== undefined) channel?.useCorrectionNote((wrong, better, at) => { self.recordError(wrong, better, at) })
   channel?.useReplyCap(() => budgetOf(vitals))
   channel?.useStop(stopNowOf(budgetOf(vitals), vitals?.read()))
 

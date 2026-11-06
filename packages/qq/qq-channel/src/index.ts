@@ -72,6 +72,8 @@ export interface QqChannelSeam {
   useStop(provide: ((sentCount: number) => boolean) | undefined): void
   /** 接上自我层现在的阶段，三类公共动作都按它判能不能发 */
   useStage(provide: (() => string) | undefined): void
+  /** 接上「刚改过口」这一笔往哪记，没接就不记 */
+  useCorrectionNote(provide: ((wrong: string, better: string, at: number) => void) | undefined): void
 }
 
 /** 这一行接受的配置 */
@@ -306,6 +308,7 @@ export function apply(ctx: Context, config: Config): void {
   let stopCheck: ((sentCount: number) => boolean) | undefined
   // 自我层现在的阶段由组合包接进来，没接上就按那一层默认值表里最保守的一档判
   let stageCheck: (() => string) | undefined
+  let correctionNote: ((wrong: string, better: string, at: number) => void) | undefined
   const capNow = (): number => {
     const cap = replyCap?.()
     return cap === undefined ? REPLY_DEFAULTS.minCap : Math.max(REPLY_DEFAULTS.minCap, Math.floor(cap))
@@ -446,6 +449,9 @@ export function apply(ctx: Context, config: Config): void {
     useStage(provide) {
       stageCheck = provide
     },
+    useCorrectionNote(provide) {
+      correctionNote = provide
+    },
   }
   seams.set(ctx.root, seam)
 
@@ -504,7 +510,10 @@ export function apply(ctx: Context, config: Config): void {
       pick: id => Promise.resolve(voiceOf(voiceFile, id)),
       send: (file, chatKey) => channel.send([{ type: 'record', data: { file } }], chatKey),
     },
-    reply: (messageId, text, chatKey) => channel.send([{ type: 'reply', data: { id: messageId } }, { type: 'text', data: { text } }], chatKey),
+    reply: (messageId, text, chatKey) => channel.send(
+      messageId === '' ? [{ type: 'text', data: { text } }] : [{ type: 'reply', data: { id: messageId } }, { type: 'text', data: { text } }],
+      chatKey,
+    ),
     burst: async (lines, gapsMs, chatKey) => {
       let sent = 0
       // 等一会儿，但别让定时器拖着进程不退
@@ -535,6 +544,9 @@ export function apply(ctx: Context, config: Config): void {
       find: (query, limit) => Promise.resolve(findSlangs(slangFile, query, limit)),
       add: (word, meaning, from, at) => Promise.resolve(addSlang(slangFile, word, meaning, from, at)),
     },
+    unsend: messageId => channel.unsend(messageId),
+    recent: () => channel.recentSends(),
+    noteCorrection: (wrong, better, at) => { correctionNote?.(wrong, better, at) },
     ...config.pokeEnabled === true ? { poke: async (chatKey: string, userId: string) => {
       const group = chatKey.startsWith('group:') ? Number(chatKey.slice('group:'.length)) : 0
       if (group <= 0) return { ok: false, code: 'poke.not_group', reason: '私聊不戳人', hint: '只在群里戳' }

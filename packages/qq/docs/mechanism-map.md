@@ -23,6 +23,7 @@
 | 连接状态 | 连没连上、重连几次 | `qq_channel_status` | 已补：只报事实 |
 | 连发 | 一口气说几句短话 | `qq_send_burst` | 已补：按换行拆，最多六句，每句之间留空，每句都过体检；用例在 `qq-channel/tests/burst-slang.spec.ts` |
 | 学黑话 | 从群里学词并记住 | `qq_slang_query` / `qq_slang_submit` | 已补：词表是本机一份 JSON，同一词只记一次；只记词与意思，不记整段对话 |
+| 撤回与改口 | 说错了撤回来、补一句更正 | `qq_recent_sends` / `qq_unsend` / `qq_correct` | 已补：只撤自己刚发的，改口会顺手记进自我层错题本；用例在 `qq-channel/tests/correct.spec.ts` |
 | 角色存档 | 人格快照与回滚 | `qq-self` 的 `persona.md` 与版本 | 已补：人格是文件，启动存一版，改坏了能盖回去 |
 | 人格卡拆分 | 一次模型调用把人格卡拆四层 | — | 不做：人格是我们自己写的，没有「导入别人的人格卡」这一步 |
 | 跨平台身份对齐 | QQ 与别的平台认同一个人 | — | 不适用：只有一个平台 |

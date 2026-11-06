@@ -28,11 +28,25 @@ export interface WsChannel {
   /** 把几段正文合成一条合并转发发出去 */
   sendForward(nodes: readonly ForwardNode[], chatKey: string): Promise<SentResult>
   react(messageId: string, emoji: string): Promise<SentResult>
+  /** 撤回自己刚发出去的那一条 */
+  unsend(messageId: string): Promise<SentResult>
   status(): ChannelStatus
   /** 这一条连接发出去过的消息编号，用来按引用编号认出在回自己 */
   sentIds(): ReadonlySet<string>
+  /** 最近发出去的几条，撤回时用来确认是不是自己刚发的 */
+  recentSends(): readonly SentRecord[]
   /** 问一次对方，回来的是那一段数据；读类的调用走这里 */
   ask(action: string, params: Record<string, unknown>): Promise<AskReply>
+}
+
+/** 自己发出去的一条，留着给撤回用 */
+export interface SentRecord {
+  /** 消息编号 */
+  messageId: string
+  /** 发到哪个会话 */
+  chatKey: string
+  /** 什么时候发的，毫秒 */
+  at: number
 }
 
 /** 问一次对方之后回来的东西：成了给数据，没成给码与提示 */
@@ -44,6 +58,9 @@ export type AskReply =
 type Reply =
   | { ok: true; data: Record<string, unknown>; messageId?: string }
   | { ok: false; data: Record<string, unknown>; code: string; reason: string; hint: string }
+
+/** 最近发出去留几条，够撤回刚说的那几句就行 */
+const SEND_HISTORY_MAX = 20
 
 /** 连接这一层的默认值：等回话多久、断了隔多久重连、重连不许比这更快 */
 export const WS_DEFAULTS = {
@@ -72,6 +89,7 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
   let seq = 0
   let status: ChannelStatus = { connected: false, url: options.url, reconnectCount: 0, lastError: '' }
   const sentIds = new Set<string>()
+  const records: SentRecord[] = []
   const pending = new Map<string, { settle: (reply: Reply) => void; timer: ReturnType<typeof setTimeout> }>()
 
   const publish = (next: Partial<ChannelStatus>): void => {
@@ -214,13 +232,21 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
       socket?.close()
       socket = undefined
       sentIds.clear()
+      records.length = 0
       publish({ connected: false })
     },
-    send(message: string | readonly MessageSegment[], chatKey: string) {
-      if (chatKey.startsWith('group:')) {
-        return call('send_group_msg', { group_id: Number(chatKey.slice('group:'.length)), message })
-      }
-      return call('send_private_msg', { user_id: Number(chatKey.slice('private:'.length)), message })
+    send(message, chatKey) {
+      const sent = chatKey.startsWith('group:')
+        ? call('send_group_msg', { group_id: Number(chatKey.slice('group:'.length)), message })
+        : call('send_private_msg', { user_id: Number(chatKey.slice('private:'.length)), message })
+      // 发出去成了就记一条，撤回时才有据可查
+      return sent.then((result) => {
+        if (result.ok && result.messageId !== undefined) {
+          records.push({ messageId: result.messageId, chatKey, at: Date.now() })
+          if (records.length > SEND_HISTORY_MAX) records.splice(0, records.length - SEND_HISTORY_MAX)
+        }
+        return result
+      })
     },
     sendForward(nodes: readonly ForwardNode[], chatKey: string) {
       const request = forwardCallOf(nodes, chatKey, options.selfId)
@@ -233,11 +259,28 @@ export function createWsChannel(options: WsOptions, handlers: WsHandlers): WsCha
       if (messageId === '') return Promise.resolve({ ok: false, code: 'channel.no_target', reason: '没有要回应的那条消息', hint: '从消息列表里拿编号' })
       return call('set_msg_emoji_like', { message_id: Number(messageId), emoji_id: emoji })
     },
+    unsend(messageId) {
+      if (messageId === '') return Promise.resolve({ ok: false, code: 'unsend.no_id', reason: '没给要撤哪一条', hint: '从刚发出去的回执里拿编号' })
+      // 只撤自己这一条连接确实发出去的，别拿别人的编号乱撤
+      if (!records.some(record => record.messageId === messageId)) {
+        return Promise.resolve({ ok: false, code: 'unsend.not_mine', reason: '这条不是我刚发的', hint: '只撤自己刚发出去的那几条' })
+      }
+      return call('delete_msg', { message_id: Number(messageId) }).then((result) => {
+        if (result.ok) {
+          const at = records.findIndex(record => record.messageId === messageId)
+          if (at >= 0) records.splice(at, 1)
+        }
+        return result
+      })
+    },
     status() {
       return { ...status, url: options.url }
     },
     sentIds() {
       return sentIds
+    },
+    recentSends() {
+      return records
     },
     ask(action, params) {
       return ask(action, params)
