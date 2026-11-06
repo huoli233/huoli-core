@@ -17,6 +17,7 @@ import { readHistory, readMembers, readMessage } from './read.ts'
 import { defaultStickerFile, listStickers, stickerOf } from './stickers.ts'
 import { defaultVoiceFile, listVoices, voiceOf } from './voices.ts'
 import { addSlang, defaultSlangFile, findSlangs } from './slang.ts'
+import { addSaying, defaultSayingFile, findSayings } from './sayings.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
 export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
@@ -156,11 +157,21 @@ export interface Config {
   voiceFile?: string
   /** 学来的词放哪，不填就落在数据根目录下的 data */
   slangFile?: string
+  /** 学来的说法放哪，不填就落在数据根目录下的 data */
+  sayingFile?: string
   /** 准不准戳人，默认不准；开了也只是多一个动作，不改变判级 */
   pokeEnabled?: boolean
 }
 
 const seams = new WeakMap<Context, QqChannelSeam>()
+
+/** 等一会儿，但别让定时器拖着进程不退 */
+function pauseMs(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms)
+    timer.unref()
+  })
+}
 
 /**
  * 取通道，未装配时为 undefined
@@ -333,6 +344,7 @@ export function apply(ctx: Context, config: Config): void {
   const stickerFile = config.stickerFile ?? defaultStickerFile()
   const voiceFile = config.voiceFile ?? defaultVoiceFile()
   const slangFile = config.slangFile ?? defaultSlangFile()
+  const sayingFile = config.sayingFile ?? defaultSayingFile()
 
   // 拆句直接用说话规矩里的纯函数，不依赖它有没有先装好
   const pacing = qqPacingOf(ctx)
@@ -516,16 +528,11 @@ export function apply(ctx: Context, config: Config): void {
     ),
     burst: async (lines, gapsMs, chatKey) => {
       let sent = 0
-      // 等一会儿，但别让定时器拖着进程不退
-      const pause = (ms: number): Promise<void> => new Promise((resolve) => {
-        const timer = setTimeout(resolve, ms)
-        timer.unref()
-      })
       for (let at = 0; at < lines.length; at += 1) {
         const line = lines[at]
         if (line === undefined) continue
         const gap = gapsMs[at] ?? 0
-        if (gap > 0) await pause(gap)
+        if (gap > 0) await pauseMs(gap)
         const result = await channel.send(line, chatKey)
         if (!result.ok) {
           return {
@@ -540,9 +547,52 @@ export function apply(ctx: Context, config: Config): void {
       }
       return { ok: true, sent }
     },
+    messy: async (steps, gapMs, chatKey) => {
+      let sent = 0
+      // 这一串里自己刚发的最后一条，撤回只认它，不碰更早的消息
+      let lastId = ''
+      for (const step of steps) {
+        if (gapMs > 0 && sent > 0) await pauseMs(gapMs)
+        // 「换」自带撤上一句的意思；上一句已经撤过就直接发这句，别再撤一遍
+        if (step.action !== 'send' && lastId !== '') {
+          const undone = await channel.unsend(lastId)
+          if (!undone.ok) {
+            return {
+              ok: false,
+              sent,
+              ...undone.code === undefined ? {} : { code: undone.code },
+              ...undone.reason === undefined ? {} : { reason: undone.reason },
+            }
+          }
+          lastId = ''
+          if (step.action === 'withdraw') continue
+        }
+        // 单独一个「撤」前面却没发过，就是没得撤
+        if (step.action === 'withdraw' && lastId === '') {
+          return { ok: false, sent, code: 'messy.nothing_to_withdraw', reason: '前面没有自己刚发的那一条可撤' }
+        }
+        const result = await channel.send(step.text, chatKey)
+        if (!result.ok) {
+          return {
+            ok: false,
+            sent,
+            ...result.code === undefined ? {} : { code: result.code },
+            ...result.reason === undefined ? {} : { reason: result.reason },
+          }
+        }
+        sent += 1
+        lastId = result.messageId ?? ''
+        outbound.record(Date.now())
+      }
+      return { ok: true, sent }
+    },
     slang: {
       find: (query, limit) => Promise.resolve(findSlangs(slangFile, query, limit)),
       add: (word, meaning, from, at) => Promise.resolve(addSlang(slangFile, word, meaning, from, at)),
+    },
+    sayings: {
+      find: (query, limit) => Promise.resolve(findSayings(sayingFile, query, limit)),
+      add: (text, when, from, at) => Promise.resolve(addSaying(sayingFile, text, when, from, at)),
     },
     unsend: messageId => channel.unsend(messageId),
     recent: () => channel.recentSends(),

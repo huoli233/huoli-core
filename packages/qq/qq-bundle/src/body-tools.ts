@@ -19,6 +19,9 @@ export const CURIOUS_LINE = '【这会儿有点好奇】想弄明白的事可以
 /** 只有她自己做了不想让人知道的事时才用，别把普通闲聊记成私密 */
 export const PRIVATE_EVENT_LINE = '【刚才有件不想让人知道的事】真自己做了、而且不想让人知道，就用 memory_append 记一句，layer 填 private、secret 填 true；群里不会翻到它，之后那一小会儿你会自己留意有没有人在看你。只是听到别人的事、或者随口想想，都别记。'
 
+/** 打字这件事：说成什么样全由她自己写，代码不改字 */
+export const MESSY_LINE = '【打字可以像真人】打快了岔一个字、拼音没打完就发出去、短句口头禅，都是你自己能用的说法；想收回来就撤，想改就撤了再发，也可以直接补一句新的。用 qq_send_messy 按「发／撤／换」一步步来，或者只发一句错的就算了。写什么字、岔成什么样由你定，别每轮都用，也别把正事说岔。群里常听到的短句可以用 qq_saying_query 翻、qq_saying_submit 记。'
+
 /** 记忆那一面用得上的两件事：翻条目、按感觉回想 */
 interface MemoryFace {
   /** 所有的记忆条目 */
@@ -71,7 +74,7 @@ export function bodyEventText(
   const body = vitals?.read()
   const state = subject?.store.read()
   const chatKey = state?.lastActive ?? ''
-  return `${BODY_EVENT_LINE}${PRIVATE_EVENT_LINE}${recollectLineOf(memory, body, chatKey)}${privateLineOf(memory, chatKey, Date.now())}${curiousLineOf(state?.global.curiosity)}`
+  return `${BODY_EVENT_LINE}${MESSY_LINE}${PRIVATE_EVENT_LINE}${recollectLineOf(memory, body, chatKey)}${privateLineOf(memory, chatKey, Date.now())}${curiousLineOf(state?.global.curiosity)}`
 }
 
 /** 拼那一段要用的两面 */

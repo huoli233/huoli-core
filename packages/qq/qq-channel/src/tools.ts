@@ -12,8 +12,8 @@ import type { ForwardNode } from './forward.ts'
 import type { HistoryOutcome, MembersOutcome, MessageOutcome } from './read.ts'
 import type { StickerListOutcome, StickerPickOutcome } from './stickers.ts'
 import type { VoiceListOutcome, VoicePickOutcome } from './voices.ts'
-import type { SlangWriteOutcome } from './slang.ts'
-import type { Slang } from './slang.ts'
+import type { SlangWriteOutcome, Slang } from './slang.ts'
+import type { SayingWriteOutcome, Saying } from './sayings.ts'
 
 /** 一口气发几条之后的结果：成了给发出去几条，没成给码与提示 */
 export interface BurstOutcome {
@@ -88,10 +88,17 @@ export interface ChannelToolDeps {
   }
   /** 撤回自己刚发出去的那一条 */
   unsend?: (messageId: string) => Promise<{ ok: boolean; code?: string; reason?: string }>
+  /** 一口气按步骤发：发一句、撤上一句、或撤了再发一句 */
+  messy?: (steps: readonly { action: 'send' | 'withdraw' | 'replace'; text: string }[], gapMs: number, chatKey: string) => Promise<BurstOutcome>
   /** 最近自己发出去的几条，只给编号、会话与时刻 */
   recent?: () => readonly { messageId: string; chatKey: string; at: number }[]
   /** 记一笔「刚说错了、怎么改的」，接上了才记，不接就只撤回与更正 */
   noteCorrection?: (wrong: string, better: string, at: number) => void
+  /** 学来的说法：查、记 */
+  sayings?: {
+    find: (query: string, limit: number) => Promise<Saying[]>
+    add: (text: string, when: string, from: string, at: number) => Promise<SayingWriteOutcome>
+  }
 }
 
 // 两把钥匙在这里只是这次调用的声明：用户那把由确认票背书，她自己那把由这次调用背书，放不放行仍由发布入口判
@@ -686,6 +693,88 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
       const result = await deps.unsend(messageId)
       if (!result.ok) refuse(result.code ?? 'unsend.failed', result.reason ?? '没撤成', '照码办，别换个说法重发同一句')
       return { ok: true, messageId }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_send_messy',
+    description: '像真人打字那样一句一句来：可以发一句，过几秒撤回来，再发改好的那一句；也可以把打快了、拼音没打完、短句口头禅直接发出去。steps 一行一步，写成「发 内容」「撤」「换 内容」；换就是先把上一句撤了再发这一句。说成什么样由你自己写，代码不改字、不替你编。每一步都过发言那道体检。',
+    parameters: {
+      steps: { type: 'string', description: '一行一步：「发 要发的话」／「撤」／「换 改好的话」。最多八步。' },
+      gap_ms: { type: 'number', description: '两步之间隔多久，毫秒，不填给一千二毫秒，像打快了又停下来改。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const raw = typeof args.steps === 'string' ? args.steps : ''
+      const parsed = raw.split('\n').map(line => line.trim()).filter(line => line !== '').slice(0, 8).map((line): { action: 'send' | 'withdraw' | 'replace'; text: string } => {
+        if (line === '撤') return { action: 'withdraw', text: '' }
+        if (line.startsWith('换 ')) return { action: 'replace', text: line.slice(2).trim() }
+        if (line.startsWith('发 ')) return { action: 'send', text: line.slice(2).trim() }
+        return { action: 'send', text: line }
+      })
+      if (parsed.length === 0) refuse('messy.empty', '一步都没有', '一行写一步，比如「发 打飞鱼」「撤」「换 大肥鱼」')
+      if (parsed.some(step => step.action !== 'withdraw' && step.text === '')) refuse('messy.empty_text', '有一步没写内容', '「发」和「换」后面都要写话')
+      const gapMs = typeof args.gap_ms === 'number' && Number.isFinite(args.gap_ms) ? Math.max(0, Math.floor(args.gap_ms)) : 1200
+      // 每一句要发的都先过体检与去重额度，被拦就一步都不做
+      for (const step of parsed) {
+        if (step.action === 'withdraw' || step.text === '') continue
+        const inspection = deps.inspect(chatKey, step.text)
+        if (!inspection.ok) refuse(inspection.code ?? 'outbound.blocked', inspection.reason ?? '现在不能发', nextStep(inspection))
+        const allowed = deps.allow(step.text)
+        if (!allowed.ok) refuse(allowed.code ?? 'channel.blocked', allowed.reason ?? '现在不能发', nextStep(allowed))
+      }
+      if (deps.messy === undefined) refuse('messy.unavailable', '这会儿按不了这个顺序', '等装配时把这一路接上再用')
+      const result = await deps.messy(parsed, gapMs, chatKey)
+      if (!result.ok) refuse(result.code ?? 'messy.failed', result.reason ?? '没走完这几步', '照已经走到哪一步算，别整串重来')
+      return { ok: true, steps: parsed.length, sent: result.sent }
+    },
+  }))
+
+  const sayingOf = (): NonNullable<typeof deps.sayings> => {
+    if (deps.sayings === undefined) refuse('saying.unavailable', '这会儿翻不了说法', '等装配时把说法库接上再问')
+    return deps.sayings
+  }
+
+  ctx.tools.register(defineTool({
+    name: 'qq_saying_query',
+    description: '查一下群里常听到的短句、口头禅、谚语，给原话与大概什么时候用。可以按字串找，不填就列全部。这些只是听来的说法，用不用、怎么用由你自己判，别每轮都往里塞。',
+    parameters: {
+      query: { type: 'string', description: '想找哪句或哪种场合，不填就列全部。' },
+      limit: { type: 'number', description: '最多几句，不填给十句。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args) {
+      const query = typeof args.query === 'string' ? args.query : ''
+      const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 10
+      const items = await sayingOf().find(query, asked)
+      return { count: items.length, items }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_saying_submit',
+    description: '记一句群里常听到的短句、口头禅或谚语：原话、大概什么时候用。同一句只记一次。记的是别人怎么说话，不是让你照抄。',
+    parameters: {
+      text: { type: 'string', description: '那句原话，短一点。' },
+      when: { type: 'string', description: '大概什么时候会这么说，写一句就行。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const text = textArg(args.text, 'saying.empty', '没有话可记', '写清是哪一句')
+      const when = typeof args.when === 'string' ? args.when.trim() : ''
+      const outcome = await sayingOf().add(text, when, chatKeyOf(exec), Date.now())
+      if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
+      return { ok: true, text: outcome.text, created: outcome.created }
     },
   }))
 
