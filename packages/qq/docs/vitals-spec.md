@@ -559,6 +559,7 @@
 |---|---|
 | 五组生理字段与初值 | `packages/qq/qq-vitals/src/types.ts:Baseline`、`packages/qq/qq-vitals/src/defaults.ts:DEFAULTS` |
 | 第 5 章系数与原文的对照 | `packages/qq/qq-vitals/tests/coefficients.spec.ts`（184 条系数加去甲七档，逐条钉住原文值，改一处就红） |
+| 第 6 章压制与峰值与原文的对照 | 同一个用例文件的后 35 条（标签门槛、八组反向压制、峰值与低谷判据）；26 个标签的权重仍是 `derive.ts` 里的字面量，不在参数表内 |
 | 睡眠三态与睡着那一态的影子 | `packages/qq/qq-vitals/src/types.ts:SleepState`、`packages/qq/qq-vitals/src/drift.ts:drift` |
 | 午睡与当天一次 | `packages/qq/qq-vitals/src/defaults.ts:DEFAULTS`、`packages/qq/qq-vitals/src/drift.ts:drift` |
 | 周期相位与日期差 | `packages/qq/qq-vitals/src/clock.ts:cycleOf`、`packages/qq/qq-vitals/src/clock.ts:localDayDiff`、`packages/qq/qq-vitals/src/types.ts:CyclePhase` |
