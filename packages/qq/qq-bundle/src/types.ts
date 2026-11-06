@@ -72,6 +72,8 @@ export interface Config {
   balanceLevel?: number
   /** 启动账放哪，用来算今天重启过几次 */
   livenessFile?: string
+  /** 没人说话时每隔多久给她一次主动开口的机会，毫秒，默认十分钟；真开不开口由主动那一路的间隔与额度定 */
+  nudgeMs?: number
 }
 
 /** 一次投递的结论：没投出去的码与发布入口回来的那一段都摆在这里 */

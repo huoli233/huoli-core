@@ -457,7 +457,7 @@ describe('想发动态的劲', () => {
     expect(fs.existsSync(path.join(dir, 'proactive.json'))).toBe(false)
   })
 
-  it('每天整理那一拍也读一次，攒出来的还是同一条事实', async () => {
+  it('没人说话时也隔一阵读一次，攒出来的还是同一条事实', async () => {
     vi.useFakeTimers()
     try {
       // 整理那一小时是四点到五点，先退到三点半，再让定时器走过那一拍
@@ -470,7 +470,8 @@ describe('想发动态的劲', () => {
       const kept = shareWants(proactive)
       expect(kept).toHaveLength(1)
       expect(kept[0]?.facts.source).toBe('post_want')
-      expect(proactiveRecords(ctx).at(-1)?.reason).toBe('proactive:preview_ready')
+      // 平时那几次先读到了，整理那一拍再读还是同一条，不会再攒出第二条
+      expect(proactiveRecords(ctx).some(record => record.reason === 'proactive:preview_ready')).toBe(true)
     } finally {
       vi.useRealTimers()
     }

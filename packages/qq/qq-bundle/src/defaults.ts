@@ -14,6 +14,8 @@ export const BUNDLE_DEFAULTS = {
   seenMax: 256,
   /** 入站之后隔多久才再问一次要不要主动开口 */
   proactiveThrottleMs: 60_000,
+  /** 没人说话时每隔多久问一次，默认十分钟 */
+  nudgeMs: 600_000,
   /** 允许调用的工具名，空表示不限制 */
   allowedTools: [] as readonly string[],
   /** 每轮是否把召回到的记忆接在用户原话之后 */

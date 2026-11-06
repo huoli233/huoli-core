@@ -407,6 +407,8 @@ export function apply(ctx: Context, config: Config = {}): void {
   ctx.effect(() => registerProactiveTools(ctx, proactivePorts))
 
   const throttleMs = Math.max(0, config.proactiveThrottleMs ?? BUNDLE_DEFAULTS.proactiveThrottleMs)
+  // 没人说话时也隔一阵问一次，别只在有人冒泡时才可能想起她
+  const nudgeMs = Math.max(60_000, config.nudgeMs ?? BUNDLE_DEFAULTS.nudgeMs)
   const lastConsidered = new Map<string, number>()
   const addPostWantFrom = config.addPostWantFrom ?? BUNDLE_DEFAULTS.addPostWantFrom
   const postCandidateDailyMax = Math.max(0, config.postCandidateDailyMax ?? BUNDLE_DEFAULTS.postCandidateDailyMax)
@@ -523,10 +525,18 @@ export function apply(ctx: Context, config: Config = {}): void {
   if (self !== undefined && vitals !== undefined) self.useVitals(momentPort(vitals))
   const maintenanceLogFile = config.maintenanceLogFile ?? defaultMaintenanceLogFile(config.home)
   const sweepAt = clockOf(config.dailySweepAt, BUNDLE_DEFAULTS.dailySweepAt, ctx)
-  // 每分钟看一眼：到点那一次做整理与例行开口，同一天只做一次
+  // 每分钟看一眼：平时按间隔给她机会，到点的那个整点再做整理，两件事各管各的
   let lastSweepDay = ''
+  let lastNudgeAt = 0
   const idle = setInterval(() => {
     const now = new Date()
+    const at = Date.now()
+    const active = subject?.store.read().lastActive ?? ''
+    // 没人说话的那几个钟头里也得有人问她一句：开不开口由主动那一路的间隔与额度定
+    if (at - lastNudgeAt >= nudgeMs && active !== '') {
+      lastNudgeAt = at
+      considerProactive(active, at, false, false)
+    }
     if (now.getHours() !== sweepAt.hour || now.getMinutes() !== sweepAt.minute) return
     const day = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`
     if (day === lastSweepDay) return
@@ -538,7 +548,6 @@ export function apply(ctx: Context, config: Config = {}): void {
       ctx.logger('qq-bundle').warn('每天整理没做完：%s', String(error))
     }
     // 每天这一次也是例行时刻：想发动态的劲攒够了就在这里交给她
-    const active = subject?.store.read().lastActive ?? ''
     if (active !== '') considerProactive(active, Date.now(), false, false)
   }, 60_000)
   idle.unref()
