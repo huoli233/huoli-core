@@ -13,7 +13,7 @@ import { pnpmCommand } from './release/process.ts'
 type CompilationMode = 'checked' | 'benchmark-emit'
 
 /** Identifier of one package-library build step. */
-export type LibraryStepId = 'host-src' | 'host-bundle' | 'host-typert' | 'desktop-bundle' | 'client-src' | 'client-bundle'
+export type LibraryStepId = 'host-src' | 'host-bundle' | 'host-typert' | 'client-src' | 'client-bundle'
 
 /** One package-library build step as a shell-free child-process invocation. */
 export interface LibraryStep {
@@ -164,15 +164,13 @@ function pnpmStep(id: LibraryStepId, label: string, args: readonly string[], nee
 }
 
 /**
- * List the package-library build steps in Host, Desktop, then Client dependency order.
- * Source-only Typert generation supplies declarations before any package compilation.
- * Client compilation waits for Host and Desktop bundling because split compiler faces
- * rewrite shared lib/types files consumed by those bundles.
- * @param root - Repository root containing the compiler and bundle configurations.
- * @param faces - `host` lists Typert generation, Host compilation, and bundling; `all` adds Desktop and Client.
- * @param mode - Check package types by default; benchmark emission defers diagnostics to required full builds.
- * @returns Steps with explicit compiler and bundle dependencies.
- * @throws If an aggregate configuration is invalid.
+ * 列出编译要跑的步骤，先宿主后客户端。
+ * 客户端要等宿主打完包，因为两边会改同一批类型文件。
+ * @param root 仓库根目录。
+ * @param faces host 只跑宿主，all 再加上客户端。
+ * @param mode 平时查类型，跑基准时先不查，留给正式编译。
+ * @returns 每一步，以及它要等哪一步。
+ * @throws 配置不对时报错。
  */
 export function libraryBuildSteps(root: string, faces: 'host' | 'all', mode: CompilationMode = 'checked'): LibraryStep[] {
   const host: LibraryStep[] = [
@@ -183,8 +181,7 @@ export function libraryBuildSteps(root: string, faces: 'host' | 'all', mode: Com
   if (faces === 'host') return host
   return [
     ...host,
-    pnpmStep('desktop-bundle', 'Desktop bundle', ['--filter', '@huoli/huoli-desktop', 'run', 'bundle'], ['host-bundle']),
-    compilerStep(root, 'client', mode, ['desktop-bundle']),
+    compilerStep(root, 'client', mode, ['host-bundle']),
     pnpmStep('client-bundle', 'Client bundle', ['exec', 'tsdown', '--config-loader', 'native', '--env.HUOLI_BUILD_FACE', 'client'], ['client-src']),
   ]
 }

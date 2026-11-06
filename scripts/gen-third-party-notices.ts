@@ -26,12 +26,8 @@ const RUNTIME_KINDS = ['dependencies', 'optionalDependencies'] as const
 const ALL_KINDS = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'] as const
 
 /**
- * Workspace areas that never reach a user: repository tooling and gates (the
- * root manifest), test infrastructure, and the native
- * launcher's build workspace. A runtime
- * declaration by anything outside these areas is a disclosure-relevant
- * runtime dependency because any plugin package can be mounted from a user's
- * `cordis.yml`.
+ * 这些地方的东西不会跟着发到用户手上：根清单、测试用的小工具、本地启动器的编译目录。
+ * 它们以外写下的依赖都算要公开的，因为用户能自己装任何插件来跑。
  */
 const DEV_ONLY_AREAS = [
   'package.json',

@@ -10,19 +10,13 @@ function isBuildFaceClient(value: unknown): boolean {
 }
 
 /**
- * The ordinary workspace build consumes JavaScript emitted by the Host
- * TypeScript project after source-only Typert generation. The Client pass selects packages that
- * declare a browser bundle and lets their package-local configs emit both
- * their Node loader entry and browser artifact. `apps/desktop` bundles after
- * this pass (root package.json `build:lib:host`): its main bundle inlines
- * workspace devDependencies from their lib/ output, and tsdown builds
- * workspace members concurrently without ordering them.
+ * 平时那趟打包用宿主类型编译出来的 js；客户端那趟只挑声明了浏览器产物的包，各自出加载入口和浏览器文件。
  */
 export default defineConfig(({ env }) => {
   const client = isBuildFaceClient(env?.HUOLI_BUILD_FACE)
   const packages = workspacePackageGlobs(globSync(['vendor/*/package.json', 'packages/*/*/package.json'], { cwd: import.meta.dirname }))
   return {
-    workspace: [...packages, 'apps/cli', ...client ? [] : ['apps/desktop-host']],
+    workspace: [...packages, 'apps/cli'],
     entry: client ? '' : ['lib/types/{index,startup}.js'],
     outDir: 'lib',
     format: ['esm'],

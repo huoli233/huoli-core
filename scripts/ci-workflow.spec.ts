@@ -148,7 +148,7 @@ describe('CI workflow', () => {
     const hostSteps = scripts.scripts['build:lib:host']!.split(' && ')
     expect(hostSteps[0]).toBe('tsx scripts/compile-referenced-projects.ts host-libraries')
     expect(hostSteps).toContain('node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc -p tsconfig.host.json')
-    expect(hostSteps.at(-1)).toBe('pnpm --filter @huoli/huoli-desktop run bundle')
+    expect(hostSteps.at(-1)).toBe('node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc -p tsconfig.host.json')
     expect(scripts.scripts['build:lib:client']).toContain('tsc -b tsconfig.client.json')
     expect(scripts.scripts.typecheck).toBe('tsx scripts/build.ts --scope typecheck')
   })
@@ -235,7 +235,7 @@ describe('CI workflow', () => {
       const publish = workflowJob(loadWorkflow('.github/workflows/' + name), 'publish')
       expect(publish.concurrency).toMatchObject({ 'cancel-in-progress': false })
     }
-    for (const name of ['python-release.yml', 'node-addon-system-release.yml', 'docs-pages.yml']) {
+    for (const name of ['python-release.yml', 'node-addon-system-release.yml']) {
       expect(loadWorkflow('.github/workflows/' + name).concurrency).toMatchObject({ 'cancel-in-progress': false })
     }
   })
@@ -1655,46 +1655,6 @@ describe('npm release workflows', () => {
     expect(commands).not.toContain('pnpm run verify-package-dependencies')
     expect(commands).not.toContain('pnpm run verify-npm-install-layout')
     expect(String(dependencies['runs-on'])).toContain('blacksmith-4vcpu-ubuntu-2404')
-  })
-})
-
-describe('Documentation site publication', () => {
-  it('keeps Pages deployment dispatch-only from a huoli-v* tag', () => {
-    const workflow = loadWorkflow('.github/workflows/docs-pages.yml')
-    const build = workflowJob(workflow, 'build')
-    const deploy = workflowJob(workflow, 'deploy')
-    if (!isRecord(workflow.on) || !isRecord(workflow.env) || !Array.isArray(build.steps)) {
-      throw new TypeError('Documentation deployment must define on, env, and build steps')
-    }
-
-    // The site presents a released snapshot: a merge must never publish it, and
-    // publication must never appear as a PR check.
-    expect(Object.keys(workflow.on)).toEqual(['workflow_dispatch'])
-
-    // RELEASE_PUBLISH makes release:verify reject every ref that is not a huoli-v*
-    // tag naming this tree's version, so the site and the npm sequence share one
-    // definition of a released version.
-    const steps = build.steps.filter(isRecord)
-    const verify = steps.find(step => step.name === 'Verify release version')
-    const checkout = steps.find(
-      step => typeof step.uses === 'string' && step.uses.startsWith('actions/checkout@'),
-    )
-    expect(verify).toMatchObject({
-      env: { RELEASE_PUBLISH: 'true' },
-      run: 'pnpm run release:verify --family huoli',
-    })
-    // Complete history: the release scripts read tags.
-    expect(checkout).toMatchObject({ with: { 'fetch-depth': 0 } })
-
-    // Projected source links stay on the public repository's master. That
-    // repository advances only to each release commit, so its master never
-    // carries unreleased work, while it retains only the most recent tags:
-    // following the dispatched tag would leave every source link on a deploy
-    // from an older tag unresolvable.
-    expect(workflow.env.DOCS_REPOSITORY_REF).toBe('master')
-
-    // The environment owns the deployment tag policy and the required reviewers.
-    expect(deploy.environment).toMatchObject({ name: 'github-pages' })
   })
 })
 

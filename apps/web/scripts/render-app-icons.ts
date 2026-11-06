@@ -7,10 +7,9 @@
  * which reads `apple-touch-icon` instead. The whale favicon is the bare mark
  * drawn edge to edge: handed to a launcher directly it loses its fins to the
  * mask, and it carries neither the tile nor a background of its own. This
- * script rasterizes the official application tile (`apps/desktop/resources/icon.svg`,
- * the artwork the desktop application ships) into the committed PNGs under
+ * script rasterizes the official application tile into the committed PNGs under
  * `public/`. Every variant crops the tile's drop shadow, which belongs to a
- * desktop window rather than a launcher; the maskable variant additionally
+ * window frame rather than a launcher; the maskable variant additionally
  * scales the whale inside the safe zone a platform mask may crop, leaving the
  * tile's own gradient to fill the icon so no mask meets a seam.
  *

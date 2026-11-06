@@ -402,8 +402,8 @@ describe('gate graph validation', () => {
   it('schedules the longest documentation leaves before short checks', () => {
     const ids = withPnpmEntrypoint(() => gatesForMode('doc-sync').map(subject => subject.id))
 
-    expect(ids.slice(0, 11)).toEqual([
-      'doc-typecheck', 'docs-site-build', 'doc-graphs', 'cli-help', 'markdown-links', 'type-equivalence',
+    expect(ids.slice(0, 10)).toEqual([
+      'doc-typecheck', 'doc-graphs', 'cli-help', 'markdown-links', 'type-equivalence',
       'cordis-catalog', 'cordis-inspect-catalog', 'workflow-guest', 'mermaid', 'translation-pairing',
     ])
   })
@@ -505,7 +505,6 @@ describe('gate graph validation', () => {
   it('keeps native Windows coverage blocking and behind the complete build', () => {
     const complete = withPnpmEntrypoint(() => gatesForMode('ci-windows-complete'))
     const observational = withPnpmEntrypoint(() => gatesForMode('ci-windows-observational-ready'))
-      .filter(gate => gate.id !== 'docs-site-build' && gate.id !== 'electron-install')
     const byId = new Map(complete.map(subject => [subject.id, subject]))
 
     expect(byId.get('coverage')?.allowFailure).not.toBe(true)
@@ -538,8 +537,7 @@ describe('gate graph validation', () => {
 
     const completeBuiltBin = withPnpmEntrypoint(() => gatesForMode('ci-windows-complete'))
       .find(gate => gate.id === 'built-bin-smoke')
-    expect(completeBuiltBin?.after).toContain('windows-site')
-    expect(completeBuiltBin?.after).not.toContain('docs-site-build')
+    expect(completeBuiltBin?.after).toEqual(expect.arrayContaining(['coverage', 'coverage-exempt-heavy']))
   })
 
   it('reuses the Windows build without dropping diagnostics or rebuilding the workspace', () => {
@@ -551,11 +549,10 @@ describe('gate graph validation', () => {
 
     expect(scripts['check:ci:windows-observational-ready']).toBe('tsx scripts/run-gates.ts ci-windows-observational-ready')
     expect(scripts).not.toHaveProperty('check:ci:windows-observational')
-    const completeOnly = new Set(['build', 'windows-site', 'native-system', 'coverage', 'coverage-exempt-heavy'])
+    const completeOnly = new Set(['build', 'native-system', 'coverage', 'coverage-exempt-heavy'])
     const shared = complete.filter(gate => !completeOnly.has(gate.id))
-    expect(ready.map(gate => gate.id).sort()).toEqual([...shared.map(gate => gate.id), 'docs-site-build'].sort())
+    expect(ready.map(gate => gate.id).sort()).toEqual(shared.map(gate => gate.id).sort())
     expect(ready.some(gate => gate.id === 'build')).toBe(false)
-    expect(ready.find(gate => gate.id === 'docs-site-build')?.displayCommand).toBe('pnpm run docs:build:mpa')
     for (const diagnostic of shared) {
       expect(ready.find(gate => gate.id === diagnostic.id)).toMatchObject({
         command: diagnostic.command,
@@ -584,72 +581,16 @@ describe('gate graph validation', () => {
     expect(results.some(result => result.status === 'skipped')).toBe(false)
   })
 
-  it.each([undefined, '3'])('provisions Electron before Windows coverage with partition count %s', async (partitions) => {
-    const gates = withEnv('HUOLI_COVERAGE_PARTITIONS', partitions, () =>
-      withPnpmEntrypoint(() => gatesForMode('ci-windows-complete')))
-    const installers = gates.filter(gate => gate.id === 'electron-install')
-    expect(installers).toHaveLength(1)
-    expect(installers[0]?.allowFailure).not.toBe(true)
-    expect(installers[0]?.needs ?? []).not.toContain('build')
-    expect(gates.find(gate => gate.id === 'coverage')?.needs).toContain('electron-install')
-    let installed = false
-    await runGates(gates, 8, async (subject) => {
-      if (subject.id === 'electron-install') installed = true
-      if (subject.id === 'coverage') expect(installed).toBe(true)
-      return resultFor(subject, 'passed')
-    })
-  })
-
   it.each(['ci-windows-complete', 'ci-windows-observational-ready'] as const)(
-    'provisions the locked Electron binary before built smoke in %s', (mode) => {
-      const gates = withPnpmEntrypoint(() => gatesForMode(mode))
-      const install = gates.find(gate => gate.id === 'electron-install')
-      expect(install).toMatchObject({
-        command: process.execPath,
-        args: ['/private/pnpm.cjs', '--filter', '@huoli/huoli-desktop', 'exec', 'install-electron'],
-        env: { ELECTRON_GET_USE_PROXY: '1' },
-      })
-      expect(gates.find(gate => gate.id === 'built-bin-smoke')?.needs).toContain('electron-install')
-      expect(gates.filter(gate => gate.id !== 'electron-install').every(gate => gate.env?.ELECTRON_GET_USE_PROXY === undefined)).toBe(true)
-    },
-  )
-
-  it.each(['ci-windows-complete', 'ci-windows-observational-ready'] as const)(
-    'keeps failed Electron provisioning visible without stopping unrelated diagnostics in %s', async (mode) => {
+    'keeps failed observational gates visible without stopping unrelated diagnostics in %s', async (mode) => {
       const gates = withPnpmEntrypoint(() => gatesForMode(mode))
       const attempted: string[] = []
       const results = await runGates(gates, 8, async (subject) => {
         attempted.push(subject.id)
-        return resultFor(subject, subject.id === 'electron-install' ? 'failed' : 'passed')
+        return resultFor(subject, subject.id === 'doc-graphs' ? 'failed' : 'passed')
       })
-      expect(results.filter(result => result.status === 'failed').map(result => result.gate.id)).toEqual(['electron-install'])
-      expect(attempted).not.toContain('built-bin-smoke')
-      expect(results.find(result => result.gate.id === 'built-bin-smoke')?.status).toBe('skipped')
-      expect(results.find(result => result.gate.id === 'doc-graphs')?.status).toBe('passed')
-      if (mode === 'ci-windows-complete') {
-        expect(results.filter(result => result.status === 'failed' && !result.gate.allowFailure).map(result => result.gate.id))
-          .toEqual(['electron-install'])
-        expect(attempted).not.toContain('coverage')
-        expect(results.find(result => result.gate.id === 'coverage')?.status).toBe('skipped')
-        expect(results.find(result => result.gate.id === 'coverage-exempt-heavy')?.status).toBe('passed')
-      }
-    },
-  )
-
-  it.each(['ci-coverage', 'ci-artifacts', 'ci-windows-blocking'] as const)(
-    'only provisions Electron for native Windows coverage in %s', (mode) => {
-      const original = Object.getOwnPropertyDescriptor(process, 'platform')
-      for (const platform of ['linux', 'darwin', 'win32'] as const) {
-        const gates = withPlatform(platform, () => withPnpmEntrypoint(() => gatesForMode(mode)))
-        const needed = platform === 'win32' && mode === 'ci-coverage'
-        expect(gates.filter(gate => gate.id === 'electron-install')).toHaveLength(needed ? 1 : 0)
-        if (needed) {
-          expect(gates.find(gate => gate.id === 'coverage')?.needs).toContain('electron-install')
-          expect(gates.find(gate => gate.id === 'electron-install')?.env).toEqual({ ELECTRON_GET_USE_PROXY: '1' })
-          expect(gates.filter(gate => gate.id !== 'electron-install').every(gate => gate.env?.ELECTRON_GET_USE_PROXY === undefined)).toBe(true)
-        }
-      }
-      expect(Object.getOwnPropertyDescriptor(process, 'platform')).toEqual(original)
+      expect(results.filter(result => result.status === 'failed').map(result => result.gate.id)).toEqual(['doc-graphs'])
+      expect(results.find(result => result.gate.id === 'built-bin-smoke')?.status).toBe('passed')
     },
   )
 
@@ -994,7 +935,6 @@ describe('Node 24 lane ownership', () => {
     expect(subject.find(item => item.id === 'built-bin-smoke')?.args).toEqual(
       expect.arrayContaining([
         'apps/cli/tests/profiles/headless/tests/source-tool.built.e2e.ts',
-        'apps/desktop/tests/acl-skill.built.e2e.ts',
         'packages/subprocess/subprocess-local/tests/spawn-runner-built.e2e.ts',
         'packages/subagent/subagent-codex/tests/loader-composition.e2e.ts',
         'packages/subagent/subagent-claude-code/tests/loader-composition.e2e.ts',

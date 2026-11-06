@@ -100,8 +100,8 @@ pnpm run doc-sync       # documentation gates (scripts/run-gates.ts)
 pnpm run test:docs      # quick documentation checks (no build; doc-quick aggregate)
 pnpm huoli --profile headless "task"  # run one task from source (needs DEEPSEEK_API_KEY)
 pnpm run demo:ptc -- "task"  # headless PTC mode run (needs key)
-pnpm run dev:web | dev:desktop  # build:artifacts, then launch; Web also rebuilds client bundles on edits. start:web | start:desktop skip the build
-make web|dev-web|desktop|dev-desktop|build  # the same commands; ARGS='--no-open' forwards options
+pnpm run dev:web  # build:artifacts, then launch; rebuilds client bundles on edits. start:web skips the build
+make web|dev-web|build  # the same commands; ARGS='--no-open' forwards options
 ```
 
 ### Host sandbox failures
@@ -119,8 +119,6 @@ Before pushing, follow [huoli-pre-push-checks](.agents/skills/huoli-pre-push-che
 - **Web browser automation and GIF recording:** launch with `pnpm huoli web --patch apps/web/tests/pin-browse-picker.overlay.yml` to use the [in-page directory picker](apps/web/tests/pin-browse-picker.overlay.yml); omit this override only when testing native picker behavior explicitly.
 
 ## Secrets / .env
-
-Windows packaging/signing: [required reading](apps/desktop/windows-signing/README.md).
 
 Real-API tests/demos read `DEEPSEEK_API_KEY`, optional `DEEPSEEK_BASE_URL`, and root `.env`. cordis.yml allows `!!js` (never `!js`) under plugin `config` and entry `disabled`; other metadata stays literal, so conditional composition also uses overlays ([primer](docs/cordis-primer.md#loader-configuration)). Never commit credentials. CI e2e skips without a key; [testing.md](docs/testing.md) owns key policy.
 

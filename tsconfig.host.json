@@ -238,9 +238,6 @@
     "apps/web/stress-tests/reasoning-chunks.stress.ts",
     "apps/cli/tests/**/*.ts",
     "apps/plugin-market-generator/tests/**/*.ts",
-    "apps/desktop/scripts/**/*.ts",
-    "apps/desktop/tests/**/*.ts",
-    "apps/desktop-host/tests/**/*.ts",
     "benchmarks/**/*.ts",
     "packages/*/*/tests/**/*.ts",
     "packages/experimental/cua-macos/native/generate-protocol.ts",
@@ -258,7 +255,6 @@
   // suffixes are mutually exclusive, so each aggregate excludes the other's
   // and the package test glob above needs no per-file entry.
   "exclude": [
-    "apps/desktop/tests/keyboard.spec.ts",
     "packages/client/*/src/**",
     "benchmarks/**/*.client.ts",
     "benchmarks/**/*.client.tsx",
@@ -294,6 +290,7 @@
     { "path": "./packages/experimental/voice-input-bundle" },
     { "path": "./packages/experimental/plugin-market-bundle" },
     { "path": "./packages/client/locale/tsconfig.host.json" },
+    { "path": "./packages/client/shortcuts/tsconfig.host.json" },
     { "path": "./packages/client/ui-theme/tsconfig.host.json" },
     { "path": "./packages/client/ui-chat/tsconfig.host.json" },
     { "path": "./packages/client/ui-conversation/tsconfig.host.json" },
@@ -603,8 +600,6 @@
     { "path": "./packages/lsp/lsp-stdio" },
     { "path": "./packages/lsp/tool-lsp" },
     { "path": "./apps/cli" },
-    { "path": "./apps/plugin-market-generator" },
-    { "path": "./apps/desktop-host" },
-    { "path": "./apps/desktop/tsconfig.host.json" }
+    { "path": "./apps/plugin-market-generator" }
   ]
 }

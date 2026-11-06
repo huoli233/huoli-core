@@ -10,7 +10,7 @@ Desktop usually runs a local huoli server, so remote business errors cannot reli
 
 ## Proposal
 
-This proposal records outstanding release and backend work; the [Desktop README](../../../../apps/desktop/README.md) owns current client behavior.
+This proposal records outstanding release and backend work; the Desktop README owns current client behavior.
 
 | Document | Owns |
 |---|---|
