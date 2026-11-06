@@ -7,7 +7,7 @@ import SystemPrompt from '@huoli/huoli-system-prompt'
 import { apply as applyAttention } from '@huoli/huoli-qq-attention'
 import { apply as applyChannel, qqChannelOf } from '@huoli/huoli-qq-channel'
 import { apply as applyMaterial, qqMaterialOf } from '@huoli/huoli-qq-material'
-import { apply as applyProactive, PROACTIVE_DEFAULTS, qqProactiveOf, type PendingItem, type QqProactiveSeam } from '@huoli/huoli-qq-proactive'
+import { apply as applyProactive, qqProactiveOf, type PendingItem, type QqProactiveSeam } from '@huoli/huoli-qq-proactive'
 import { apply as applySubject, qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { apply as applyVitals, createVitalsStore, DEFAULTS, emptyState, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -283,23 +283,18 @@ describe('睡着的时候', () => {
     expect(proactive.pending.all()).toHaveLength(before)
   })
 
-  it('刚被吵醒时延后再来，记录里写 proactive:waking', async () => {
+  it('刚被吵醒只是现场事实，不被代码延后，候选照常摆出来', async () => {
     const { ctx, proactive } = await mount({ enabled: true, body: wakingBody() })
     const material = qqMaterialOf(ctx)
     if (material === undefined) throw new Error('素材仓没装上')
     material.thoughts.add('想说说楼下新开的店', 'group:1')
-    const before = Date.now()
 
     await endTurn(ctx)
-    const after = Date.now()
 
     const last = proactiveRecords(ctx).at(-1)
-    const delay = PROACTIVE_DEFAULTS.wakingDelayMs
-    expect(last?.reason).toBe('proactive:waking')
-    expect(last?.blocked?.code).toBe('proactive.waking')
-    expect(last?.blocked?.retryAt).toBeGreaterThanOrEqual(before + delay)
-    expect(last?.blocked?.retryAt).toBeLessThanOrEqual(after + delay)
-    expect(proactive.preview('group:1')).toHaveLength(0)
+    expect(last?.reason).not.toBe('proactive:waking')
+    expect(last?.blocked?.code).not.toBe('proactive.waking')
+    expect(proactive.preview('group:1').length).toBeGreaterThan(0)
   })
 
   it('醒着时照旧攒候选', async () => {

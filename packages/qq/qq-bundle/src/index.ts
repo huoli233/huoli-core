@@ -10,7 +10,7 @@ import { createUserMessage } from '@huoli/huoli-llm'
 import type { SessionId } from '@huoli/huoli-session'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { qqAttentionOf } from '@huoli/huoli-qq-attention'
-import { ambientOf, speakVetoOf, stopNowOf } from './speak-gate.ts'
+import { stopNowOf } from './speak-gate.ts'
 import { qqContinuityOf } from '@huoli/huoli-qq-continuity'
 import { qqMaterialOf } from '@huoli/huoli-qq-material'
 import { buildInjectBlock, injectIntoUserText, localDay, qqMemoryOf, shouldInject } from '@huoli/huoli-qq-memory'
@@ -458,21 +458,12 @@ export function apply(ctx: Context, config: Config = {}): void {
       message.senderId !== '' && at - message.at >= 0 && at - message.at < humanActiveWindowMs)
   }
 
-  const ambientOfChat = (chatKey: string, at: number) =>
-    ambientOf(attention === undefined ? [] : attention.inbox.recent(chatKey, 60), at)
-
   const considerProactive = (chatKey: string, at: number, busy: boolean, throttled: boolean): void => {
     if (proactive === undefined || !proactive.enabled) return
     const last = lastConsidered.get(chatKey) ?? 0
     if (throttled && at - last < throttleMs) return
     lastConsidered.set(chatKey, at)
     const body = vitals?.read()
-    const veto = speakVetoOf({
-      isPrivate: chatKey.startsWith('private:'),
-      ambient: ambientOfChat(chatKey, at),
-      fatigueLevel: body === undefined ? 0 : Math.max(1 - body.energy, body.adenosine),
-      sinceSelfSpokeMs: lastSpokeAt.get(chatKey) === undefined ? null : at - (lastSpokeAt.get(chatKey) as number),
-    })
     const postWant = body === undefined ? undefined : postWantCandidateOf(chatKey, at, body)
     const decision = proactive.consider({
       chatKey,
@@ -482,15 +473,10 @@ export function apply(ctx: Context, config: Config = {}): void {
       humanActive: humanActiveOf(chatKey, at),
       botBusy: busy,
       hasChannel: channel !== undefined,
-      ...body !== undefined ? { proactiveBias: body.proactive_bias, ...sleepFactsOf(body) } : {},
+      ...body !== undefined ? { ...sleepFactsOf(body) } : {},
     })
-    // 本来攒不成就保留原理由，只有本来要开口时才轮到上面那道关卡
-    if (decision.verdict.ok && veto !== undefined) {
-      noteConsidered(chatKey, at, { verdict: { ok: false, code: `attention.${veto}` } })
-      return
-    }
-    // 攒成了才记一笔「今天攒过」：被关卡拦下时不算，同一天还有机会
-    if (postWant !== undefined && decision.verdict.ok && veto === undefined) {
+    // 攒成了才记一笔「今天攒过」，被关卡拦下时不算，同一天还有机会
+    if (postWant !== undefined && decision.verdict.ok) {
       const day = localDay(at)
       postCandidateDays.set(chatKey, { day, count: postGathered(chatKey, day) + 1 })
     }
@@ -562,7 +548,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 刚改过口就记一笔，让自我层的复盘看得到，别只当没发生过
   if (self !== undefined) channel?.useCorrectionNote((wrong, better, at) => { self.recordError(wrong, better, at) })
   channel?.useReplyCap(() => budgetOf(vitals))
-  channel?.useStop(stopNowOf(budgetOf(vitals), vitals?.read()))
+  channel?.useStop(stopNowOf(budgetOf(vitals)))
 
   // 记忆这一路：每轮带原话的那一步找一次，命中就接在用户原话之后，系统提示词一个字不动
   if (config.memoryInject ?? BUNDLE_DEFAULTS.memoryInject) {

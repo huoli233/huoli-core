@@ -36,34 +36,23 @@ function toMinutes(hhmm: string): number {
   return hour * MINUTES_PER_HOUR + minute
 }
 
-// 身体给的读数折回间隔倍率：零对下限、一对上限，没接上按中性的一倍算
-function multiplierOf(bias: number | undefined, config: GateConfig): number {
-  if (bias === undefined || !Number.isFinite(bias)) return 1
-  const unit = Math.min(1, Math.max(0, bias))
-  return config.biasMin + unit * (config.biasMax - config.biasMin)
-}
-
 /**
- * 两次开口之间隔多久：区间中点乘倍率，同样的输入永远得到同样的数
+ * 两次开口之间隔多久：取配置里那段区间的中点，同样的配置永远得到同样的数
  * @param config - 关卡配置
- * @param bias - 身体给的那条读数，零到一，累与气往久那头走，想人往近那头落，不给按一倍算
  * @returns 毫秒数
  */
-export function cooldownMs(config: GateConfig, bias?: number): number {
+export function cooldownMs(config: GateConfig): number {
   const span = Math.max(0, config.gapMaxMs - config.gapMinMs)
-  const base = config.gapMinMs + Math.floor(span / 2)
-  return Math.round(base * multiplierOf(bias, config))
+  return config.gapMinMs + Math.floor(span / 2)
 }
 
 /**
- * 这一天最多开口几次：倍率越大开口越少，最少留下限那么多次，最多不超过上限
+ * 这一天最多开口几次：只按配置里的上限，不由身体读数改
  * @param config - 关卡配置
- * @param bias - 身体给的那条读数，零到一，不给按一倍算
  * @returns 次数
  */
-export function dailyCapOf(config: GateConfig, bias?: number): number {
-  const scaled = Math.floor(config.dailyMax / multiplierOf(bias, config))
-  return Math.min(config.dailyMax, Math.max(config.dailyFloor, scaled))
+export function dailyCapOf(config: GateConfig): number {
+  return Math.min(config.dailyMax, Math.max(config.dailyFloor, config.dailyMax))
 }
 
 /**
@@ -102,10 +91,6 @@ export function runGates(input: GateInput): GateVerdict {
       ...wakeAfter > 0 ? { retryAt: wakeAfter } : {},
     }
   }
-  // 刚被吵醒还有一段缓不过来，按配置延后再看
-  if (input.waking === true) {
-    return { ok: false, code: 'proactive.waking', reason: '她刚被吵醒，还没缓过来', hint: '等这一段缓过去再看', retryAt: input.now + config.wakingDelayMs }
-  }
   if (!input.hasChannel) return { ok: false, code: 'proactive.no_channel', reason: '没有能发出去的通道', hint: '先把通道那一行装上' }
   if (input.botBusy) {
     return { ok: false, code: 'proactive.busy', reason: '正在说话', hint: '等这一轮说完再问', retryAt: input.now + config.busyRetryMs }
@@ -115,17 +100,13 @@ export function runGates(input: GateInput): GateVerdict {
     return { ok: false, code: 'proactive.quiet', reason: '现在是安静时段', hint: '等安静时段过去', retryAt: endOfQuiet(input.now, config.quietEnd) }
   }
 
-  if (input.todayCount >= dailyCapOf(config, input.proactiveBias)) {
+  if (input.todayCount >= dailyCapOf(config)) {
     return { ok: false, code: 'proactive.day_full', reason: '今天主动开口够了', hint: '明天再说', retryAt: startOfNextDay(input.now) }
   }
 
-  const gap = cooldownMs(config, input.proactiveBias)
+  const gap = cooldownMs(config)
   if (input.lastSpokenAt > 0 && input.now - input.lastSpokenAt < gap) {
     return { ok: false, code: 'proactive.too_soon', reason: '上次开口还不久', hint: '等冷却过去', retryAt: input.lastSpokenAt + gap }
-  }
-
-  if (input.humanActive) {
-    return { ok: false, code: 'proactive.people_talking', reason: '有人在聊，先听', hint: '等他们聊完再看', retryAt: input.now + config.talkingRetryMs }
   }
 
   return { ok: true }

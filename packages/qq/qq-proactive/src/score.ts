@@ -61,22 +61,23 @@ export interface GateConfig {
   enabled: boolean
   quietStart: string
   quietEnd: string
+  /** 一天最多开口几次，写死的上限，不由身体读数改 */
   dailyMax: number
-  /** 一天至少留几次开口，劲头再低也不低于这个数 */
+  /** 旧配置，判定不再读它 */
   dailyFloor: number
   /** 冷却区间下限 */
   gapMinMs: number
   /** 冷却区间上限，下一次可开口时刻取区间中点 */
   gapMaxMs: number
-  /** 读数折回倍率时的下限，累了生气了倍率往这头涨 */
+  /** 旧配置，判定不再读它 */
   biasMin: number
-  /** 读数折回倍率时的上限，想人想得厉害倍率往这头落 */
+  /** 旧配置，判定不再读它 */
   biasMax: number
-  /** 刚被吵醒之后还要安静多久，毫秒，迷糊没过去之前不开口 */
+  /** 旧配置，判定不再读它 */
   wakingDelayMs: number
   /** 正忙时多久再看 */
   busyRetryMs: number
-  /** 有人在聊时多久再看 */
+  /** 旧配置，判定不再读它 */
   talkingRetryMs: number
   pendingTtlMs: number
 }

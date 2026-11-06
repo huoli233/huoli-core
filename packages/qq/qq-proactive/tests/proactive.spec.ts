@@ -134,13 +134,12 @@ describe('攒理由', () => {
     expect(first.considered.map(candidate => candidate.at)).toEqual([BASE - 60_000, BASE])
   })
 
-  it('有人在聊就先听着', () => {
+  it('有人在聊也只是现场事实，不替她拒掉这一轮', () => {
     const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET })
 
     const busyRoom = consider(seam, 'group:2', { humanActive: true })
 
-    expect(busyRoom.pending).toHaveLength(0)
-    expect(busyRoom.verdict.code).toBe('proactive.people_talking')
+    expect(busyRoom.verdict.code).not.toBe('proactive.people_talking')
   })
 
   it('没有能发出去的通道就不攒', () => {
@@ -495,11 +494,11 @@ describe('先预览再投递', () => {
   })
 })
 
-describe('劲头接进冷却与额度', () => {
+describe('间隔与额度只按配置', () => {
   const NOW = BASE
   const OPEN = { enabled: true, quietStart: '00:00', quietEnd: '00:00' }
 
-  const verdictAt = (bias: number | undefined, overrides: { todayCount?: number; lastSpokenAt?: number } = {}) =>
+  const verdictAt = (overrides: { todayCount?: number; lastSpokenAt?: number } = {}) =>
     runGates({
       now: NOW,
       config: OPEN,
@@ -508,64 +507,31 @@ describe('劲头接进冷却与额度', () => {
       humanActive: false,
       botBusy: false,
       hasChannel: true,
-      ...bias !== undefined ? { proactiveBias: bias } : {},
     })
 
-  it('读数越高（越累越气），下一次能开口的时刻越晚', () => {
-    const low = verdictAt(0.3)
-    const high = verdictAt(1)
+  it('下一次能开口的时刻只由配置那段区间定，同一个配置永远同一个数', () => {
+    const gap = cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN })
 
-    expect(low.code).toBe('proactive.too_soon')
-    expect(high.code).toBe('proactive.too_soon')
-    expect(high.retryAt).toBeGreaterThan(low.retryAt ?? 0)
-    expect(high.retryAt).toBe(NOW - 60_000 + cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 1))
+    expect(verdictAt().retryAt).toBe(NOW - 60_000 + gap)
+    expect(cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN })).toBe(gap)
   })
 
-  it('读数越高，每天的额度越小', () => {
-    const config = { ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 10 }
-
-    expect(dailyCapOf(config, 1)).toBeLessThan(dailyCapOf(config, 0.3))
-    expect(dailyCapOf(config, 0.3)).toBe(10)
-    expect(dailyCapOf(config, 1)).toBe(4)
+  it('一天最多几次就是配置写的那个数', () => {
+    expect(dailyCapOf({ ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 10 })).toBe(10)
   })
 
-  it('同一个输入算两次得到同一个下次时刻', () => {
-    const first = verdictAt(0.42)
-    const second = verdictAt(0.42)
-
-    expect(first.retryAt).toBe(second.retryAt)
-  })
-
-  it('读数贴零就贴近最短那一头，间隔不会被拉到没边', () => {
-    const config = { ...PROACTIVE_DEFAULTS, ...OPEN }
-    const bottom = cooldownMs(config, 0)
-
-    expect((cooldownMs(config, 0.01) - bottom) / bottom).toBeLessThan(0.2)
-    expect(bottom).toBeLessThan(cooldownMs(config, 0.3))
-  })
-
-  it('没接上身体就按中性倍率算，间隔取区间中点', () => {
-    expect(verdictAt(undefined).retryAt).toBe(NOW - 60_000 + cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }))
-  })
-
-  it('额度按倍率缩，高读数先撞上今天满了', () => {
-    const full = verdictAt(1, { todayCount: 2, lastSpokenAt: 0 })
-    const room = verdictAt(0, { todayCount: 2, lastSpokenAt: 0 })
+  it('今天够了就拒，跟身体读数无关', () => {
+    const full = runGates({
+      now: NOW,
+      config: { ...OPEN, dailyMax: 2 },
+      lastSpokenAt: 0,
+      todayCount: 2,
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+    })
 
     expect(full.code).toBe('proactive.day_full')
-    expect(room.code).not.toBe('proactive.day_full')
-  })
-
-  it('额度有下限，至少还能有一天一次的余地', () => {
-    const config = { ...PROACTIVE_DEFAULTS, ...OPEN, dailyMax: 4 }
-
-    expect(dailyCapOf(config, 1)).toBe(PROACTIVE_DEFAULTS.dailyFloor)
-  })
-
-  it('倍率上下限可配，改完间隔跟着变', () => {
-    const narrow = { ...PROACTIVE_DEFAULTS, ...OPEN, biasMax: 1.2 }
-
-    expect(cooldownMs(narrow, 1)).toBeLessThan(cooldownMs({ ...PROACTIVE_DEFAULTS, ...OPEN }, 1))
   })
 })
 
@@ -625,7 +591,7 @@ describe('睡着与刚被吵醒', () => {
     expect(decision.verdict.retryAt).toBeUndefined()
   })
 
-  it('刚被吵醒按默认值延后', () => {
+  it('刚被吵醒也只是一份现场事实，不替她延后', () => {
     const verdict = runGates({
       now: BASE,
       config: OPEN,
@@ -637,30 +603,7 @@ describe('睡着与刚被吵醒', () => {
       waking: true,
     })
 
-    expect(verdict.ok).toBe(false)
-    expect(verdict.code).toBe('proactive.waking')
-    expect(verdict.retryAt).toBe(BASE + PROACTIVE_DEFAULTS.wakingDelayMs)
-  })
-
-  it('刚被吵醒的延后能从配置改', () => {
-    const seam = mount({ file: tempFile(), enabled: true, dailyMax: 3, ...NO_QUIET, wakingDelayMs: 90_000 })
-    const before = Date.now()
-
-    const decision = seam.consider({
-      chatKey: 'group:waking',
-      candidates: CANDIDATES,
-      history: [],
-      humanActive: false,
-      botBusy: false,
-      hasChannel: true,
-      waking: true,
-    })
-    const after = Date.now()
-
-    expect(decision.verdict.code).toBe('proactive.waking')
-    expect(decision.pending).toHaveLength(0)
-    expect(decision.verdict.retryAt).toBeGreaterThanOrEqual(before + 90_000)
-    expect(decision.verdict.retryAt).toBeLessThanOrEqual(after + 90_000)
+    expect(verdict.code).not.toBe('proactive.waking')
   })
 
   it('醒着的时候照旧攒候选', () => {
