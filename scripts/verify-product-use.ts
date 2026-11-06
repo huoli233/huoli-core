@@ -3,7 +3,6 @@
 import { existsSync, globSync, readFileSync, statSync } from 'node:fs'
 import { dirname, extname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { JSDOM } from 'jsdom'
 import ts from 'typescript'
 import { applyEntryPatches, type PatchOptions } from '@huoli/cordis-plugin-include'
 import type { EntryOptions } from '@huoli/cordis-plugin-loader'
@@ -15,7 +14,7 @@ import { PRODUCT_PACKAGE_POLICY, type ProductPackagePolicy } from './product-pac
 import { collectRuntimeLocalSourceSpecifiers, collectRuntimeSourceSpecifiers } from './verify-client-packages.ts'
 
 const PROFILE_SOURCE = 'packages/util/official-bundles/src/bundles.ts'
-const PROFILES = ['acp', 'web', 'headless', 'sdk', 'sdk-minimal']
+const PROFILES = ['acp', 'headless', 'sdk', 'sdk-minimal']
 const PICKER_SOURCE = 'packages/host/directory-picker-auto/src/index.ts'
 const DYNAMIC_MOUNTS: Readonly<Record<string, readonly string[]>> = {
   [PICKER_SOURCE]: ['BACKEND_PACKAGES', 'SURFACE_PACKAGES'],
@@ -210,24 +209,13 @@ export function verifyProductUse(
     if (names.length === 0) failures.push(`${PROFILE_SOURCE}: shipped profile has no bundles`)
     scanEntries(composeEntries(layers(names, defaults)), profilePath, defaults)
   }
-  const web = templates.web
-  if (isRecord(web)) {
-    const webBundles = stringList(web.bundles, `${PROFILE_SOURCE} web`)
-    for (const bundle of optionals) scanEntries(composeEntries(layers([...webBundles, bundle], optional)), profilePath, optional)
-  }
   for (const path of ['apps/cli/src/bin.ts']) scanSource(resolve(root, path), defaults)
-  const htmlPath = resolve(root, 'apps/web/index.html')
-  const dom = new JSDOM(readFileSync(htmlPath, 'utf8'))
-  try {
-    const scripts = [...dom.window.document.querySelectorAll('script[type="module"]')]
-    if (scripts.length === 0) failures.push('apps/web/index.html: missing product module entry')
-    for (const script of scripts) {
-      const path = script.getAttribute('src')
-      if (path === null || /^(?:https?:)?\/\//.test(path)) {
-        failures.push('apps/web/index.html: product module entries must name local source files')
-      } else scanSource(resolve(root, 'apps/web', path.replace(/^\//, '')), defaults)
-    }
-  } finally { dom.window.close() }
+  // 可选包挂在哪个 profile 上都要能算到，用还留着的那档当底子
+  const base = templates.headless
+  if (isRecord(base)) {
+    const baseBundles = stringList(base.bundles, `${PROFILE_SOURCE} headless`)
+    for (const bundle of optionals) scanEntries(composeEntries(layers([...baseBundles, bundle], optional)), profilePath, optional)
+  }
   for (const [path, entry] of Object.entries(policy)) {
     const pkg = directories.get(resolve(root, path))
     if (!/^packages\/[^/]+\/[^/]+$/.test(path) || path.startsWith('packages/experimental/') || pkg === undefined) {
@@ -236,11 +224,8 @@ export function verifyProductUse(
     }
     if (entry.reason.trim() === '') failures.push(`${path} (${pkg.name}): package policy requires a reason`)
     if (!validCategory(path, entry.category)) failures.push(`${path} (${pkg.name}): invalid policy category ${entry.category}`)
-    if (entry.category !== 'web-distribution' && defaults.packages.has(path)) {
+    if (defaults.packages.has(path)) {
       failures.push(`${path} (${pkg.name}): stale ${entry.category} policy; default runtime use requires removing this declaration`)
-    }
-    if (entry.category === 'web-distribution' && !defaults.packages.has(path)) {
-      failures.push(`${path} (${pkg.name}): stale web-distribution policy; restore its product source entry or correct its role`)
     }
   }
   for (const pkg of packages.values()) {
@@ -260,7 +245,6 @@ function validCategory(path: string, category: ProductPackagePolicy['category'])
     case 'test': return path.startsWith('packages/test-support/')
     case 'sdk': return path === 'packages/sdk/client'
     case 'build': return path === 'packages/typert/generator'
-    case 'web-distribution': return path === 'packages/client/web' || path === 'packages/client/ui-dockkit'
     case 'declarations': return path === 'packages/util/package-manifest'
     default: return assertNever(category)
   }

@@ -119,7 +119,7 @@ describe('product package use', () => {
     expect(failures(root)).toBe('')
   })
 
-  it.each(['apps/cli/src/bin.ts', 'apps/web/src/main.ts'])('reaches the %s entrypoint', (entry) => {
+  it.each(['apps/cli/src/bin.ts'])('reaches the %s entrypoint', (entry) => {
     const root = fixture()
     pkg(root, candidateDir, candidate)
     write(root, entry, `import '${candidate}'`)
@@ -224,7 +224,7 @@ describe('product package use', () => {
     } } })
     pkg(root, 'packages/core/host-only', '@huoli/huoli-host-only')
     write(root, `${candidateDir}/src/index.ts`, "import '@huoli/huoli-host-only'")
-    write(root, 'apps/web/src/main.ts', `import '${candidate}/remote'`)
+    write(root, 'apps/cli/src/bin.ts', `import '${candidate}/remote'`)
     const result = verifyProductUse(root, {})
     expect(result.defaultPackages).toContain(candidateDir)
     expect(result.defaultPackages).not.toContain('packages/core/host-only')
@@ -277,17 +277,6 @@ describe('product package use', () => {
     pkg(root, candidateDir, candidate)
     expect(failures(root, declarations('declarations'))).toContain('invalid policy category declarations')
     expect(failures(root, { 'packages/core/missing': { category: 'optional', reason: 'Missing.' } })).toContain('stale package policy')
-  })
-
-  it('requires a declared Web distribution package to remain source-reachable', () => {
-    const root = fixture()
-    const directory = 'packages/client/web'
-    const name = '@huoli/huoli-client-web'
-    pkg(root, directory, name)
-    const policy = { [directory]: { category: 'web-distribution', reason: 'Browser boot kernel.' } } as const
-    expect(failures(root, policy)).toContain('stale web-distribution policy')
-    write(root, 'apps/web/src/main.ts', `import '${name}'`)
-    expect(failures(root, policy)).toBe('')
   })
 
   it('fails when the shipped profile corpus is narrowed', () => {
