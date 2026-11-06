@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@huoli/cordis'
-import { applyUsage, dayOf, levelOf, tokensOf } from '../src/index.ts'
+import { applyUsage, costOf, dayOf, levelOf, tokensOf } from '../src/index.ts'
 
 const dirs: string[] = []
 
@@ -79,15 +79,15 @@ describe('一笔一笔往账上加', () => {
     const first = applyUsage({ day: '', used: 0 }, { inputTokens: 100, outputTokens: 20 }, noon, 'Asia/Shanghai')
     const second = applyUsage(first, { inputTokens: 50 }, noon + 60_000, 'Asia/Shanghai')
 
-    expect(first).toEqual({ day: '2026-11-06', used: 120 })
-    expect(second).toEqual({ day: '2026-11-06', used: 170 })
+    expect(first).toEqual({ day: '2026-11-06', used: 120, cost: 0 })
+    expect(second).toEqual({ day: '2026-11-06', used: 170, cost: 0 })
   })
 
   it('换了一天先清零再加', () => {
     const today = { day: '2026-11-06', used: 9_999 }
     const tomorrow = applyUsage(today, { inputTokens: 10 }, Date.UTC(2026, 10, 6, 17, 0), 'Asia/Shanghai')
 
-    expect(tomorrow).toEqual({ day: '2026-11-07', used: 10 })
+    expect(tomorrow).toEqual({ day: '2026-11-07', used: 10, cost: 0 })
   })
 
   it('没有用量的那一条不动账', () => {
@@ -95,6 +95,34 @@ describe('一笔一笔往账上加', () => {
 
     expect(applyUsage(today, {}, noon, 'Asia/Shanghai')).toEqual(today)
     expect(applyUsage(today, { inputTokens: 0 }, noon, 'Asia/Shanghai')).toEqual(today)
+  })
+})
+
+describe('按价目表算钱', () => {
+  it('输入输出各按各的价，每百万 token 算', () => {
+    // 一百万输入三块、一百万输出十五块，只用了十万输入与一万输出
+    expect(costOf({ inputTokens: 100_000, outputTokens: 10_000 }, { input: 3, output: 15 })).toBeCloseTo(0.45)
+  })
+
+  it('缓存读写算进输入那一档', () => {
+    expect(costOf({ inputTokens: 0, cacheReadTokens: 500_000 }, { input: 2, output: 8 })).toBeCloseTo(1)
+  })
+
+  it('没配价就是零，不瞎猜', () => {
+    expect(costOf({ inputTokens: 100_000 }, undefined)).toBe(0)
+    expect(costOf({ inputTokens: 100_000 }, {})).toBe(0)
+  })
+
+  it('账上同时记 token 与钱，换天一起清零', () => {
+    const price = { input: 3, output: 15 }
+    const noon = Date.UTC(2026, 10, 6, 4, 0)
+    const first = applyUsage({ day: '', used: 0 }, { inputTokens: 100_000, outputTokens: 10_000 }, noon, 'Asia/Shanghai', price)
+
+    expect(first.used).toBe(110_000)
+    expect(first.cost).toBeCloseTo(0.45)
+    const tomorrow = applyUsage(first, { inputTokens: 1_000 }, Date.UTC(2026, 10, 6, 17, 0), 'Asia/Shanghai', price)
+    expect(tomorrow.day).toBe('2026-11-07')
+    expect(tomorrow.cost).toBeCloseTo(0.003)
   })
 })
 

@@ -22,6 +22,20 @@ export interface Config {
   timeZone?: string
   /** 额度满时给几档，默认十，用光就是零 */
   fullLevel?: number
+  /** 一天的预算，单位与价目表一致；配了它就按钱算档位，不配按 token 算 */
+  dailyCost?: number
+  /** 每个模型的价，按百万 token 算；键是模型名，没配的落到 default */
+  prices?: Record<string, TokenPrice>
+  /** 没在价目表里的模型按这个算 */
+  defaultPrice?: TokenPrice
+}
+
+/** 一个模型每百万 token 多少钱 */
+export interface TokenPrice {
+  /** 输入每百万 token 的价钱 */
+  input?: number
+  /** 输出每百万 token 的价钱 */
+  output?: number
 }
 
 /** 默认值 */
@@ -36,6 +50,8 @@ export interface DayLedger {
   day: string
   /** 当天用掉的 token 总数 */
   used: number
+  /** 当天花掉的钱，配了价目表才有数，没配就是零 */
+  cost?: number
 }
 
 /**
@@ -87,20 +103,38 @@ export function tokensOf(usage: UsageLike): number {
 }
 
 /**
+ * 这一笔用量按价目表花掉多少钱
+ * @param usage 这一笔用量
+ * @param price 这个模型每百万 token 的价钱
+ * @returns 这一笔的钱，没配价就是零
+ */
+export function costOf(usage: UsageLike, price: TokenPrice | undefined): number {
+  if (price === undefined) return 0
+  // 缓存读写也算输入：读的是同一段前缀，只是便宜些，这里不另立一档
+  const input = Math.max(0, usage.inputTokens ?? 0)
+    + Math.max(0, usage.cacheReadTokens ?? 0) + Math.max(0, usage.cacheWriteTokens ?? 0)
+  const output = Math.max(0, usage.outputTokens ?? 0)
+  const cost = (input / 1_000_000) * (price.input ?? 0) + (output / 1_000_000) * (price.output ?? 0)
+  return Number.isFinite(cost) ? Math.max(0, cost) : 0
+}
+
+/**
  * 把一笔用量记到账上：换天先清零，再加进去
  * @param ledger 原来的账
  * @param usage 这一笔用量
  * @param at 这一笔的时刻，毫秒
  * @param timeZone 时区名字，空串跟随运行环境
+ * @param price 这个模型每百万 token 的价钱，不配就只记 token
  * @returns 记完之后的账
  */
-export function applyUsage(ledger: DayLedger, usage: UsageLike, at: number, timeZone = ''): DayLedger {
+export function applyUsage(ledger: DayLedger, usage: UsageLike, at: number, timeZone = '', price?: TokenPrice): DayLedger {
   const day = dayOf(at, timeZone)
   // 换了一天就从零开始，旧的那天已经过去了
-  const base = ledger.day === day ? ledger : { day, used: 0 }
+  const base = ledger.day === day ? ledger : { day, used: 0, cost: 0 }
   const added = tokensOf(usage)
-  if (added <= 0) return base
-  return { day, used: base.used + added }
+  const spent = costOf(usage, price)
+  if (added <= 0 && spent <= 0) return base
+  return { day, used: base.used + added, cost: (base.cost ?? 0) + spent }
 }
 
 /** 把账读回来，坏了就当今天还没花 */
@@ -110,7 +144,8 @@ function readLedger(file: string): DayLedger {
     if (typeof parsed.day !== 'string' || typeof parsed.used !== 'number' || !Number.isFinite(parsed.used)) {
       return { day: '', used: 0 }
     }
-    return { day: parsed.day, used: Math.max(0, parsed.used) }
+    const cost = typeof parsed.cost === 'number' && Number.isFinite(parsed.cost) ? Math.max(0, parsed.cost) : 0
+    return { day: parsed.day, used: Math.max(0, parsed.used), cost }
   } catch {
     return { day: '', used: 0 }
   }
@@ -128,8 +163,14 @@ function writeLedger(file: string, ledger: DayLedger): void {
  */
 export function apply(ctx: Context, config: Config = {}): void {
   const dailyTokens = Math.max(1, config.dailyTokens ?? DEFAULTS.dailyTokens)
+  const dailyCost = config.dailyCost ?? 0
   const fullLevel = Math.max(0.01, config.fullLevel ?? DEFAULTS.fullLevel)
   const timeZone = config.timeZone ?? ''
+  const prices = config.prices ?? {}
+  const defaultPrice = config.defaultPrice
+  // 配了预算与价目才按钱算，否则还是按 token 算
+  const byCost = dailyCost > 0 && (Object.keys(prices).length > 0 || defaultPrice !== undefined)
+  const priceOf = (model: string): TokenPrice | undefined => prices[model] ?? defaultPrice
   const file = config.stateFile ?? join(resolveHuoliHome(config.home), 'data', 'qq-balance.json')
   const log = ctx.logger('qq-balance')
   let ledger = readLedger(file)
@@ -138,11 +179,11 @@ export function apply(ctx: Context, config: Config = {}): void {
   const rollIfNeeded = (at: number): void => {
     const day = dayOf(at, timeZone)
     if (ledger.day === day) return
-    ledger = { day, used: 0 }
+    ledger = { day, used: 0, cost: 0 }
     writeLedger(file, ledger)
   }
   const publish = (): void => {
-    qqVitalsOf(ctx)?.setBalance(levelOf(ledger.used, dailyTokens, fullLevel))
+    qqVitalsOf(ctx)?.setBalance(levelOf(byCost ? ledger.cost ?? 0 : ledger.used, byCost ? dailyCost : dailyTokens, fullLevel))
   }
 
   rollIfNeeded(Date.now())
@@ -154,7 +195,8 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (event.type !== 'assistant/message') return
     const usage = event.data.usage
     if (usage === undefined) return
-    const next = applyUsage(ledger, usage, event.time, timeZone)
+    const model = event.data.message.source.model
+    const next = applyUsage(ledger, usage, event.time, timeZone, priceOf(model))
     if (next.used === ledger.used && next.day === ledger.day) return
     ledger = next
     try {
