@@ -12,6 +12,16 @@ import type { ForwardNode } from './forward.ts'
 import type { HistoryOutcome, MembersOutcome, MessageOutcome } from './read.ts'
 import type { StickerListOutcome, StickerPickOutcome } from './stickers.ts'
 import type { VoiceListOutcome, VoicePickOutcome } from './voices.ts'
+import type { SlangWriteOutcome } from './slang.ts'
+import type { Slang } from './slang.ts'
+
+/** 一口气发几条之后的结果：成了给发出去几条，没成给码与提示 */
+export interface BurstOutcome {
+  ok: boolean
+  sent: number
+  code?: string
+  reason?: string
+}
 
 /** 工具要用到的东西 */
 export interface ChannelToolDeps {
@@ -69,6 +79,13 @@ export interface ChannelToolDeps {
   }
   /** 引用着某一条回一句 */
   reply?: (messageId: string, text: string, chatKey: string) => Promise<{ ok: boolean; messageId?: string; code?: string; reason?: string }>
+  /** 一口气发几条短话，按给的顺序与间隔 */
+  burst?: (lines: readonly string[], gapsMs: readonly number[], chatKey: string) => Promise<BurstOutcome>
+  /** 学到的词：查、记 */
+  slang?: {
+    find: (query: string, limit: number) => Promise<Slang[]>
+    add: (word: string, meaning: string, from: string, at: number) => Promise<SlangWriteOutcome>
+  }
 }
 
 // 两把钥匙在这里只是这次调用的声明：用户那把由确认票背书，她自己那把由这次调用背书，放不放行仍由发布入口判
@@ -564,6 +581,86 @@ export function registerChannelTools(ctx: Context, deps: ChannelToolDeps): void 
     execute() {
       const now = deps.status()
       return Promise.resolve({ connected: now.connected, url: now.url, reconnectCount: now.reconnectCount, lastError: now.lastError })
+    },
+  }))
+
+  const burstOf = (): NonNullable<typeof deps.burst> => {
+    if (deps.burst === undefined) refuse('burst.unavailable', '这会儿连发不了', '等装配时把这一路接上再发')
+    return deps.burst
+  }
+  const slangOf = (): NonNullable<typeof deps.slang> => {
+    if (deps.slang === undefined) refuse('slang.unavailable', '这会儿记不了词', '等装配时把词表接上再问')
+    return deps.slang
+  }
+
+  ctx.tools.register(defineTool({
+    name: 'qq_send_burst',
+    description: '一口气连着说几句短话，像人一句一句往外蹦。给几句就发几句，中间留一点空。发之前每一句都过发言那道体检，被拦下就停，不硬发剩下的。',
+    parameters: {
+      lines: { type: 'string', description: '要说的几句，用换行分开，别把一整段长文塞进来。' },
+      gap_ms: { type: 'number', description: '每两句之间隔多久，毫秒，不填给八百毫秒。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const chatKey = chatKeyOf(exec)
+      const raw = typeof args.lines === 'string' ? args.lines : ''
+      const lines = raw.split('\n').map(line => line.trim()).filter(line => line !== '')
+        .slice(0, Math.min(6, Math.max(4, deps.cap() * 3)))
+      if (lines.length === 0) refuse('burst.empty', '一句都没有', '把要说的几句用换行分开写')
+      const gap = typeof args.gap_ms === 'number' && Number.isFinite(args.gap_ms) ? Math.max(0, Math.floor(args.gap_ms)) : 800
+      // 每一句先过体检与去重额度，被拦下就停在那一句，后面不补发
+      for (const line of lines) {
+        const inspection = deps.inspect(chatKey, line)
+        if (!inspection.ok) refuse(inspection.code ?? 'outbound.blocked', inspection.reason ?? '现在不能发', nextStep(inspection))
+        const allowed = deps.allow(line)
+        if (!allowed.ok) refuse(allowed.code ?? 'channel.blocked', allowed.reason ?? '现在不能发', nextStep(allowed))
+      }
+      const gaps = lines.map((_unused, at) => at === lines.length - 1 ? 0 : gap)
+      const sent = await burstOf()(lines, gaps, chatKey)
+      if (!sent.ok) refuse(sent.code ?? 'burst.failed', sent.reason ?? '没全发出去', '照发了几条算，别整段重发')
+      return { ok: true, sent: sent.sent }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_slang_query',
+    description: '查一下群里学来的词都是什么意思。可以按词查，也可以按意思查；不填就列全部。词只是记下来的说法，用不用、怎么用由你自己判。',
+    parameters: {
+      query: { type: 'string', description: '想查哪个词或哪句意思，不填就列全部。' },
+      limit: { type: 'number', description: '最多几条，不填给十条。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args) {
+      const query = typeof args.query === 'string' ? args.query : ''
+      const asked = typeof args.limit === 'number' && Number.isFinite(args.limit) ? args.limit : 10
+      const items = await slangOf().find(query, asked)
+      return { count: items.length, items }
+    },
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'qq_slang_submit',
+    description: '记下一个群里学来的词：词本身、大概什么意思、在哪儿听来的。同一个词只记一次，再提交只回「已经有了」。别把一整段对话当词记。',
+    parameters: {
+      word: { type: 'string', description: '词本身，短一点。' },
+      meaning: { type: 'string', description: '大概什么意思，写一句就行。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args, exec) {
+      const word = textArg(args.word, 'slang.empty', '没有词可记', '写清是哪个词')
+      const meaning = typeof args.meaning === 'string' ? args.meaning.trim() : ''
+      const outcome = await slangOf().add(word, meaning, chatKeyOf(exec), Date.now())
+      if (!outcome.ok) refuse(outcome.code, outcome.reason, outcome.hint)
+      return { ok: true, word: outcome.word, created: outcome.created }
     },
   }))
 }

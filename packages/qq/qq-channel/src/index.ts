@@ -16,6 +16,7 @@ import { registerChannelTools } from './tools.ts'
 import { readHistory, readMembers, readMessage } from './read.ts'
 import { defaultStickerFile, listStickers, stickerOf } from './stickers.ts'
 import { defaultVoiceFile, listVoices, voiceOf } from './voices.ts'
+import { addSlang, defaultSlangFile, findSlangs } from './slang.ts'
 
 export type { ChannelStatus, IncomingMessage, IncomingPoke, Outgoing, OutboundEvent, SentResult } from './events.ts'
 export { chatKeyOf, hasWords, mentionsSelf, repliesToSelf, textOf, toIncoming, toPoke } from './events.ts'
@@ -151,6 +152,8 @@ export interface Config {
   stickerFile?: string
   /** 语音库放哪，不填就落在数据根目录下的 data */
   voiceFile?: string
+  /** 学来的词放哪，不填就落在数据根目录下的 data */
+  slangFile?: string
   /** 准不准戳人，默认不准；开了也只是多一个动作，不改变判级 */
   pokeEnabled?: boolean
 }
@@ -323,9 +326,10 @@ export function apply(ctx: Context, config: Config): void {
 
   // 遗书正文的暂存槽与三类动作的状态各一份文件，互不影响
   const farewell = createFarewellSlotStore({ file: config.farewellFile ?? defaultFarewellSlotFile() })
-  // 表情包库与语音库各一份文件，没存过就当一张、一段都没有
+  // 表情包库、语音库与学到的词各一份文件，没存过就当都是空的
   const stickerFile = config.stickerFile ?? defaultStickerFile()
   const voiceFile = config.voiceFile ?? defaultVoiceFile()
+  const slangFile = config.slangFile ?? defaultSlangFile()
 
   // 拆句直接用说话规矩里的纯函数，不依赖它有没有先装好
   const pacing = qqPacingOf(ctx)
@@ -501,6 +505,36 @@ export function apply(ctx: Context, config: Config): void {
       send: (file, chatKey) => channel.send([{ type: 'record', data: { file } }], chatKey),
     },
     reply: (messageId, text, chatKey) => channel.send([{ type: 'reply', data: { id: messageId } }, { type: 'text', data: { text } }], chatKey),
+    burst: async (lines, gapsMs, chatKey) => {
+      let sent = 0
+      // 等一会儿，但别让定时器拖着进程不退
+      const pause = (ms: number): Promise<void> => new Promise((resolve) => {
+        const timer = setTimeout(resolve, ms)
+        timer.unref()
+      })
+      for (let at = 0; at < lines.length; at += 1) {
+        const line = lines[at]
+        if (line === undefined) continue
+        const gap = gapsMs[at] ?? 0
+        if (gap > 0) await pause(gap)
+        const result = await channel.send(line, chatKey)
+        if (!result.ok) {
+          return {
+            ok: false,
+            sent,
+            ...result.code === undefined ? {} : { code: result.code },
+            ...result.reason === undefined ? {} : { reason: result.reason },
+          }
+        }
+        sent += 1
+        outbound.record(Date.now())
+      }
+      return { ok: true, sent }
+    },
+    slang: {
+      find: (query, limit) => Promise.resolve(findSlangs(slangFile, query, limit)),
+      add: (word, meaning, from, at) => Promise.resolve(addSlang(slangFile, word, meaning, from, at)),
+    },
     ...config.pokeEnabled === true ? { poke: async (chatKey: string, userId: string) => {
       const group = chatKey.startsWith('group:') ? Number(chatKey.slice('group:'.length)) : 0
       if (group <= 0) return { ok: false, code: 'poke.not_group', reason: '私聊不戳人', hint: '只在群里戳' }
