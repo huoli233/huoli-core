@@ -1,6 +1,7 @@
 // 装配这一层：目录、面板、记录表、钥匙、工具、提示词与只读出口接成一个接缝
 
 import type { Context } from '@huoli/cordis'
+import fs from 'node:fs'
 import { join } from 'node:path'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import type {} from '@huoli/huoli-agent'
@@ -71,15 +72,19 @@ export function apply(ctx: Context, config: Config = {}): void {
   const ledger = createLedger({ store, settings })
   const enabled = config.enabled ?? false
   const mainChatKey = config.mainChatKey ?? ''
-  // 人格规矩那份在目录外面：启动时存一版，改坏了还能拿旧版盖回来
+  // 人格正文与人格规矩都在目录外面：启动时各存一版，改坏了还能拿旧版盖回来
   const rulesFile = config.rulesFile ?? ''
-  if (rulesFile !== '') {
-    try {
-      store.ensure()
-      store.snapshotRules(rulesFile, Date.now())
-    } catch (error) {
-      ctx.logger('qq-self').warn('人格规矩没存下这一版：%s', String(error))
-    }
+  const personaFile = config.personaFile ?? store.pathOf(FILES.persona)
+  // 这一层关着时一个文件都不建，人格也不动
+  if (enabled) try {
+    store.ensure()
+    // 第一次启动时把外面给的那段人格落成文件，之后人格就以文件为准
+    const seed = config.personaSeed ?? ''
+    if (seed !== '' && !fs.existsSync(personaFile)) fs.writeFileSync(personaFile, `${seed.trimEnd()}\n`)
+    store.snapshotExternal(personaFile, 'persona', Date.now())
+    if (rulesFile !== '') store.snapshotExternal(rulesFile, 'rules', Date.now())
+  } catch (error) {
+    ctx.logger('qq-self').warn('人格正文没存下这一版：%s', String(error))
   }
   // 出口的端口只认 0 到 65535 的整数，别的写法按不开算
   const wantedPort = config.panelPort ?? 0
@@ -488,7 +493,22 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (rulesFile === '') {
         return { ok: false, code: 'versions.no_rules_file', reason: '没配人格规矩那份文件在哪', hint: '在 Config 里填 rulesFile，指到那份规矩文件' }
       }
-      return store.restoreRules(rulesFile, name)
+      return store.restoreExternal(rulesFile, 'rules', name)
+    },
+    persona() {
+      try {
+        return fs.readFileSync(personaFile, 'utf8').trim()
+      } catch {
+        return ''
+      }
+    },
+    personaVersions() {
+      return store.listVersions('persona')
+    },
+    restorePersona(name) {
+      const stop = off()
+      if (stop !== undefined) return { ok: false, code: 'versions.disabled', reason: '这一层关着，回滚不落盘', hint: '先把 Config.enabled 打开' }
+      return store.restoreExternal(personaFile, 'persona', name)
     },
   }
   seams.set(ctx.root, seam)
@@ -524,6 +544,15 @@ export function apply(ctx: Context, config: Config = {}): void {
     const toolSink = ctx.get('tools')
     if (toolSink === undefined) ctx.logger('qq-self').warn('没有工具服务，自我层的写入口这一次没挂')
     else registerSelfTools(toolSink, seam)
+    // 人格正文占着部署人格那段位置：改人格就是改那份文件，不用动配置文件
+    const personaText = seam.persona()
+    if (personaText !== '') {
+      ctx.systemPrompt.section({
+        name: 'qq:persona',
+        order: ctx.systemPrompt.getSectionOrder('DEPLOYMENT_PERSONA_PREFIX'),
+        text: personaText,
+      })
+    }
     ctx.systemPrompt.section({
       name: settings.sectionName,
       order: settings.sectionOrder,

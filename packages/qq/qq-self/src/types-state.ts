@@ -86,12 +86,15 @@ export interface WriteOutcome {
 }
 
 /**
- * 会按版本留存的东西：面板与叙事这两份正本在目录里，人格规矩那份在目录外面
+ * 会按版本留存的东西：面板与叙事这两份正本在目录里，人格规矩与人格正文这两份在目录外或另管
  */
-export type VersionKind = 'panel' | 'narrative' | 'rules'
+export type VersionKind = 'panel' | 'narrative' | 'rules' | 'persona'
 
-/** 目录里自己维护正本的那两种，人格规矩那份不在此列 */
-export type InDirVersionKind = Exclude<VersionKind, 'rules'>
+/** 目录里自己维护正本的那两种，另外两种不在此列 */
+export type InDirVersionKind = Exclude<VersionKind, 'rules' | 'persona'>
+
+/** 不归目录直接管、但也要留版本的那两种 */
+export type ExternalVersionKind = Exclude<VersionKind, InDirVersionKind>
 
 /** versions/ 里的一份旧版本 */
 export interface VersionEntry {

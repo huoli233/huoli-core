@@ -110,6 +110,7 @@ export type {
   SelfMirrorWrite,
   SelfSettings,
   StageOutcome,
+  ExternalVersionKind,
   InDirVersionKind,
   VersionEntry,
   VersionKind,
@@ -257,6 +258,22 @@ export interface QqSelfSeam {
    * @returns 从哪一份恢复、现场存成了哪一份，或一个带原因与提示的码
    */
   restoreRules(name: string): RollbackOutcome
+  /**
+   * 现在这份人格正文
+   * @returns 文件里的正文，文件不在时是空串
+   */
+  persona(): string
+  /**
+   * 人格正文存下来的那几版，最近的在前
+   * @returns 每份版本的名字、种类、时刻与字节数
+   */
+  personaVersions(): VersionEntry[]
+  /**
+   * 用某一版人格正文盖回去，盖之前先把现场存一版
+   * @param name - personaVersions 给的名字，逐字相同
+   * @returns 从哪一份恢复、现场存成了哪一份，或一个带原因与提示的码
+   */
+  restorePersona(name: string): RollbackOutcome
 }
 
 /** 这一行接受的配置 */
@@ -269,6 +286,10 @@ export interface Config {
   huoliHome?: string
   /** 人格规矩那份文件在哪，填了就在启动时存一版，改坏了能拿旧版盖回来 */
   rulesFile?: string
+  /** 人格正文那份文件在哪，不填就放在自我层目录下的 persona.md */
+  personaFile?: string
+  /** 第一次启动时用来落成文件的那段人格，文件已经在就不覆盖 */
+  personaSeed?: string
   /** 主会话的键，不配就哪个会话都不放进 */
   mainChatKey?: string
   /** 只读面板出口绑哪个端口，默认 0 表示不开；开了只绑回环地址 */

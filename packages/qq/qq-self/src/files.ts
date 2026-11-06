@@ -8,6 +8,8 @@ export const FILES = {
   panel: 'panel.md',
   /** 叙事五章 */
   narrative: 'narrative.md',
+  /** 人格正文，改它等于改她是谁；每次启动把改前的样子存一版 */
+  persona: 'persona.md',
   /** 叙事的那本时间账：上次更新与上次月更提醒 */
   narrativeState: 'narrative.json',
   /** 停手开关 */
