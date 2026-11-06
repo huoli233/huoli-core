@@ -15,7 +15,7 @@
 | 面板 `/api/graph` | 默认不返回；带 `includePrivate=1` 且只在本机回环时返回 |
 | 主动开口 | 不因为它而开口 |
 
-现在的实现只有 `scope` 过滤，**没有 `layer` 过滤**，这是一个要补的洞：一条在私密空间写下的星点，如果 `scope` 恰好是某个群，就会漏出去。补法见下面的召回一节。
+现在的实现是两道过滤一起上：`scope` 之外还看 `layer` 与 `secret`，召回与详情各过滤一次，面板另按 `includePrivate` 过滤。私密层的星点写下来时 `scope` 就是 `private`，与任何群键都不相等，所以不会因为 `scope` 恰好是某个群而漏出去。判据见 `qq-memory/tests/private-layer.spec.ts`（私密空间自己取得到、同一个词在群里只返回群里的那条）与 `qq-memory/src/recall.ts` 的两处 `layer === 'private' || secret === true`。
 
 ## 字段
 
