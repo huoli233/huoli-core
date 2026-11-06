@@ -49,13 +49,14 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
 
   ctx.tools.register(defineTool({
     name: 'memory_append',
-    description: '记一件事。写具体的一句话，别写标题。同一句话不重复记；想不起来就不用记。',
+    description: '记一件事。写具体的一句话，别写标题。同一句话不重复记；想不起来就不用记。不想让人知道的事放 private 那一层并把 secret 填 true，之后在群里那半小时内会自己收紧一点。',
     parameters: {
       text: { type: 'string', description: '要记住的那句话。' },
       layer: { type: 'string', description: '放哪一层：ephemeral 刚发生、episodic 这段经历、semantic 长期印象、private 私下的事。' },
       personId: { type: 'string', description: '跟谁有关的，可不填。' },
       directed: { type: 'boolean', description: '这话是不是直接对她说的，是就填 true。' },
       emotional: { type: 'number', description: '这话里的情绪有多重，0 到 24，听着平常就填 0。' },
+      secret: { type: 'boolean', description: '这件事不想让人知道，就填 true；只有放 private 那一层时才能填。' },
     },
     output: {
       schema: { type: 'object', additionalProperties: true },
@@ -73,6 +74,9 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
       if (duplicated) refuse('memory.duplicate', '这条已经记过了', '换一条新的事')
 
       const layer = layerOf(args.layer)
+      const wantsSecret = args.secret === true
+      // 只有她自己声明「这是不想让人知道的事」才算，代码不替她猜
+      if (wantsSecret && layer !== 'private') refuse('memory.secret_layer', '不想让人知道的事要放 private 那一层', '把 layer 填 private 再记')
       const personId = typeof args.personId === 'string' ? args.personId.trim() : ''
       const directed = args.directed === true
       const rawEmotional = typeof args.emotional === 'number' && Number.isFinite(args.emotional) ? args.emotional : 0
@@ -94,6 +98,7 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
         state: 'active',
         source: 'tool',
         ...personId !== '' ? { personId } : {},
+        ...wantsSecret ? { secret: true } : {},
       }
       store.add(item)
       return Promise.resolve({ id: item.id, layer: item.layer, importance: item.importance })

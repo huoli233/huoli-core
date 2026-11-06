@@ -33,7 +33,7 @@
 三条规矩：
 
 1. **只能由模型写**，不接受代码推断。代码不许因为「这句话看起来像」就写一条私密记忆——那又是关键词。
-2. **写的时候必须给 `layer: 'private'` 与 `secret: true`**，缺一个就当普通记忆处理。
+2. **写的时候必须给 `layer: 'private'` 与 `secret: true`**，缺一个就当普通记忆处理。`memory_append` 加了 `secret` 这个参数，只有 `private` 那一层才收，别的层想标会回 `memory.secret_layer`；模型可见的规矩写在 `qq-bundle/src/body-tools.ts` 的 `PRIVATE_EVENT_LINE`，明说「听到别人的事、随口想想都别记」。判据见 `qq-memory/tests/memory.spec.ts` 的三条。
 3. **`settled` 由代码补**：写入后按 `Config.privateSettleMs` 算，默认三十分钟。这个值可配，因为不同角色不一样。
 
 ## 召回

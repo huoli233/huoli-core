@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-两个工具 `memory_append` 与 `memory_query`。记的时候要说明这话是不是直接对她说的、里面情绪有多重；找的时候返回日期、内容、还有多清楚，默认三条。
+两个工具 `memory_append` 与 `memory_query`。记的时候要说明这话是不是直接对她说的、里面情绪有多重；不想让人知道的事放 `private` 那一层并把 `secret` 填 `true`，只有这一层才收，别的层想标会被拒；找的时候返回日期、内容、还有多清楚，默认三条。
 
 #### Token effect
 

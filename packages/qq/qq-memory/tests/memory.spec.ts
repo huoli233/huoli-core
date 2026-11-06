@@ -28,6 +28,33 @@ describe('记得住', () => {
 
     await expect(tool('memory_append').execute({ text: '嗯' }, execOf('group:1'))).rejects.toThrow(/memory\.too_short/)
   })
+
+  it('自己声明不想让人知道：放 private 才收 secret', async () => {
+    const { tool, seam } = mount({ file: tempFile() })
+
+    const added = await call<{ id: string; layer: string }>(tool('memory_append'), {
+      text: '偷偷给自己做了点事', layer: 'private', secret: true,
+    }, execOf('group:1'))
+
+    expect(added.layer).toBe('private')
+    expect(seam.store.byId(added.id)?.secret).toBe(true)
+  })
+
+  it('不是 private 那一层却想标私密就拒', async () => {
+    const { tool } = mount({ file: tempFile() })
+
+    await expect(tool('memory_append').execute({
+      text: '随口一句', layer: 'episodic', secret: true,
+    }, execOf('group:1'))).rejects.toThrow(/memory\.secret_layer/u)
+  })
+
+  it('没声明 secret 就还是普通记忆', async () => {
+    const { tool, seam } = mount({ file: tempFile() })
+
+    const added = await call<{ id: string }>(tool('memory_append'), { text: SENTENCE }, execOf('group:1'))
+
+    expect(seam.store.byId(added.id)?.secret).toBeUndefined()
+  })
 })
 
 describe('找得回', () => {

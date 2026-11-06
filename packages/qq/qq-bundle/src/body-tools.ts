@@ -16,6 +16,9 @@ export const PRIVATE_LINE = '【刚做过一件不想让人知道的事】\n- �
 /** 好奇过线时提一句：想弄明白的事可以记下来，但记下来不等于去做 */
 export const CURIOUS_LINE = '【这会儿有点好奇】想弄明白的事可以记一笔，记下来不等于真的去做。'
 
+/** 只有她自己做了不想让人知道的事时才用，别把普通闲聊记成私密 */
+export const PRIVATE_EVENT_LINE = '【刚才有件不想让人知道的事】真自己做了、而且不想让人知道，就用 memory_append 记一句，layer 填 private、secret 填 true；群里不会翻到它，之后那一小会儿你会自己留意有没有人在看你。只是听到别人的事、或者随口想想，都别记。'
+
 /** 记忆那一面用得上的两件事：翻条目、按感觉回想 */
 interface MemoryFace {
   /** 所有的记忆条目 */
@@ -68,7 +71,7 @@ export function bodyEventText(
   const body = vitals?.read()
   const state = subject?.store.read()
   const chatKey = state?.lastActive ?? ''
-  return `${BODY_EVENT_LINE}${recollectLineOf(memory, body, chatKey)}${privateLineOf(memory, chatKey, Date.now())}${curiousLineOf(state?.global.curiosity)}`
+  return `${BODY_EVENT_LINE}${PRIVATE_EVENT_LINE}${recollectLineOf(memory, body, chatKey)}${privateLineOf(memory, chatKey, Date.now())}${curiousLineOf(state?.global.curiosity)}`
 }
 
 /** 拼那一段要用的两面 */
