@@ -8,7 +8,7 @@
 
 | 包 | 负责 | 自我层对它是只读还是只写 | 不许做的事 |
 |---|---|---|---|
-| `qq-self` | `SELF_DIR` 全部文件、面板一段、分级判定、两把钥匙留痕 | 唯一写入者 | 不写别的包的数据文件，不发消息，不改 `persona` 与说话规则 |
+| `qq-self` | `SELF_DIR` 全部文件、人格正文那份文件的版本、面板一段、分级判定、两把钥匙留痕 | 唯一写入者 | 不写别的包的数据文件，不发消息，不改人格正文的内容（只在 `restorePersona` 明确调用时盖回旧版），不改说话规则 |
 | [`qq-vitals`](../qq-vitals/README.md) | `data/qq-vitals.json` 独占；`read()`、`render()`、`react()` | 只读，只调 `render()` 取"此刻"一句；写回只经 `react()` | 自我层不写该文件，不自己算递质、饥饿、口渴、睡眠压力，不新建一份身体状态抄本 |
 | [`qq-memory`](../qq-memory/README.md) | `data/qq-memory.json` 独占；`memory_append`、`memory_query` 两个工具；`remember(text, chatKey, options)`、`find()`；镜像专用入口 `rememberSelf(entry, at)`；另有一份记正文指纹的记忆记录表 | 只读走 `find()` 取证据 id；只写走 `rememberSelf` 的镜像调用 | 自我层不改既有条目的 `text`，不直接写该文件，不把日常三行、记录表、面板塞进记忆库 |
 | [`qq-subject`](../qq-subject/README.md) | `data/qq-subject.json` 独占；提示词段名 `qq:self`、位置名 `qq_self` | 只读 | 自我层不复用它的段名与位置名，不写它的状态文件，不再造一份"此刻的心情" |
@@ -310,7 +310,7 @@ P5a 先做，它只决定"能不能发"，不改她怎么想、怎么说，先�
 | 阶段开关 | 已实现：三类公共动作统一读阶段，P0–P2 一律拒并给码；推进只走 `advanceStage`，跳级、后退、同档与空理由都被拒，每次推进在 `stage.jsonl` 留痕 | — |
 | 暂停时的提议 | 已实现：暂停时项目写一条 `proposed: true`，不占未结束额度、不进面板、不镜像 | — |
 | 回滚演练 | 已实现：三种改坏（截断、改字、清空）都能列版本、回滚、逐字核对恢复，坏内容也会先存档 | — |
-| 人格规矩的版本 | 部分实现：`Config.rulesFile` 指向的那份外部文件会在启动时存一版（内容没变就不存、份数按 `versionsKeep` 滚、`restoreRules` 能拿旧版盖回去，用例在 `tests/rules-version.spec.ts`）；真正的人格正文现在仍在 profile 的 `personaPrefix` 里，那一份还没有版本 | 要把人格从配置挪成自我层目录下的一份文件 |
+| 人格正文的版本 | 已实现：人格正文放在自我层目录的 `persona.md`，启动时按 `versionsKeep` 存一版（内容没变就不存），`persona` / `personaVersions` / `restorePersona` 三个口子能读、能列、能盖回去；装配时以 `qq:persona` 这一段占着部署人格的位置，配置里的 `personaPrefix` 留空即可，用例在 `tests/rules-version.spec.ts` | — |
 
 ## 证据索引
 
