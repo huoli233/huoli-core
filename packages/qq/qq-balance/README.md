@@ -23,6 +23,8 @@ kind: "package-reference"
 
 按钱算：配了 `prices`（每个模型每百万 token 的输入价与输出价）与 `dailyCost`（一天多少钱）之后，档位改按钱算，`used` 与 `cost` 两个数都记在账上；只配其中一个还是按 token 算。缓存读写并进输入那一档，不另立一档。
 
+价目表文件：`pricesFile` 指向一个 JSON，里面写 `dailyCost` 与 `prices`，文件里的值盖过配置。改价与改预算都只改这一个文件，不用动 YAML；`dailyCost` 留零就仍按 token 算。
+
 换天：按 `timeZone` 算本地日期，日期变了就清零再记。账写在 `data/qq-balance.json`，装配时先读回来，所以重启不会把今天已经花掉的忘掉。
 
 写盘失败只在内存里继续记，并记一行 warn；不会因为磁盘问题丢掉当天的数。

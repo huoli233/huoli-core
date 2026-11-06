@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@huoli/cordis'
-import { applyUsage, costOf, dayOf, levelOf, tokensOf } from '../src/index.ts'
+import { applyUsage, costOf, dayOf, levelOf, readPriceSheet, tokensOf } from '../src/index.ts'
 
 const dirs: string[] = []
 
@@ -123,6 +123,32 @@ describe('按价目表算钱', () => {
     const tomorrow = applyUsage(first, { inputTokens: 1_000 }, Date.UTC(2026, 10, 6, 17, 0), 'Asia/Shanghai', price)
     expect(tomorrow.day).toBe('2026-11-07')
     expect(tomorrow.cost).toBeCloseTo(0.003)
+  })
+})
+
+describe('价目表文件', () => {
+  it('读得到的时候把价与预算一起给出来', () => {
+    const file = tempFile()
+    writeFileSync(file, JSON.stringify({
+      dailyCost: 5,
+      prices: { 'deepseek-v4.1-flash': { input: 1, output: 2 } },
+      defaultPrice: { input: 3, output: 15 },
+    }))
+
+    const sheet = readPriceSheet(file)
+
+    expect(sheet?.dailyCost).toBe(5)
+    expect(sheet?.prices?.['deepseek-v4.1-flash']).toEqual({ input: 1, output: 2 })
+    expect(sheet?.defaultPrice).toEqual({ input: 3, output: 15 })
+  })
+
+  it('没配或读不动时当没有，不抛错', () => {
+    expect(readPriceSheet('')).toBeUndefined()
+    expect(readPriceSheet('/没有这个文件.json')).toBeUndefined()
+
+    const broken = tempFile()
+    writeFileSync(broken, '不是 JSON')
+    expect(readPriceSheet(broken)).toBeUndefined()
   })
 })
 

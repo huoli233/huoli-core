@@ -28,6 +28,8 @@ export interface Config {
   prices?: Record<string, TokenPrice>
   /** 没在价目表里的模型按这个算 */
   defaultPrice?: TokenPrice
+  /** 价目表文件放哪，填了就按文件来；文件里同时能写一天预算，改它不用动配置文件 */
+  pricesFile?: string
 }
 
 /** 一个模型每百万 token 多少钱 */
@@ -137,6 +139,32 @@ export function applyUsage(ledger: DayLedger, usage: UsageLike, at: number, time
   return { day, used: base.used + added, cost: (base.cost ?? 0) + spent }
 }
 
+/** 价目表文件里能写的东西 */
+export interface PriceSheet {
+  /** 一天的预算，不写就按配置或 token 算 */
+  dailyCost?: number
+  /** 每个模型每百万 token 的价 */
+  prices?: Record<string, TokenPrice>
+  /** 没列到的模型按这个算 */
+  defaultPrice?: TokenPrice
+}
+
+/**
+ * 把价目表文件读进来，坏了就当没有
+ * @param file 文件路径，空串表示没配
+ * @returns 读到的价目表，没配或读不动时是 undefined
+ */
+export function readPriceSheet(file: string): PriceSheet | undefined {
+  if (file === '') return undefined
+  try {
+    const parsed = JSON.parse(readFileSync(file, 'utf8')) as PriceSheet | null
+    // 文件里写个 null 也当没配
+    return parsed ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
 /** 把账读回来，坏了就当今天还没花 */
 function readLedger(file: string): DayLedger {
   try {
@@ -162,17 +190,20 @@ function writeLedger(file: string, ledger: DayLedger): void {
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
+  const log = ctx.logger('qq-balance')
+  // 价目表文件优先：改价与改预算都不用动配置文件
+  const sheet = readPriceSheet(config.pricesFile ?? '')
+  if ((config.pricesFile ?? '') !== '' && sheet === undefined) log.warn('价目表文件没读出来：%s', String(config.pricesFile))
   const dailyTokens = Math.max(1, config.dailyTokens ?? DEFAULTS.dailyTokens)
-  const dailyCost = config.dailyCost ?? 0
+  const dailyCost = sheet?.dailyCost ?? config.dailyCost ?? 0
   const fullLevel = Math.max(0.01, config.fullLevel ?? DEFAULTS.fullLevel)
   const timeZone = config.timeZone ?? ''
-  const prices = config.prices ?? {}
-  const defaultPrice = config.defaultPrice
+  const prices = { ...config.prices ?? {}, ...sheet?.prices ?? {} }
+  const defaultPrice = sheet?.defaultPrice ?? config.defaultPrice
   // 配了预算与价目才按钱算，否则还是按 token 算
   const byCost = dailyCost > 0 && (Object.keys(prices).length > 0 || defaultPrice !== undefined)
   const priceOf = (model: string): TokenPrice | undefined => prices[model] ?? defaultPrice
   const file = config.stateFile ?? join(resolveHuoliHome(config.home), 'data', 'qq-balance.json')
-  const log = ctx.logger('qq-balance')
   let ledger = readLedger(file)
 
   // 换天了就把当天的数清零重来，跨天那一刻不需要谁去叫它
