@@ -1,6 +1,6 @@
 {
   "name": "@huoli/huoli-qq-balance",
-  "description": "余额：读一次，隔几小时再读，把数字交给身体那边当生存压力",
+  "description": "额度：每说完一轮按真实用量记账，当天用掉多少、还剩多少，折成档位交给身体那边",
   "version": "0.2.2-alpha.2",
   "private": true,
   "type": "module",
@@ -21,10 +21,12 @@
   "license": "MIT",
   "peerDependencies": {
     "@huoli/cordis": "workspace:~",
-    "@huoli/huoli-qq-vitals": "workspace:*"
+    "@huoli/huoli-qq-vitals": "workspace:*",
+    "@huoli/huoli-session": "workspace:*"
   },
   "devDependencies": {
     "@huoli/cordis": "workspace:~",
-    "@huoli/huoli-qq-vitals": "workspace:*"
+    "@huoli/huoli-qq-vitals": "workspace:*",
+    "@huoli/huoli-session": "workspace:*"
   }
 }

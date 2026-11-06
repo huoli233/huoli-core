@@ -1,117 +1,112 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createServer, type Server } from 'node:http'
+import { afterEach, describe, expect, it } from 'vitest'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { Context } from '@huoli/cordis'
-import { amountOf, apply, readBalance } from '../src/index.ts'
+import { applyUsage, dayOf, levelOf, tokensOf } from '../src/index.ts'
 
-const servers: Server[] = []
+const dirs: string[] = []
 
 afterEach(() => {
-  for (const server of servers.splice(0)) {
-    server.closeAllConnections()
-    server.close()
-  }
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
 })
 
-// 假余额接口：说什么就回什么
-async function fakeBalance(status: number, body: unknown): Promise<{ baseURL: string; seen: string[] }> {
-  const seen: string[] = []
-  const server = createServer((request, response) => {
-    seen.push(`${request.method ?? ''} ${request.url ?? ''} ${String(request.headers.authorization)}`)
-    request.resume()
-    request.on('end', () => {
-      response.writeHead(status, { 'content-type': 'application/json' })
-      response.end(JSON.stringify(body))
-    })
-  })
-  servers.push(server)
-  await new Promise<void>((resolve) => { server.listen(0, '127.0.0.1', resolve) })
-  const address = server.address()
-  if (address === null || typeof address === 'string') throw new Error('假服务没起来')
-  return { baseURL: `http://127.0.0.1:${String(address.port)}`, seen }
+function tempFile(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'qq-balance-'))
+  dirs.push(dir)
+  return join(dir, 'qq-balance.json')
 }
 
-describe('从回来的东西里挑数字', () => {
-  it('只有一条货币时就是它', () => {
-    expect(amountOf({ balance_infos: [{ currency: 'CNY', total_balance: '12.5' }] })).toBe(12.5)
+describe('用量怎么算成 token 数', () => {
+  it('输入、输出、缓存读写加起来', () => {
+    expect(tokensOf({ inputTokens: 100, outputTokens: 20 })).toBe(120)
+    expect(tokensOf({ inputTokens: 100, outputTokens: 20, cacheReadTokens: 300, cacheWriteTokens: 5 })).toBe(425)
   })
 
-  it('指定货币只认那一条', () => {
-    const parsed = {
-      balance_infos: [
-        { currency: 'CNY', total_balance: '8' },
-        { currency: 'USD', total_balance: '2' },
-      ],
-    }
-    expect(amountOf(parsed, 'USD')).toBe(2)
-    expect(amountOf(parsed, 'CNY')).toBe(8)
-  })
-
-  it('不指定货币就把能读的加起来', () => {
-    const parsed = {
-      balance_infos: [
-        { currency: 'CNY', total_balance: '8' },
-        { currency: 'USD', total_balance: 2 },
-      ],
-    }
-    expect(amountOf(parsed)).toBe(10)
-  })
-
-  it('读不成数字的条目跳过，一条都不成就是没有', () => {
-    expect(amountOf({ balance_infos: [{ currency: 'CNY', total_balance: '不是数' }] })).toBeUndefined()
-    expect(amountOf({})).toBeUndefined()
-    expect(amountOf({ balance_infos: [] })).toBeUndefined()
+  it('缺项当零，乱数当零', () => {
+    expect(tokensOf({})).toBe(0)
+    expect(tokensOf({ inputTokens: Number.NaN })).toBe(0)
+    expect(tokensOf({ inputTokens: -50 })).toBe(0)
   })
 })
 
-describe('去接口读一次', () => {
-  it('读得到就给出数字，请求带上 key', async () => {
-    const { baseURL, seen } = await fakeBalance(200, {
-      balance_infos: [{ currency: 'CNY', total_balance: '3.2' }],
-    })
+describe('当天日期按时区算', () => {
+  it('同一时刻在不同时区可能不是同一天', () => {
+    // 2026-11-06 23:30 UTC：东京已是七号，洛杉矶还是六号
+    const at = Date.UTC(2026, 10, 6, 23, 30)
+    expect(dayOf(at, 'Asia/Tokyo')).toBe('2026-11-07')
+    expect(dayOf(at, 'America/Los_Angeles')).toBe('2026-11-06')
+  })
+})
 
-    const amount = await readBalance({ baseURL, key: 'test-key', timeoutMs: 5_000 })
-
-    expect(amount).toBe(3.2)
-    expect(seen[0]).toContain('/user/balance')
-    expect(seen[0]).toContain('Bearer test-key')
+describe('用掉多少就掉多少档', () => {
+  it('一点没用是满档，用光就是零', () => {
+    expect(levelOf(0, 1_000, 10)).toBe(10)
+    expect(levelOf(1_000, 1_000, 10)).toBe(0)
   })
 
-  it('接口报错就抛，不编一个数出来', async () => {
-    const { baseURL } = await fakeBalance(401, { error: 'bad key' })
-
-    await expect(readBalance({ baseURL, key: 'test-key', timeoutMs: 5_000 })).rejects.toThrow(/回 401/u)
+  it('用一半掉一半', () => {
+    expect(levelOf(500, 1_000, 10)).toBe(5)
+    expect(levelOf(250, 1_000, 10)).toBe(7.5)
   })
 
-  it('回来的一堆里没有数字也算错', async () => {
-    const { baseURL } = await fakeBalance(200, { balance_infos: [{ currency: 'CNY' }] })
+  it('超额也不会变负，预算为零时按零档', () => {
+    expect(levelOf(5_000, 1_000, 10)).toBe(0)
+    expect(levelOf(0, 0, 10)).toBe(0)
+  })
+})
 
-    await expect(readBalance({ baseURL, key: 'test-key', timeoutMs: 5_000 })).rejects.toThrow(/没有可用的数字/u)
+describe('账落盘与跨天', () => {
+  it('写了再读回来还是那个数', () => {
+    const file = tempFile()
+    writeFileSync(file, JSON.stringify({ day: '2026-11-06', used: 1234 }))
+
+    expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ day: '2026-11-06', used: 1234 })
+  })
+
+  it('文件坏了当今天没花，不抛错', () => {
+    const file = tempFile()
+    writeFileSync(file, '不是 JSON')
+
+    expect(() => { JSON.parse(readFileSync(file, 'utf8')) }).toThrow()
+  })
+})
+
+describe('一笔一笔往账上加', () => {
+  const noon = Date.UTC(2026, 10, 6, 4, 0)
+
+  it('同一天累加', () => {
+    const first = applyUsage({ day: '', used: 0 }, { inputTokens: 100, outputTokens: 20 }, noon, 'Asia/Shanghai')
+    const second = applyUsage(first, { inputTokens: 50 }, noon + 60_000, 'Asia/Shanghai')
+
+    expect(first).toEqual({ day: '2026-11-06', used: 120 })
+    expect(second).toEqual({ day: '2026-11-06', used: 170 })
+  })
+
+  it('换了一天先清零再加', () => {
+    const today = { day: '2026-11-06', used: 9_999 }
+    const tomorrow = applyUsage(today, { inputTokens: 10 }, Date.UTC(2026, 10, 6, 17, 0), 'Asia/Shanghai')
+
+    expect(tomorrow).toEqual({ day: '2026-11-07', used: 10 })
+  })
+
+  it('没有用量的那一条不动账', () => {
+    const today = { day: '2026-11-06', used: 100 }
+
+    expect(applyUsage(today, {}, noon, 'Asia/Shanghai')).toEqual(today)
+    expect(applyUsage(today, { inputTokens: 0 }, noon, 'Asia/Shanghai')).toEqual(today)
   })
 })
 
 describe('装进运行环境', () => {
-  it('没配 key 只记一行，不抛也不去连', async () => {
+  it('已经记过的账在装配时就用上', async () => {
+    const file = tempFile()
+    const today = dayOf(Date.now(), '')
+    writeFileSync(file, JSON.stringify({ day: today, used: 0 }))
     const ctx = new Context()
 
-    apply(ctx, {})
-    await Promise.resolve()
-
-    const warnings = ctx.logger.buffer.filter(entry => entry.type === 'warn')
-    expect(warnings.some(entry => String(entry.args[0]).includes('没配 key'))).toBe(true)
-  })
-
-  it('卸载时把定时器停掉，进程不被拖着', async () => {
-    vi.useFakeTimers()
-    const { baseURL } = await fakeBalance(200, { balance_infos: [{ currency: 'CNY', total_balance: '1' }] })
-    const root = new Context()
-    // 挂成真插件再卸，effect 才会跟着走
-    const fiber = await root.plugin({ name: 'qq-balance', apply: (ctx: Context) => { apply(ctx, { baseURL, apiKey: 'test-key', refreshMs: 60_000 }) } })
-    const mounted = vi.getTimerCount()
-    await fiber.dispose()
-    const after = vi.getTimerCount()
-    vi.useRealTimers()
-
-    expect(mounted).toBeGreaterThan(0)
-    expect(after).toBe(0)
+    // 没有身体那一路时也不能抛：读写只走自己那份账
+    const { apply } = await import('../src/index.ts')
+    expect(() => { apply(ctx, { stateFile: file, dailyTokens: 1_000 }) }).not.toThrow()
   })
 })

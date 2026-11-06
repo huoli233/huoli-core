@@ -12,6 +12,9 @@
       "path": "../../../vendor/cordis"
     },
     {
+      "path": "../../core/session"
+    },
+    {
       "path": "../qq-vitals"
     }
   ]

@@ -13172,6 +13172,9 @@ importers:
       '@huoli/huoli-qq-vitals':
         specifier: workspace:*
         version: link:../qq-vitals
+      '@huoli/huoli-session':
+        specifier: workspace:*
+        version: link:../../core/session
 
   packages/qq/qq-bundle:
     dependencies:
