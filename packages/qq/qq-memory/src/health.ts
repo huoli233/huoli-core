@@ -11,7 +11,7 @@ import type { MemoryItem } from './types.ts'
 export type LedgerLevel = 'OK' | 'DRIFT' | 'MISSING' | 'ERROR'
 
 /** 行尾告警标记里能出现的四种原因 */
-export type HealthAlert = 'ledger' | 'pending' | 'pinned' | 'cold'
+export type HealthAlert = 'ledger' | 'pending' | 'pinned' | 'cold' | 'full' | 'overflow'
 
 /** 拼这一行要的东西 */
 export interface HealthInput {
@@ -120,6 +120,12 @@ export function healthAlerts(
   // 一条没退役过的都没有时分母为 0，这时按比例 0 算，不告警
   const coldRatio = counts.total === 0 ? 0 : counts.cold / counts.total
   if (coldRatio > thresholds.coldRatioAlert) alerts.push('cold')
+  // 总量占上限：先提一句快满了，真满了再报超
+  if (thresholds.totalCap > 0) {
+    const fullRatio = counts.total / thresholds.totalCap
+    if (fullRatio >= 1) alerts.push('overflow')
+    else if (fullRatio >= thresholds.totalWarnAt) alerts.push('full')
+  }
   return alerts
 }
 

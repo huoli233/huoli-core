@@ -42,6 +42,8 @@ function thresholds(overrides: Partial<AlertThresholds> = {}): AlertThresholds {
     pendingAlert: DEFAULTS.pendingAlert,
     pinnedAlert: DEFAULTS.pinnedAlert,
     coldRatioAlert: DEFAULTS.coldRatioAlert,
+    totalWarnAt: DEFAULTS.totalWarnAt,
+    totalCap: DEFAULTS.totalCap,
     ...overrides,
   }
 }
@@ -161,6 +163,23 @@ describe('记录表四档', () => {
 describe('告警阈值', () => {
   it('什么都不超时行尾没有标记', () => {
     expect(alertMarks(lineOf(PASSED))).toBe(0)
+  })
+
+  it('总量占到上限八成时提一句快满了', () => {
+    // 这份里未退役的两条：上限五条只占四成，压到两点五条刚好八成
+    expect(lineOf(PASSED, { alerts: { totalCap: 5 } }).endsWith('alert=full')).toBe(false)
+    expect(lineOf(PASSED, { alerts: { totalCap: 2.5 } }).endsWith('alert=full')).toBe(true)
+  })
+
+  it('总量满上限时报超，比快满更重', () => {
+    const line = lineOf(PASSED, { alerts: { totalCap: 2 } })
+
+    expect(line.endsWith('alert=overflow')).toBe(true)
+    expect(line.includes('alert=full')).toBe(false)
+  })
+
+  it('上限配成零就不查这一项', () => {
+    expect(lineOf(PASSED, { alerts: { totalCap: 0 } }).endsWith('alert=overflow')).toBe(false)
   })
 
   it('待写入超阈值时行尾挂一个标记', () => {

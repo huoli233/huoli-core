@@ -82,6 +82,10 @@ export interface Tuning extends DecayParams, RecoverParams {
   pinnedAlert: number
   /** 已退役与只剩印象的条数占未退役条数的比例超过它就在健康一行末尾告警 */
   coldRatioAlert: number
+  /** 总条数占到上限的这个比例就在健康一行末尾告警，默认 0.8 */
+  totalWarnAt: number
+  /** 总条数最多留多少条，超过就在末尾报超，默认两万条 */
+  totalCap: number
   /** 备份留几份，超出的按最旧先删 */
   backupKeep: number
   /** 性格不变快照拿来找记忆的那句，空串只按重要度与新鲜度挑 */
@@ -90,8 +94,8 @@ export interface Tuning extends DecayParams, RecoverParams {
   snapshotSample: string
 }
 
-/** 健康一行末尾用的三个告警阈值 */
-export type AlertThresholds = Pick<Tuning, 'pendingAlert' | 'pinnedAlert' | 'coldRatioAlert'>
+/** 健康一行末尾用的告警阈值 */
+export type AlertThresholds = Pick<Tuning, 'pendingAlert' | 'pinnedAlert' | 'coldRatioAlert' | 'totalWarnAt' | 'totalCap'>
 
 /** 全包唯一的默认值表 */
 export const DEFAULTS: Tuning = {
@@ -136,6 +140,9 @@ export const DEFAULTS: Tuning = {
   pendingAlert: 50,
   pinnedAlert: 30,
   coldRatioAlert: 0.5,
+  // 占到上限的八成就在健康一行末尾提一句，满了两万条直接报超
+  totalWarnAt: 0.8,
+  totalCap: 20_000,
   backupKeep: 7,
   // 快照不在这里带问题集：调用方给哪句就试哪句，默认按重要度挑、拿一句闲聊试一下
   snapshotQuery: '',
