@@ -1,6 +1,5 @@
 // 死亡威胁的分档与遗书事实：本模块只产出事实，正文一个字都不替模型写
 
-import { localDayDiff } from './clock.ts'
 import { DEFAULTS, type Tuning } from './defaults.ts'
 import type { VitalsState } from './types.ts'
 
@@ -57,8 +56,8 @@ export function farewellOf(
   tuning: Tuning = DEFAULTS,
 ): FarewellFact | undefined {
   if (!(state.mortality > tuning.farewellMortalityFrom)) return undefined
-  // 同一天只产一次：标记落在同一个本地日期就跳过，跨过零点自然又能产
+  // 距上一次满一个窗口才再产：不是按自然日，免得跨零点二十分钟就又来一封
   const marked = state.farewell_applied_at
-  if (marked > 0 && localDayDiff(marked, at, tuning.timeZone) === 0) return undefined
+  if (marked > 0 && at - marked < tuning.farewellCooldownHours * 3_600_000) return undefined
   return { at, mortality: state.mortality, reason: farewellReason(balanceLevel, tuning) }
 }

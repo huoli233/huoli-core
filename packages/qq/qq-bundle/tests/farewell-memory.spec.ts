@@ -229,35 +229,25 @@ describe('暂存槽读不动', () => {
   })
 })
 
-describe('同一天同一个人只写一条', () => {
-  it('当天第二遍不写', async () => {
+describe('同一条事实只写一条', () => {
+  it('同一条事实投递两遍只写一条', async () => {
     const { memory, deliver } = await mount()
 
     deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
-    deliver({ at: moment(3, 15), mortality: 0.95, reason: '余额见底' })
+    deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
 
     expect(memory.store.all()).toHaveLength(1)
   })
 
-  it('隔一天不会被当成当天那条跳过', async () => {
-    const { memory, deliver } = await mount()
-
-    deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
-    const writing = vi.spyOn(memory, 'write')
-    deliver({ at: moment(4, 9), mortality: 0.9, reason: '余额见底' })
-
-    expect(writing).toHaveBeenCalledTimes(1)
-  })
-
-  it('判据只看 kind 与本地日期，换一个人不算写过', async () => {
+  it('判据只看 kind 与那一时刻，换一个人不算写过', async () => {
     const { memory, deliver } = await mount()
 
     deliver({ at: moment(3, 9), mortality: 0.9, reason: '余额见底' })
     const items = memory.store.all()
 
-    expect(farewellWritten(items, CHAT, moment(3, 20))).toBe(true)
-    expect(farewellWritten(items, CHAT, moment(4, 9))).toBe(false)
-    expect(farewellWritten(items, 'group:2', moment(3, 20))).toBe(false)
+    expect(farewellWritten(items, CHAT, moment(3, 9))).toBe(true)
+    expect(farewellWritten(items, CHAT, moment(3, 20))).toBe(false)
+    expect(farewellWritten(items, 'group:2', moment(3, 9))).toBe(false)
   })
 })
 

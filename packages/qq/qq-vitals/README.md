@@ -34,7 +34,7 @@ kind: "package-reference"
 ## Known Limitations and Deferred Work
 
 - 十二套子系统落了递质回归、HPA 轴、交感副交感、奖赏、依恋、昼夜、饥饿、水循环、血糖、睡眠压力、月经周期、睡眠与午睡；情绪那一套落了愤怒、记恨、被哄、惊吓、担心、存在性恐惧与两档热度，死亡威胁按余额分档朝目标走，但余额只能由外部放进，本包不接任何余额系统。
-- 遗书只出事实：死亡威胁过 `farewellMortalityFrom` 且当天还没产过时，心跳产出一条带 `at`、`mortality` 与一句来由的事实，走 `QqVitalsSeam.onFarewell` 通知一次；正文一个字都不在这里写，要等组合包自己成文并落成记忆。
+- 遗书只出事实：死亡威胁过 `farewellMortalityFrom` 且距上一次满 `farewellCooldownHours` 小时时，心跳产出一条带 `at`、`mortality` 与一句来由的事实，走 `QqVitalsSeam.onFarewell` 通知一次；正文一个字都不在这里写，要等组合包自己成文并落成记忆。
 - 互动认喝水、吃饭、被夸、被凶、被道歉、被吓、担心、生死、被威胁九条；睡着时只记一笔被吵醒，九条都不写。这几条由装配层的 `QqVitalsSeam.react` 收消息时写回。
 - 进食记忆没写：记下一顿只会走 `QqVitalsSeam.onMeal` 这个接口位，本包不落任何记忆，要等组合包把它接到长期记忆。
 - 开经当天写一条记忆这段没做，等记忆写入接口接上。
@@ -78,7 +78,7 @@ kind: "package-reference"
 
 `mortalityTarget(balanceLevel, tuning?)` 按余额四档给目标：高过 `mortalityBalanceCalm` 为零、高过 `mortalityBalanceWary` 取 `mortalityTargetWary`、高过 `mortalityBalanceLow` 取 `mortalityTargetLow`、再往下取 `mortalityTargetCrisis`，没有来源时为零。`drift` 的第五个参数就是外部余额档位：给了就按 `mortalityRisePerBeat` 与 `mortalityFallPerBeat` 每拍朝目标挪一步并夹在零到一之间，不给就一动不动，所以这一包不会自己编出一个余额。
 
-遗书那一路：`farewellOf(state, balanceLevel, at, tuning?)` 在 `mortality > farewellMortalityFrom`（默认 0.85）且 `farewell_applied_at` 不在同一个本地零点时给出一条事实，`farewellReason` 按余额四档说一句来由（余额见底、余额快撑不住了、余额开始紧张、余额还算宽裕，来源撤回后是命数在往下走）。`farewell_applied_at` 是这一路的防重复的标记，按本地零点判一天一次，值就是产出那一刻的毫秒；心跳把标记和状态一起落盘之后才调 `onFarewell`，落盘失败不通知。这一包不写正文、不写记忆。
+遗书那一路：`farewellOf(state, balanceLevel, at, tuning?)` 在 `mortality > farewellMortalityFrom`（默认 0.60）且距 `farewell_applied_at` 满 `farewellCooldownHours`（默认 12）小时时给出一条事实，`farewellReason` 按余额四档说一句来由（余额见底、余额快撑不住了、余额开始紧张、余额还算宽裕，来源撤回后是命数在往下走）。`farewell_applied_at` 是这一路的防重复的标记，按滚动窗口算间隔不按自然日，值就是产出那一刻的毫秒；心跳把标记和状态一起落盘之后才调 `onFarewell`，落盘失败不通知。这一包不写正文、不写记忆。
 
 存在性那一路只吃三条只读事实：`uptimeMs`（这一份进程活了多久）、`restartsToday`（今天重启过几次）、`shutdownNotice`（手上有没有一条关停提示）。装配层用 `QqVitalsSeam.setExistence(facts)` 放进，给 `undefined` 表示没有来源，两个字段一律不朝目标走。`salienceTarget(facts, tuning?)` 给 `mortalitySalience` 的目标：底数 `salienceBase`、每次重启加 `saliencePerRestart`、提示在加 `salienceWhileNotice`、稳跑满 `existenceStableMs` 之后按下 `salienceByStability`，所以在默认参数下刚被重启过最显著、稳稳跑够六小时退到最低；`shutdownTarget(facts, tuning?)` 给 `shutdownDread` 的目标，重启次数抬、稳跑满一段落。两个目标都按各自的半衰期（`salienceHalfHours` 半小时、`shutdownHalfHours` 六小时）每拍挪一步，`drift` 的第六个参数就是 `ExistenceFacts`。
 

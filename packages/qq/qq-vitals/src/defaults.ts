@@ -433,8 +433,9 @@ export const DEFAULTS: Tuning = {
   mortalityTargetCrisis: 1.0,
   mortalityRisePerBeat: 0.15,
   mortalityFallPerBeat: 0.03,
-  // 遗书：死亡威胁到这条线算高位，一天最多产出一次
-  farewellMortalityFrom: 0.85,
+  // 遗书：死亡威胁到这条线算高位，两次之间隔满十二小时才再产
+  farewellMortalityFrom: 0.6,
+  farewellCooldownHours: 12,
   // 存在性这一路：三条运行环境事实各算一项，显著度进得快，怕进得慢
   salienceBase: 0.10,
   saliencePerRestart: 0.20,

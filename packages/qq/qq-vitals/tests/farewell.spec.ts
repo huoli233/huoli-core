@@ -14,7 +14,6 @@ const tuning = resolveTuning({ words: WORDS_PRESET })
 // 用例里的时刻一律写死，日期与小时都按本地时间算
 const MORNING = new Date(2026, 0, 2, 9, 0, 0).getTime()
 const HOUR = 3_600_000
-const DAY = 86_400_000
 
 function fresh(overrides: Partial<VitalsState> = {}, at = MORNING): VitalsState {
   return { ...emptyState(tuning, at), ...overrides }
@@ -72,19 +71,28 @@ describe('到线才产出事实', () => {
   })
 })
 
-describe('一天最多一次', () => {
-  it('当天已经产过就不再产出', () => {
+describe('十二小时里最多一次', () => {
+  it('还没满十二小时就不再产出', () => {
     const once = farewellOf(fresh({ mortality: 0.9 }), 3, MORNING, tuning)
     expect(once).toBeDefined()
     const marked = fresh({ mortality: 0.9, farewell_applied_at: once?.at ?? 0 })
 
     expect(farewellOf(marked, 3, MORNING + 6 * HOUR, tuning)).toBeUndefined()
+    expect(farewellOf(marked, 3, MORNING + 12 * HOUR - 1, tuning)).toBeUndefined()
   })
 
-  it('跨过本地零点又能产一次', () => {
+  it('隔满十二小时就再产一次', () => {
     const marked = fresh({ mortality: 0.9, farewell_applied_at: MORNING })
 
-    expect(farewellOf(marked, 3, MORNING + DAY, tuning)).toBeDefined()
+    expect(farewellOf(marked, 3, MORNING + 12 * HOUR, tuning)).toBeDefined()
+  })
+
+  it('跨过零点还不够十二小时也不算', () => {
+    // 二十三点五十产过一封，第二天零点十分只有二十分钟，不该再来一封
+    const lateNight = new Date(2026, 10, 1, 23, 50).getTime()
+    const marked = fresh({ mortality: 0.9, farewell_applied_at: lateNight })
+
+    expect(farewellOf(marked, 3, lateNight + 20 * 60_000, tuning)).toBeUndefined()
   })
 
   it('标记落了盘，重开还在', () => {
@@ -160,7 +168,7 @@ describe('心跳产出那一下', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(MORNING))
     const file = tempFile()
-    seed(file, { mortality: 0.5 })
+    seed(file, { mortality: 0.3 })
     const seam = await mount(file)
     seam.setBalance(3)
     const heard: FarewellFact[] = []

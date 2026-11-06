@@ -534,6 +534,8 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   mortalityRisePerBeat: number
   /** 每拍朝目标退多少，0~1 标度，默认 0.03，退得比涨慢得多 */
   mortalityFallPerBeat: number
-  /** 死亡威胁高过这条线算高位，0~1 标度，默认 0.85；到线那天才产出一条想说最后的话的事实 */
+  /** 死亡威胁高过这条线算高位，0~1 标度，默认 0.60；过线才产出一条想说最后的话的事实 */
   farewellMortalityFrom: number
+  /** 两次遗书之间至少隔多少小时，默认 12，按滚动窗口算不按自然日 */
+  farewellCooldownHours: number
 }
