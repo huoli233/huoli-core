@@ -572,7 +572,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         .join('\n')
         .trim()
       if (query === '') return decision
-      const block = buildInjectBlock(memory.find(query, chatKey, maxItems), maxChars, maxItems)
+      const block = buildInjectBlock(await memory.findAsync(query, chatKey, maxItems), maxChars, maxItems)
       if (block === '') return decision
       const tail = asked.at(-1)
       if (tail === undefined) return decision

@@ -7,7 +7,7 @@ import { DEFAULTS, type Tuning } from './defaults.ts'
 import { layerOr } from './guard.ts'
 import type { MemoryStore } from './store.ts'
 import { newId, type MemoryItem, type MemoryLayer } from './types.ts'
-import { recall, renderRecall } from './recall.ts'
+import { renderRecall, type RecallHit } from './recall.ts'
 import { touch } from './sweep.ts'
 
 /** 工具要用到的东西 */
@@ -17,6 +17,8 @@ export interface MemoryToolDeps {
   sceneOf: (layer: MemoryLayer, chatKey: string) => ImportanceInput['scene']
   /** 召回回升与保护线从配置读 */
   tuning: Tuning
+  /** 找记忆：配了嵌入服务就是带向量的那条路 */
+  findAsync: (query: string, chatKey: string, limit?: number) => Promise<RecallHit[]>
 }
 
 // 拒绝时抛错，交给内核当工具失败
@@ -107,22 +109,21 @@ export function registerMemoryTools(ctx: Context, deps: MemoryToolDeps): void {
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    execute(args, exec) {
+    async execute(args, exec) {
       const chatKey = chatKeyOf(exec)
       const now = Date.now()
-      const scope = deps.scopeOf(chatKey)
       const limit = Number.isInteger(args.limit) && args.limit !== undefined
         ? Math.max(1, args.limit)
         : DEFAULTS.recallLimit
       const query = typeof args.query === 'string' ? args.query : ''
-      const hits = recall(store, { query, scope, limit, now })
+      const hits = await deps.findAsync(query, chatKey, limit)
       // 被找出来的记忆算被提起一次，可能重新变清楚
       for (const hit of hits) touch(store, hit.id, now, deps.tuning)
-      return Promise.resolve({
+      return {
         count: hits.length,
         text: renderRecall(hits),
         items: hits.map(hit => ({ id: hit.id, text: hit.text, clarity: hit.clarity, at: hit.at })),
-      })
+      }
     },
   }))
 

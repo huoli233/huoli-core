@@ -1,6 +1,7 @@
 // 记忆装配入口：两个工具 + 往上挪 + 每天变淡 + 每天的账与健康一行
 
 import { dirname, join } from 'node:path'
+import { readFileSync, writeFileSync } from 'node:fs'
 import type { Context } from '@huoli/cordis'
 import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
 import { createMemoryStore, defaultMemoryFile, type MemoryStore } from './store.ts'
@@ -8,6 +9,8 @@ import { decayAll, mergeForgotten, promoteAll, sweepOnce } from './sweep.ts'
 import { recall, recallByFeeling, encodeVector, type FeelingFacts, type RecallHit, type RecollectResult } from './recall.ts'
 import { edgesFileOf, linkTogether, readEdges } from './edges.ts'
 import { openVectorStore, type VectorHit, type VectorStore } from './vector-store.ts'
+import { createEmbedder, type EmbeddingConfig, type Embedder } from './embed.ts'
+import { findWithVectors } from './find-async.ts'
 import { registerMemoryTools } from './tools.ts'
 import { resolveTuning, type Tuning } from './defaults.ts'
 import { defaultLedgerFile, runLedger, type LedgerAction, type LedgerRunResult } from './ledger.ts'
@@ -145,6 +148,8 @@ export interface QqMemorySeam {
   /** 已经镜过的来源键，按镜像顺序 */
   mirroredSelfIds(): readonly string[]
   find(query: string, chatKey: string, limit?: number): RecallHit[]
+  /** 带嵌入向量的那条路：塞了嵌入服务才走，出错退回 find 那套 */
+  findAsync(query: string, chatKey: string, limit?: number): Promise<RecallHit[]>
   /** 按此刻的感觉主动回想：想起的几条与是哪种感觉带出来的 */
   recollect(feeling: FeelingFacts, chatKey: string, now?: number): RecollectResult
   /** 闲下来自己乱想一条，返回写进去的那条，没到点就是 undefined */
@@ -176,6 +181,8 @@ export interface Config {
   vectorStore?: 'off' | 'pglite'
   /** 向量仓的数据放哪，不填就跟记忆文件同目录 */
   vectorDir?: string
+  /** 嵌入服务：填了就用真向量，不填还是本地算 */
+  embedding?: EmbeddingConfig
   /** 想改哪些默认参数 */
   tuning?: Partial<Tuning>
 }
@@ -265,11 +272,33 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
     return vectorOpening
   }
+  // 配了嵌入服务就用真向量，没配还是本地算那套哈希
+  const embedder: Embedder | undefined = config.embedding === undefined ? undefined : createEmbedder(config.embedding)
+  // 一句话换成向量：有嵌入器就调它，出岔子退回本地算，绝不因为网络问题丢一条记忆
+  const vectorOfText = async (text: string): Promise<readonly number[]> => {
+    if (embedder === undefined) return encodeVector(text)
+    try {
+      const [vector] = await embedder.embed([text])
+      return vector ?? encodeVector(text)
+    } catch {
+      return encodeVector(text)
+    }
+  }
+  // 向量仓里的向量是谁算的：模型换了，旧的向量就不能再拿来比
+  const vectorModelFile = join(vectorDir, 'model.txt')
+  const vectorModelMatches = (): boolean => {
+    if (embedder === undefined) return true
+    try {
+      return readFileSync(vectorModelFile, 'utf8').trim() === embedder.model
+    } catch {
+      return false
+    }
+  }
   // 每写一条就顺手把它的向量补进去，补不上也不影响这一条落库
   const vectorize = (item: MemoryItem): void => {
     if (config.vectorStore !== 'pglite' || item.text === '') return
-    void vectorOf()
-      .then(store => store?.upsert([{ id: item.id, embedding: encodeVector(item.text), scope: item.scope, at: item.at }]))
+    void vectorOfText(item.text)
+      .then(async embedding => (await vectorOf())?.upsert([{ id: item.id, embedding, scope: item.scope, at: item.at }]))
       .catch(() => { /* 向量补不上就算了，文字那条还在 */ })
   }
   // 短窗口内的几次写入算「同一轮」：它们彼此连一条边
@@ -281,6 +310,19 @@ export function apply(ctx: Context, config: Config = {}): void {
     recentWrites.set(scope, kept)
   }
   const scopeOf = (chatKey: string): string => chatKey
+  // 本地那条路：关键词加本地哈希向量，同步返回，随时可用
+  const findHere = (query: string, chatKey: string, limit?: number): RecallHit[] => {
+    const hits = recall(store, {
+      query,
+      scope: scopeOf(chatKey),
+      tuning,
+      edges: readEdges(edgesFile),
+      ...limit !== undefined ? { limit } : {},
+    })
+    // 一起被想起的几条连起来：下次想起其中一条，另一条更容易跟着浮上来
+    if (hits.length > 1) linkTogether(edgesFile, hits.map(hit => hit.id), 'recalledTogether', Date.now())
+    return hits
+  }
   const run = (action: LedgerAction): LedgerRunResult => runLedger(action, { file: ledgerFile, items: store.all() })
   // 直接写入被门槛丢掉的条数；队列与反思那两条路的数落在队列文件里，droppedLow() 把两边合起来给
   let droppedLow = 0
@@ -408,18 +450,24 @@ export function apply(ctx: Context, config: Config = {}): void {
       return mirroredSelfIds(store)
     },
     find(query, chatKey, limit) {
-      const hits = recall(store, {
-        query,
-        scope: scopeOf(chatKey),
-        tuning,
-        edges: readEdges(edgesFile),
-        ...limit !== undefined ? { limit } : {},
-      })
-      // 一起被想起的几条连起来：下次想起其中一条，另一条更容易跟着浮上来
-      if (hits.length > 1) {
-        linkTogether(edgesFile, hits.map(hit => hit.id), 'recalledTogether', Date.now())
+      return findHere(query, chatKey, limit)
+    },
+    async findAsync(query, chatKey, limit) {
+      // 向量仓没开、或者里面装的是别的模型算的向量，就还是走本地那条路
+      const opened = embedder === undefined || !vectorModelMatches() ? undefined : await vectorOf()
+      if (opened === undefined || query.trim() === '') return findHere(query, chatKey, limit)
+      try {
+        const hits = await findWithVectors({
+          store, vectors: opened, embed: vectorOfText, query, scope: scopeOf(chatKey), tuning,
+          edges: readEdges(edgesFile),
+          ...limit === undefined ? {} : { limit },
+        })
+        if (hits.length > 1) linkTogether(edgesFile, hits.map(hit => hit.id), 'recalledTogether', Date.now())
+        return hits
+      } catch {
+        // 嵌入服务抽风时，退回本地那条路，不让这一轮什么都想不起来
+        return findHere(query, chatKey, limit)
       }
-      return hits
     },
     promote() {
       return promoteAll(store, Date.now())
@@ -529,14 +577,16 @@ export function apply(ctx: Context, config: Config = {}): void {
       // 只把还留着正文的那些灌进去：忘掉的没有正文，也就没有向量
       const items = store.all().filter(item => item.state !== 'forgotten' && item.text !== '')
       for (const item of items) {
-        await opened.upsert([{ id: item.id, embedding: encodeVector(item.text), scope: item.scope, at: item.at }])
+        await opened.upsert([{ id: item.id, embedding: await vectorOfText(item.text), scope: item.scope, at: item.at }])
       }
+      // 灌完记下是哪个模型算的，下次换模型就知道要重灌
+      if (embedder !== undefined) writeFileSync(vectorModelFile, `${embedder.model}\n`)
       return items.length
     },
   }
   seams.set(ctx.root, seam)
 
-  registerMemoryTools(ctx, { store, scopeOf, sceneOf, tuning })
+  registerMemoryTools(ctx, { store, scopeOf, sceneOf, tuning, findAsync: (query, chatKey, limit) => seam.findAsync(query, chatKey, limit) })
 
   // 卸载时排空队列再落一次盘，攒着的那几条不会跟着进程一起没
   ctx.effect(() => () => {

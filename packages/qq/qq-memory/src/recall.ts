@@ -28,6 +28,8 @@ export interface RecallInput {
   tuning?: Partial<Tuning>
   /** 星链：一起被想起过的两条会互相带出来 */
   edges?: readonly { a: string; b: string; weight: number }[]
+  /** 外面用嵌入模型算好的相似度，按记忆编号；给了就用它，不再本地现算 */
+  vectorSims?: ReadonlyMap<string, number>
 }
 
 /** 一条命中的理由，四项都能拿同样输入重算 */
@@ -176,7 +178,9 @@ export function recall(store: MemoryStore, input: RecallInput = {}): RecallHit[]
     const grams = queryGrams.filter(gram => bodyGrams.has(gram))
     // 关键词路只看命中数门槛，命中之后不受相似度门槛约束
     const keywordHit = queryGrams.length > 0 && grams.length >= minHits
-    const vectorSim = plainQuery === '' ? null : cosineSimilarity(queryVector, encodeVector(item.text))
+    const vectorSim = plainQuery === '' || input.vectorSims === undefined
+      ? (plainQuery === '' ? null : cosineSimilarity(queryVector, encodeVector(item.text)))
+      : input.vectorSims.get(item.id) ?? 0
     const vectorHit = vectorSim !== null && vectorSim >= tuning.minSimilarity
     // 核心记忆就算这一轮没命中也要留下：她的身份不该因为话题不相关就消失
     const isCore = item.metadata?.core === true
