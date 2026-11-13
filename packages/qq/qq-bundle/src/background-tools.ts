@@ -119,22 +119,26 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
     else buffered.set(chatKey, left)
   }
 
+  const advance = (task: Task): boolean => {
+    if (task.settled) return false
+    task.settled = true
+    nextToDeliver.set(task.chatKey, task.seq + 1)
+    return true
+  }
+
   const finish = (task: Task, text: string, outcome: 'ok' | 'failed' | 'timeout' | 'cancelled'): void => {
     if (task.done) return
     task.done = true
     clearTimeout(task.timer)
     tasks.delete(task.callId)
     note('background_tool_finished', task.chatKey, { tool: task.toolName, callId: task.callId, outcome })
-    if (!canDeliver(task)) return
-    if (outcome === 'cancelled') {
-      nextToDeliver.set(task.chatKey, (nextToDeliver.get(task.chatKey) ?? task.seq) + 1)
-      flush(task.chatKey)
-      return
+    if (canDeliver(task) && outcome !== 'cancelled') {
+      const body = outcome === 'ok' ? text : `[失败] ${config.failureText}`
+      const rows = buffered.get(task.chatKey) ?? []
+      rows.push({ seq: task.seq, text: body, traceIds: task.traceIds })
+      buffered.set(task.chatKey, rows)
     }
-    const body = outcome === 'ok' ? text : `[失败] ${config.failureText}`
-    const rows = buffered.get(task.chatKey) ?? []
-    rows.push({ seq: task.seq, text: body, traceIds: task.traceIds })
-    buffered.set(task.chatKey, rows)
+    advance(task)
     flush(task.chatKey)
   }
 
@@ -167,10 +171,7 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
     tasks.delete(task.callId)
     task.controller.abort(new Error(reason))
     note('background_tool_cancelled', task.chatKey, { tool: task.toolName, callId: task.callId, reason })
-    if (activeAtStart && generation === (generations.get(task.chatKey) ?? 0)) {
-      nextToDeliver.set(task.chatKey, (nextToDeliver.get(task.chatKey) ?? task.seq) + 1)
-      flush(task.chatKey)
-    }
+    if (activeAtStart && generation === (generations.get(task.chatKey) ?? 0) && advance(task)) flush(task.chatKey)
   }
 
   const cancel = (chatKey: string, reason: string): void => {
@@ -210,6 +211,7 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
           finish(task, '', 'timeout')
         }, config.timeoutMs),
         done: false,
+        settled: false,
       }
       tasks.set(callId, task)
       note('background_tool_started', chatKey, { tool: exec.name, callId, seq })

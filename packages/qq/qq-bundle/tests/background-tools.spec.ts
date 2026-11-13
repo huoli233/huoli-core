@@ -28,7 +28,10 @@ function toolOf(run: (args: unknown, exec: ToolDispatchExecution) => Promise<unk
     name: 'bili_look',
     description: 'test',
     parameters: {},
-    output: { schema: { type: 'object', additionalProperties: true }, render: (_a, value) => [{ type: 'text', text: String(value) }] },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args: unknown, value: unknown) => [{ type: 'text', text: String(value) }],
+    },
     execute: run,
   } as unknown as ToolDefinition
 }
@@ -79,9 +82,9 @@ describe('后台长工具', () => {
     release()
     await settle()
     expect(h.results).toHaveLength(1)
-    expect(h.results[0].chatKey).toBe('group:1')
-    expect(h.results[0].traceIds).toEqual(['t1'])
-    expect(h.results[0].text).toContain('看完了')
+    expect(h.results.at(0)?.chatKey).toBe('group:1')
+    expect(h.results.at(0)?.traceIds).toEqual(['t1'])
+    expect(h.results.at(0)?.text).toContain('看完了')
   })
 
   it('同一会话乱序完成仍按顺序补发，且每条只发一次', async () => {
@@ -114,7 +117,7 @@ describe('后台长工具', () => {
     await settle()
     await settle()
     expect(h.results).toHaveLength(1)
-    expect(h.results[0].text).toContain('没办完。')
+    expect(h.results.at(0)?.text).toContain('没办完。')
   })
 
   it('急停、超时、关闭后丢弃结果，跨会话互不干扰', async () => {
