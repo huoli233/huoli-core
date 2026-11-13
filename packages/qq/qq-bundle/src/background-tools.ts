@@ -56,6 +56,7 @@ interface Task {
   controller: AbortController
   timer: ReturnType<typeof setTimeout>
   done: boolean
+  settled: boolean
 }
 
 function textOf(value: unknown): string {
@@ -79,7 +80,7 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
   const generations = new Map<string, number>()
   const nextSeq = new Map<string, number>()
   const buffered = new Map<string, PendingResult[]>()
-  const delivered = new Map<string, number>()
+  const nextToDeliver = new Map<string, number>()
   const active = { value: true }
   const wake = options.wake
   options.setWake(wake)
@@ -92,11 +93,10 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
   const flush = (chatKey: string): void => {
     const rows = buffered.get(chatKey)
     if (rows === undefined) return
-    const expected = Number(delivered.get(chatKey) ?? 0)
-    const ordered = rows.sort((a, b) => a.seq - b.seq)
-    let cursor = expected
+    const ordered = [...rows].sort((a, b) => a.seq - b.seq)
+    let cursor = nextToDeliver.get(chatKey) ?? 0
+    let sent = 0
     for (const row of ordered) {
-      if (row.seq < expected) continue
       if (row.seq !== cursor) break
       const text = renderExternalMaterial({
         source: '后台工具',
@@ -107,13 +107,14 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
       })
       const accepted = wake(chatKey, text, 'tool-background', row.traceIds)
       note(accepted ? 'background_result_queued' : 'background_result_dropped', chatKey, {
-        tool: ordered.find(item => item.seq === row.seq)?.text.slice(0, 40) ?? '',
+        tool: row.text.slice(0, 40),
         seq: row.seq,
       })
       cursor += 1
+      sent += 1
     }
-    delivered.set(chatKey, cursor)
-    const left = ordered.filter(row => row.seq >= cursor)
+    nextToDeliver.set(chatKey, cursor)
+    const left = ordered.slice(sent)
     if (left.length === 0) buffered.delete(chatKey)
     else buffered.set(chatKey, left)
   }
@@ -125,7 +126,11 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
     tasks.delete(task.callId)
     note('background_tool_finished', task.chatKey, { tool: task.toolName, callId: task.callId, outcome })
     if (!canDeliver(task)) return
-    if (outcome === 'cancelled') return
+    if (outcome === 'cancelled') {
+      nextToDeliver.set(task.chatKey, (nextToDeliver.get(task.chatKey) ?? task.seq) + 1)
+      flush(task.chatKey)
+      return
+    }
     const body = outcome === 'ok' ? text : `[失败] ${config.failureText}`
     const rows = buffered.get(task.chatKey) ?? []
     rows.push({ seq: task.seq, text: body, traceIds: task.traceIds })
@@ -155,11 +160,17 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
 
   const cancelTask = (task: Task, reason: string): void => {
     if (task.done) return
+    const generation = task.generation
+    const activeAtStart = active.value
     task.done = true
     clearTimeout(task.timer)
     tasks.delete(task.callId)
     task.controller.abort(new Error(reason))
     note('background_tool_cancelled', task.chatKey, { tool: task.toolName, callId: task.callId, reason })
+    if (activeAtStart && generation === (generations.get(task.chatKey) ?? 0)) {
+      nextToDeliver.set(task.chatKey, (nextToDeliver.get(task.chatKey) ?? task.seq) + 1)
+      flush(task.chatKey)
+    }
   }
 
   const cancel = (chatKey: string, reason: string): void => {
@@ -228,7 +239,7 @@ export function createBackgroundToolRuntime(options: BackgroundToolOptions): Bac
       for (const task of [...tasks.values()]) cancelTask(task, 'qq-bundle closed')
       tasks.clear()
       buffered.clear()
-      delivered.clear()
+      nextToDeliver.clear()
       ctx.logger('qq-bundle').info('后台长任务已全部停止')
     },
   }
