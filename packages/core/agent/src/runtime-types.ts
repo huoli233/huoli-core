@@ -336,6 +336,15 @@ declare module '@huoli/cordis' {
     'agent/inbox/discarded'(this: Scoped<Agent>, payload: { agent: Agent; message: UserMessage }): void
     // ---- the machine's extension points ----
     /**
+     * Awaited immediately before each step resolves its tool set. Plugins may
+     * update scoped tool restrictions from trusted turn-local context here.
+     * @param payload.agent - the agent preparing the step.
+     * @param payload.turn - current turn number.
+     * @param payload.step - proposed step number.
+     * @mode serial
+     */
+    'agent/tools-resolving'(this: Scoped<Agent>, payload: { agent: Agent; turn: number; step: number }): undefined | Promise<undefined>
+    /**
      * Reject a proposed step or replace the messages that enter it. Calling
      * `next()` preserves the current messages.
      * @param payload.agent - the agent proposing the step.

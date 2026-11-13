@@ -6,6 +6,7 @@ import SystemPrompt from '@huoli/huoli-system-prompt'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   apply,
+  applyEvents,
   biasUnit,
   createVitalsStore,
   derive,
@@ -74,12 +75,22 @@ describe('一句话验收', () => {
     expect(after.fluid_queue).toBeCloseTo(0.55, 6)
   })
 
+  it('真的说过一句话之后，孤独会落一点，亲近会抬一点', () => {
+    const before = settled({ loneliness: 0.8, oxytocin: 0.2 })
+
+    const after = applyEvents(before, [{ kind: 'talked' }], START + 60_000, tuning)
+
+    expect(after.loneliness).toBeLessThan(before.loneliness)
+    expect(after.oxytocin).toBeGreaterThan(before.oxytocin)
+  })
+
   it('两次渲染不逐字相同，但都没有数字也没有激素名', () => {
     const state = settled({ thirst: 0.58 })
     const first = renderPrompt(state, tuning, 0)
     const second = renderPrompt(state, tuning, 1)
 
     expect(first).not.toBe(second)
+    expect(second).toContain('情绪合适时可以带个颜文字')
     for (const text of [first, second]) {
       expect(/\d/u.test(text)).toBe(false)
       for (const name of HORMONE_NAMES) expect(text).not.toContain(name)
@@ -88,10 +99,35 @@ describe('一句话验收', () => {
 })
 
 describe('提示词的边界', () => {
-  it('最多三百字', () => {
+  it('不超过配置的身体提示词上限', () => {
     const states = [settled(), settled({ thirst: 1, hunger: 1, cytokines: 1, fever: 1, pain: 1, adenosine: 1 })]
 
     for (const state of states) expect(renderPrompt(state, tuning).length).toBeLessThanOrEqual(tuning.promptMaxChars)
+  })
+
+  it('系统标记和应激反应会进入身体提示词', () => {
+    const text = renderPrompt(settled({ anger: 0.8, cortisol: 0.8 }), tuning)
+
+    expect(text).toContain('[SYSTEM_LOAD] QQ_BODY_STATE')
+    expect(text).toContain('REACTIVITY: HIGH')
+    expect(text).toContain('COUNTER: check_relationship|rest|boundary')
+  })
+
+  it('高状态值会变成明确的表达约束，而不只是语气建议', () => {
+    const text = renderPrompt(fresh({
+      sleep_state: 'sleeping',
+      energy: 0.1,
+      thirst: 0.9,
+      anger: 0.8,
+      fever: 0.8,
+    }), tuning)
+
+    expect(text).toContain('state_values_constrain_expression')
+    expect(text).toContain('不主动起话头')
+    expect(text).toContain('用短句')
+    expect(text).toContain('不能装成已经吃过喝过')
+    expect(text).toContain('不能假装已经平静')
+    expect(text).toContain('少承诺活动')
   })
 
   it('不含激素名与数字', () => {
@@ -271,6 +307,16 @@ describe('消息接进身体', () => {
 })
 
 describe('重启后接着走', () => {
+  it('普通反应可以延后落盘，明确需要保存的节点仍立即写', () => {
+    const file = tempFile()
+    const store = createVitalsStore({ file, tuning })
+    store.write({ ...emptyState(tuning, START), thirst: 0.3 }, false)
+    expect(fs.existsSync(file)).toBe(false)
+
+    store.write({ ...emptyState(tuning, START), thirst: 0.7 }, true)
+    expect(createVitalsStore({ file, tuning }).read().thirst).toBeCloseTo(0.7, 6)
+  })
+
   it('状态从文件恢复', () => {
     const file = tempFile()
     const store = createVitalsStore({ file, tuning })
@@ -316,10 +362,10 @@ describe('接到提示词上', () => {
     expect(state.emotion_level.length).toBeGreaterThan(0)
   })
 
-  it('连着渲染两次不逐字相同', async () => {
+  it('同一天内连着渲染保持稳定，好让提示词前缀命中缓存', async () => {
     const { seam } = await mount(tempFile())
 
-    expect(seam.render()).not.toBe(seam.render())
+    expect(seam.render()).toBe(seam.render())
   })
 })
 

@@ -33,8 +33,24 @@ export interface DecisionRecord {
   steps?: number
   /** 有没有给过收尾提醒 */
   wrapped?: boolean
+  /** 这一轮是不是明确决定先不开口 */
+  held?: boolean
   /** 最后调的是哪个工具，没调过就是空 */
   lastTool?: string
+  /** 这一轮最后怎么结束的 */
+  outcome?: 'running' | 'completed' | 'blocked' | 'error' | 'aborted' | 'max-tokens' | 'interrupted' | 'forked'
+  /** 这一轮实际使用的互动模式 */
+  mode?: 'probability' | 'heartflow' | 'autonomous'
+  /** 失败时的原因码，不存失败正文 */
+  failureCode?: string
+  /** 这一轮实际采用的模型提供方 */
+  provider?: string
+  /** 这一轮实际采用的模型名 */
+  model?: string
+  /** 第一次请求模型的时刻 */
+  requestAt?: number
+  /** 这一轮对应的入站追踪编号 */
+  traceIds?: string[]
 }
 
 /** 建记录要用的东西 */
@@ -47,6 +63,132 @@ export interface DecisionLogOptions {
 export interface DecisionLog {
   append(record: DecisionRecord): void
   read(sinceAt: number, limit: number): DecisionRecord[]
+}
+
+/** 写入一条唤醒诊断 */
+export type WakeRecorder = (kind: string, chatKey: string, detail?: Record<string, unknown>) => void
+
+/** 时间线里的一步，只留阶段、时刻和排查字段 */
+export interface TimelineRecord {
+  /** 走到了哪一步 */
+  kind: string
+  /** 什么时候 */
+  at: number
+  /** 哪个会话 */
+  chatKey: string
+  /** 串起同一条消息的编号 */
+  traceId?: string
+  /** 其余排查字段 */
+  [key: string]: unknown
+}
+
+/** 一个会话里的追踪编号与读写入口 */
+export interface TimelineRuntime {
+  /** 记下这个会话现在处理哪条消息 */
+  startTrace(traceId: string, chatKey: string): void
+  /** 写一个阶段 */
+  record: WakeRecorder
+  /** 按追踪编号读；空编号读最近几步 */
+  read(traceId: string, limit: number): TimelineRecord[]
+}
+
+/** 时间线默认最多留多少条、留多久 */
+export const TIMELINE_DEFAULTS = {
+  maxLines: 5_000,
+  retentionMs: 7 * 24 * 3_600_000,
+} as const
+
+/** 读不到当没有，坏行跳过 */
+function timelineRecords(file: string): TimelineRecord[] {
+  return readText(file).split('\n').flatMap((line) => {
+    if (line.trim() === '') return []
+    let raw: unknown
+    try {
+      raw = JSON.parse(line)
+    } catch {
+      return []
+    }
+    if (raw === null || typeof raw !== 'object') return []
+    const row = raw as Record<string, unknown>
+    if (typeof row.kind !== 'string' || row.kind === '') return []
+    if (typeof row.at !== 'number' || !Number.isFinite(row.at)) return []
+    if (typeof row.chatKey !== 'string') return []
+    return [{
+      ...row,
+      kind: row.kind,
+      at: row.at,
+      chatKey: row.chatKey,
+    }]
+  })
+}
+
+/**
+ * 建统一诊断时间线
+ * @param options - 文件位置与告警出口
+ * @returns 写入、设追踪编号和读取接口
+ */
+export function createTimeline(options: {
+  file: string
+  warn: { warn: (message: string, ...rest: unknown[]) => void }
+  maxLines?: number
+  retentionMs?: number
+}): TimelineRuntime {
+  const active = new Map<string, string>()
+  const maxLines = Math.max(1, Math.floor(options.maxLines ?? TIMELINE_DEFAULTS.maxLines))
+  const retentionMs = Math.max(1, Math.floor(options.retentionMs ?? TIMELINE_DEFAULTS.retentionMs))
+  let count = timelineRecords(options.file).length
+  let writes = 0
+  const record: WakeRecorder = (kind, chatKey, detail = {}) => {
+    const rest = { ...detail }
+    const explicit = rest.traceId
+    delete rest.traceId
+    const traceId = typeof explicit === 'string' && explicit !== '' ? explicit : active.get(chatKey)
+    try {
+      fs.mkdirSync(path.dirname(options.file), { recursive: true })
+      fs.appendFileSync(options.file, `${JSON.stringify({
+        kind,
+        at: Date.now(),
+        chatKey,
+        ...traceId === undefined ? {} : { traceId },
+        ...rest,
+      })}\n`, { mode: 0o600 })
+      count += 1
+      writes += 1
+      if (count > maxLines || writes % 100 === 0) {
+        const cutoff = Date.now() - retentionMs
+        const kept = timelineRecords(options.file).filter(row => row.at >= cutoff).slice(-maxLines)
+        writeAtomically(options.file, kept.map(row => JSON.stringify(row)).join('\n') + (kept.length === 0 ? '' : '\n'))
+        count = kept.length
+      }
+    } catch (error) {
+      options.warn.warn('诊断时间线没写成：%s', String(error))
+    }
+  }
+  return {
+    startTrace(traceId, chatKey) {
+      if (traceId !== '') active.set(chatKey, traceId)
+    },
+    record,
+    read(traceId, limit) {
+      const cap = Math.max(0, Math.floor(limit))
+      if (cap === 0) return []
+      const rows = timelineRecords(options.file).filter(row => traceId === '' || row.traceId === traceId)
+      return rows.slice(-cap)
+    },
+  }
+}
+
+/**
+ * 建唤醒诊断的写入函数
+ * @param file - 一行一条的文件
+ * @param warn - 写不进去时往哪报
+ * @returns 写入函数
+ */
+export function createWakeRecorder(
+  file: string,
+  warn: { warn: (message: string, ...rest: unknown[]) => void },
+): WakeRecorder {
+  return createTimeline({ file, warn }).record
 }
 
 // 读不到当没有
@@ -114,7 +256,27 @@ function parseLine(line: string): DecisionRecord | null {
   const steps = Number(row.steps)
   if (row.steps !== undefined && Number.isFinite(steps)) record.steps = steps
   if (row.wrapped === true) record.wrapped = true
+  if (row.held === true) record.held = true
   if (typeof row.lastTool === 'string' && row.lastTool !== '') record.lastTool = row.lastTool
+  if (row.mode === 'probability' || row.mode === 'heartflow' || row.mode === 'autonomous') record.mode = row.mode
+  if (
+    row.outcome === 'running'
+    || row.outcome === 'completed'
+    || row.outcome === 'blocked'
+    || row.outcome === 'error'
+    || row.outcome === 'aborted'
+    || row.outcome === 'max-tokens'
+    || row.outcome === 'interrupted'
+    || row.outcome === 'forked'
+  ) record.outcome = row.outcome
+  if (typeof row.failureCode === 'string' && row.failureCode !== '') record.failureCode = row.failureCode
+  if (typeof row.provider === 'string' && row.provider !== '') record.provider = row.provider
+  if (typeof row.model === 'string' && row.model !== '') record.model = row.model
+  if (typeof row.requestAt === 'number' && Number.isFinite(row.requestAt)) record.requestAt = row.requestAt
+  if (Array.isArray(row.traceIds)) {
+    const traceIds = row.traceIds.filter((value): value is string => typeof value === 'string' && value !== '')
+    if (traceIds.length > 0) record.traceIds = traceIds
+  }
   return record
 }
 

@@ -48,6 +48,21 @@ function copyTriggers(triggers: WakeTriggers): Record<string, boolean | string[]
   return value
 }
 
+function normalizeTriggers(value: unknown): WakeTriggers {
+  if (value === null || typeof value !== 'object') return {}
+  const row = value as Record<string, unknown>
+  const triggers: WakeTriggers = {}
+  if (typeof row.atMention === 'boolean') triggers.atMention = row.atMention
+  if (typeof row.nameMention === 'boolean') triggers.nameMention = row.nameMention
+  if (typeof row.question === 'boolean') triggers.question = row.question
+  if (typeof row.poke === 'boolean') triggers.poke = row.poke
+  if (typeof row.anyMessage === 'boolean') triggers.anyMessage = row.anyMessage
+  if (Array.isArray(row.speakerIds)) {
+    triggers.speakerIds = row.speakerIds.filter((id): id is string => typeof id === 'string' && id !== '')
+  }
+  return triggers
+}
+
 /**
  * 挂上五个工具
  * @param ctx - 运行环境
@@ -185,7 +200,7 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
 
   ctx.tools.register(defineTool({
     name: 'set_wake_config',
-    description: '决定下次什么时候叫醒你：每条都醒、睡一会儿、或只在这几种情况醒。推荐被叫、被点名、有提问。',
+    description: '决定下次什么时候叫醒你：每条都醒、定时安静一段时间、或只在这几种情况醒。定时安静主要挡群聊；好友私聊是否仍叫醒由 QQ 组合配置决定。真要停聊时，先发一句说明大概几点醒，再调用这个工具。',
     parameters: {
       infinite: { type: 'boolean', description: '每条消息都醒。' },
       sleepMs: { type: 'number', description: '睡这么久再醒，与 infinite 二选一。' },
@@ -235,14 +250,23 @@ export function registerAttentionTools(ctx: Context, deps: ToolDeps): void {
         throughSeq = requested
       }
 
-      const triggers: WakeTriggers = { ...state.triggers, ...(args.triggers as WakeTriggers | undefined ?? {}) }
+      const triggers = args.triggers === undefined
+        ? (wantsInfinite ? { ...state.triggers, anyMessage: true } : state.triggers)
+        : normalizeTriggers(args.triggers)
 
       store.append({ type: 'wake', chatKey, wakeMode, wakeUntil, triggers, at: now })
       if (throughSeq !== undefined) store.append({ type: 'read', chatKey, throughSeq, at: now })
       const next = store.of(chatKey)
+      const wakeAt = next.wakeUntil === null
+        ? ''
+        : new Date(next.wakeUntil).toLocaleString('zh-CN', { hour12: false })
       return Promise.resolve({
         wakeMode: next.wakeMode,
         wakeUntil: next.wakeUntil,
+        wakeAt,
+        notice: next.wakeMode === 'timed' && wakeAt !== ''
+          ? `收口前先发一句：我大概 ${wakeAt} 醒。`
+          : '',
         triggers: copyTriggers(next.triggers),
         readThroughSeq: next.readThroughSeq,
       })

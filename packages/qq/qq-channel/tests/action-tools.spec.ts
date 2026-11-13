@@ -7,10 +7,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apply, qqChannelOf, type Config, type QqChannelSeam } from '../src/index.ts'
 
 type SocketHandler = (event: { data?: string }) => void
+type FakeFrame = { echo?: string; action?: string; params?: Record<string, unknown> }
+type FakeReply = { retcode?: number; data?: Record<string, unknown>; message?: string; wording?: string }
+
+const CARD_PREVIEW = 'https://i0.hdslb.com/bfs/archive/example.jpg'
+
+function arkWithPreview(preview: string): Record<string, unknown> {
+  return {
+    app: 'com.tencent.miniapp_01',
+    view: 'view_example',
+    config: { token: 'token_example' },
+    meta: { detail_1: { title: '哔哩哔哩', preview, url: 'https://www.bilibili.com/video/BV1abc123456' } },
+  }
+}
 
 // 每次发出去都立刻回一个 echo，好让发送这条路当场结算
 class FakeSocket {
   static readonly opened: FakeSocket[] = []
+  static respond: ((frame: FakeFrame) => FakeReply | null | undefined) | undefined
   readyState = 0
   readonly sent: string[] = []
   private readonly handlers = new Map<string, SocketHandler[]>()
@@ -27,9 +41,14 @@ class FakeSocket {
 
   send(payload: string): void {
     this.sent.push(payload)
-    const echo = (JSON.parse(payload) as { echo?: string }).echo
-    if (echo === undefined) return
-    this.emit('message', JSON.stringify({ echo, retcode: 0, data: { message_id: this.sent.length } }))
+    const frame = JSON.parse(payload) as FakeFrame
+    if (frame.echo === undefined) return
+    const reply = FakeSocket.respond?.(frame)
+    if (reply === null) return
+    this.emit('message', JSON.stringify({
+      echo: frame.echo,
+      ...(reply ?? { retcode: 0, data: { message_id: this.sent.length } }),
+    }))
   }
 
   close(): void {
@@ -130,7 +149,21 @@ function nodded(seam: QqChannelSeam, kind: 'comment' | 'private', text: string):
 
 beforeEach(() => {
   FakeSocket.opened.length = 0
+  FakeSocket.respond = undefined
   vi.stubGlobal('WebSocket', FakeSocket)
+  vi.stubGlobal('fetch', vi.fn(async (input: string | URL | Request) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+    if (url.includes('/x/frontend/finger/spi')) {
+      return new Response(JSON.stringify({ code: 0, data: { b_3: 'device-id' } }))
+    }
+    if (url.includes('/x/web-interface/view')) {
+      return new Response(JSON.stringify({ code: 0, data: { pic: CARD_PREVIEW.replace('https:', 'http:') } }))
+    }
+    return new Response('{}', { status: 404 })
+  }))
+  FakeSocket.respond = frame => frame.action === 'get_mini_app_ark'
+    ? { retcode: 0, data: { data: arkWithPreview(CARD_PREVIEW) } }
+    : undefined
   vi.useFakeTimers()
   vi.setSystemTime(NOON)
 })
@@ -184,6 +217,96 @@ describe('工具清单', () => {
     expect(ask).toContain('comment')
     expect(ask).toContain('private')
     expect(ask).not.toContain('routine')
+  })
+})
+
+describe('B站小程序卡', () => {
+  const args = {
+    url: 'https://www.bilibili.com/video/BV1abc123456',
+    title: '视频标题',
+    desc: '一段视频简介',
+  }
+
+  it('全群开关允许不在名单里的可发言群使用已签名卡片', async () => {
+    const { tool, sent } = mount({
+      groupCardEnabled: true,
+      groupCardAllGroups: true,
+      groupCardGroups: ['group-from-old-list'],
+    })
+
+    const result = await tool('qq_send_card').execute(args, execOf('group:123'))
+    const frames = sent.map(value => JSON.parse(value) as FakeFrame)
+    const messages = frames.filter(frame => frame.action === 'send_group_msg').map(frame => frame.params?.message)
+    const arkRequest = frames.find(frame => frame.action === 'get_mini_app_ark')
+
+    expect(result).toMatchObject({ ok: true, delivery: 'card_with_link' })
+    expect(arkRequest?.params?.pic_url).toBe(CARD_PREVIEW)
+    expect(messages).toEqual([
+      [{ type: 'json', data: { data: JSON.stringify(arkWithPreview(CARD_PREVIEW)) } }],
+      [{ type: 'text', data: { text: args.url } }],
+    ])
+  })
+
+  it('网关回空白封面时不发半截小程序，改发文字链接', async () => {
+    FakeSocket.respond = frame => frame.action === 'get_mini_app_ark'
+      ? { retcode: 0, data: { data: arkWithPreview('') } }
+      : undefined
+    const { tool, sent } = mount({ groupCardEnabled: true, groupCardAllGroups: true })
+
+    const result = await tool('qq_send_card').execute(args, execOf('group:123'))
+    const messages = sent.map(value => JSON.parse(value) as FakeFrame)
+      .filter(frame => frame.action === 'send_group_msg')
+      .map(frame => frame.params?.message)
+
+    expect(result).toMatchObject({ ok: true, delivery: 'text_fallback', reason: 'card.incomplete_ark' })
+    expect(messages).toEqual([[
+      { type: 'text', data: { text: '视频标题\n一段视频简介\n链接：https://www.bilibili.com/video/BV1abc123456' } },
+    ]])
+  })
+
+  it('网关没能签名时自动发送经过出站检查的文字链接', async () => {
+    FakeSocket.respond = frame => frame.action === 'get_mini_app_ark'
+      ? { retcode: 100, message: '签名服务不可用' }
+      : undefined
+    const { tool, sent } = mount({ groupCardEnabled: true, groupCardAllGroups: true })
+
+    const result = await tool('qq_send_card').execute(args, execOf('group:123'))
+    const frames = sent.map(value => JSON.parse(value) as FakeFrame)
+    const message = frames.find(frame => frame.action === 'send_group_msg')
+
+    expect(result).toMatchObject({ ok: true, delivery: 'text_fallback' })
+    expect(message?.params?.message).toEqual([{
+      type: 'text',
+      data: { text: '视频标题\n一段视频简介\n链接：https://www.bilibili.com/video/BV1abc123456' },
+    }])
+  })
+
+  it('卡片发送没有回执时不再补发文字，避免重复', async () => {
+    FakeSocket.respond = (frame) => {
+      if (frame.action === 'get_mini_app_ark') return { retcode: 0, data: { data: arkWithPreview(CARD_PREVIEW) } }
+      if (frame.action === 'send_group_msg' && JSON.stringify(frame.params).includes('"type":"json"')) return null
+      return undefined
+    }
+    const { tool, sent } = mount({ groupCardEnabled: true, groupCardAllGroups: true, callTimeoutMs: 1000 })
+    const pending = tool('qq_send_card').execute(args, execOf('group:123'))
+    const rejected = expect(pending).rejects.toThrow('card.outcome_unknown')
+
+    await vi.advanceTimersByTimeAsync(1001)
+    await rejected
+    const groupSends = sent
+      .map(value => JSON.parse(value) as FakeFrame)
+      .filter(frame => frame.action === 'send_group_msg')
+
+    expect(groupSends).toHaveLength(1)
+    expect(JSON.stringify(groupSends[0]?.params)).toContain('"type":"json"')
+  })
+
+  it('拒绝伪装成 B站域名的外部链接', async () => {
+    const { tool, sent } = mount({ groupCardEnabled: true, groupCardAllGroups: true })
+
+    await expect(tool('qq_send_card').execute({ ...args, url: 'https://www.bilibili.com.evil.test/video/BV1abc123456' }, execOf('group:123')))
+      .rejects.toThrow('card.bad_url')
+    expect(sent.map(value => JSON.parse(value) as FakeFrame).some(frame => frame.action === 'get_mini_app_ark')).toBe(false)
   })
 })
 

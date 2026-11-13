@@ -1,9 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@huoli/cordis'
-import { applyUsage, costOf, dayOf, levelOf, readPriceSheet, tokensOf } from '../src/index.ts'
+import SystemPrompt from '@huoli/huoli-system-prompt'
+import { apply as applyVitals, qqVitalsOf } from '@huoli/huoli-qq-vitals'
+import { applyUsage, budgetStatusOf, costOf, dayOf, levelOf, qqBalanceOf, readPriceSheet, tokensOf } from '../src/index.ts'
 
 const dirs: string[] = []
 
@@ -69,6 +71,20 @@ describe('账落盘与跨天', () => {
     writeFileSync(file, '不是 JSON')
 
     expect(() => { JSON.parse(readFileSync(file, 'utf8')) }).toThrow()
+  })
+})
+
+describe('预算状态', () => {
+  it('八成就提醒，到上限才阻止', () => {
+    expect(budgetStatusOf({ day: '2026-11-07', used: 800 }, 'tokens', 1_000, 0.8, true))
+      .toMatchObject({ ratio: 0.8, alert: true, blocked: false })
+    expect(budgetStatusOf({ day: '2026-11-07', used: 1_000 }, 'tokens', 1_000, 0.8, true))
+      .toMatchObject({ ratio: 1, alert: true, blocked: true, remaining: 0 })
+  })
+
+  it('没打开硬闸时只报状态，不阻止', () => {
+    expect(budgetStatusOf({ day: '2026-11-07', used: 2_000 }, 'tokens', 1_000, 0.8, false))
+      .toMatchObject({ ratio: 2, alert: true, blocked: false })
   })
 })
 
@@ -162,5 +178,43 @@ describe('装进运行环境', () => {
     // 没有身体那一路时也不能抛：读写只走自己那份账
     const { apply } = await import('../src/index.ts')
     expect(() => { apply(ctx, { stateFile: file, dailyTokens: 1_000 }) }).not.toThrow()
+  })
+
+  it('默认只记账，不影响身体', async () => {
+    const ctx = new Context()
+    await ctx.plugin(SystemPrompt, {})
+    applyVitals(ctx, { file: tempFile() })
+    const vitals = qqVitalsOf(ctx)
+    if (vitals === undefined) throw new Error('身体没装上')
+    const setBalance = vi.spyOn(vitals, 'setBalance')
+    const { apply } = await import('../src/index.ts')
+
+    apply(ctx, { stateFile: tempFile(), dailyTokens: 1_000 })
+
+    expect(setBalance).toHaveBeenCalledWith(undefined)
+  })
+
+  it('显式打开后才把额度交给身体', async () => {
+    const ctx = new Context()
+    await ctx.plugin(SystemPrompt, {})
+    applyVitals(ctx, { file: tempFile() })
+    const vitals = qqVitalsOf(ctx)
+    if (vitals === undefined) throw new Error('身体没装上')
+    const setBalance = vi.spyOn(vitals, 'setBalance')
+    const { apply } = await import('../src/index.ts')
+
+    apply(ctx, { stateFile: tempFile(), dailyTokens: 1_000, affectsVitals: true })
+
+    expect(setBalance).toHaveBeenCalledWith(10)
+  })
+
+  it('装配后能读到当天是否到线', async () => {
+    const file = tempFile()
+    writeFileSync(file, JSON.stringify({ day: dayOf(Date.now(), ''), used: 1_000 }))
+    const ctx = new Context()
+    const { apply } = await import('../src/index.ts')
+    apply(ctx, { stateFile: file, dailyTokens: 1_000, enforce: true })
+
+    expect(qqBalanceOf(ctx)?.status()).toMatchObject({ ratio: 1, alert: true, blocked: true })
   })
 })

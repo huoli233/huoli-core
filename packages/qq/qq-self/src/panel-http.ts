@@ -1,22 +1,30 @@
-// 只读面板出口：只绑回环地址的 HTTP 服务，只认三个 GET 路由，不写文件也不改状态
+// 本地面板出口：只绑回环地址，状态走 GET，急停与模式切换走 POST
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import { localDay } from './day.ts'
-import { briefShell, escapeHtml, percent } from './panel.ts'
+import {
+  briefShell,
+  escapeHtml,
+  liveLine,
+  PANEL_CONTROL_SCRIPT,
+  panelModeHtml,
+  panelPersonaHtml,
+  percent,
+} from './panel.ts'
+import { isPanelPostPath, panelSettingsAnswer, type PanelHttpOptions } from './panel-state.ts'
+import { panelLimitsHtml, limitsPatchOf, type LimitsState } from './panel-limits.ts'
 import type { PanelDayRow, PanelState, PanelVitals } from './types.ts'
-
+export type { PanelHttpOptions } from './panel-state.ts'
 // 出口只绑这个地址，别的网卡上连不进来
 const LOOPBACK = '127.0.0.1'
 
 // 页面每隔这么多秒自己去取一次，不再整页重载
 const REFRESH_SECONDS = 3
 
-// 动画最多跑多少帧：文档里说粒子与火舌 30fps 够用，再快只是白烧 CPU
 const ANIMATION_FPS = 30
 
 const HTML = 'text/html; charset=utf-8'
 const JSON_TYPE = 'application/json; charset=utf-8'
-
 // 一天压成一行：跳过的写原因，写过的把三行接起来
 function dayText(row: PanelDayRow): string {
   const day = localDay(row.at)
@@ -57,23 +65,23 @@ const STYLE = [
   'canvas.water{position:absolute;left:0;top:0}',
   '.env-labels{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}',
   '.pairs{margin:0;padding:0;list-style:none}',
-  '.pair{display:grid;grid-template-columns:7em minmax(280px,1fr);align-items:start;gap:10px;margin:6px 0}',
+  '.pair{display:grid;grid-template-columns:minmax(0,7em) minmax(0,1fr);align-items:start;gap:10px;margin:6px 0}',
   '.pair-bars{display:block}',
-  '.pair-line{display:grid;grid-template-columns:5.5em 1fr;align-items:center;gap:8px;margin:2px 0}',
+  '.pair-line{display:grid;grid-template-columns:minmax(0,5.5em) minmax(0,1fr);align-items:center;gap:8px;margin:2px 0}',
   '.pair-word{font-size:10px;letter-spacing:1px;color:var(--muted);white-space:nowrap}',
   '.pair-track{display:block;height:5px;background:rgba(127,147,184,.22);border-radius:3px;overflow:hidden}',
   '.pair-fill{display:block;height:100%;border-radius:3px;background:var(--cyan)}',
   '.pair-fill.alt{background:var(--green)}',
   '.tank{position:relative}',
   '.bars{margin:0;padding:0;list-style:none}',
-  '.bar-row{display:grid;grid-template-columns:7em minmax(300px,1fr);align-items:center;gap:10px;margin:4px 0}',
+  '.bar-row{display:grid;grid-template-columns:minmax(0,7em) minmax(0,1fr);align-items:center;gap:10px;margin:4px 0}',
   '.bar-name{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap}',
   '.bar-track{display:block;height:6px;background:rgba(127,147,184,.22);border-radius:3px;overflow:hidden}',
   '.bar-fill{display:block;height:100%;border-radius:3px;background:var(--cyan)}',
-  '.body-bar .bar-fill{background:var(--green)}',
-  '.emotion-bar .bar-fill{background:var(--purple)}',
+  '.body-bar .bar-fill{background:var(--green)}.emotion-bar .bar-fill{background:var(--purple)}',
   'ul{margin:0;padding-left:18px}',
   'p{margin:4px 0}',
+  'canvas{max-width:100%}@media (max-width:520px){.wrap{padding:10px;gap:10px}.left,.right{gap:10px}.pair{grid-template-columns:5.5em minmax(0,1fr);gap:6px}.bar-row{grid-template-columns:5.5em minmax(0,1fr);gap:6px}.pair-word,.bar-name{overflow-wrap:anywhere;white-space:normal}}',
 ].join('')
 
 // 水罐按水位分三档：水位 = 一减渴，颜色一律用蓝，深的是水少
@@ -181,8 +189,14 @@ const SCRIPT = [
   'flame(c,c.getAttribute("data-anger"),c.getAttribute("data-resent"))});',
   'Array.prototype.forEach.call(document.querySelectorAll("canvas.particles"),function(c){particleCanvas(c,now)})};',
   'requestAnimationFrame(raf);',
+  'var liveLine=function(l){var box=document.getElementById("live-line");if(!box||!l)return;',
+  'var c=function(v){return new Date(Number(v)||0).toLocaleTimeString("zh-CN",{hour12:false})},f=[];',
+  'if(l.typing)f.push("正在写 "+l.typing.chatKey+" 第 "+l.typing.step+" 步（"+c(l.typing.since)+" 起）");',
+  'if(l.inbound)f.push("刚收到 "+l.inbound.chatKey+" "+l.inbound.count+" 条（"+c(l.inbound.at)+"）");',
+  'if(l.proactive)f.push("主动开口"+(l.proactive.blocked?"被挡":"放行")+"："+l.proactive.reason+"（"+c(l.proactive.at)+"）");',
+  'box.textContent=f.join(" · ")};',
   'var tick=function(){fetch("/api/state",{headers:{accept:"application/json"}})',
-  '.then(function(r){return r.json()}).then(paint).catch(function(){})};',
+  '.then(function(r){return r.json()}).then(function(s){paint(s);liveLine(s&&s.live)}).catch(function(){})};',
   'setInterval(tick,' + String(REFRESH_SECONDS * 1000) + ');',
   '})();',
 ].join('')
@@ -398,7 +412,17 @@ function bodyBlocks(vitals: PanelVitals | undefined): string[] {
  * @param options - brief 为真时只出简短版，给陪玩与视频那几路看
  * @returns 内联样式与内联脚本、没有外部资源的一页，每三秒自己去取一次
  */
-export function panelPage(state: PanelState, options: { brief?: boolean } = {}): string {
+export function panelPage(
+  state: PanelState,
+  options: {
+    brief?: boolean
+    emergency?: { active: boolean; at: number; reason: string }
+    mode?: { current: string; options: readonly { value: string; label: string; description?: string }[] }
+    limits?: LimitsState
+    personas?: { list: readonly { id: string; name: string }[]; activeId: string }
+    hasQq?: boolean
+  } = {},
+): string {
   if (options.brief === true) return briefShell(state, STYLE)
   const identity = state.identity === undefined
     ? '还没有写过'
@@ -407,6 +431,8 @@ export function panelPage(state: PanelState, options: { brief?: boolean } = {}):
     ? '<li class="muted">近七天还没有记录</li>'
     : state.days.map(row => `<li>${escapeHtml(dayText(row))}</li>`).join('')
   const generatedAt = state.panel.generatedAt === '' ? '还没生成' : state.panel.generatedAt
+  const hasControl = options.emergency !== undefined || options.mode !== undefined
+    || options.personas !== undefined || options.hasQq === true
   return [
     '<!doctype html>',
     '<html lang="zh-CN">',
@@ -427,9 +453,30 @@ export function panelPage(state: PanelState, options: { brief?: boolean } = {}):
     '<h3>身份主张</h3>',
     `<p>${escapeHtml(identity)}</p>`,
     '</div>',
+    ...hasControl ? [
+      '<div class="card">',
+      '<h3>运行控制</h3>',
+      ...options.mode === undefined ? [] : [panelModeHtml(options.mode)],
+      ...options.emergency === undefined ? [] : [
+        `<p id="emergency-status">${escapeHtml(options.emergency.active ? `已急停：${options.emergency.reason}` : '正在运行')}</p>`,
+        '<button id="emergency-stop" type="button">急停</button> ',
+        '<button id="emergency-resume" type="button">恢复</button>',
+      ],
+      ...options.limits === undefined ? [] : panelLimitsHtml(),
+      ...options.personas === undefined && options.hasQq !== true ? [] : [
+        panelPersonaHtml(options.personas?.list ?? [], options.personas?.activeId ?? '', options.hasQq === true),
+      ],
+      '</div>',
+    ] : [],
     '</div>',
     '<div class="right">',
     ...bodyBlocks(state.vitals),
+    ...state.live === undefined ? [] : [
+      '<div class="card">',
+      '<h3>现场</h3>',
+      `<p id="live-line" class="muted">${escapeHtml(liveLine(state.live))}</p>`,
+      '</div>',
+    ],
     '<div class="card">',
     '<h3>最近七天</h3>',
     `<ul>${days}</ul>`,
@@ -442,6 +489,7 @@ export function panelPage(state: PanelState, options: { brief?: boolean } = {}):
     '</div>',
     `<script>window.__PANEL__=${jsonForScript({ vitals: state.vitals })};</script>`,
     `<script>${SCRIPT}</script>`,
+    ...hasControl ? [`<script>${PANEL_CONTROL_SCRIPT}</script>`] : [],
     '</body>',
     '</html>',
     '',
@@ -458,19 +506,6 @@ function send(response: ServerResponse, status: number, type: string, body: stri
 export const PANEL_COOKIE = 'qq_panel_token'
 
 /** 起出口要用的东西 */
-export interface PanelHttpOptions {
-  /** 绑哪个端口，只绑回环地址 */
-  port: number
-  /** 每次请求现算一份内容，算的时候不写盘 */
-  state(now: number): PanelState
-  /** 要给别人看时设一个口令：设了就要求带口令，空串等于不要求 */
-  token?: string
-  /** 这一页可以问一次星海：给了就多出 /graph 与两条只读接口 */
-  graph?: (pathname: string, search: URLSearchParams) => { type: string; body: string } | undefined
-  /** 起不来时把这一句交给调用方记一行 */
-  warn(message: string): void
-}
-
 /** 一个已经在听的出口 */
 export interface PanelHttp {
   /** 实际绑上的端口 */
@@ -527,18 +562,19 @@ function cookieFor(url: URL, token: string): Record<string, string> {
   return { 'set-cookie': `${PANEL_COOKIE}=${encodeURIComponent(token)}; HttpOnly; SameSite=Strict; Path=/` }
 }
 
-// 一个请求怎么回：只认本机与 GET 的三个路由，别的一律给码，不碰任何状态
+// 一个请求怎么回：只认本机；状态只读，急停只接受 POST
 function answer(request: IncomingMessage, response: ServerResponse, options: PanelHttpOptions): void {
   if (!localHost(request.headers.host)) {
     send(response, 403, JSON_TYPE, '{"ok":false}\n')
     return
   }
-  if (request.method !== 'GET') {
+  const url = new URL(request.url ?? '/', `http://${LOOPBACK}`)
+  const path = url.pathname
+  const controlPath = isPanelPostPath(path)
+  if (request.method !== 'GET' && !(request.method === 'POST' && controlPath)) {
     send(response, 405, JSON_TYPE, '{"ok":false}\n')
     return
   }
-  const url = new URL(request.url ?? '/', `http://${LOOPBACK}`)
-  const path = url.pathname
   const token = options.token ?? ''
   // 健康那一路不带数据，其余两路都带她自己，所以要口令
   if (path !== '/api/health' && !tokenOk(request, url, token)) {
@@ -546,6 +582,51 @@ function answer(request: IncomingMessage, response: ServerResponse, options: Pan
     return
   }
   const jar = cookieFor(url, token)
+  if (options.control !== undefined && path === '/api/emergency-status') {
+    send(response, 200, JSON_TYPE, `${JSON.stringify(options.control.state())}\n`, jar)
+    return
+  }
+  if (options.control !== undefined && path === '/api/emergency-stop' && request.method === 'POST') {
+    const reason = url.searchParams.get('reason')?.trim() || '面板急停'
+    options.control.stop(reason)
+    send(response, 200, JSON_TYPE, `${JSON.stringify(options.control.state())}\n`, jar)
+    return
+  }
+  if (options.control !== undefined && path === '/api/emergency-resume' && request.method === 'POST') {
+    options.control.resume()
+    send(response, 200, JSON_TYPE, `${JSON.stringify(options.control.state())}\n`, jar)
+    return
+  }
+  if (options.control?.mode !== undefined && path === '/api/mode' && request.method === 'POST') {
+    const mode = url.searchParams.get('value')?.trim() ?? ''
+    try {
+      options.control.mode.set(mode)
+      send(response, 200, JSON_TYPE, `${JSON.stringify(options.control.mode.state())}\n`, jar)
+    } catch {
+      send(response, 400, JSON_TYPE, '{"ok":false}\n', jar)
+    }
+    return
+  }
+  if (options.control?.limits !== undefined && path === '/api/limits') {
+    if (request.method === 'POST') {
+      const patch = limitsPatchOf(url.searchParams)
+      try {
+        if (patch === undefined) throw new Error('limits.bad_value')
+        const next = options.control.limits.set(patch)
+        send(response, 200, JSON_TYPE, `${JSON.stringify(next)}\n`, jar)
+      } catch {
+        send(response, 400, JSON_TYPE, '{"ok":false}\n', jar)
+      }
+      return
+    }
+    send(response, 200, JSON_TYPE, `${JSON.stringify(options.control.limits.state())}\n`, jar)
+    return
+  }
+  const settings = panelSettingsAnswer(path, url, options.control)
+  if (settings !== undefined) {
+    send(response, settings.status, JSON_TYPE, settings.body, jar)
+    return
+  }
   // 星海那几路：图与单个星点，都是只读
   const sea = options.graph?.(path, url.searchParams)
   if (sea !== undefined) {
@@ -555,7 +636,18 @@ function answer(request: IncomingMessage, response: ServerResponse, options: Pan
   if (path === '/') {
     // 陪玩与视频那几路只读简短版：带 brief=1 就不是完整那一屏
     const brief = url.searchParams.get('brief') === '1'
-    send(response, 200, HTML, panelPage(options.state(Date.now()), { brief }), jar)
+    send(response, 200, HTML, panelPage(options.state(Date.now()), {
+      brief,
+      ...options.control === undefined ? {} : { emergency: options.control.state() },
+      ...options.control?.mode === undefined ? {} : {
+        mode: { current: options.control.mode.state().mode, options: options.control.mode.options },
+      },
+      ...options.control?.limits === undefined ? {} : { limits: options.control.limits.state() },
+      ...options.control?.personas === undefined ? {} : {
+        personas: { list: options.control.personas.list(), activeId: options.control.personas.activeId() },
+      },
+      ...options.control?.qq === undefined ? {} : { hasQq: true },
+    }), jar)
     return
   }
   if (path === '/api/state') {
@@ -570,7 +662,7 @@ function answer(request: IncomingMessage, response: ServerResponse, options: Pan
 }
 
 /**
- * 起一个只读出口
+ * 起一个本机出口
  * @param options - 端口、取内容的函数与记日志的出口
  * @returns 已经在听的出口；端口被占或监听失手时为 undefined，只记一行
  */

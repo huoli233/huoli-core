@@ -5,6 +5,7 @@ import { AnonymousEntries, NamedEntries, ScopedLayers, scopeOf, scopeChainOf } f
 import type { ScopeKey, ScopeLayer } from '@huoli/huoli-scope'
 import { ToolExecutorUnavailableError } from './executor.ts'
 import type { ToolExecutor, ToolBatchInput, ToolBatchResult } from './executor.ts'
+import type { ToolOutputDefinition } from './contracts.ts'
 import './events.ts'
 import type { ToolSchema } from '@huoli/huoli-llm'
 import { projectToolSchema } from './schema.ts'
@@ -90,6 +91,15 @@ interface Registration {
   executor: ToolExecutor | undefined
 }
 
+/** 没声明 output 的工具按这个渲染：把结果原样转成文本 */
+const DEFAULT_TOOL_OUTPUT: ToolOutputDefinition = {
+  schema: { type: 'object', additionalProperties: true },
+  render: (_args: unknown, value: unknown) => {
+    const text = typeof value === 'string' ? value : JSON.stringify(value ?? '') ?? ''
+    return [{ type: 'text' as const, text }]
+  },
+}
+
 class GuardLayer {
   readonly guards = new AnonymousEntries<ToolGuard>()
   isEmpty(): boolean { return this.guards.isEmpty() }
@@ -127,8 +137,9 @@ export class ToolsService extends Service {
    */
   register(definition: ToolDefinition, options: ToolRegistrationOptions = {}): () => void {
     const name = definition.name
-    const output = (definition as Partial<ToolDefinition>).output
-    if (output === undefined || typeof output !== 'object'
+    // 外部插件常常不声明 output，给一份能渲染json文本的默认值，别让整条注册失败
+    const output = (definition as Partial<ToolDefinition>).output ?? DEFAULT_TOOL_OUTPUT
+    if (typeof output !== 'object'
       || typeof output.render !== 'function'
       || (output.presentationMeta !== undefined && typeof output.presentationMeta !== 'function')) {
       throw new TypeError(`tool "${name}" must declare output { schema, render, presentationMeta? }`)

@@ -105,6 +105,23 @@ describe('把现场摊开', () => {
 
     expect(text).toContain('群里在聊')
   })
+
+  it('无聊和想说话只写成事实，不替模型决定开口', () => {
+    const { seam } = mount(tempFile())
+    const material = seam.gather({
+      chatKey: 'group:1',
+      messages: MESSAGES,
+      selfNames: ['小岸'],
+      boredom: 0.7,
+      socialHunger: 0.8,
+    })
+
+    const text = seam.render(material)
+
+    expect(text).toContain('有点无聊')
+    expect(text).toContain('想有人说话')
+    expect(text).not.toMatch(/该不该|建议说|应该回/)
+  })
 })
 
 describe('惦记的事', () => {

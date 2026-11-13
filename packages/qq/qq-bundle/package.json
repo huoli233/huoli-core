@@ -36,12 +36,17 @@
     "js-yaml": "^4.3.2"
   },
   "dependencies": {
+    "@huoli/huoli-experimental-speech-to-text": "workspace:*",
+    "@huoli/huoli-experimental-speech-to-text-sensevoice": "workspace:*",
+    "@huoli/huoli-attachment": "workspace:*",
     "@huoli/huoli-brand": "workspace:*",
     "@huoli/huoli-home-paths": "workspace:*",
     "@huoli/huoli-session": "workspace:*",
+    "@huoli/huoli-qq-balance": "workspace:*",
     "@huoli/huoli-qq-attention": "workspace:*",
     "@huoli/huoli-qq-channel": "workspace:*",
     "@huoli/huoli-qq-continuity": "workspace:*",
+    "@huoli/huoli-qq-longing": "workspace:*",
     "@huoli/huoli-qq-material": "workspace:*",
     "@huoli/huoli-qq-memory": "workspace:*",
     "@huoli/huoli-qq-pacing": "workspace:*",
@@ -49,7 +54,9 @@
     "@huoli/huoli-qq-proactive": "workspace:*",
     "@huoli/huoli-qq-self": "workspace:*",
     "@huoli/huoli-qq-subject": "workspace:*",
-    "@huoli/huoli-qq-vitals": "workspace:*"
+    "@huoli/huoli-qq-vitals": "workspace:*",
+    "@huoli/huoli-sandbox-policy": "workspace:*",
+    "@huoli/huoli-schedule": "workspace:*"
   },
   "huoli": {
     "bundle": {

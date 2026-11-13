@@ -36,6 +36,14 @@ export interface SystemPromptCommit {
   intent: SurfaceIntent<'system/message'>
 }
 
+/** One uncommitted runtime-context snapshot and its surface placement. */
+export interface RuntimeContextCommit {
+  /** Complete rendered runtime-context snapshot. */
+  message: UserMessage
+  /** Append the first visible snapshot or replace its retained node. */
+  intent: SurfaceIntent<'user/message'>
+}
+
 /** The request-series facts one prompt decision is made under. */
 export interface SystemPromptDecisionInput {
   /** Whether the prepared route for this attempt reads a later `system` message as the effective prompt. */
@@ -152,18 +160,31 @@ export class RuntimeContextProjection {
    * Create an uncommitted snapshot only when the retained value differs.
    * @param current - fully rendered dynamic context.
    * @param sections - named contributions that formed the current snapshot.
-   * @returns a candidate user message, or `undefined` when no update is needed.
+   * @returns a snapshot and its surface operation, or `undefined` when no update is needed.
    */
-  project(current: string, sections: readonly ContextSnapshotSection[]): UserMessage | undefined {
+  project(current: string, sections: readonly ContextSnapshotSection[]): RuntimeContextCommit | undefined {
     if (this.retained === undefined && current.length === 0) return
     const snapshot = current.length === 0 ? CLEARED : current
     if (this.retained?.text === snapshot) return
-    return createUserMessage({
+    const message = createUserMessage({
       content: [{ type: 'text', text: snapshot }],
-      // The cleared marker has no contributions left to attribute.
       source: sections.length === 0
         ? { kind: SOURCE }
         : { kind: SOURCE, form: 'snapshot', sections },
     })
+    const retained = this.retained
+    let intent: SurfaceIntent<'user/message'>
+    if (retained === null || retained === undefined) {
+      intent = { surfaceOp: 'append' }
+    } else {
+      intent = {
+        surfaceOp: { op: 'replace', startSeq: retained.seq, endSeq: retained.seq },
+        sourceEventSeqs: [retained.seq],
+      }
+    }
+    return {
+      message,
+      intent,
+    }
   }
 }

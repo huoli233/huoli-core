@@ -310,7 +310,7 @@ P5a 先做，它只决定"能不能发"，不改她怎么想、怎么说，先�
 | 阶段开关 | 已实现：三类公共动作统一读阶段，P0–P2 一律拒并给码；推进只走 `advanceStage`，跳级、后退、同档与空理由都被拒，每次推进在 `stage.jsonl` 留痕 | — |
 | 暂停时的提议 | 已实现：暂停时项目写一条 `proposed: true`，不占未结束额度、不进面板、不镜像 | — |
 | 回滚演练 | 已实现：三种改坏（截断、改字、清空）都能列版本、回滚、逐字核对恢复，坏内容也会先存档 | — |
-| 人格正文的版本 | 已实现：人格正文放在自我层目录的 `persona.md`，启动时按 `versionsKeep` 存一版（内容没变就不存），`persona` / `personaVersions` / `restorePersona` 三个口子能读、能列、能盖回去；装配时以 `qq:persona` 这一段占着部署人格的位置，配置里的 `personaPrefix` 留空即可，用例在 `tests/rules-version.spec.ts` | — |
+| 人格正文的版本 | 已实现：人格正文放在自我层目录的 `persona.md`，启动时按 `versionsKeep` 存一版（内容没变就不存），`persona` / `personaVersions` / `restorePersona` 三个口子能读、能列、能盖回去；每轮装配时重新读取正文并写入 DSH 原生的 `deployment:persona-prefix`，不再创建平行的 `qq:persona` 段，配置里的 `personaPrefix` 留空即可，用例在 `tests/rules-version.spec.ts` | — |
 
 ## 证据索引
 

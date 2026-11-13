@@ -183,4 +183,33 @@ describe('向量分给回想用', () => {
     expect(hits[0]?.id).toBe(tired.id)
     expect(hits[0]?.reasons.vectorSim).toBeCloseTo(0.97)
   })
+
+  it('嵌入超过时限就走纯关键词，不碰向量仓', async () => {
+    const { seam } = mount({ file: tempFile() })
+    const climb = seam.remember('周三一起去爬山吧', 'group:1', { at: NOW, importance: 40 })
+    let searched = false
+    const fakeVectors: VectorStore = {
+      async search() { searched = true; return [] },
+      async upsert() {},
+      async remove() {},
+      async count() { return 0 },
+      async close() {},
+    }
+
+    const hits = await findWithVectors({
+      store: seam.store,
+      vectors: fakeVectors,
+      embed: () => new Promise<readonly number[]>(() => {}),
+      query: '爬山',
+      scope: 'group:1',
+      limit: 5,
+      tuning: resolveTuning(),
+      edges: [],
+      now: NOW,
+      embedTimeoutMs: 30,
+    })
+
+    expect(searched).toBe(false)
+    expect(hits[0]?.id).toBe(climb.id)
+  })
 })

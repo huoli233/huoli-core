@@ -115,7 +115,7 @@ describe('镜像接进了记忆库', () => {
 
     vi.advanceTimersByTime(60 * 60_000)
 
-    expect(memory.store.all()).toHaveLength(1)
+    expect(memory.store.all().filter(item => item.source === 'self')).toHaveLength(1)
     expect(self.mirror(AT).written).toBe(0)
     expect(memory.ledger('verify').report.ok).toBe(true)
   })

@@ -67,7 +67,7 @@ export interface ReplyTuning {
 /** 分档表的默认参数 */
 export const REPLY_DEFAULTS: ReplyTuning = {
   minCap: 1,
-  maxCap: 4,
+  maxCap: 3,
   annoyedFrom: 0.62,
   tiredFrom: 0.70,
   energyEagerFrom: 0.60,

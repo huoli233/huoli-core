@@ -67,6 +67,23 @@ describe('夜间睡眠', () => {
     expect(next.sleep_kind).toBe('')
   })
 
+  it('进入睡眠窗口过了宽限，压力不够也睡', () => {
+    const state = fresh({ adenosine: 0.2, last_update: moment(1, 23, 29) })
+
+    const next = drift(state, moment(1, 23, 30), tuning, NO_JITTER)
+
+    expect(next.sleep_state).toBe('sleeping')
+    expect(next.asleep).toBe(true)
+  })
+
+  it('刚被消息叫醒的十五分钟内不立刻强制睡回去', () => {
+    const state = fresh({ adenosine: 0.2, woken_at: moment(2, 30), last_update: moment(2, 30) })
+
+    const next = drift(state, moment(2, 31), tuning, NO_JITTER)
+
+    expect(next.sleep_state).toBe('awake')
+  })
+
   it('白天进不了夜睡', () => {
     const state = fresh({ adenosine: 0.9, last_update: moment(1, 9, 59) })
 
@@ -146,7 +163,7 @@ describe('夜间睡眠', () => {
       wake_after: moment(2, 7, 30),
       last_update: moment(2, 0),
     })
-    const awake = fresh({ adenosine: 0.2, last_update: moment(2, 0) })
+    const awake = fresh({ adenosine: 0.2, woken_at: moment(2, 1), last_update: moment(2, 0, 59) })
 
     const slept = drift(asleep, moment(2, 1), tuning, NO_JITTER)
     const stayed = drift(awake, moment(2, 1), tuning, NO_JITTER)
@@ -299,14 +316,15 @@ describe('睡着时收到消息', () => {
     expect(after.last_drink).toBe(before.last_drink)
   })
 
-  it('刚被吵醒时提示词里出现迷糊那句，睡着那句也在', () => {
+  it('刚被消息叫醒时提示词说明要简短回复', () => {
     const at = moment(1, 23, 41)
     const woken = react(settled({ sleep_state: 'sleeping', asleep: true, sleep_kind: 'night', last_update: at }), '喂', at, tuning)
 
     const text = renderPrompt(derive(woken, tuning), tuning)
 
-    expect(text).toContain('你正睡着')
-    expect(text).toContain('刚醒')
+    expect(text).toContain('刚被消息叫醒')
+    expect(text).toContain('简短回完再继续休息')
+    expect(text).not.toContain('你正在睡觉')
   })
 })
 
@@ -404,7 +422,7 @@ describe('算出来的量里的周期项', () => {
 
 describe('提示词里的六段可选', () => {
   const CASES = [
-    { text: '你正睡着', patch: { sleep_state: 'sleeping', asleep: true, sleep_kind: 'night' } },
+    { text: '你正在睡觉', patch: { sleep_state: 'sleeping', asleep: true, sleep_kind: 'night' } },
     { text: '刚醒', patch: { sleep_state: 'waking' } },
     { text: '在经期', patch: { cycle_phase: 'menstrual' } },
     { text: '经前那几天', patch: { cycle_phase: 'premenstrual' } },
@@ -447,7 +465,7 @@ describe('提示词里的六段可选', () => {
     }), tuning)
 
     expect(text.length).toBeLessThanOrEqual(tuning.promptMaxChars)
-    expect(text).toContain('你正睡着')
+    expect(text).toContain('刚被消息叫醒')
     expect(text).toContain('太困了')
   })
 })

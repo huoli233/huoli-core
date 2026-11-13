@@ -1,0 +1,1018 @@
+module,path,domain,reachable,test_reference,classes,functions,async_functions,imports,imported_by,docstring
+astrbot_host,astrbot_host\__init__.py,astrbot_host,True,True,0,0,0,0,2,AstrBot host integration; the isolated companion_v2 core does not import this package.
+astrbot_host.account_session_api,astrbot_host\account_session_api.py,astrbot_host/account_session_api,True,True,1,21,11,10,2,Dashboard-owned account bindings and native session controls.
+astrbot_host.acquaintance_api,astrbot_host\acquaintance_api.py,astrbot_host/acquaintance_api,True,True,1,41,14,24,2,Dashboard directory and editors for trusted private-member routes.
+astrbot_host.animation,astrbot_host\animation.py,astrbot_host/animation,True,True,0,2,0,4,1,"Decode bounded animation cycles and persist composited, deterministic PNG views."
+astrbot_host.animation_container,astrbot_host\animation_container.py,astrbot_host/animation_container,True,False,0,7,0,2,1,Check bounded container completeness before trusting a decoder's end of frames.
+astrbot_host.astrbot_compat,astrbot_host\astrbot_compat.py,astrbot_host/astrbot_compat,False,False,0,2,0,0,1,Compatibility access to AstrBot host entry points that move between releases.
+astrbot_host.audio,astrbot_host\audio\__init__.py,astrbot_host/audio,False,True,0,0,0,0,0,Native Record capture and bounded audio decoding; no SDK in the core.
+astrbot_host.audio.components,astrbot_host\audio\components.py,astrbot_host/audio,False,True,0,0,0,1,0,Compatibility import for the shared original media component reader.
+astrbot_host.audio.decoder,astrbot_host\audio\decoder.py,astrbot_host/audio,False,True,0,6,0,2,1,Complete PCM WAV / SILK decoding in the disposable audio worker.
+astrbot_host.audio.loader,astrbot_host\audio\loader.py,astrbot_host/audio,True,True,0,2,2,5,3,Frozen network/base64 locators only; cancellable native decoding in a child.
+astrbot_host.audio.worker,astrbot_host\audio\worker.py,astrbot_host/audio,False,False,0,1,0,3,0,"One bounded decode, binary stdin/stdout; no paths, network or host boot."
+astrbot_host.backup_api,astrbot_host\backup_api.py,astrbot_host/backup_api,True,True,1,23,9,6,5,Authenticated whole-installation backup and restore for the pinned V2 profile.
+astrbot_host.binding,astrbot_host\binding.py,astrbot_host/binding,True,True,2,9,0,3,6,"One-time binding of the conversation target, driven from the chat itself."
+astrbot_host.binding_store,astrbot_host\binding_store.py,astrbot_host/binding_store,True,True,1,7,0,1,4,Where a first-run binding is kept until the profile is pinned.
+astrbot_host.bootstrap_provider,astrbot_host\bootstrap_provider.py,astrbot_host/bootstrap_provider,True,True,1,8,0,0,6,Resolve an automatic shared text provider without changing user config.
+astrbot_host.calendar_command,astrbot_host\calendar_command.py,astrbot_host/calendar_command,True,True,1,4,1,6,3,Strict chat vocabulary for explicit calendar generation requests.
+astrbot_host.capability_role_selection,astrbot_host\capability_role_selection.py,astrbot_host/capability_role_selection,True,True,0,8,0,4,3,Role-level capability enablement shared by assembly and access routes.
+astrbot_host.command_authority,astrbot_host\command_authority.py,astrbot_host/command_authority,True,False,0,1,0,1,2,Shared installation-core check for chat commands that change shared state.
+astrbot_host.configuration_api,astrbot_host\configuration_api.py,astrbot_host/configuration_api,True,True,1,12,7,9,2,Dashboard-only editors for the configuration groups the cottage edits itself.
+astrbot_host.controller,astrbot_host\controller.py,astrbot_host/controller,True,True,1,56,23,52,1,"Own the pinned profile, authorization, intake and bounded staging lifecycle."
+astrbot_host.conversation_reset,astrbot_host\conversation_reset.py,astrbot_host/conversation_reset,True,True,0,6,3,7,2,Observe AstrBot's completed context reset without capturing a command as input.
+astrbot_host.core_reply,astrbot_host\core_reply.py,astrbot_host/core_reply,True,True,0,27,6,10,23,Adapt a governed V2 reply to AstrBot's active message pipeline.
+astrbot_host.core_reply_authoring,astrbot_host\core_reply_authoring.py,astrbot_host/core_reply_authoring,True,False,2,9,3,8,1,Run native Content writing from AstrBot's admitted tool call.
+astrbot_host.core_reply_behavior,astrbot_host\core_reply_behavior.py,astrbot_host/core_reply_behavior,True,False,0,3,0,4,4,Native main-chain social learning and genuine group mention delivery.
+astrbot_host.core_reply_cleanup,astrbot_host\core_reply_cleanup.py,astrbot_host/core_reply_cleanup,True,True,0,2,0,0,1,在回复进入发送链路前，只清理“整段一模一样”的自重复。
+astrbot_host.core_reply_closing,astrbot_host\core_reply_closing.py,astrbot_host/core_reply_closing,True,False,0,6,0,4,1,Run the deterministic private closing guard before AstrBot wakes its reply model.
+astrbot_host.core_reply_configuration,astrbot_host\core_reply_configuration.py,astrbot_host/core_reply_configuration,True,False,0,2,0,3,1,Describe configuration consumed by AstrBot-owned conversation replies.
+astrbot_host.core_reply_context,astrbot_host\core_reply_context.py,astrbot_host/core_reply_context,True,True,1,23,0,31,6,"Local, optional V2 background for AstrBot-owned conversation turns."
+astrbot_host.core_reply_decision,astrbot_host\core_reply_decision.py,astrbot_host/core_reply_decision,True,True,0,6,1,7,1,Run the optional Laya classifier before AstrBot wakes its reply model.
+astrbot_host.core_reply_diagnostics,astrbot_host\core_reply_diagnostics.py,astrbot_host/core_reply_diagnostics,True,False,0,2,1,6,1,Keep existing local diagnostics available through the native tool runner.
+astrbot_host.core_reply_health,astrbot_host\core_reply_health.py,astrbot_host/core_reply_health,True,True,0,4,0,5,1,"Read opt-in, consented health material for one private core reply."
+astrbot_host.core_reply_history_guard,astrbot_host\core_reply_history_guard.py,astrbot_host/core_reply_history_guard,True,True,0,7,0,2,1,Repair illegal tool-call pairing in the history we are about to send.
+astrbot_host.core_reply_idempotency,astrbot_host\core_reply_idempotency.py,astrbot_host/core_reply_idempotency,True,True,0,14,0,1,1,Never deliver the same body twice in a row inside one reply turn.
+astrbot_host.core_reply_image_prompt,astrbot_host\core_reply_image_prompt.py,astrbot_host/core_reply_image_prompt,True,True,0,7,0,8,1,Natural-language image requests in AstrBot's existing core tool loop.
+astrbot_host.core_reply_maintenance,astrbot_host\core_reply_maintenance.py,astrbot_host/core_reply_maintenance,True,True,1,4,2,1,1,Bind native private windows to optional routines outside the reply path.
+astrbot_host.core_reply_media,astrbot_host\core_reply_media.py,astrbot_host/core_reply_media,True,True,1,16,7,10,2,Capture native image references in background or on an explicit tool need.
+astrbot_host.core_reply_media_delivery,astrbot_host\core_reply_media_delivery.py,astrbot_host/core_reply_media_delivery,True,True,1,6,1,0,2,Keep QQ voice and optional reaction attachments in supported messages.
+astrbot_host.core_reply_media_prompt,astrbot_host\core_reply_media_prompt.py,astrbot_host/core_reply_media_prompt,True,True,0,5,0,4,2,Finalize media presentation after native persona and other request hooks.
+astrbot_host.core_reply_native_send,astrbot_host\core_reply_native_send.py,astrbot_host/core_reply_native_send,True,True,2,10,3,10,1,Delegate native media sends through a context local to one admitted event.
+astrbot_host.core_reply_observations,astrbot_host\core_reply_observations.py,astrbot_host/core_reply_observations,True,True,1,22,5,9,1,"Asynchronous local observation jobs, outside AstrBot generation and send."
+astrbot_host.core_reply_outbound,astrbot_host\core_reply_outbound.py,astrbot_host/core_reply_outbound,True,True,0,4,0,7,1,Apply captured V2 group reply decorations at AstrBot's send boundary.
+astrbot_host.core_reply_perception,astrbot_host\core_reply_perception.py,astrbot_host/core_reply_perception,True,True,0,24,4,7,1,Keep stable perception guidance in system prompts and live facts in user context.
+astrbot_host.core_reply_preparation,astrbot_host\core_reply_preparation.py,astrbot_host/core_reply_preparation,True,True,0,2,0,2,1,Measure this plugin's request preparation without changing native dispatch.
+astrbot_host.core_reply_presence,astrbot_host\core_reply_presence.py,astrbot_host/core_reply_presence,True,True,0,4,0,1,1,"Connect native reply events to the optional, recipient-scoped typing lease."
+astrbot_host.core_reply_presentation,astrbot_host\core_reply_presentation.py,astrbot_host/core_reply_presentation,True,True,1,15,2,5,6,Apply V2 text rules at native reply delivery boundaries.
+astrbot_host.core_reply_reaction_delivery,astrbot_host\core_reply_reaction_delivery.py,astrbot_host/core_reply_reaction_delivery,True,True,0,8,1,4,6,Connect model-authored reaction intent to the authorized native sender.
+astrbot_host.core_reply_reactions,astrbot_host\core_reply_reactions.py,astrbot_host/core_reply_reactions,True,True,0,5,0,2,3,Observe real native reaction cache entries and successful send returns.
+astrbot_host.core_reply_segmentation,astrbot_host\core_reply_segmentation.py,astrbot_host/core_reply_segmentation,True,True,0,15,4,8,5,Complete native reply segmentation while retaining AstrBot delivery.
+astrbot_host.core_reply_sources,astrbot_host\core_reply_sources.py,astrbot_host/core_reply_sources,True,False,0,2,1,3,1,Read a source actually offered by the current AstrBot input observation.
+astrbot_host.core_reply_telemetry,astrbot_host\core_reply_telemetry.py,astrbot_host/core_reply_telemetry,True,True,0,32,3,6,1,"Passive, asynchronous measurements of AstrBot's own reply runner."
+astrbot_host.core_reply_tool_dispatch,astrbot_host\core_reply_tool_dispatch.py,astrbot_host/core_reply_tool_dispatch,True,True,0,5,2,4,4,Bind native tool dispatch independently of optional usage statistics.
+astrbot_host.core_reply_tool_execution,astrbot_host\core_reply_tool_execution.py,astrbot_host/core_reply_tool_execution,True,True,1,17,4,8,4,Native tool operation ownership without a Companion reply generation task.
+astrbot_host.core_reply_tools,astrbot_host\core_reply_tools.py,astrbot_host/core_reply_tools,True,True,4,23,6,28,5,Expose event-scoped V2 owner tools to AstrBot's native tool runner.
+astrbot_host.core_reply_tracking,astrbot_host\core_reply_tracking.py,astrbot_host/core_reply_tracking,True,True,0,21,4,5,5,Observe AstrBot core group replies without owning generation or delivery.
+astrbot_host.core_reply_turn_gate,astrbot_host\core_reply_turn_gate.py,astrbot_host/core_reply_turn_gate,True,True,0,40,7,3,2,"Let a turn say one thing, even when a tool round writes prose first."
+astrbot_host.core_reply_video_sources,astrbot_host\core_reply_video_sources.py,astrbot_host/core_reply_video_sources,True,True,0,9,0,2,2,群聊文本化捕获丢掉的那一份视频位置。
+astrbot_host.core_reply_voice,astrbot_host\core_reply_voice.py,astrbot_host/core_reply_voice,True,True,0,11,1,3,6,Apply configured TTS to authorized AstrBot core replies.
+astrbot_host.core_reply_voice_authoring,astrbot_host\core_reply_voice_authoring.py,astrbot_host/core_reply_voice_authoring,True,True,0,10,3,6,2,Repair omitted speech presentation inside the existing AstrBot reply runner.
+astrbot_host.display_names,astrbot_host\display_names.py,astrbot_host/display_names,True,True,1,15,8,0,7,Platform-observed names and read-only OneBot labels for Dashboard navigation.
+astrbot_host.event_routing,astrbot_host\event_routing.py,astrbot_host/event_routing,True,True,0,5,0,0,2,Small host-side routing helpers for sharing AstrBot message events.
+astrbot_host.external_memory,astrbot_host\external_memory.py,astrbot_host/external_memory,True,True,0,3,1,4,3,Scoped recall and summary requests to explicitly registered memory plugins.
+astrbot_host.files,astrbot_host\files\__init__.py,astrbot_host/files,False,True,0,0,0,0,0,Incoming document loading and disposable local text extraction.
+astrbot_host.files.loader,astrbot_host\files\loader.py,astrbot_host/files,True,True,0,2,2,4,1,"Download only the frozen native attachment, then extract text in a cancellable process."
+astrbot_host.files.parsing,astrbot_host\files\parsing.py,astrbot_host/files,True,True,0,6,0,2,5,Read document text with standard parsers without executing attachment content.
+astrbot_host.files.worker,astrbot_host\files\worker.py,astrbot_host/files,False,False,0,1,0,2,0,One disposable parser process for one incoming document.
+astrbot_host.fish_audio,astrbot_host\fish_audio.py,astrbot_host/fish_audio,True,True,0,3,1,0,2,Fish Audio model capabilities at the native Provider boundary.
+astrbot_host.forwards,astrbot_host\forwards.py,astrbot_host/forwards,True,True,0,2,2,6,1,Install the real account-pinned OneBot readers for Forward components.
+astrbot_host.functional_commands,astrbot_host\functional_commands.py,astrbot_host/functional_commands,True,True,1,20,0,10,3,Route familiar V1 function commands through V7's authorized core tools.
+astrbot_host.game_access_api,astrbot_host\game_access_api.py,astrbot_host/game_access_api,True,True,1,6,3,5,2,Dashboard game permissions resolved from the selected private target.
+astrbot_host.group_admission,astrbot_host\group_admission.py,astrbot_host/group_admission,True,True,0,2,0,0,2,Group trigger facts from the authenticated native message components.
+astrbot_host.group_authority,astrbot_host\group_authority.py,astrbot_host/group_authority,True,True,1,3,0,8,1,Atomic group admission and per-speaker grants for the foreground preview profile.
+astrbot_host.group_command,astrbot_host\group_command.py,astrbot_host/group_command,True,True,0,4,1,11,1,Chat-side temporary block of model replies in one group.
+astrbot_host.group_delivery,astrbot_host\group_delivery.py,astrbot_host/group_delivery,True,True,1,10,0,3,1,Finite group-only delivery grants and immutable per-batch admission intent.
+astrbot_host.group_memory_api,astrbot_host\group_memory_api.py,astrbot_host/group_memory_api,True,True,1,14,8,6,1,Fixed group/role Dashboard governance; never a private-member memory view.
+astrbot_host.group_model_api,astrbot_host\group_model_api.py,astrbot_host/group_model_api,True,True,1,6,3,9,1,Dashboard model routing overrides for one configured group and role.
+astrbot_host.group_repeat,astrbot_host\group_repeat.py,astrbot_host/group_repeat,True,True,0,4,1,6,1,Send literal group repeat actions through the authorized AstrBot event.
+astrbot_host.group_reply_api,astrbot_host\group_reply_api.py,astrbot_host/group_reply_api,True,True,1,34,19,13,1,"Dashboard-only reply preferences for one configured group, role and native session."
+astrbot_host.group_settings,astrbot_host\group_settings.py,astrbot_host/group_settings,True,True,1,3,0,2,13,Explicit group targets; a group is never a private participant.
+astrbot_host.growth_api,astrbot_host\growth_api.py,astrbot_host/growth_api,True,True,1,14,8,9,3,Authenticated commands for the pinned profile's role growth records.
+astrbot_host.harassment,astrbot_host\harassment.py,astrbot_host/harassment,True,True,2,8,0,1,1,Inbound private-message anti-harassment guard.
+astrbot_host.host_options_api,astrbot_host\host_options_api.py,astrbot_host/host_options_api,True,True,1,22,11,11,2,"Dashboard controls for host-wide voice, poke and forward-intake settings."
+astrbot_host.host_token_usage,astrbot_host\host_token_usage.py,astrbot_host/host_token_usage,True,True,0,3,1,0,1,"Read AstrBot's persisted internal-agent usage, independently of V2 budgets."
+astrbot_host.huawei_health,astrbot_host\huawei_health\__init__.py,astrbot_host/huawei_health,False,True,0,0,0,1,0,
+astrbot_host.huawei_health.api,astrbot_host\huawei_health\api.py,astrbot_host/huawei_health,True,True,1,20,13,8,2,Dashboard bridge for the bundled Huawei Health account binding.
+astrbot_host.huawei_health.service,astrbot_host\huawei_health\service.py,astrbot_host/huawei_health,True,True,2,50,21,5,3,Huawei Health account binding and read-only health summary service.
+astrbot_host.huawei_health.vendor,astrbot_host\huawei_health\vendor\__init__.py,astrbot_host/huawei_health,False,True,0,0,0,0,0,
+astrbot_host.huawei_health.vendor.hw_auth,astrbot_host\huawei_health\vendor\hw_auth.py,astrbot_host/huawei_health,True,True,2,44,0,1,3,华为运动健康 · 认证层（浏览器 + Cookie → accessToken）
+astrbot_host.huawei_health.vendor.hw_client,astrbot_host\huawei_health\vendor\hw_client.py,astrbot_host/huawei_health,True,False,4,28,0,0,1,华为运动健康 · 数据客户端
+astrbot_host.huawei_health.vendor.hw_credentials,astrbot_host\huawei_health\vendor\hw_credentials.py,astrbot_host/huawei_health,True,False,6,14,0,0,3,Protected Huawei Health login credentials.
+astrbot_host.huawei_health.vendor.hw_login,astrbot_host\huawei_health\vendor\hw_login.py,astrbot_host/huawei_health,True,False,3,51,0,2,1,华为运动健康 WebUI 登录会话（v0.4.1）。
+astrbot_host.huawei_health.vendor.hw_store,astrbot_host\huawei_health\vendor\hw_store.py,astrbot_host/huawei_health,True,False,1,9,0,0,1,华为运动健康 · 极简 SQLite 缓存（token + 数据快照）
+astrbot_host.identity_derivation,astrbot_host\identity_derivation.py,astrbot_host/identity_derivation,True,True,0,8,0,2,13,Derive the pinned V2 identity from the account and persona the operator chose.
+astrbot_host.image_access,astrbot_host\image_access.py,astrbot_host/image_access,True,True,0,3,0,8,4,补齐已安装原生生图能力在真实私聊上下文中的默认启用记录。
+astrbot_host.image_material_api,astrbot_host\image_material_api.py,astrbot_host/image_material_api,True,True,1,21,16,8,2,"Authenticated Dashboard API for the native image album, references and wardrobe."
+astrbot_host.import_lifecycle,astrbot_host\import_lifecycle.py,astrbot_host/import_lifecycle,True,False,0,3,0,1,1,"Keep the plugin entry, relative host modules and core aliases in one graph."
+astrbot_host.integration_api,astrbot_host\integration_api.py,astrbot_host/integration_api,True,True,1,5,2,12,2,Authenticated product manifest and bundled extension lifecycle routes.
+astrbot_host.integration_catalog,astrbot_host\integration_catalog.py,astrbot_host/integration_catalog,True,True,0,0,0,0,1,Public catalog for V2 native extensions and external providers.
+astrbot_host.integration_registry,astrbot_host\integration_registry.py,astrbot_host/integration_registry,True,True,2,42,16,12,5,Discover optional providers without importing plugins or reading their stores.
+astrbot_host.knowledge_sources,astrbot_host\knowledge_sources.py,astrbot_host/knowledge_sources,True,True,2,22,1,6,4,Host-side origin readers for the V2 knowledge import contract.
+astrbot_host.laya_client,astrbot_host\laya_client.py,astrbot_host/laya_client,True,True,4,42,8,4,4,Adapters for the official Laya Python API and its SystemOne HTTP protocol.
+astrbot_host.legacy_api,astrbot_host\legacy_api.py,astrbot_host/legacy_api,True,True,2,115,22,57,4,V1 数据迁移的管理界面接口。
+astrbot_host.legacy_archive_api,astrbot_host\legacy_archive_api.py,astrbot_host/legacy_archive_api,True,False,1,4,1,4,1,Read retained V1 work in the existing migration workspace.
+astrbot_host.legacy_archive_location,astrbot_host\legacy_archive_location.py,astrbot_host/legacy_archive_location,True,False,0,1,0,1,2,Choose a V1 archive directory that cannot become part of the V1 source.
+astrbot_host.legacy_config,astrbot_host\legacy_config.py,astrbot_host/legacy_config,True,True,0,8,0,1,4,Read-only access to V1 plugin settings stored by AstrBot.
+astrbot_host.legacy_configuration_review,astrbot_host\legacy_configuration_review.py,astrbot_host/legacy_configuration_review,True,True,0,8,0,4,1,Read-only configuration comparisons and value-free migration selections.
+astrbot_host.legacy_contact_configuration,astrbot_host\legacy_contact_configuration.py,astrbot_host/legacy_contact_configuration,True,True,0,1,0,3,1,Add verified private contact overrides to the reviewed upgrade plan.
+astrbot_host.legacy_group_data_api,astrbot_host\legacy_group_data_api.py,astrbot_host/legacy_group_data_api,True,True,1,19,3,13,2,Explicit V1 group-data migration routes for configured OneBot group targets.
+astrbot_host.legacy_persona_mapping,astrbot_host\legacy_persona_mapping.py,astrbot_host/legacy_persona_mapping,True,True,0,3,3,6,2,Read native choices only for V1-authorized windows during upgrade review.
+astrbot_host.legacy_private_memory_api,astrbot_host\legacy_private_memory_api.py,astrbot_host/legacy_private_memory_api,True,True,1,7,2,5,1,Dashboard migration of an exact V1 person into the selected private role.
+astrbot_host.life_api,astrbot_host\life_api.py,astrbot_host/life_api,True,True,1,6,2,5,2,Authenticated Dashboard routes for private writing and role routines.
+astrbot_host.logging_bridge,astrbot_host\logging_bridge.py,astrbot_host/logging_bridge,True,True,1,5,0,0,1,Route only this plugin's domain logs through AstrBot's plugin log broker.
+astrbot_host.maintenance_checks,astrbot_host\maintenance_checks.py,astrbot_host/maintenance_checks,True,False,0,8,0,2,1,Read-only host checks shown by the maintenance diagnostics page.
+astrbot_host.management_identity,astrbot_host\management_identity.py,astrbot_host/management_identity,True,True,0,2,0,5,34,Map a host-authenticated Dashboard administrator to a separate V2 human identity.
+astrbot_host.media,astrbot_host\media.py,astrbot_host/media,True,True,1,8,4,4,11,Bounded image intake. URLs/paths never enter prompts or durable metadata.
+astrbot_host.media_components,astrbot_host\media_components.py,astrbot_host/media_components,True,True,0,3,0,3,2,Recover direct audio/video components before host preprocessing erases provenance.
+astrbot_host.memory_api,astrbot_host\memory_api.py,astrbot_host/memory_api,True,True,1,35,23,11,2,Authenticated memory administration for the explicitly selected host profile.
+astrbot_host.memory_diagnostics,astrbot_host\memory_diagnostics.py,astrbot_host/memory_diagnostics,True,True,1,2,0,0,1,"Low-overhead, on-demand process memory measurements for the Dashboard."
+astrbot_host.memory_linkage,astrbot_host\memory_linkage.py,astrbot_host/memory_linkage,True,True,0,4,1,4,2,"Read a bounded, redacted summary from the active external memory provider."
+astrbot_host.memory_page_api,astrbot_host\memory_page_api.py,astrbot_host/memory_page_api,True,True,2,10,2,0,1,"Formal, path-free Memory Page API published by the V2 companion facade."
+astrbot_host.mobile_game,astrbot_host\mobile_game.py,astrbot_host/mobile_game,True,True,1,2,1,2,1,Paired phones create games through the current V2 private capability.
+astrbot_host.mobile_together,astrbot_host\mobile_together.py,astrbot_host/mobile_together,True,True,1,15,2,7,5,Authenticated mobile entry to the native Together room provider.
+astrbot_host.model_api,astrbot_host\model_api.py,astrbot_host/model_api,True,True,1,79,35,29,5,"Authenticated model routing, TTS bindings and native image controls."
+astrbot_host.model_route_material,astrbot_host\model_route_material.py,astrbot_host/model_route_material,True,True,0,21,1,6,4,回答「你现在用的什么模型」时的只读材料：四类，只给名称。
+astrbot_host.model_settings,astrbot_host\model_settings.py,astrbot_host/model_settings,True,True,0,4,0,6,4,Parse native provider profiles and reply routing without loading credentials.
+astrbot_host.multi_api,astrbot_host\multi_api.py,astrbot_host/multi_api,True,True,3,21,5,43,2,Dashboard control and immutable per-owner administration routes.
+astrbot_host.multi_authority,astrbot_host\multi_authority.py,astrbot_host/multi_authority,True,True,1,28,0,16,3,Persist host mappings and derive authority only from configured native routes.
+astrbot_host.multi_controller,astrbot_host\multi_controller.py,astrbot_host/multi_controller,True,True,1,77,38,52,1,Shared-installation lifecycle and explicit native multi-target admission.
+astrbot_host.multi_session,astrbot_host\multi_session.py,astrbot_host/multi_session,True,True,8,60,26,71,1,One application serving private owners and independently authorized groups.
+astrbot_host.multi_settings,astrbot_host\multi_settings.py,astrbot_host/multi_settings,True,True,4,26,0,8,10,"Explicit account, participant and persona mappings for one shared installation."
+astrbot_host.native,astrbot_host\native.py,astrbot_host/native,True,True,2,20,7,16,5,"Read native host objects without model calls, platform sends or storage writes."
+astrbot_host.native_extension_api,astrbot_host\native_extension_api.py,astrbot_host/native_extension_api,True,True,1,7,3,3,2,The cottage's settings entry for native V2 capability services.
+astrbot_host.native_extensions,astrbot_host\native_extensions\__init__.py,astrbot_host/native_extensions,True,True,1,36,9,18,2,"V2 native execution through pinned AstrBot ports, JSON and verified bytes."
+astrbot_host.native_extensions.builtins,astrbot_host\native_extensions\builtins.py,astrbot_host/native_extensions,True,True,1,10,3,11,3,Native capability modules owned and packaged by the single V2 plugin.
+astrbot_host.native_extensions.content,astrbot_host\native_extensions\content.py,astrbot_host/native_extensions,True,False,1,9,0,4,1,AstrBot lease binding for the independent Content owner; no plugin imports.
+astrbot_host.native_extensions.discovery,astrbot_host\native_extensions\discovery.py,astrbot_host/native_extensions,True,True,1,7,0,5,2,"Capture one exact loaded Star, API, port and immutable native declaration."
+astrbot_host.native_extensions.game,astrbot_host\native_extensions\game\__init__.py,astrbot_host/native_extensions,False,True,0,0,0,0,0,V2-owned game execution services.
+astrbot_host.native_extensions.game.activity_methods,astrbot_host\native_extensions\game\activity_methods.py,astrbot_host/native_extensions,False,True,1,53,18,2,1,V2 game activity services.
+astrbot_host.native_extensions.game.common,astrbot_host\native_extensions\game\common.py,astrbot_host/native_extensions,False,False,2,3,0,14,6,
+astrbot_host.native_extensions.game.host_events,astrbot_host\native_extensions\game\host_events.py,astrbot_host/native_extensions,True,True,1,3,0,4,1,"Local, read-only game facts for the current AstrBot private session."
+astrbot_host.native_extensions.game.media_methods,astrbot_host\native_extensions\game\media_methods.py,astrbot_host/native_extensions,False,False,1,1,1,1,1,V2 game media services.
+astrbot_host.native_extensions.game.model_methods,astrbot_host\native_extensions\game\model_methods.py,astrbot_host/native_extensions,False,True,1,12,5,3,1,V2 game model services.
+astrbot_host.native_extensions.game.native_context,astrbot_host\native_extensions\game\native_context.py,astrbot_host/native_extensions,False,False,1,7,2,4,2,Read V2 background for the exact private window that opened a game room.
+astrbot_host.native_extensions.game.rooms_methods,astrbot_host\native_extensions\game\rooms_methods.py,astrbot_host/native_extensions,False,True,1,21,12,3,1,V2 game rooms services.
+astrbot_host.native_extensions.game.runtime,astrbot_host\native_extensions\game\runtime.py,astrbot_host/native_extensions,False,True,1,4,2,9,0,V2-owned game lifecycle; no Star registration.
+astrbot_host.native_extensions.game.server,astrbot_host\native_extensions\game\server.py,astrbot_host/native_extensions,False,False,1,46,33,2,1,
+astrbot_host.native_extensions.game.settings_methods,astrbot_host\native_extensions\game\settings_methods.py,astrbot_host/native_extensions,False,False,1,21,12,1,1,V2 game settings services.
+astrbot_host.native_extensions.game.trusted_identity,astrbot_host\native_extensions\game\trusted_identity.py,astrbot_host/native_extensions,False,False,2,11,4,0,0,
+astrbot_host.native_extensions.game.tunnel,astrbot_host\native_extensions\game\tunnel.py,astrbot_host/native_extensions,False,False,1,23,10,0,1,
+astrbot_host.native_extensions.host_events,astrbot_host\native_extensions\host_events.py,astrbot_host/native_extensions,True,True,0,6,0,4,1,"Forward one body's AstrBot hooks to current, running internal services."
+astrbot_host.native_extensions.image_native,astrbot_host\native_extensions\image_native\__init__.py,astrbot_host/native_extensions,False,True,0,0,0,2,0,Native V2 image operations and immutable originals.
+astrbot_host.native_extensions.image_native.adapter,astrbot_host\native_extensions\image_native\adapter.py,astrbot_host/native_extensions,True,True,1,15,6,6,2,Plain-object companion.native-provider.v1 port; no dependency on V2 core types.
+astrbot_host.native_extensions.image_native.backends,astrbot_host\native_extensions\image_native\backends.py,astrbot_host/native_extensions,True,True,2,12,7,3,3,Pure transport reuse behind a new owner and independent V2 configuration.
+astrbot_host.native_extensions.image_native.bootstrap,astrbot_host\native_extensions\image_native\bootstrap.py,astrbot_host/native_extensions,True,False,0,2,0,7,2,Image plugin lifecycle assembly; the stable getter performs no I/O.
+astrbot_host.native_extensions.image_native.comfyui_prompts,astrbot_host\native_extensions\image_native\comfyui_prompts.py,astrbot_host/native_extensions,True,False,0,6,1,1,1,One model call rewrites the request into a saved workflow's text inputs.
+astrbot_host.native_extensions.image_native.comfyui_service,astrbot_host\native_extensions\image_native\comfyui_service.py,astrbot_host/native_extensions,True,True,1,18,13,3,1,"Native ComfyUI connection, analysis and execution without another plugin."
+astrbot_host.native_extensions.image_native.comfyui_workflows,astrbot_host\native_extensions\image_native\comfyui_workflows.py,astrbot_host/native_extensions,True,False,2,15,0,0,4,"API workflows and persisted, constrained input mappings for native ComfyUI."
+astrbot_host.native_extensions.image_native.extension,astrbot_host\native_extensions\image_native\extension.py,astrbot_host/native_extensions,True,True,2,8,1,5,1,"V2-owned Image package settings, provider and endpoint management API."
+astrbot_host.native_extensions.image_native.image_native_client,astrbot_host\native_extensions\image_native\image_native_client.py,astrbot_host/native_extensions,True,False,2,11,10,4,1,Execute compiled native plans without prompt rewriting or backend fallback.
+astrbot_host.native_extensions.image_native.image_operations,astrbot_host\native_extensions\image_native\image_operations.py,astrbot_host/native_extensions,True,False,1,17,0,1,1,"Durable native operations and original images, scoped and idempotent."
+astrbot_host.native_extensions.image_native.image_preparation_task,astrbot_host\native_extensions\image_native\image_preparation_task.py,astrbot_host/native_extensions,True,False,1,9,0,0,2,Strict local preparation profile; not a replacement for public ActionRequest.
+astrbot_host.native_extensions.image_native.nai_backend,astrbot_host\native_extensions\image_native\nai_backend.py,astrbot_host/native_extensions,True,True,1,8,2,2,3,Bridge the installed NAI plugin into the bundled image owner's routes.
+astrbot_host.native_extensions.image_native.output_configuration,astrbot_host\native_extensions\image_native\output_configuration.py,astrbot_host/native_extensions,True,True,0,16,0,6,4,The dashboard edits the same independent V2 settings that execute images.
+astrbot_host.native_extensions.image_native.output_routing,astrbot_host\native_extensions\image_native\output_routing.py,astrbot_host/native_extensions,True,True,3,27,8,5,4,Native image routing through V2-only API queues and local backend connections.
+astrbot_host.native_extensions.image_native.owner,astrbot_host\native_extensions\image_native\owner.py,astrbot_host/native_extensions,True,True,1,12,8,3,7,Native owner: generation ends at a receipt; adoption and delivery stay outside.
+astrbot_host.native_extensions.image_native.package,astrbot_host\native_extensions\image_native\package.py,astrbot_host/native_extensions,True,False,0,1,0,0,4,Content identity for the native provider and its reused transport files.
+astrbot_host.native_extensions.image_native.reference_receipt,astrbot_host\native_extensions\image_native\reference_receipt.py,astrbot_host/native_extensions,True,False,1,5,0,0,1,Internal transport evidence; never infer submission from a selection plan.
+astrbot_host.native_extensions.image_native.references,astrbot_host\native_extensions\image_native\references.py,astrbot_host/native_extensions,True,True,1,3,0,1,2,Exact selection and role binding for invocation-local image references.
+astrbot_host.native_extensions.image_native.store,astrbot_host\native_extensions\image_native\store.py,astrbot_host/native_extensions,True,True,1,10,0,1,1,One transaction publishes a generation receipt and its immutable originals.
+astrbot_host.native_extensions.image_native.types,astrbot_host\native_extensions\image_native\types.py,astrbot_host/native_extensions,True,True,6,10,0,0,13,Internal image values; the public provider contract belongs to the V2 host.
+astrbot_host.native_extensions.image_native.waiting,astrbot_host\native_extensions\image_native\waiting.py,astrbot_host/native_extensions,True,True,0,2,1,2,1,Bounded reads of a confirmed backend task; no submission or implicit retry.
+astrbot_host.native_extensions.image_settings,astrbot_host\native_extensions\image_settings.py,astrbot_host/native_extensions,True,False,0,2,0,2,2,Small V2-only switch store for managed native image actions.
+astrbot_host.native_extensions.images,astrbot_host\native_extensions\images.py,astrbot_host/native_extensions,True,True,2,12,0,9,3,Adopt verified native image artifacts into governed conversation originals.
+astrbot_host.native_extensions.live,astrbot_host\native_extensions\live\__init__.py,astrbot_host/native_extensions,False,True,0,0,0,0,0,V2-owned live execution services.
+astrbot_host.native_extensions.live.activity_methods,astrbot_host\native_extensions\live\activity_methods.py,astrbot_host/native_extensions,False,True,1,108,27,2,1,V2 live activity services.
+astrbot_host.native_extensions.live.bilibili_live,astrbot_host\native_extensions\live\bilibili_live.py,astrbot_host/native_extensions,False,True,8,81,39,2,3,Bilibili live danmaku client.
+astrbot_host.native_extensions.live.blivedm,astrbot_host\native_extensions\live\blivedm\__init__.py,astrbot_host/native_extensions,False,False,0,0,0,4,1,
+astrbot_host.native_extensions.live.blivedm.clients,astrbot_host\native_extensions\live\blivedm\clients\__init__.py,astrbot_host/native_extensions,False,False,0,0,0,0,2,
+astrbot_host.native_extensions.live.blivedm.clients.open_live,astrbot_host\native_extensions\live\blivedm\clients\open_live.py,astrbot_host/native_extensions,False,False,1,18,7,2,1,
+astrbot_host.native_extensions.live.blivedm.clients.web,astrbot_host\native_extensions\live\blivedm\clients\web.py,astrbot_host/native_extensions,False,False,2,27,9,2,1,
+astrbot_host.native_extensions.live.blivedm.clients.ws_base,astrbot_host\native_extensions\live\blivedm\clients\ws_base.py,astrbot_host/native_extensions,False,False,7,26,16,1,1,
+astrbot_host.native_extensions.live.blivedm.models,astrbot_host\native_extensions\live\blivedm\models\__init__.py,astrbot_host/native_extensions,False,False,0,0,0,0,5,
+astrbot_host.native_extensions.live.blivedm.models.message,astrbot_host\native_extensions\live\blivedm\models\message.py,astrbot_host/native_extensions,False,False,8,12,0,1,1,
+astrbot_host.native_extensions.live.blivedm.models.open_live,astrbot_host\native_extensions\live\blivedm\models\open_live.py,astrbot_host/native_extensions,False,False,9,9,0,0,0,
+astrbot_host.native_extensions.live.blivedm.models.web,astrbot_host\native_extensions\live\blivedm\models\web.py,astrbot_host/native_extensions,False,False,6,9,0,0,0,
+astrbot_host.native_extensions.live.common,astrbot_host\native_extensions\live\common.py,astrbot_host/native_extensions,False,False,2,12,4,12,7,AstrBot 插件：我会直播圈米养你
+astrbot_host.native_extensions.live.host_events,astrbot_host\native_extensions\live\host_events.py,astrbot_host/native_extensions,True,True,1,6,1,1,1,Local AstrBot hook work and queued presentation on the current Live service.
+astrbot_host.native_extensions.live.l2d_mixin,astrbot_host\native_extensions\live\l2d_mixin.py,astrbot_host/native_extensions,False,True,1,8,3,0,1,自主 Live2D 标签和热键触发逻辑。
+astrbot_host.native_extensions.live.management,astrbot_host\native_extensions\live\management.py,astrbot_host/native_extensions,True,False,0,2,1,1,1,Explicit cottage actions for VTube Studio; reads never contact devices.
+astrbot_host.native_extensions.live.media_methods,astrbot_host\native_extensions\live\media_methods.py,astrbot_host/native_extensions,False,False,1,5,2,1,1,V2 live media services.
+astrbot_host.native_extensions.live.model_methods,astrbot_host\native_extensions\live\model_methods.py,astrbot_host/native_extensions,False,True,1,41,12,4,1,V2 live model services.
+astrbot_host.native_extensions.live.mouth_sync_mixin,astrbot_host\native_extensions\live\mouth_sync_mixin.py,astrbot_host/native_extensions,False,False,1,11,5,0,1,TTS 语音嘴型联动逻辑。
+astrbot_host.native_extensions.live.native_context,astrbot_host\native_extensions\live\native_context.py,astrbot_host/native_extensions,False,False,1,2,1,1,2,V2 background for replies delivered to one verified private window.
+astrbot_host.native_extensions.live.page_api,astrbot_host\native_extensions\live\page_api.py,astrbot_host/native_extensions,False,False,1,53,19,2,1,
+astrbot_host.native_extensions.live.page_config,astrbot_host\native_extensions\live\page_config.py,astrbot_host/native_extensions,False,True,1,18,3,0,2,
+astrbot_host.native_extensions.live.rooms_methods,astrbot_host\native_extensions\live\rooms_methods.py,astrbot_host/native_extensions,False,False,1,2,0,1,1,V2 live rooms services.
+astrbot_host.native_extensions.live.runtime,astrbot_host\native_extensions\live\runtime.py,astrbot_host/native_extensions,False,True,1,4,2,11,0,V2-owned live lifecycle; no Star registration.
+astrbot_host.native_extensions.live.settings_methods,astrbot_host\native_extensions\live\settings_methods.py,astrbot_host/native_extensions,False,False,1,17,2,3,1,V2 live settings services.
+astrbot_host.native_extensions.live.soullink_mixin,astrbot_host\native_extensions\live\soullink_mixin.py,astrbot_host/native_extensions,False,True,1,63,10,1,1,Optional Soullink Emotion integration for AstrBot and VTube Studio.
+astrbot_host.native_extensions.live.soullink_runtime,astrbot_host\native_extensions\live\soullink_runtime.py,astrbot_host/native_extensions,False,True,1,13,9,0,1,Async JSONL bridge to the vendored Soullink Emotion engine.
+astrbot_host.native_extensions.live.speech_methods,astrbot_host\native_extensions\live\speech_methods.py,astrbot_host/native_extensions,False,False,1,28,8,1,1,V2 live speech services.
+astrbot_host.native_extensions.live.state,astrbot_host\native_extensions\live\state.py,astrbot_host/native_extensions,False,True,1,12,0,1,1,V2-owned live state and the small host-facing profile adapter.
+astrbot_host.native_extensions.live.subtitle_mixin,astrbot_host\native_extensions\live\subtitle_mixin.py,astrbot_host/native_extensions,False,True,1,12,4,1,1,打字机字幕 overlay 相关逻辑。
+astrbot_host.native_extensions.live.subtitle_server,astrbot_host\native_extensions\live\subtitle_server.py,astrbot_host/native_extensions,False,False,1,15,12,0,1,Transparent browser overlay for typewriter subtitles.
+astrbot_host.native_extensions.live.twitch_live,astrbot_host\native_extensions\live\twitch_live.py,astrbot_host/native_extensions,False,False,1,14,5,1,1,Twitch read-only chat listener built on the anonymous IRC endpoint.
+astrbot_host.native_extensions.live.twitch_mixin,astrbot_host\native_extensions\live\twitch_mixin.py,astrbot_host/native_extensions,False,False,1,25,11,4,1,"Twitch runtime, moderation-free auto reply, and output integration."
+astrbot_host.native_extensions.live.vts_client,astrbot_host\native_extensions\live\vts_client.py,astrbot_host/native_extensions,False,False,6,31,24,0,1,VTube Studio WebSocket API 客户端
+astrbot_host.native_extensions.live.vts_discovery,astrbot_host\native_extensions\live\vts_discovery.py,astrbot_host/native_extensions,False,False,0,10,4,0,2,VTube Studio 跨平台自动发现模块
+astrbot_host.native_extensions.live.vts_parameter_scheduler,astrbot_host\native_extensions\live\vts_parameter_scheduler.py,astrbot_host/native_extensions,False,False,1,13,3,0,1,Merge real-time parameter layers before sending them to VTube Studio.
+astrbot_host.native_extensions.reality,astrbot_host\native_extensions\reality\__init__.py,astrbot_host/native_extensions,False,True,0,0,0,0,0,V2-owned reality execution services.
+astrbot_host.native_extensions.reality._mihome_login_worker,astrbot_host\native_extensions\reality\_mihome_login_worker.py,astrbot_host/native_extensions,False,False,0,7,0,0,0,
+astrbot_host.native_extensions.reality._mihome_spec_worker,astrbot_host\native_extensions\reality\_mihome_spec_worker.py,astrbot_host/native_extensions,False,False,0,8,1,0,0,在可终止子进程中获取公开设备规格并修复缺失的本地化表。
+astrbot_host.native_extensions.reality.activity_methods,astrbot_host\native_extensions\reality\activity_methods.py,astrbot_host/native_extensions,False,True,1,32,11,2,1,V2 reality activity services.
+astrbot_host.native_extensions.reality.amap_geocode,astrbot_host\native_extensions\reality\amap_geocode.py,astrbot_host/native_extensions,False,False,0,5,1,0,1,Optional Amap reverse-geocoding adapter for the mobile gateway.
+astrbot_host.native_extensions.reality.common,astrbot_host\native_extensions\reality\common.py,astrbot_host/native_extensions,False,False,2,34,9,7,5,
+astrbot_host.native_extensions.reality.helpers,astrbot_host\native_extensions\reality\helpers.py,astrbot_host/native_extensions,False,False,0,4,0,0,4,
+astrbot_host.native_extensions.reality.host_context,astrbot_host\native_extensions\reality\host_context.py,astrbot_host/native_extensions,True,False,1,12,6,8,1,Bind device work to V2's current private context and AstrBot providers.
+astrbot_host.native_extensions.reality.host_delivery,astrbot_host\native_extensions\reality\host_delivery.py,astrbot_host/native_extensions,True,False,1,7,5,8,1,Real device output and chat delivery owned by the current V2 runtime.
+astrbot_host.native_extensions.reality.host_events,astrbot_host\native_extensions\reality\host_events.py,astrbot_host/native_extensions,True,True,2,9,3,4,1,Camera request guidance using the tools actually offered by V2's core hook.
+astrbot_host.native_extensions.reality.host_tools,astrbot_host\native_extensions\reality\host_tools.py,astrbot_host/native_extensions,True,False,2,7,3,4,1,"Private Reality tools use the received sender, active V2 persona and host Cron."
+astrbot_host.native_extensions.reality.mihome_arc4_compat,astrbot_host\native_extensions\reality\mihome_arc4_compat.py,astrbot_host/native_extensions,False,True,1,7,0,0,1,为 mijiaAPI 提供 RC4 兼容实现，避免原生扩展缺失阻断米家登录。
+astrbot_host.native_extensions.reality.mihome_client,astrbot_host\native_extensions\reality\mihome_client.py,astrbot_host/native_extensions,False,False,9,50,18,2,2,
+astrbot_host.native_extensions.reality.mihome_data_manager,astrbot_host\native_extensions\reality\mihome_data_manager.py,astrbot_host/native_extensions,False,False,1,19,0,0,2,
+astrbot_host.native_extensions.reality.mihome_device_profiles,astrbot_host\native_extensions\reality\mihome_device_profiles.py,astrbot_host/native_extensions,False,False,0,22,0,0,1,
+astrbot_host.native_extensions.reality.mihome_web_api,astrbot_host\native_extensions\reality\mihome_web_api.py,astrbot_host/native_extensions,False,True,2,71,31,2,1,米家插件的 AstrBot Plugin Pages 后端。
+astrbot_host.native_extensions.reality.mobile_gateway,astrbot_host\native_extensions\reality\mobile_gateway.py,astrbot_host/native_extensions,False,True,2,102,38,4,1,"Small, consent-first HTTP bridge for the Android companion app."
+astrbot_host.native_extensions.reality.mobile_snapshot_owner,astrbot_host\native_extensions\reality\mobile_snapshot_owner.py,astrbot_host/native_extensions,False,False,6,41,0,2,2,Reality-owned RV-1 governance for existing mobile projections.
+astrbot_host.native_extensions.reality.model_methods,astrbot_host\native_extensions\reality\model_methods.py,astrbot_host/native_extensions,False,True,1,14,4,1,1,V2 reality model services.
+astrbot_host.native_extensions.reality.reality_touch_audio,astrbot_host\native_extensions\reality\reality_touch_audio.py,astrbot_host/native_extensions,False,False,1,20,4,1,1,Reality Companion audio routing and proactive local playback.
+astrbot_host.native_extensions.reality.reality_touch_camera,astrbot_host\native_extensions\reality\reality_touch_camera.py,astrbot_host/native_extensions,False,True,1,33,2,2,1,现实触及摄像头：独立授权、任务触发的单帧环境观察。
+astrbot_host.native_extensions.reality.role_snapshot_sources,astrbot_host\native_extensions\reality\role_snapshot_sources.py,astrbot_host/native_extensions,False,False,1,11,0,1,1,"Optional, owner-side Role provenance port for actually issued RV-1 originals."
+astrbot_host.native_extensions.reality.runtime,astrbot_host\native_extensions\reality\runtime.py,astrbot_host/native_extensions,False,False,1,6,4,8,0,V2-owned reality lifecycle; no Star registration.
+astrbot_host.native_extensions.reality.settings_methods,astrbot_host\native_extensions\reality\settings_methods.py,astrbot_host/native_extensions,False,True,1,23,4,4,1,V2 reality settings services.
+astrbot_host.native_extensions.reality.snapshot_dependencies,astrbot_host\native_extensions\reality\snapshot_dependencies.py,astrbot_host/native_extensions,False,False,1,6,0,0,1,Durable withdrawal receipts for volatile snapshots; never stores bodies.
+astrbot_host.native_extensions.reality.speech_methods,astrbot_host\native_extensions\reality\speech_methods.py,astrbot_host/native_extensions,False,False,1,1,1,1,1,V2 reality speech services.
+astrbot_host.native_extensions.reality.wakeup_alarm,astrbot_host\native_extensions\reality\wakeup_alarm.py,astrbot_host/native_extensions,False,True,1,43,14,3,1,现实触及提醒、授权和设备交付。
+astrbot_host.native_extensions.reality_camera,astrbot_host\native_extensions\reality_camera.py,astrbot_host/native_extensions,True,False,2,7,0,5,2,Gate one Reality camera observation on a direct request in the current private turn.
+astrbot_host.native_extensions.request_context,astrbot_host\native_extensions\request_context.py,astrbot_host/native_extensions,True,False,0,5,0,0,10,Own native hook material without rewriting the shared conversation prefix.
+astrbot_host.native_extensions.screen_provider,astrbot_host\native_extensions\screen_provider.py,astrbot_host/native_extensions,True,True,1,12,2,0,1,"V2-owned, one-shot local desktop capture with durable artifact receipts."
+astrbot_host.native_extensions.screens,astrbot_host\native_extensions\screens.py,astrbot_host/native_extensions,True,True,1,5,0,10,1,Adopt one native desktop capture into Screen-owned V2 originals.
+astrbot_host.native_extensions.service,astrbot_host\native_extensions\service.py,astrbot_host/native_extensions,False,True,1,5,2,1,4,"Host helpers for internal services, without independent plugin registration."
+astrbot_host.native_extensions.settings,astrbot_host\native_extensions\settings.py,astrbot_host/native_extensions,True,True,1,9,0,0,1,Persistent settings for services owned by the single V2 plugin.
+astrbot_host.native_extensions.together,astrbot_host\native_extensions\together\__init__.py,astrbot_host/native_extensions,False,True,0,0,0,0,0,V2-owned together execution services.
+astrbot_host.native_extensions.together.activity_methods,astrbot_host\native_extensions\together\activity_methods.py,astrbot_host/native_extensions,False,True,1,51,18,3,1,V2 together activity services.
+astrbot_host.native_extensions.together.common,astrbot_host\native_extensions\together\common.py,astrbot_host/native_extensions,True,False,3,12,0,6,7,
+astrbot_host.native_extensions.together.media,astrbot_host\native_extensions\together\media.py,astrbot_host/native_extensions,True,False,2,18,7,0,1,
+astrbot_host.native_extensions.together.media_methods,astrbot_host\native_extensions\together\media_methods.py,astrbot_host/native_extensions,False,False,1,34,11,1,1,V2 together media services.
+astrbot_host.native_extensions.together.mobile_requests,astrbot_host\native_extensions\together\mobile_requests.py,astrbot_host/native_extensions,True,False,0,1,0,2,1,Check whether a confirmed mobile room still has a usable host ticket.
+astrbot_host.native_extensions.together.model_methods,astrbot_host\native_extensions\together\model_methods.py,astrbot_host/native_extensions,True,True,1,35,13,3,2,V2 together model services.
+astrbot_host.native_extensions.together.native_context,astrbot_host\native_extensions\together\native_context.py,astrbot_host/native_extensions,True,True,3,10,5,4,3,Optional V2 context for the exact private window that opened a room.
+astrbot_host.native_extensions.together.native_transcripts,astrbot_host\native_extensions\together\native_transcripts.py,astrbot_host/native_extensions,True,True,0,6,2,1,2,Observe actual room text without creating an AstrBot reply or QQ receipt.
+astrbot_host.native_extensions.together.rooms_methods,astrbot_host\native_extensions\together\rooms_methods.py,astrbot_host/native_extensions,False,True,1,37,16,1,1,V2 together rooms services.
+astrbot_host.native_extensions.together.runtime,astrbot_host\native_extensions\together\runtime.py,astrbot_host/native_extensions,False,True,1,4,2,9,0,V2-owned together lifecycle; no Star registration.
+astrbot_host.native_extensions.together.server,astrbot_host\native_extensions\together\server.py,astrbot_host/native_extensions,True,False,1,21,10,1,1,
+astrbot_host.native_extensions.together.settings_methods,astrbot_host\native_extensions\together\settings_methods.py,astrbot_host/native_extensions,False,True,1,19,8,1,1,V2 together settings services.
+astrbot_host.native_extensions.together.speech_methods,astrbot_host\native_extensions\together\speech_methods.py,astrbot_host/native_extensions,False,True,1,26,6,1,1,V2 together speech services.
+astrbot_host.native_extensions.together.token_usage,astrbot_host\native_extensions\together\token_usage.py,astrbot_host/native_extensions,True,True,1,1,0,1,1,Compatibility import for Together's service-owned token ledger.
+astrbot_host.native_extensions.together.tunnel,astrbot_host\native_extensions\together\tunnel.py,astrbot_host/native_extensions,True,False,1,9,5,0,1,
+astrbot_host.native_extensions.usage,astrbot_host\native_extensions\usage.py,astrbot_host/native_extensions,True,True,1,16,2,0,9,Service-owned model receipts for V2's native capability runtimes.
+astrbot_host.native_perception_api,astrbot_host\native_perception_api.py,astrbot_host/native_perception_api,True,True,1,23,7,16,2,Target-scoped dashboard bridge for V2-owned perception settings.
+astrbot_host.news,astrbot_host\news.py,astrbot_host/news,True,True,8,43,14,4,4,"Host transports for explicit HTTPS JSON, RSS/Atom and Bilibili news sources."
+astrbot_host.news_parsing,astrbot_host\news_parsing.py,astrbot_host/news_parsing,True,True,1,8,0,2,1,Normalize Bilibili dynamic JSON and RSS/Atom into the news port contract.
+astrbot_host.optional_persona_designer,astrbot_host\optional_persona_designer.py,astrbot_host/optional_persona_designer,True,True,0,1,0,1,2,Mount the designer after core routes; partial optional registration is local.
+astrbot_host.page_api,astrbot_host\page_api.py,astrbot_host/page_api,True,True,1,13,5,9,2,Authenticated page directory; the host supplies every target and API path.
+astrbot_host.perception_api,astrbot_host\perception_api.py,astrbot_host/perception_api,True,True,1,9,2,6,3,Dashboard-authorized configuration bridge to the two perception owners.
+astrbot_host.performance_mode,astrbot_host\performance_mode.py,astrbot_host/performance_mode,True,True,0,3,0,0,1,Low-resource page mode shared by the plugin host and dashboard page.
+astrbot_host.persona_catalog,astrbot_host\persona_catalog.py,astrbot_host/persona_catalog,True,True,0,4,2,0,6,"List the personas AstrBot offers, without assuming which method exists."
+astrbot_host.persona_designer_api,astrbot_host\persona_designer_api.py,astrbot_host/persona_designer_api,True,True,2,19,10,9,1,"Optional, Dashboard-only persona design; no chat intake or runtime schema changes."
+astrbot_host.persona_workshop_api,astrbot_host\persona_workshop_api.py,astrbot_host/persona_workshop_api,True,True,1,44,13,22,3,Dashboard routes for persona drafts and the role-profile source preview.
+astrbot_host.pokes,astrbot_host\pokes.py,astrbot_host/pokes,True,True,0,9,4,9,2,Handle authenticated OneBot poke notices on their original native route.
+astrbot_host.private_debounce,astrbot_host\private_debounce.py,astrbot_host/private_debounce,True,True,4,23,7,2,1,Per-target private-text debounce with latest-event ownership.
+astrbot_host.private_notice,astrbot_host\private_notice.py,astrbot_host/private_notice,True,True,0,8,4,3,9,"把""没有对话权限""那一句话真的发出去。"
+astrbot_host.private_reply_followup,astrbot_host\private_reply_followup.py,astrbot_host/private_reply_followup,True,True,2,9,0,0,1,Coalesce private follow-ups that arrive after debounce but before model request.
+astrbot_host.profile_residency,astrbot_host\profile_residency.py,astrbot_host/profile_residency,True,True,0,3,0,1,1,"Where a target's data actually lives, when the selected profile is not it."
+astrbot_host.quotes,astrbot_host\quotes.py,astrbot_host/quotes,True,True,0,2,2,6,1,Install the verified OneBot client and media loaders for scoped quotes.
+astrbot_host.qweather_alerts,astrbot_host\qweather_alerts.py,astrbot_host/qweather_alerts,True,True,1,3,1,4,1,Bounded QWeather official-alert adapter using host-only credentials.
+astrbot_host.qweather_credentials,astrbot_host\qweather_credentials.py,astrbot_host/qweather_credentials,True,True,1,7,0,0,4,Host-only QWeather credentials shared by the current-weather and alert adapters.
+astrbot_host.qweather_location,astrbot_host\qweather_location.py,astrbot_host/qweather_location,True,True,0,2,1,2,2,Resolve a human-readable role location to QWeather coordinates.
+astrbot_host.qweather_weather,astrbot_host\qweather_weather.py,astrbot_host/qweather_weather,True,True,1,8,2,5,1,"QWeather current-weather adapter, the default source for the role's own location."
+astrbot_host.qzone_api,astrbot_host\qzone_api.py,astrbot_host/qzone_api,True,True,1,28,18,12,2,Dashboard entry point for the QQ Zone extension.
+astrbot_host.qzone_client,astrbot_host\qzone_client.py,astrbot_host/qzone_client,True,False,1,26,7,3,2,QQ Zone HTTP transport and credential acquisition on the host side.
+astrbot_host.qzone_transport,astrbot_host\qzone_transport.py,astrbot_host/qzone_transport,True,True,0,4,0,1,2,One place that decides which OneBot client and which manual session QQ Zone uses.
+astrbot_host.reality_access_api,astrbot_host\reality_access_api.py,astrbot_host/reality_access_api,True,True,1,14,10,7,2,Bind native Reality capability consent to host-resolved private targets and roles.
+astrbot_host.recalls,astrbot_host\recalls.py,astrbot_host/recalls,True,True,1,5,1,6,8,Authenticate native OneBot notices before forwarding withdrawal facts.
+astrbot_host.relationships_api,astrbot_host\relationships_api.py,astrbot_host/relationships_api,True,True,1,6,3,5,2,Dashboard management routes for the pinned profile's core relationship records.
+astrbot_host.relay_dispatch,astrbot_host\relay_dispatch.py,astrbot_host/relay_dispatch,True,False,1,4,2,3,1,跨窗口递话的宿主侧发送：按 plan_relay 的结论决定发不发、发什么。
+astrbot_host.relay_pending,astrbot_host\relay_pending.py,astrbot_host/relay_pending,True,True,0,10,0,0,2,Small durable queue for delayed group relays and private reply receipts.
+astrbot_host.relay_pending_events,astrbot_host\relay_pending_events.py,astrbot_host/relay_pending_events,True,True,0,10,6,3,1,Dispatch durable relay tasks from authenticated inbound events.
+astrbot_host.relay_tools,astrbot_host\relay_tools.py,astrbot_host/relay_tools,True,True,1,36,7,17,2,Supervised first-party tool port for audited cross-window and cross-group relaying.
+astrbot_host.reply_api,astrbot_host\reply_api.py,astrbot_host/reply_api,True,True,1,39,28,12,3,"Dashboard-only reply preferences, offline preview and sanitized diagnostics."
+astrbot_host.reset_command,astrbot_host\reset_command.py,astrbot_host/reset_command,True,True,0,6,1,10,1,"Chat-side '全部重置' for one private relationship, outside the model."
+astrbot_host.role_paths,astrbot_host\role_paths.py,astrbot_host/role_paths,True,True,0,1,0,1,2,Shared per-role migration route paths for host and setup inventories.
+astrbot_host.screen_access_api,astrbot_host\screen_access_api.py,astrbot_host/screen_access_api,True,True,1,8,5,7,2,Dashboard routes for Screen's per-private-window consent.
+astrbot_host.screen_observation_api,astrbot_host\screen_observation_api.py,astrbot_host/screen_observation_api,True,False,1,5,3,5,1,Authenticated private-window review of retained proactive screen originals.
+astrbot_host.semantic_api,astrbot_host\semantic_api.py,astrbot_host/semantic_api,True,True,1,14,2,8,2,Authenticated V2 semantic settings and owned reaction/vocabulary catalog.
+astrbot_host.semantic_models,astrbot_host\semantic_models.py,astrbot_host/semantic_models,True,True,2,16,5,2,2,"AstrBot embedding, rerank and visual-analysis ports; no provider secrets leave here."
+astrbot_host.service_balance,astrbot_host\service_balance.py,astrbot_host/service_balance,True,True,1,13,2,5,4,Bounded HTTPS JSON balance adapter for host settings and environment fallback.
+astrbot_host.session_topology,astrbot_host\session_topology.py,astrbot_host/session_topology,True,True,1,31,14,7,4,"Native session metadata and reviewed topology, without copying chat history."
+astrbot_host.settings,astrbot_host\settings.py,astrbot_host/settings,True,True,2,10,0,11,18,Validated settings for one explicitly selected staging profile.
+astrbot_host.setup_api,astrbot_host\setup_api.py,astrbot_host/setup_api,True,True,1,52,28,25,3,"Authenticated, persistent first-run setup routes for the Companion V2 host."
+astrbot_host.setup_state,astrbot_host\setup_state.py,astrbot_host/setup_state,True,True,2,11,0,0,1,"Persistent, V2-local progress for the one-time first-run guide."
+astrbot_host.shared_host_migration,astrbot_host\shared_host_migration.py,astrbot_host/shared_host_migration,True,True,0,2,0,4,2,Upgrade legacy single-target plugin settings to the shared host contract.
+astrbot_host.solar_terms,astrbot_host\solar_terms.py,astrbot_host/solar_terms,True,True,1,4,0,0,2,Host supplied solar-term table used by the private conversation calendar.
+astrbot_host.state_api,astrbot_host\state_api.py,astrbot_host/state_api,True,True,1,9,4,9,2,Authenticated state and calendar API for the host's original pinned target.
+astrbot_host.storage_api,astrbot_host\storage_api.py,astrbot_host/storage_api,True,True,1,13,2,7,2,"Dashboard inventory, retention and data-location controls for V2 storage."
+astrbot_host.storage_location,astrbot_host\storage_location.py,astrbot_host/storage_location,True,True,0,23,0,3,6,Resolve and safely relocate the plugin-owned data directory at startup.
+astrbot_host.stranger_notice,astrbot_host\stranger_notice.py,astrbot_host/stranger_notice,True,True,2,12,2,4,2,"陌生首触：给""不属于任何目标""的私聊账号回一句固定文案。"
+astrbot_host.token_sources,astrbot_host\token_sources.py,astrbot_host/token_sources,True,True,0,11,0,0,1,Read bounded token summaries from the V2 services and public memory bridge.
+astrbot_host.upgrade_setup,astrbot_host\upgrade_setup.py,astrbot_host/upgrade_setup,True,True,1,3,2,9,1,Review the existing installation before asking an upgrading user to bind again.
+astrbot_host.upgrade_source,astrbot_host\upgrade_source.py,astrbot_host/upgrade_source,True,True,0,9,0,0,3,Preserve the legacy host settings before AstrBot normalizes the new schema.
+astrbot_host.video,astrbot_host\video\__init__.py,astrbot_host/video,False,True,0,0,0,0,0,Native video preparation outside the host event loop and database transaction.
+astrbot_host.video.container,astrbot_host\video\container.py,astrbot_host/video,False,True,2,7,0,2,1,"Bounded, self-contained MP4 sample tables before opening a native demuxer."
+astrbot_host.video.decoder,astrbot_host\video\decoder.py,astrbot_host/video,False,True,0,2,0,3,1,Decode one verified local MP4 and retain only declared sample PNGs.
+astrbot_host.video.gemini_provider,astrbot_host\video\gemini_provider.py,astrbot_host/video,True,True,1,12,3,5,1,Google GenAI conversation adapter with captured MP4 bytes as native Parts.
+astrbot_host.video.loader,astrbot_host\video\loader.py,astrbot_host/video,True,True,0,3,3,5,4,Video network capture and disposable decoder lifetime; no event-loop decoding.
+astrbot_host.video.worker,astrbot_host\video\worker.py,astrbot_host/video,False,False,0,1,0,3,0,One bounded video decode; byte stdin and JSON header plus PNG stdout.
+astrbot_host.voice,astrbot_host\voice.py,astrbot_host/voice,True,True,2,21,5,2,6,Best-effort native TTS for an already sealed conversation part.
+astrbot_host.weather,astrbot_host\weather.py,astrbot_host/weather,True,True,1,3,2,2,1,Fixed Open-Meteo current-weather adapter for explicit role coordinates.
+astrbot_host.weather_settings,astrbot_host\weather_settings.py,astrbot_host/weather_settings,True,True,2,10,3,4,5,"Host-owned weather source settings, credentials and observation reuse."
+astrbot_host.web_api,astrbot_host\web_api.py,astrbot_host/web_api,True,True,1,20,12,33,36,Dashboard routes and response serialization for one staging controller.
+astrbot_host.web_read_material,astrbot_host\web_read_material.py,astrbot_host/web_read_material,True,True,1,19,6,5,2,把消息里的链接读成正文，供回复使用。
+astrbot_host.worker_lifecycle,astrbot_host\worker_lifecycle.py,astrbot_host/worker_lifecycle,True,True,1,3,0,1,1,AstrBot process and event-loop evidence for local supervised worker recovery.
+companion_v2,companion_v2\__init__.py,companion_v2,False,True,0,0,0,1,0,我会永远陪着你 V2.0: host-independent companion domains.
+companion_v2.adapters,companion_v2\adapters\__init__.py,companion_v2/adapters,False,True,0,0,0,0,0,Narrow host and capability adapters; domains never import host runtime types.
+companion_v2.adapters.astrbot,companion_v2\adapters\astrbot\__init__.py,companion_v2/adapters,False,True,0,0,0,1,0,"AstrBot-shaped inbound adapter contracts, intentionally host-library free in G4."
+companion_v2.adapters.astrbot.application,companion_v2\adapters\astrbot\application.py,companion_v2/adapters,True,True,2,3,0,8,2,"Trusted AstrBot port composition, without loading or importing the real host."
+companion_v2.adapters.astrbot.files,companion_v2\adapters\astrbot\files.py,companion_v2/adapters,True,True,2,4,1,2,4,Freeze document locators and bind extracted text to the original message body.
+companion_v2.adapters.astrbot.forwards,companion_v2\adapters\astrbot\forwards.py,companion_v2/adapters,True,True,2,9,2,9,5,Account-pinned forward reads; freeze the returned tree before image awaits.
+companion_v2.adapters.astrbot.group,companion_v2\adapters\astrbot\group.py,companion_v2/adapters,True,True,2,19,4,18,5,"Verified group text and original media, including per-member sessions."
+companion_v2.adapters.astrbot.group_forwards,companion_v2\adapters\astrbot\group_forwards.py,companion_v2/adapters,True,True,0,2,1,7,1,Read group forwards from the exact group message on its pinned OneBot account.
+companion_v2.adapters.astrbot.group_quotes,companion_v2\adapters\astrbot\group_quotes.py,companion_v2/adapters,True,True,0,3,1,7,2,"Bounded group-directed original reads, with frozen attribution and attachments."
+companion_v2.adapters.astrbot.history,companion_v2\adapters\astrbot\history.py,companion_v2/adapters,True,False,0,1,0,0,5,Strictly normalize OneBot peer-history response wrappers.
+companion_v2.adapters.astrbot.inbound,companion_v2\adapters\astrbot\inbound.py,companion_v2/adapters,True,True,2,10,0,17,2,Normalize a trusted AstrBot event into a V2 governed source and input envelope.
+companion_v2.adapters.astrbot.memory_output,companion_v2\adapters\astrbot\memory_output.py,companion_v2/adapters,True,True,0,7,0,2,1,Capture private memory replies before JSON decoding or host text repair.
+companion_v2.adapters.astrbot.memory_owner,companion_v2\adapters\astrbot\memory_owner.py,companion_v2/adapters,True,True,2,12,0,2,4,判定当前哪个插件负责模型侧记忆。
+companion_v2.adapters.astrbot.memory_providers,companion_v2\adapters\astrbot\memory_providers.py,companion_v2/adapters,True,True,2,13,2,1,5,Host-local registrations for third-party memory readers and writers.
+companion_v2.adapters.astrbot.memory_push,companion_v2\adapters\astrbot\memory_push.py,companion_v2/adapters,True,True,1,5,1,3,2,把 V2 已完成的记录交给注册的 writer，未注册时兼容 MemoryCompanion。
+companion_v2.adapters.astrbot.model_wire,companion_v2\adapters\astrbot\model_wire.py,companion_v2/adapters,True,True,1,12,0,8,3,Text/tool wire format; only host-offered originals can become evidence.
+companion_v2.adapters.astrbot.native,companion_v2\adapters\astrbot\native.py,companion_v2/adapters,True,True,8,57,12,14,37,"AstrBot 4.27.2/4.28.2 private capture, with explicit account/persona projections."
+companion_v2.adapters.astrbot.onebot,companion_v2\adapters\astrbot\onebot.py,companion_v2/adapters,True,True,2,11,4,9,3,Pinned OneBot reverse-WebSocket delivery with actual API message references.
+companion_v2.adapters.astrbot.onebot_group,companion_v2\adapters\astrbot\onebot_group.py,companion_v2/adapters,True,True,1,1,0,4,1,Group text and original images retain the speaker and collective audience.
+companion_v2.adapters.astrbot.platform_sender,companion_v2\adapters\astrbot\platform_sender.py,companion_v2/adapters,True,True,1,8,2,7,2,AstrBot-native delivery for non-OneBot platforms such as QQ Official.
+companion_v2.adapters.astrbot.presence,companion_v2\adapters\astrbot\presence.py,companion_v2/adapters,True,True,1,5,4,3,2,"Pinned QQ extension actions. No API-name guessing, account fallback or toggle loop."
+companion_v2.adapters.astrbot.provider,companion_v2\adapters\astrbot\provider.py,companion_v2/adapters,True,True,4,50,8,12,10,One-attempt text transport for the verified AstrBot OpenAI-compatible class.
+companion_v2.adapters.astrbot.provider_catalog,companion_v2\adapters\astrbot\provider_catalog.py,companion_v2/adapters,True,True,2,14,2,3,7,Adapters for the text providers currently loaded by AstrBot.
+companion_v2.adapters.astrbot.provider_transport,companion_v2\adapters\astrbot\provider_transport.py,companion_v2/adapters,True,False,0,2,0,0,1,Transport evidence for calls that could not reach the provider.
+companion_v2.adapters.astrbot.quote_content,companion_v2\adapters\astrbot\quote_content.py,companion_v2/adapters,True,False,0,1,1,9,2,Shared frozen media capture after a private or group original is verified.
+companion_v2.adapters.astrbot.quotes,companion_v2\adapters\astrbot\quotes.py,companion_v2/adapters,True,True,1,5,1,6,6,"One bounded, peer-directed OneBot history read, without importing the SDK."
+companion_v2.adapters.astrbot.reply_stream,companion_v2\adapters\astrbot\reply_stream.py,companion_v2/adapters,True,True,1,3,0,3,2,Decode an ordered reply header and its JSON string without exposing wire text.
+companion_v2.adapters.astrbot.response_diagnostics,companion_v2\adapters\astrbot\response_diagnostics.py,companion_v2/adapters,True,True,0,5,0,1,2,Snapshot raw completion metadata before the native parser can modify it.
+companion_v2.adapters.astrbot.staging,companion_v2\adapters\astrbot\staging.py,companion_v2/adapters,True,True,4,24,8,50,2,Explicit single-target AstrBot assembly; never a plugin entry point.
+companion_v2.adapters.astrbot.staging_bootstrap,companion_v2\adapters\astrbot\staging_bootstrap.py,companion_v2/adapters,True,True,5,24,2,23,1,First-install authority and read-only reopen for a dedicated staging store.
+companion_v2.adapters.astrbot.staging_config,companion_v2\adapters\astrbot\staging_config.py,companion_v2/adapters,True,True,2,20,0,13,8,"Strict, secret-free configuration for an explicitly administered test host."
+companion_v2.adapters.astrbot.staging_delivery,companion_v2\adapters\astrbot\staging_delivery.py,companion_v2/adapters,True,False,0,3,0,3,2,Exact-scope delivery grant lineage for the single-target staging profile.
+companion_v2.adapters.astrbot.streaming,companion_v2\adapters\astrbot\streaming.py,companion_v2/adapters,True,False,2,9,3,1,1,Audit raw streaming chunks before AstrBot's lossy compatibility parser.
+companion_v2.adapters.astrbot.tools,companion_v2\adapters\astrbot\tools.py,companion_v2/adapters,True,True,4,21,4,6,6,Map trusted AstrBot catalog declarations to host-neutral supervised tools.
+companion_v2.agenda,companion_v2\agenda\__init__.py,companion_v2/agenda,True,True,0,0,0,0,1,Persistent personal memos and local reminder handoff; no host scheduler or sender.
+companion_v2.agenda.annual_calendar,companion_v2\agenda\annual_calendar.py,companion_v2/agenda,True,True,2,5,0,0,2,Read-only parser for explicitly supplied annual holiday and solar-term data.
+companion_v2.agenda.appointments,companion_v2\agenda\appointments.py,companion_v2/agenda,True,False,1,7,0,2,1,Accepted calendar commitments as appointment timing facts.
+companion_v2.agenda.background,companion_v2\agenda\background.py,companion_v2/agenda,True,True,2,10,0,7,1,Bounded reminder planning and original-source validation for shared delivery.
+companion_v2.agenda.calendar,companion_v2\agenda\calendar.py,companion_v2/agenda,True,True,1,15,0,6,3,"Versioned plans, reported plans and explicitly accepted commitments."
+companion_v2.agenda.calendar_access,companion_v2\agenda\calendar_access.py,companion_v2/agenda,True,True,1,5,0,5,2,Role-wide calendar opt-in for the currently bound private participant.
+companion_v2.agenda.calendar_prompt,companion_v2\agenda\calendar_prompt.py,companion_v2/agenda,True,False,0,4,0,0,1,Prompt material for answering inside an existing role schedule.
+companion_v2.agenda.calendar_tools,companion_v2\agenda\calendar_tools.py,companion_v2/agenda,True,False,1,5,0,6,1,Original-role calendar queries and attributed commands; human confirmation stays separate.
+companion_v2.agenda.models,companion_v2\agenda\models.py,companion_v2/agenda,True,True,13,19,0,2,15,"Explicit ownership, calendar anchors, and local-only execution results."
+companion_v2.agenda.planning,companion_v2\agenda\planning.py,companion_v2/agenda,True,True,1,35,7,17,3,Original-role planning on the shared background supervisor and calendar owner.
+companion_v2.agenda.planning_config,companion_v2\agenda\planning_config.py,companion_v2/agenda,True,True,1,5,0,2,20,Planning preferences exposed through the existing calendar management record.
+companion_v2.agenda.planning_inputs,companion_v2\agenda\planning_inputs.py,companion_v2/agenda,True,True,0,10,0,10,1,"Bounded planning material from the original calendar, goals and memory owners."
+companion_v2.agenda.planning_observation,companion_v2\agenda\planning_observation.py,companion_v2/agenda,False,False,0,6,0,1,0,Durable planning feedback and new observations of the remaining local day.
+companion_v2.agenda.planning_output,companion_v2\agenda\planning_output.py,companion_v2/agenda,True,True,0,4,0,3,1,"Small model contract; the host owns identity, plan IDs and side effects."
+companion_v2.agenda.records,companion_v2\agenda\records.py,companion_v2/agenda,True,False,1,14,0,5,2,Role-owned plans alongside conversation-owned reports and commitments.
+companion_v2.agenda.repository,companion_v2\agenda\repository.py,companion_v2/agenda,True,True,1,16,0,2,1,Agenda rows share the V2 transaction and operation authority.
+companion_v2.agenda.service,companion_v2\agenda\service.py,companion_v2/agenda,True,True,1,33,0,11,8,One authorized local entry for personal memo operations and reminder preparation.
+companion_v2.agenda.weather_material,companion_v2\agenda\weather_material.py,companion_v2/agenda,True,True,0,1,0,2,5,"Current weather as a bounded, explicitly located planning observation."
+companion_v2.agenda.weather_reading,companion_v2\agenda\weather_reading.py,companion_v2/agenda,True,True,1,3,2,1,1,Reuse located weather observations for the cottage's read-only view.
+companion_v2.agenda.weather_tools,companion_v2\agenda\weather_tools.py,companion_v2/agenda,True,True,1,6,1,6,1,"On-demand, private-conversation reads of the configured role's weather."
+companion_v2.capabilities,companion_v2\capabilities\__init__.py,companion_v2/capabilities,True,True,0,0,0,3,3,Persistent optional capabilities and their voxel-room projections.
+companion_v2.capabilities.configuration,companion_v2\capabilities\configuration.py,companion_v2/capabilities,True,True,1,5,0,5,1,"Map G6 scope preferences to the shared configuration entry point, without copies."
+companion_v2.capabilities.management,companion_v2\capabilities\management.py,companion_v2/capabilities,True,False,3,15,0,10,2,"One authenticated local management service for page, command and tool adapters."
+companion_v2.capabilities.memory_push,companion_v2\capabilities\memory_push.py,companion_v2/capabilities,True,True,3,6,3,1,4,把 V2 自己完成的角色记录交给当前对外提供记忆的一方。
+companion_v2.capabilities.models,companion_v2\capabilities\models.py,companion_v2/capabilities,True,True,11,8,0,1,18,"Value objects for package lifecycle, user choices, and furniture projections."
+companion_v2.capabilities.native,companion_v2\capabilities\native.py,companion_v2/capabilities,True,True,3,11,0,2,4,JSON/bytes values shared with the V2 plugin's internal extension ports.
+companion_v2.capabilities.native_catalog,companion_v2\capabilities\native_catalog.py,companion_v2/capabilities,True,True,0,1,0,3,1,Upgrade V2 capability ownership while retaining immutable old descriptors.
+companion_v2.capabilities.native_reads,companion_v2\capabilities\native_reads.py,companion_v2/capabilities,True,False,2,11,0,1,2,"Domain invariants for read-only native reads (Reality, Live, Together)."
+companion_v2.capabilities.ownership,companion_v2\capabilities\ownership.py,companion_v2/capabilities,True,True,3,8,0,0,4,「这份能力现在由谁对外表达」的通用记录。
+companion_v2.capabilities.privacy,companion_v2\capabilities\privacy.py,companion_v2/capabilities,True,False,0,2,0,1,7,隐私与现代触及类原生能力的默认授权。
+companion_v2.capabilities.qzone_access,companion_v2\capabilities\qzone_access.py,companion_v2/capabilities,True,True,1,11,0,12,1,"Install and consent for the included Zone extension, per role and per window."
+companion_v2.capabilities.read_providers,companion_v2\capabilities\read_providers.py,companion_v2/capabilities,True,True,7,19,0,5,3,"Host-owned, process-local discovery and leases for synchronous read providers."
+companion_v2.capabilities.reality_access,companion_v2\capabilities\reality_access.py,companion_v2/capabilities,True,True,1,6,0,11,3,"Explicit, per-action consent for native Reality capabilities."
+companion_v2.capabilities.reality_camera,companion_v2\capabilities\reality_camera.py,companion_v2/capabilities,True,True,1,1,0,1,2,Reality camera observation has its own private-scope consent record.
+companion_v2.capabilities.repositories,companion_v2\capabilities\repositories.py,companion_v2/capabilities,True,True,1,36,0,5,19,Transactional capability lifecycle and one-source furniture projection.
+companion_v2.capabilities.screen_access,companion_v2\capabilities\screen_access.py,companion_v2/capabilities,True,True,1,7,0,11,3,"Explicit, per-private-window access to the loaded native Screen provider."
+companion_v2.configuration,companion_v2\configuration\__init__.py,companion_v2/configuration,False,True,0,0,0,0,0,"Scoped configuration definitions, persistence, and consumer observations."
+companion_v2.configuration.contract,companion_v2\configuration\contract.py,companion_v2/configuration,True,True,0,4,0,1,6,The read-side half of the config contract every editor publishes.
+companion_v2.configuration.management,companion_v2\configuration\management.py,companion_v2/configuration,True,True,32,37,0,34,6,"Authorized editors for the image, reaction and budget settings the cottage shows."
+companion_v2.configuration.migrations,companion_v2\configuration\migrations.py,companion_v2/configuration,True,False,0,2,0,2,2,One-time promotions for settings whose public scope became broader.
+companion_v2.configuration.models,companion_v2\configuration\models.py,companion_v2/configuration,True,True,10,12,0,1,81,"Immutable configuration addresses and snapshots, independent of a page or host."
+companion_v2.configuration.owners,companion_v2\configuration\owners.py,companion_v2/configuration,True,True,4,7,0,4,33,Configuration storage ports; a field is persisted by exactly one owner.
+companion_v2.configuration.registry,companion_v2\configuration\registry.py,companion_v2/configuration,True,True,5,7,0,1,41,A single typed field registry with explicit probability and legacy units.
+companion_v2.configuration.role_settings,companion_v2\configuration\role_settings.py,companion_v2/configuration,True,False,1,11,0,2,6,Configuration owners that share selected fields across a role's windows.
+companion_v2.configuration.service,companion_v2\configuration\service.py,companion_v2/configuration,True,True,1,15,0,13,4,"Atomic sparse patches and explicit runtime adoption, with no external effects."
+companion_v2.content,companion_v2\content\__init__.py,companion_v2/content,False,True,0,0,0,3,0,Native Content domain; importing it never loads a plugin or user data.
+companion_v2.content.assembly,companion_v2\content\assembly.py,companion_v2/content,True,False,3,16,1,5,1,Build V2's native Content extension with invocation-scoped host services.
+companion_v2.content.governance,companion_v2\content\governance.py,companion_v2/content,True,True,1,6,0,2,3,Durable Content retractions and bounded read-only owner observations.
+companion_v2.content.models,companion_v2\content\models.py,companion_v2/content,True,False,13,24,0,0,6,"Local domain values, not a second public provider or identity protocol."
+companion_v2.content.provider,companion_v2\content\provider.py,companion_v2/content,True,False,2,19,4,2,2,"The published native-provider JSON protocol, awaiting plugin assembly."
+companion_v2.content.repository,companion_v2\content\repository.py,companion_v2/content,True,False,1,3,0,2,3,"A separately named V2 database, opened only by explicit construction."
+companion_v2.content.service,companion_v2\content\service.py,companion_v2/content,True,False,1,22,0,3,3,"Transactional work/version operations, with host-owned access checks."
+companion_v2.conversation,companion_v2\conversation\__init__.py,companion_v2/conversation,True,True,0,0,0,3,10,Side-effect-free G3 conversation slice using a deterministic local renderer.
+companion_v2.conversation.addressing,companion_v2\conversation\addressing.py,companion_v2/conversation,True,True,0,0,0,0,5,Prompt constraints for context-sensitive member addressing.
+companion_v2.conversation.agenda_tools,companion_v2\conversation\agenda_tools.py,companion_v2/conversation,True,True,2,13,0,7,2,Local agenda tools and continuation on the original role's model boundary.
+companion_v2.conversation.awareness_context,companion_v2\conversation\awareness_context.py,companion_v2/conversation,True,True,1,9,0,4,4,Audience-filtered cross-window presence as a foreground context contribution.
+companion_v2.conversation.behavior,companion_v2\conversation\behavior\__init__.py,companion_v2/conversation,True,True,0,0,0,1,3,Role-owned social habits learned from authenticated group observations.
+companion_v2.conversation.behavior.management,companion_v2\conversation\behavior\management.py,companion_v2/conversation,True,True,1,4,0,3,1,"Administrator review of a role's learned group habits, with stale-edit protection."
+companion_v2.conversation.behavior.prompts,companion_v2\conversation\behavior\prompts.py,companion_v2/conversation,False,False,0,0,0,0,0,Social judgment belongs to the original role on the normal reply chain.
+companion_v2.conversation.behavior.service,companion_v2\conversation\behavior\service.py,companion_v2/conversation,True,True,1,16,0,6,3,"Main-chain habit learning, authenticated targets and receipt-backed feedback."
+companion_v2.conversation.behavior.store,companion_v2\conversation\behavior\store.py,companion_v2/conversation,True,True,1,9,0,2,2,"Bounded derived records, isolated by role and group rather than native session."
+companion_v2.conversation.busy_gate,companion_v2\conversation\busy_gate.py,companion_v2/conversation,True,True,4,28,0,8,5,Busy-hour reply gate: one pure decision plus one bounded calendar read.
+companion_v2.conversation.content,companion_v2\conversation\content\__init__.py,companion_v2/conversation,True,True,0,0,0,0,3,Trusted consumers of independently owned Content works and fixed versions.
+companion_v2.conversation.content.access,companion_v2\conversation\content\access.py,companion_v2/conversation,True,True,1,14,0,5,2,"Resolve Content targets from original V2 tasks, never model-supplied identities."
+companion_v2.conversation.content.authoring,companion_v2\conversation\content\authoring.py,companion_v2/conversation,False,True,1,4,0,0,0,Prompt and output contract for native Content creation and continuation.
+companion_v2.conversation.content.authoring_execution,companion_v2\conversation\content\authoring_execution.py,companion_v2/conversation,True,True,2,2,1,1,2,The original writing operation and its authorized Content subcalls.
+companion_v2.conversation.content.authoring_service,companion_v2\conversation\content\authoring_service.py,companion_v2/conversation,True,False,2,12,0,5,3,Settings and version checks for native Content creation and continuation.
+companion_v2.conversation.content.authoring_tasks,companion_v2\conversation\content\authoring_tasks.py,companion_v2/conversation,True,True,0,1,0,2,3,Dedicated model route for native Content creation.
+companion_v2.conversation.content.authoring_workflow,companion_v2\conversation\content\authoring_workflow.py,companion_v2/conversation,True,True,2,24,10,9,5,Conversation tools that save role-authored work through native Content.
+companion_v2.conversation.content.cover_assets,companion_v2\conversation\content\cover_assets.py,companion_v2/conversation,True,False,3,20,0,6,1,Cover and illustration associations: the host side of the Content↔Image handshake.
+companion_v2.conversation.content.sources,companion_v2\conversation\content\sources.py,companion_v2/conversation,True,True,1,6,0,8,1,Governed Content work/version anchors and durable withdrawal consumption.
+companion_v2.conversation.date_context,companion_v2\conversation\date_context.py,companion_v2/conversation,True,True,0,12,0,2,7,Read-only local calendar context for one foreground model request.
+companion_v2.conversation.debounce_log,companion_v2\conversation\debounce_log.py,companion_v2/conversation,False,True,0,8,0,0,0,"Concise, message-complete logs for passive wake and debounce decisions."
+companion_v2.conversation.delivery,companion_v2\conversation\delivery.py,companion_v2/conversation,True,True,2,23,1,16,5,Trusted local sender and receipt owner. No host or platform adapter is installed.
+companion_v2.conversation.diagnostic_tools,companion_v2\conversation\diagnostic_tools.py,companion_v2/conversation,True,True,1,14,0,9,3,Original-role diagnostic continuation. No repair confirmation tool is exposed.
+companion_v2.conversation.external_tools,companion_v2\conversation\external_tools.py,companion_v2/conversation,True,True,6,37,4,19,13,"Trusted cooperative extension tools, with independent durable child tasks."
+companion_v2.conversation.flow,companion_v2\conversation\flow.py,companion_v2/conversation,True,True,3,24,0,18,4,"Durable debounce and ordered conversation progress, driven by the host lifecycle."
+companion_v2.conversation.foreground,companion_v2\conversation\foreground.py,companion_v2/conversation,True,True,26,35,0,12,69,"Evidence-aware foreground draft flow for G4, still without host delivery."
+companion_v2.conversation.forwards,companion_v2\conversation\forwards\__init__.py,companion_v2/conversation,False,True,0,0,0,0,0,Forwarded records retain displayed attribution under the current recipient's scope.
+companion_v2.conversation.forwards.media_events,companion_v2\conversation\forwards\media_events.py,companion_v2/conversation,True,False,2,2,0,2,1,Internal audio/video parents preserve the claim boundaries of returned nodes.
+companion_v2.conversation.forwards.models,companion_v2\conversation\forwards\models.py,companion_v2/conversation,True,True,8,18,0,7,21,Immutable returned-node snapshots; displayed accounts do not authenticate people.
+companion_v2.conversation.forwards.service,companion_v2\conversation\forwards\service.py,companion_v2/conversation,True,True,1,12,0,7,3,Publish returned nodes and their media atomically under the outer private input.
+companion_v2.conversation.generation,companion_v2\conversation\generation.py,companion_v2/conversation,True,True,1,17,2,20,1,Asynchronous original-role reply generation for the local conversation profile.
+companion_v2.conversation.group_admission,companion_v2\conversation\group_admission.py,companion_v2/conversation,True,True,1,31,0,9,3,Model-free group candidates and lightweight AstrBot core reply records.
+companion_v2.conversation.group_context,companion_v2\conversation\group_context.py,companion_v2/conversation,True,True,1,13,0,9,1,Bounded group conversation views with immutable references and speaker attribution.
+companion_v2.conversation.group_followup,companion_v2\conversation\group_followup.py,companion_v2/conversation,True,False,0,1,0,1,1,"Count automatic group continuations by reply event, never by message part."
+companion_v2.conversation.group_high_intensity,companion_v2\conversation\group_high_intensity.py,companion_v2/conversation,False,False,0,2,0,0,0,V2-native high-intensity group closeout.
+companion_v2.conversation.group_history,companion_v2\conversation\group_history.py,companion_v2/conversation,True,True,1,7,0,9,1,Confirmed group replies and bounded iterative checks of their original evidence.
+companion_v2.conversation.group_interjection,companion_v2\conversation\group_interjection.py,companion_v2/conversation,True,True,2,15,0,2,5,"Group self-initiated speech: interjection budget, cooldown and feedback."
+companion_v2.conversation.group_llm_block,companion_v2\conversation\group_llm_block.py,companion_v2/conversation,True,True,1,8,0,1,3,Temporary per-group halt of model replies.
+companion_v2.conversation.group_media,companion_v2\conversation\group_media.py,companion_v2/conversation,True,False,0,2,0,1,1,Revalidate group originals and expose only metadata for historical attachments.
+companion_v2.conversation.group_observation,companion_v2\conversation\group_observation.py,companion_v2/conversation,True,True,1,25,0,2,10,"Bounded group observation material: topics, mood, moments, joke boundary, denoise."
+companion_v2.conversation.group_questions,companion_v2\conversation\group_questions.py,companion_v2/conversation,True,False,0,1,0,2,1,"Conservative, model-free public-help references, adapted from V1."
+companion_v2.conversation.group_timing,companion_v2\conversation\group_timing.py,companion_v2/conversation,True,True,1,6,0,2,8,Pure short-input timing and repeat signatures over admitted group material.
+companion_v2.conversation.group_topic_gate,companion_v2\conversation\group_topic_gate.py,companion_v2/conversation,False,True,0,7,0,1,0,Pressure-aware topic admission for group replies.
+companion_v2.conversation.growth_context,companion_v2\conversation\growth_context.py,companion_v2/conversation,True,True,1,5,0,3,3,Pin small role-growth references in replies and reread governed records.
+companion_v2.conversation.health_context,companion_v2\conversation\health_context.py,companion_v2/conversation,True,True,0,5,0,0,2,Bounded health material for a private foreground model request.
+companion_v2.conversation.history_legality,companion_v2\conversation\history_legality.py,companion_v2/conversation,True,True,1,7,0,0,1,Keep the stored tool-call history legal for every provider we may fall back to.
+companion_v2.conversation.humanized_expression,companion_v2\conversation\humanized_expression.py,companion_v2/conversation,True,True,1,8,0,0,1,The optional operator-authored human-like expression block.
+companion_v2.conversation.kernel,companion_v2\conversation\kernel.py,companion_v2/conversation,True,True,1,5,0,6,1,"The first V2 vertical slice: local input through local outbox, without effects."
+companion_v2.conversation.keyword_materials,companion_v2\conversation\keyword_materials.py,companion_v2/conversation,True,True,2,8,1,0,6,关键词触发、带约束的材料注入。
+companion_v2.conversation.life_context,companion_v2\conversation\life_context.py,companion_v2/conversation,True,True,1,5,0,2,2,Pin bounded life references in ordinary replies; always reread governed originals.
+companion_v2.conversation.media,companion_v2\conversation\media\__init__.py,companion_v2/conversation,False,True,0,0,0,0,0,Governed private-message media; native I/O belongs to the host adapter.
+companion_v2.conversation.media.animation,companion_v2\conversation\media\animation.py,companion_v2/conversation,True,True,5,13,0,2,6,Original animation manifests and the exact composited frames offered to a model.
+companion_v2.conversation.media.audio,companion_v2\conversation\media\audio\__init__.py,companion_v2/conversation,False,True,0,0,0,0,0,"Governed voice originals and their complete, normalized listening view."
+companion_v2.conversation.media.audio.events,companion_v2\conversation\media\audio\events.py,companion_v2/conversation,True,False,1,2,0,7,5,"Additive event shape; existing text, image, quote and forward hashes stay stable."
+companion_v2.conversation.media.audio.models,companion_v2\conversation\media\audio\models.py,companion_v2/conversation,True,True,3,8,0,3,18,"Audio manifests contain no network locations, transcripts or inferred speakers."
+companion_v2.conversation.media.audio.service,companion_v2\conversation\media\audio\service.py,companion_v2/conversation,True,False,1,8,0,7,1,Atomic voice intake and authorized original rereads at every use boundary.
+companion_v2.conversation.media.codec,companion_v2\conversation\media\codec.py,companion_v2/conversation,True,True,0,1,0,2,6,Restore additive animation manifests without changing old static documents.
+companion_v2.conversation.media.context_caption,companion_v2\conversation\media\context_caption.py,companion_v2/conversation,True,True,1,8,3,8,2,"Per-reply, bounded captions for still-authorized historical group images."
+companion_v2.conversation.media.fallback,companion_v2\conversation\media\fallback.py,companion_v2/conversation,True,True,1,15,0,9,1,Private delivery of one image withheld from a group audience.
+companion_v2.conversation.media.generated,companion_v2\conversation\media\generated.py,companion_v2/conversation,True,True,5,29,0,15,7,"Governed provider image originals, separate from user message intake."
+companion_v2.conversation.media.image_narration,companion_v2\conversation\media\image_narration.py,companion_v2/conversation,True,True,1,16,3,9,3,"Short, source-bound descriptions for images in the current reply turn."
+companion_v2.conversation.media.models,companion_v2\conversation\media\models.py,companion_v2/conversation,True,True,4,10,0,3,45,"Immutable image manifests, distinct from message text and model descriptions."
+companion_v2.conversation.media.native_generated_album,companion_v2\conversation\media\native_generated_album.py,companion_v2/conversation,True,False,0,7,0,5,1,Album projection of images accepted through AstrBot's native tool ledger.
+companion_v2.conversation.media.output_settings,companion_v2\conversation\media\output_settings.py,companion_v2/conversation,True,True,1,11,0,5,10,Role image triggers and prompt preferences used by the native image path.
+companion_v2.conversation.media.quota,companion_v2\conversation\media\quota.py,companion_v2/conversation,True,True,2,10,0,8,3,"Daily per-scope image generation limits, counted from confirmed results."
+companion_v2.conversation.media.reply,companion_v2\conversation\media\reply.py,companion_v2/conversation,True,True,2,12,0,7,6,"Seal outgoing image choices as governed sources, never URLs or copied bytes."
+companion_v2.conversation.media.review,companion_v2\conversation\media\review.py,companion_v2/conversation,True,True,3,43,0,8,6,Group-audience safety review of provider-generated originals.
+companion_v2.conversation.media.review_service,companion_v2\conversation\media\review_service.py,companion_v2/conversation,True,False,1,18,4,9,2,Run one group image review as a registered background model task.
+companion_v2.conversation.media.screen,companion_v2\conversation\media\screen.py,companion_v2/conversation,True,True,2,5,0,6,4,Read native Screen originals for this turn without making them sendable.
+companion_v2.conversation.media.service,companion_v2\conversation\media\service.py,companion_v2/conversation,True,True,1,7,0,9,2,Publish image originals atomically with intake; re-read at every use boundary.
+companion_v2.conversation.media.understanding,companion_v2\conversation\media\understanding.py,companion_v2/conversation,True,True,1,7,0,4,13,"Window preferences for image, native-video, and document understanding."
+companion_v2.conversation.media.video,companion_v2\conversation\media\video\__init__.py,companion_v2/conversation,False,True,0,0,0,0,0,Video originals and governed sampled visual evidence.
+companion_v2.conversation.media.video.events,companion_v2\conversation\media\video\events.py,companion_v2/conversation,True,False,2,3,0,8,5,Video input and internal frame parents; existing input documents remain unchanged.
+companion_v2.conversation.media.video.models,companion_v2\conversation\media\video\models.py,companion_v2/conversation,True,True,4,10,0,4,22,"Video evidence describes the frames actually provided, never an inferred soundtrack."
+companion_v2.conversation.media.video.narration,companion_v2\conversation\media\video\narration.py,companion_v2/conversation,True,True,2,13,4,7,4,Temporary descriptions generated from the authorized original video bytes.
+companion_v2.conversation.media.video.service,companion_v2\conversation\media\video\service.py,companion_v2/conversation,True,False,1,8,0,8,1,Atomic video originals and sampled frame publication; authorized rereads only.
+companion_v2.conversation.messages,companion_v2\conversation\messages.py,companion_v2/conversation,True,True,3,26,0,64,52,Durable conversation input batches. Bodies remain under source-owner governance.
+companion_v2.conversation.models,companion_v2\conversation\models.py,companion_v2/conversation,True,True,7,6,0,4,20,Contracts for the G3 isolated conversation loop.
+companion_v2.conversation.native_history,companion_v2\conversation\native_history.py,companion_v2/conversation,True,True,0,6,0,4,11,"Reference-based native dialogue for background work, without fake receipts."
+companion_v2.conversation.native_observations,companion_v2\conversation\native_observations.py,companion_v2/conversation,True,True,1,20,0,14,17,Governed raw native chat sources without a V2 generation or delivery batch.
+companion_v2.conversation.native_participation,companion_v2\conversation\native_participation.py,companion_v2/conversation,True,True,0,4,0,7,3,Group participation references derived from native conversation observations.
+companion_v2.conversation.native_reply_diagnostics,companion_v2\conversation\native_reply_diagnostics.py,companion_v2/conversation,True,False,0,1,0,2,1,Window-scoped reply diagnostics from observed AstrBot requests and sends.
+companion_v2.conversation.native_tool_media,companion_v2\conversation\native_tool_media.py,companion_v2/conversation,True,False,0,4,0,4,2,Durable native tool images for the host's own image cache and send tools.
+companion_v2.conversation.native_tool_results,companion_v2\conversation\native_tool_results.py,companion_v2/conversation,True,True,0,3,0,4,7,Read settled native operations for domain consumers without a reply batch.
+companion_v2.conversation.native_tool_sources,companion_v2\conversation\native_tool_sources.py,companion_v2/conversation,True,True,0,8,0,8,19,Evidence from authenticated AstrBot turns for the existing local tool owners.
+companion_v2.conversation.native_turns,companion_v2\conversation\native_turns.py,companion_v2/conversation,True,True,1,14,0,6,12,"Native turn origins for background domains, separate from model telemetry."
+companion_v2.conversation.open_items_context,companion_v2\conversation\open_items_context.py,companion_v2/conversation,True,True,2,16,0,5,3,Project a private participant's authorized open agenda items into a reply.
+companion_v2.conversation.outbound_plan,companion_v2\conversation\outbound_plan.py,companion_v2/conversation,True,True,0,9,0,1,4,"The additions one reply part carries, derived from its own sealed batch."
+companion_v2.conversation.participation,companion_v2\conversation\participation.py,companion_v2/conversation,True,True,2,34,0,17,9,Original-role group participation using the existing model and tool receipts.
+companion_v2.conversation.participation_prompts,companion_v2\conversation\participation_prompts.py,companion_v2/conversation,True,True,0,10,0,3,2,Group participation hints derived only from the admitted turn and its history.
+companion_v2.conversation.perception_management,companion_v2\conversation\perception_management.py,companion_v2/conversation,True,False,1,4,0,7,1,Authorized editor for private conversation perception prompts.
+companion_v2.conversation.perception_settings,companion_v2\conversation\perception_settings.py,companion_v2/conversation,True,True,2,13,0,4,5,"Role perception defaults with private-window overrides, fixed at input sealing."
+companion_v2.conversation.pokes,companion_v2\conversation\pokes.py,companion_v2/conversation,True,True,3,14,3,5,7,Policy and supervised model response for native poke notifications.
+companion_v2.conversation.private_closing,companion_v2\conversation\private_closing.py,companion_v2/conversation,True,False,1,13,0,1,1,Deterministic private-chat closing guard over validated native dialogue.
+companion_v2.conversation.private_debounce,companion_v2\conversation\private_debounce.py,companion_v2/conversation,True,True,1,7,0,0,3,Adaptive private-chat debounce policy.
+companion_v2.conversation.private_history,companion_v2\conversation\private_history.py,companion_v2/conversation,True,True,1,9,0,5,4,"Recent private dialogue, read through original inputs and delivery receipts."
+companion_v2.conversation.private_reply_context,companion_v2\conversation\private_reply_context.py,companion_v2/conversation,True,True,0,4,0,3,2,Actual private-message timing for interpreting queued conversational follow-ups.
+companion_v2.conversation.quotes,companion_v2\conversation\quotes\__init__.py,companion_v2/conversation,False,True,0,0,0,0,0,Private quoted messages retain their own authorship and source governance.
+companion_v2.conversation.quotes.forward_models,companion_v2\conversation\quotes\forward_models.py,companion_v2/conversation,True,True,7,12,0,7,5,Quoted forward manifests; ordinary quote documents retain their original shape.
+companion_v2.conversation.quotes.group_originals,companion_v2\conversation\quotes\group_originals.py,companion_v2/conversation,True,False,0,1,0,2,1,Link group quotes to known members and confirmed Bot replies without private projection.
+companion_v2.conversation.quotes.media_events,companion_v2\conversation\quotes\media_events.py,companion_v2/conversation,True,False,2,2,0,2,1,Internal media parents retain the verified sender claim of a quoted message.
+companion_v2.conversation.quotes.models,companion_v2\conversation\quotes\models.py,companion_v2/conversation,True,True,4,12,0,7,19,"Quote manifests contain attribution, never an untrusted native component tree."
+companion_v2.conversation.quotes.originals,companion_v2\conversation\quotes\originals.py,companion_v2/conversation,True,False,0,1,0,5,1,Connect a quote to previously admitted V2 originals and confirmed deliveries.
+companion_v2.conversation.quotes.service,companion_v2\conversation\quotes\service.py,companion_v2/conversation,True,True,1,12,0,10,3,Publish quoted text separately; reuse image originals and source dependencies.
+companion_v2.conversation.recall_management,companion_v2\conversation\recall_management.py,companion_v2/conversation,True,True,1,4,0,5,2,Authorized management view over this window's withdrawn originals.
+companion_v2.conversation.recall_settings,companion_v2\conversation\recall_settings.py,companion_v2/conversation,True,True,2,7,0,4,3,"Withdrawn-message transcription options, fixed per window."
+companion_v2.conversation.recalls,companion_v2\conversation\recalls.py,companion_v2/conversation,True,True,2,16,0,9,3,"Durable platform withdrawal facts, independent of the current chat persona."
+companion_v2.conversation.relationship_context,companion_v2\conversation\relationship_context.py,companion_v2/conversation,True,True,1,7,0,6,2,Pin adopted relationship interpretations without turning them into factual evidence.
+companion_v2.conversation.relay,companion_v2\conversation\relay.py,companion_v2/conversation,True,True,1,5,0,1,2,跨窗口递话的执行计划：把配置、发起者身份与判定拼成一条待发送记录。
+companion_v2.conversation.relay_policy,companion_v2\conversation\relay_policy.py,companion_v2/conversation,True,True,2,1,0,0,3,跨窗口递话的授权判定（纯逻辑，不碰发送）。
+companion_v2.conversation.relay_settings,companion_v2\conversation\relay_settings.py,companion_v2/conversation,True,False,2,7,0,4,4,跨窗口递话的窗口级设置。
+companion_v2.conversation.relay_tools,companion_v2\conversation\relay_tools.py,companion_v2/conversation,True,True,0,3,0,4,1,First-party model tool declarations for controlled cross-window relaying.
+companion_v2.conversation.repeat_actions,companion_v2\conversation\repeat_actions.py,companion_v2/conversation,True,True,1,8,0,5,1,"V1-style literal repeat actions, durably decided before native sending."
+companion_v2.conversation.reply_management,companion_v2\conversation\reply_management.py,companion_v2/conversation,True,True,1,7,0,18,4,Authorized reply editor and bounded diagnostics; never invokes a model or sender.
+companion_v2.conversation.reply_preparation,companion_v2\conversation\reply_preparation.py,companion_v2/conversation,True,True,1,4,0,3,5,One text and speech plan shared by generation and offline previews.
+companion_v2.conversation.reply_settings,companion_v2\conversation\reply_settings.py,companion_v2/conversation,True,True,2,29,0,13,20,"Reply preferences captured when inputs seal, independent of the host profile."
+companion_v2.conversation.reset,companion_v2\conversation\reset.py,companion_v2/conversation,True,True,1,12,0,9,19,Durable temporary-context boundaries for a trusted native window reset.
+companion_v2.conversation.scope_family,companion_v2\conversation\scope_family.py,companion_v2/conversation,True,True,0,6,0,2,4,Which conversation windows share one expression ownership.
+companion_v2.conversation.segment_control,companion_v2\conversation\segment_control.py,companion_v2/conversation,True,True,0,6,0,0,9,V1-compatible message boundaries; reserved tokens never become chat text.
+companion_v2.conversation.segmentation,companion_v2\conversation\segmentation.py,companion_v2/conversation,True,True,1,19,0,2,15,Deterministic reply segmentation shared by streamed and complete replies.
+companion_v2.conversation.self_review_context,companion_v2\conversation\self_review_context.py,companion_v2/conversation,True,True,1,7,0,3,3,Pin accepted self-review guidance in replies and reread it before use.
+companion_v2.conversation.solar_terms,companion_v2\conversation\solar_terms.py,companion_v2/conversation,True,True,1,2,0,0,1,"Optional, host supplied solar-term lookup used by date context."
+companion_v2.conversation.state_context,companion_v2\conversation\state_context.py,companion_v2/conversation,True,True,1,13,0,11,1,"Seal references to state, rechecking permissions and simulation expiry at every consumer."
+companion_v2.conversation.stream_segments,companion_v2\conversation\stream_segments.py,companion_v2/conversation,True,False,1,4,0,1,1,"Append-only text boundaries for native group streams, without host imports."
+companion_v2.conversation.streaming_reply,companion_v2\conversation\streaming_reply.py,companion_v2/conversation,True,False,1,15,7,8,3,Append-only reply segments produced and delivered by the original turn owner.
+companion_v2.conversation.style_context,companion_v2\conversation\style_context.py,companion_v2/conversation,True,True,1,18,0,7,9,Pin adopted expression-learning rules in replies and reread them before use.
+companion_v2.conversation.text_processing,companion_v2\conversation\text_processing.py,companion_v2/conversation,True,True,2,41,0,3,14,Presentation transforms with cleanup enabled by default; literals and facts stay intact.
+companion_v2.conversation.tool_loop,companion_v2\conversation\tool_loop.py,companion_v2/conversation,True,True,2,29,5,32,2,"Built-in local tool ownership for a message task, with durable original receipts."
+companion_v2.conversation.voice_markup,companion_v2\conversation\voice_markup.py,companion_v2/conversation,True,True,0,6,0,0,4,Keep speech performance controls out of display and intact across chunks.
+companion_v2.conversation.voice_reply,companion_v2\conversation\voice_reply.py,companion_v2/conversation,True,True,3,48,0,4,18,Validated voice presentation policy and model-authored spoken spans.
+companion_v2.conversation.web_tools,companion_v2\conversation\web_tools.py,companion_v2/conversation,True,True,1,6,1,3,1,On-demand web search for one explicit user request.
+companion_v2.conversation.web_understanding,companion_v2\conversation\web_understanding.py,companion_v2/conversation,True,True,2,7,0,4,4,"Reading a page the participant linked, fixed per window."
+companion_v2.decision,companion_v2\decision\__init__.py,companion_v2/decision,True,True,0,0,0,3,3,Optional Laya decision-model integration.
+companion_v2.decision.client,companion_v2\decision\client.py,companion_v2/decision,True,True,2,3,2,1,3,Decision-model port and errors; transport belongs to the host adapter.
+companion_v2.decision.contract,companion_v2\decision\contract.py,companion_v2/decision,True,True,2,4,0,0,7,"The small, numeric-free decision contract returned by the Laya model."
+companion_v2.decision.conversation,companion_v2\decision\conversation.py,companion_v2/decision,True,False,0,1,0,1,1,Apply enabled semantic classifications as conversational advice only.
+companion_v2.decision.prompt,companion_v2\decision\prompt.py,companion_v2/decision,True,True,0,7,0,1,1,Typed Laya questions and the bounded state sent to the decision model.
+companion_v2.decision.service,companion_v2\decision\service.py,companion_v2/decision,True,True,1,17,3,3,1,High-level Laya configuration and decision operations.
+companion_v2.decision.store,companion_v2\decision\store.py,companion_v2/decision,True,True,2,20,0,1,5,Atomic global Laya configuration with read-only legacy settings adoption.
+companion_v2.delivery,companion_v2\delivery\__init__.py,companion_v2/delivery,False,True,0,0,0,0,0,Shared supervised delivery for domain-owned messages.
+companion_v2.delivery.components,companion_v2\delivery\components.py,companion_v2/delivery,True,True,2,9,0,2,4,Ordered components shared by outbound adapters.
+companion_v2.delivery.history,companion_v2\delivery\history.py,companion_v2/delivery,True,True,2,14,0,7,9,"Receipt-backed background history; snapshots contain references, never bodies."
+companion_v2.delivery.media,companion_v2\delivery\media.py,companion_v2/delivery,True,True,2,6,0,5,13,Image-bearing envelopes bind the ordered originals to the text and receipt.
+companion_v2.delivery.models,companion_v2\delivery\models.py,companion_v2/delivery,True,True,3,3,0,4,5,Shared text delivery envelopes and trusted sender receipts.
+companion_v2.delivery.plan,companion_v2\delivery\plan.py,companion_v2/delivery,True,True,4,17,0,1,7,One sealed outbound plan: what a delivered message carries beyond its text.
+companion_v2.delivery.presence,companion_v2\delivery\presence.py,companion_v2/delivery,True,True,1,32,3,4,1,Optional platform presentation follows the original host and conversation lifecycle.
+companion_v2.delivery.presence_diagnostics,companion_v2\delivery\presence_diagnostics.py,companion_v2/delivery,True,False,0,3,0,1,1,"Read-only presentation conditions; no port calls, binding, scheduling or retries."
+companion_v2.delivery.service,companion_v2\delivery\service.py,companion_v2/delivery,True,True,3,25,1,9,6,"Durable delivery for registered domain owners, using the shared task supervisor."
+companion_v2.diagnostics,companion_v2\diagnostics\__init__.py,companion_v2/diagnostics,False,True,0,0,0,0,0,Scoped local diagnostics and reviewable repairs; no host registration or probes.
+companion_v2.diagnostics.inbound,companion_v2\diagnostics\inbound.py,companion_v2/diagnostics,True,True,1,6,0,1,3,"Bounded, content-free outcomes for inbound messages that receive no reply."
+companion_v2.diagnostics.models,companion_v2\diagnostics\models.py,companion_v2/diagnostics,True,True,12,10,0,4,5,Read-only diagnostic contracts. Evidence references contain no source bodies.
+companion_v2.diagnostics.readonly_status,companion_v2\diagnostics\readonly_status.py,companion_v2/diagnostics,True,True,0,5,0,0,1,Bounded P6 counts for the memory-companion read-only bridge.
+companion_v2.diagnostics.repairs,companion_v2\diagnostics\repairs.py,companion_v2/diagnostics,True,True,1,9,0,6,3,Durable proposals; explicit host confirmation is separate from model answers.
+companion_v2.diagnostics.service,companion_v2\diagnostics\service.py,companion_v2/diagnostics,True,True,1,16,0,15,5,"On-demand local checks. No source scanning, polling, model or network calls."
+companion_v2.execution,companion_v2\execution\__init__.py,companion_v2/execution,False,True,0,0,0,0,0,"Bounded, durable local supervision; no host, provider or sender is installed here."
+companion_v2.execution.models,companion_v2\execution\models.py,companion_v2/execution,True,True,17,24,0,3,513,Internal task profile. This is not the public execution wire schema.
+companion_v2.execution.runner,companion_v2\execution\runner.py,companion_v2/execution,True,True,5,18,6,3,25,Cooperative local async workers with bounded cancellation and tracked handles.
+companion_v2.execution.service,companion_v2\execution\service.py,companion_v2/execution,True,True,2,45,0,9,72,"SQLite task admission and fencing, independent of an asyncio loop or host."
+companion_v2.execution.waiting,companion_v2\execution\waiting.py,companion_v2/execution,True,True,1,7,1,2,2,"Fair, live waiting for original background tasks; SQLite owns every slot."
+companion_v2.expression,companion_v2\expression\__init__.py,companion_v2/expression,True,True,0,0,0,0,7,Contextual expression and owned reaction assets.
+companion_v2.expression.configuration,companion_v2\expression\configuration.py,companion_v2/expression,True,True,5,36,0,5,18,Role defaults for background expression learning and its rotation.
+companion_v2.expression.feedback,companion_v2\expression\feedback.py,companion_v2/expression,True,True,0,12,0,1,1,Feedback accounting for adopted expression rules.
+companion_v2.expression.learning,companion_v2\expression\learning.py,companion_v2/expression,True,True,2,11,0,1,4,Proposed language-style observations with explicit evidence references.
+companion_v2.expression.legacy_import,companion_v2\expression\legacy_import.py,companion_v2/expression,True,True,0,8,0,5,5,Import reviewed legacy expressions into the live expression domain.
+companion_v2.expression.private_scope,companion_v2\expression\private_scope.py,companion_v2/expression,True,True,0,3,0,3,2,Private-chat expression scope helpers.
+companion_v2.expression.reaction_configuration,companion_v2\expression\reaction_configuration.py,companion_v2/expression,True,True,2,11,0,3,5,"Installation-wide bounds for reaction lookup, its cache and vector upkeep."
+companion_v2.expression.reaction_lexicon,companion_v2\expression\reaction_lexicon.py,companion_v2/expression,False,False,0,6,0,1,0,"Communication-shaped synonym clusters for reaction lookup, without an embedding model."
+companion_v2.expression.reaction_preferences,companion_v2\expression\reaction_preferences.py,companion_v2/expression,True,True,1,14,0,2,1,Per-speaker reaction boundaries and feedback from confirmed deliveries.
+companion_v2.expression.reactions,companion_v2\expression\reactions.py,companion_v2/expression,True,True,1,34,7,13,1,Select owned reaction originals and offer them to the existing reply sender.
+companion_v2.expression.reply_intent,companion_v2\expression\reply_intent.py,companion_v2/expression,True,True,0,3,0,2,2,Optional reaction intent authored alongside the native text reply.
+companion_v2.expression.review,companion_v2\expression\review.py,companion_v2/expression,True,True,1,9,3,5,3,A bounded wording review before segmentation; failure keeps the original reply.
+companion_v2.expression.rule_details,companion_v2\expression\rule_details.py,companion_v2/expression,True,False,0,5,0,1,2,"Concrete expression forms, kept beside the existing review and evidence ledger."
+companion_v2.expression.rule_management,companion_v2\expression\rule_management.py,companion_v2/expression,True,False,0,1,0,4,1,Edit a rule while preserving its original source and review state.
+companion_v2.expression.rule_support,companion_v2\expression\rule_support.py,companion_v2/expression,False,False,0,3,0,1,0,"Additional, source-bound observations of an existing expression form."
+companion_v2.expression.sample_management,companion_v2\expression\sample_management.py,companion_v2/expression,True,False,1,6,0,5,1,Review raw writing separately from adopting a generated expression rule.
+companion_v2.expression.sample_review,companion_v2\expression\sample_review.py,companion_v2/expression,True,True,1,7,0,2,2,Decisions on source-bound writing samples; never stores conversation text.
+companion_v2.expression.semantic_service,companion_v2\expression\semantic_service.py,companion_v2/expression,True,True,1,42,11,15,1,"Composition of shared semantic ports with memory, vocabulary and reactions."
+companion_v2.expression.sharing,companion_v2\expression\sharing.py,companion_v2/expression,True,True,0,4,0,2,2,Privacy-preserving expression rule packs compatible with V1 exports.
+companion_v2.expression.style_evidence,companion_v2\expression\style_evidence.py,companion_v2/expression,True,True,3,26,0,10,3,"Bounded, source-governed samples for expression learning."
+companion_v2.expression.style_management,companion_v2\expression\style_management.py,companion_v2/expression,True,True,1,23,0,14,3,Dashboard review of model-suggested expression-style signals.
+companion_v2.expression.style_rotation,companion_v2\expression\style_rotation.py,companion_v2/expression,False,False,0,9,0,1,0,Use-then-de-prioritise rotation over one scope's adopted expression rules.
+companion_v2.expression.style_service,companion_v2\expression\style_service.py,companion_v2/expression,True,True,2,99,4,16,3,Background expression learning from messages in one exact conversation.
+companion_v2.expression.window_scope,companion_v2\expression\window_scope.py,companion_v2/expression,True,True,0,7,0,2,2,Which stored expression rules one conversation window can actually inject.
+companion_v2.foundation,companion_v2\foundation\__init__.py,companion_v2/foundation,False,True,0,0,0,5,0,Small deterministic primitives used before any host integration exists.
+companion_v2.foundation.clock,companion_v2\foundation\clock.py,companion_v2/foundation,False,True,1,5,0,0,1,A clock whose value changes only when a test or caller advances it.
+companion_v2.foundation.isolation,companion_v2\foundation\isolation.py,companion_v2/foundation,False,True,3,16,0,0,1,Static dependency and side-effect firewall for the V2-G0 source tree.
+companion_v2.foundation.outcome,companion_v2\foundation\outcome.py,companion_v2/foundation,True,True,2,5,0,0,102,Explicit success and failure envelopes for V2 contracts.
+companion_v2.foundation.refs,companion_v2\foundation\refs.py,companion_v2/foundation,True,True,14,20,0,0,332,"Immutable, scoped references shared by V2 domains."
+companion_v2.foundation.sqlite,companion_v2\foundation\sqlite.py,companion_v2/foundation,False,True,1,5,0,0,1,Temporary SQLite support for isolated tests.
+companion_v2.games,companion_v2\games\__init__.py,companion_v2/games,False,True,0,0,0,4,0,Standalone game state and rule engines.
+companion_v2.games.blackjack,companion_v2\games\blackjack.py,companion_v2/games,True,True,3,29,0,1,5,
+companion_v2.games.common,companion_v2\games\common.py,companion_v2/games,True,False,0,0,0,0,8,Shared game rule types.
+companion_v2.games.draw_guess,companion_v2\games\draw_guess.py,companion_v2/games,True,False,2,13,0,1,4,
+companion_v2.games.gomoku,companion_v2\games\gomoku.py,companion_v2/games,True,False,2,17,0,1,5,
+companion_v2.games.models,companion_v2\games\models.py,companion_v2/games,False,True,7,24,0,7,3,
+companion_v2.games.native,companion_v2\games\native\__init__.py,companion_v2/games,False,True,0,0,0,0,0,Native game operations and receipts.
+companion_v2.games.native.access,companion_v2\games\native\access.py,companion_v2/games,True,True,1,6,0,11,1,Explicit game permissions for one host-resolved private conversation.
+companion_v2.games.native.context,companion_v2\games\native\context.py,companion_v2/games,True,True,0,4,0,0,1,Small public game facts and durable times for conversation continuity.
+companion_v2.games.native.provider,companion_v2\games\native\provider.py,companion_v2/games,True,True,3,51,10,10,2,"Durable, scope-bound V2 chat game operations."
+companion_v2.games.native.xiangqi,companion_v2\games\native\xiangqi.py,companion_v2/games,True,False,0,3,1,1,1,Rebuild and present an engine-validated V2 Xiangqi ledger.
+companion_v2.games.pig_dice,companion_v2\games\pig_dice.py,companion_v2/games,True,True,1,12,0,1,5,
+companion_v2.games.pikafish,companion_v2\games\pikafish.py,companion_v2/games,True,False,1,25,13,0,4,
+companion_v2.games.room_manager,companion_v2\games\room_manager.py,companion_v2/games,False,False,1,80,50,10,2,
+companion_v2.games.tictactoe,companion_v2\games\tictactoe.py,companion_v2/games,True,False,1,13,0,1,5,
+companion_v2.games.trusted_identity,companion_v2\games\trusted_identity.py,companion_v2/games,False,False,2,11,4,0,2,
+companion_v2.games.turtle_soup,companion_v2\games\turtle_soup.py,companion_v2/games,True,True,3,24,0,1,5,
+companion_v2.games.turtle_soup_ai,companion_v2\games\turtle_soup_ai.py,companion_v2/games,False,False,0,14,0,2,1,
+companion_v2.games.xiangqi,companion_v2\games\xiangqi.py,companion_v2/games,True,False,1,18,5,2,5,
+companion_v2.host,companion_v2\host\__init__.py,companion_v2/host,False,True,0,0,0,0,0,Host-neutral assembly; importing this package does not start a plugin or workers.
+companion_v2.host.application,companion_v2\host\application.py,companion_v2/host,True,True,3,28,6,122,1,One explicit composition root for governed conversations and private domains.
+companion_v2.host.background,companion_v2\host\background.py,companion_v2/host,True,False,1,8,1,3,1,One bounded background coordinator for registered domain planners and delivery.
+companion_v2.host.role_attention,companion_v2\host\role_attention.py,companion_v2/host,True,True,2,7,1,1,1,"One role, one foreground mouth: a bounded process-local attention lease."
+companion_v2.identity_policy,companion_v2\identity_policy\__init__.py,companion_v2/identity_policy,False,True,0,0,0,4,0,Trusted identity binding and capability authorization contracts.
+companion_v2.identity_policy.directory,companion_v2\identity_policy\directory.py,companion_v2/identity_policy,True,True,1,15,0,3,3,Deterministic in-memory implementation of G1 identity and grant semantics.
+companion_v2.identity_policy.grants,companion_v2\identity_policy\grants.py,companion_v2/identity_policy,True,True,0,0,0,0,7,Shared grant lineages for bootstrap authority and explicit person decisions.
+companion_v2.identity_policy.group_audience,companion_v2\identity_policy\group_audience.py,companion_v2/identity_policy,True,True,0,1,0,1,14,"An explicit collective audience, distinct from the current human speaker."
+companion_v2.identity_policy.interventions,companion_v2\identity_policy\interventions.py,companion_v2/identity_policy,True,True,0,4,0,3,4,Exact-window permissions for user-triggered role state and schedule changes.
+companion_v2.identity_policy.legacy_import,companion_v2\identity_policy\legacy_import.py,companion_v2/identity_policy,True,True,0,9,0,7,2,"Restore reviewed legacy permissions once, using registered native identities."
+companion_v2.identity_policy.management,companion_v2\identity_policy\management.py,companion_v2/identity_policy,True,True,1,14,0,11,1,Ledgered person permissions and management tiers on the existing policy store.
+companion_v2.identity_policy.models,companion_v2\identity_policy\models.py,companion_v2/identity_policy,True,True,12,8,0,1,63,Value objects for trusted account bindings and exact-scope grants.
+companion_v2.identity_policy.object_access,companion_v2\identity_policy\object_access.py,companion_v2/identity_policy,True,True,4,16,0,8,38,"Current identity tiers, explicit action contracts, and exact object sharing."
+companion_v2.identity_policy.personas,companion_v2\identity_policy\personas.py,companion_v2/identity_policy,True,True,8,26,0,5,34,"Trusted route registration and deterministic, time-aware persona selection."
+companion_v2.identity_policy.ports,companion_v2\identity_policy\ports.py,companion_v2/identity_policy,True,False,3,4,0,3,6,Narrow host and policy ports; no AstrBot type enters the G1 core.
+companion_v2.identity_policy.private_domain,companion_v2\identity_policy\private_domain.py,companion_v2/identity_policy,True,True,1,5,0,3,13,Current private-participant and source checks shared by calendar and role state.
+companion_v2.identity_policy.repository,companion_v2\identity_policy\repository.py,companion_v2/identity_policy,True,True,1,22,0,7,23,"Persistent G1 policy using the same rules and indexed, current-snapshot reads."
+companion_v2.integration.nai_image,companion_v2\integration\nai_image.py,companion_v2/integration,False,True,0,2,0,0,0,Pure mapping from V2 image intent fields to a NovelAI generation request.
+companion_v2.knowledge,companion_v2\knowledge\__init__.py,companion_v2/knowledge,False,True,0,0,0,7,0,"Knowledge parsing, import, authorized retrieval and prompt-material contracts."
+companion_v2.knowledge.catalog,companion_v2\knowledge\catalog.py,companion_v2/knowledge,True,True,6,39,0,4,10,"Versioned, invalidatable storage for imported worldbook and knowledge sources."
+companion_v2.knowledge.configuration,companion_v2\knowledge\configuration.py,companion_v2/knowledge,True,True,2,14,0,3,7,"Operator-visible bounds for knowledge import, injection and member clues."
+companion_v2.knowledge.context,companion_v2\knowledge\context.py,companion_v2/knowledge,True,True,1,10,0,8,3,The knowledge collaborator the conversation injection point talks to.
+companion_v2.knowledge.importer,companion_v2\knowledge\importer.py,companion_v2/knowledge,True,True,7,13,0,3,2,Import contract for worldbook files and knowledge-base rows.
+companion_v2.knowledge.member_profiles,companion_v2\knowledge\member_profiles.py,companion_v2/knowledge,True,False,1,3,0,0,2,Recorded social impressions imported alongside a member's description.
+companion_v2.knowledge.members,companion_v2\knowledge\members.py,companion_v2/knowledge,True,True,2,8,0,1,3,"Attributed member background for conversation, never authenticated identity."
+companion_v2.knowledge.parsing,companion_v2\knowledge\parsing.py,companion_v2/knowledge,True,True,4,6,0,0,5,"Format parsing only; selection, authorization, retrieval and prompt injection belong elsewhere."
+companion_v2.knowledge.retrieval,companion_v2\knowledge\retrieval.py,companion_v2/knowledge,True,True,7,23,0,5,5,"Authorized, deterministic retrieval for worldbook and character knowledge."
+companion_v2.legacy,companion_v2\legacy\__init__.py,companion_v2/legacy,False,True,0,0,0,4,0,Declarative V1 compatibility inventory with no runtime access to V1.
+companion_v2.legacy.archive,companion_v2\legacy\archive.py,companion_v2/legacy,True,True,2,13,0,0,3,Immutable byte-for-byte archive for V1 data with no active V2 equivalent.
+companion_v2.legacy.archived_work,companion_v2\legacy\archived_work.py,companion_v2/legacy,True,True,0,2,0,3,1,Administrator-only inspection of retained work; nothing here can execute it.
+companion_v2.legacy.behavior_configuration,companion_v2\legacy\behavior_configuration.py,companion_v2/legacy,True,False,0,4,0,3,1,Reviewed compound behavior settings that cannot use the old audit's first target.
+companion_v2.legacy.catalog,companion_v2\legacy\catalog.py,companion_v2/legacy,True,True,4,4,0,0,3,Static V1 source inventory for the direct-replacement release gate.
+companion_v2.legacy.configuration_migration,companion_v2\legacy\configuration_migration.py,companion_v2/legacy,True,True,2,48,0,10,10,Convert audited V1 plugin settings into registered V2 configuration fields.
+companion_v2.legacy.configuration_precedence,companion_v2\legacy\configuration_precedence.py,companion_v2/legacy,True,False,0,5,0,1,1,Preserve active legacy branches instead of treating distinct settings as aliases.
+companion_v2.legacy.content_configuration,companion_v2\legacy\content_configuration.py,companion_v2/legacy,True,True,1,1,0,1,1,Map standalone Content preferences to the native authoring owner.
+companion_v2.legacy.data_migration,companion_v2\legacy\data_migration.py,companion_v2/legacy,True,True,7,53,0,8,4,"Read-only converters for V1 role journals, reaction assets and summaries."
+companion_v2.legacy.expression_data,companion_v2\legacy\expression_data.py,companion_v2/legacy,True,True,0,3,0,3,3,"Read legacy learning results, preserving source ownership and review decisions."
+companion_v2.legacy.image_companion_configuration,companion_v2\legacy\image_companion_configuration.py,companion_v2/legacy,True,False,1,3,0,1,1,Convert the separately installed 6.x Image companion's saved routes.
+companion_v2.legacy.image_configuration_migration,companion_v2\legacy\image_configuration_migration.py,companion_v2/legacy,True,True,1,15,0,1,4,Migrate the V1 image backend queue and role-owned prompt preferences.
+companion_v2.legacy.memory_archive,companion_v2\legacy\memory_archive.py,companion_v2/legacy,True,True,3,19,0,2,1,"Consistent, checksummed snapshots for the independent V1 memory database."
+companion_v2.legacy.memory_configuration,companion_v2\legacy\memory_configuration.py,companion_v2/legacy,True,True,1,2,0,1,1,Carry standalone recall preferences into the native memory configuration.
+companion_v2.legacy.migration,companion_v2\legacy\migration.py,companion_v2/legacy,True,True,5,24,0,12,3,V1 数据迁移：发现 → 计划 → 交给宿主执行。
+companion_v2.legacy.migration_scope,companion_v2\legacy\migration_scope.py,companion_v2/legacy,True,True,1,8,0,1,1,Decide which V1 windows and personas a role can absorb without guessing.
+companion_v2.legacy.model_configuration,companion_v2\legacy\model_configuration.py,companion_v2/legacy,True,False,0,2,0,3,1,Convert old route policies only onto registered V2 model task profiles.
+companion_v2.legacy.native_extension_configuration,companion_v2\legacy\native_extension_configuration.py,companion_v2/legacy,True,True,1,8,0,0,7,Read-only conversion of portable settings from the former standalone extensions.
+companion_v2.legacy.private_authorization,companion_v2\legacy\private_authorization.py,companion_v2/legacy,True,False,0,2,0,0,1,Read explicit legacy private permissions separately from relationship facts.
+companion_v2.legacy.private_contacts,companion_v2\legacy\private_contacts.py,companion_v2/legacy,True,True,0,3,0,2,2,"Read the old plugin's private users, independently of the host session list."
+companion_v2.legacy.private_memory,companion_v2\legacy\private_memory.py,companion_v2/legacy,True,True,1,7,0,1,2,Read REQ-041 private memory without reviving its jobs or current state.
+companion_v2.legacy.proactive_configuration,companion_v2\legacy\proactive_configuration.py,companion_v2/legacy,True,True,1,3,0,3,3,Carry legacy contact preferences only to their verified persona and person.
+companion_v2.legacy.profile_source,companion_v2\legacy\profile_source.py,companion_v2/legacy,True,False,1,13,0,1,4,Read V1 profile snapshots and select the primary store's explicit authority.
+companion_v2.legacy.reality_migration,companion_v2\legacy\reality_migration.py,companion_v2/legacy,True,True,1,7,0,1,5,Safe V1 Reality Companion configuration conversion.
+companion_v2.legacy.relationship_profiles,companion_v2\legacy\relationship_profiles.py,companion_v2/legacy,True,True,0,8,0,2,2,Read the old plugin's per-person relationship details without guessing identity.
+companion_v2.legacy.reply_configuration,companion_v2\legacy\reply_configuration.py,companion_v2/legacy,True,False,0,4,0,1,1,Legacy reply settings whose precedence cannot be expressed as flat rules.
+companion_v2.legacy.scope_mapping,companion_v2\legacy\scope_mapping.py,companion_v2/legacy,False,True,2,12,0,7,1,"Explicit, evidence-bound preparation for adopting unresolved historical scope."
+companion_v2.legacy.sqlite_snapshot,companion_v2\legacy\sqlite_snapshot.py,companion_v2/legacy,True,True,1,4,0,1,6,Open legacy SQLite data without touching its WAL sidecars.
+companion_v2.legacy.surface_ledger,companion_v2\legacy\surface_ledger.py,companion_v2/legacy,False,True,3,1,0,0,1,Static mapping ledger for V1 user-visible and integration surfaces.
+companion_v2.legacy.weather_migration,companion_v2\legacy\weather_migration.py,companion_v2/legacy,True,True,2,8,0,2,2,"Convert the V1 weather configuration into V2 installation, role and contact settings."
+companion_v2.library,companion_v2\library\__init__.py,companion_v2/library,False,True,0,0,0,2,0,The reading archive: a provider-contract bookshelf of catalog entries and reading state.
+companion_v2.library.configuration,companion_v2\library\configuration.py,companion_v2/library,True,True,2,8,0,4,3,Bookshelf options for one role.
+companion_v2.library.models,companion_v2\library\models.py,companion_v2/library,True,True,9,7,0,1,4,Value objects for the reading archive.
+companion_v2.library.preferences,companion_v2\library\preferences.py,companion_v2/library,True,False,1,3,0,0,1,Turn recorded ratings into taste the role may actually use.
+companion_v2.library.provider,companion_v2\library\provider.py,companion_v2/library,True,True,0,13,0,6,1,"The shelf as a read-provider capability, not a second permission system."
+companion_v2.library.repositories,companion_v2\library\repositories.py,companion_v2/library,True,False,1,20,0,3,2,Transactional repository for the reading archive.
+companion_v2.library.service,companion_v2\library\service.py,companion_v2/library,True,True,1,21,0,8,2,"Read, review and record against the shelf, under one role-owned identity."
+companion_v2.library.triggers,companion_v2\library\triggers.py,companion_v2/library,True,False,0,6,0,2,1,"When the shelf may speak, and how often."
+companion_v2.live,companion_v2\live\__init__.py,companion_v2/live,False,True,0,0,0,0,0,Native live state and contracts.
+companion_v2.live.provider,companion_v2\live\provider.py,companion_v2/live,False,False,2,10,2,0,1,Expose bounded public live events without V1 memory or reply side effects.
+companion_v2.memory,companion_v2\memory\__init__.py,companion_v2/memory,True,True,0,0,0,0,24,V2 memory owns accepted facts and their rebuildable recall projections.
+companion_v2.memory.access,companion_v2\memory\access.py,companion_v2/memory,True,True,1,7,0,8,1,"Resolve every memory use through current identity, role and source authority."
+companion_v2.memory.activity_ingestion,companion_v2\memory\activity_ingestion.py,companion_v2/memory,True,True,1,11,0,9,1,"Idempotent, bounded receipt-to-experience production for authenticated life windows."
+companion_v2.memory.activity_receipts,companion_v2\memory\activity_receipts.py,companion_v2/memory,True,False,2,6,0,6,5,Project real role receipts without turning writing or elapsed time into facts.
+companion_v2.memory.archive,companion_v2\memory\archive.py,companion_v2/memory,True,True,2,16,0,7,1,Cold archive and portable export/import for one relationship's memory.
+companion_v2.memory.checkpoints,companion_v2\memory\checkpoints.py,companion_v2/memory,True,False,1,9,0,2,1,One bounded startup pass over durable local work; never dispatch a model.
+companion_v2.memory.codec,companion_v2\memory\codec.py,companion_v2/memory,True,True,0,3,0,2,3,Lossless decoding of memory records; no inferred identity or source versions.
+companion_v2.memory.configuration,companion_v2\memory\configuration.py,companion_v2/memory,True,True,1,8,0,5,5,Memory consumes the unified sparse configuration; it owns no settings copy.
+companion_v2.memory.context,companion_v2\memory\context.py,companion_v2/memory,True,True,1,14,0,7,1,Small relevant recall snapshots; every later use rechecks original versions.
+companion_v2.memory.episode_settings,companion_v2\memory\episode_settings.py,companion_v2/memory,True,True,1,6,0,15,1,"Periodic group-scope episode settings, folded into the existing memory chain."
+companion_v2.memory.episodes,companion_v2\memory\episodes.py,companion_v2/memory,True,True,0,10,0,6,1,"Periodic private-dialogue episodes, folded into the existing memory chain."
+companion_v2.memory.experiences,companion_v2\memory\experiences.py,companion_v2/memory,True,True,1,4,0,8,2,"Experiences and navigation are sourced projections, never a second fact store."
+companion_v2.memory.fact_index,companion_v2\memory\fact_index.py,companion_v2/memory,True,False,1,8,0,3,2,Incremental fact projection; cached terms never authorize a fact or source.
+companion_v2.memory.fact_query,companion_v2\memory\fact_query.py,companion_v2/memory,True,False,1,2,0,3,1,Bounded lexical fact pages with per-result authoritative source checks.
+companion_v2.memory.game_ingestion,companion_v2\memory\game_ingestion.py,companion_v2/memory,True,True,1,8,0,5,1,"Project confirmed Game terminal receipts into private, sourced experiences."
+companion_v2.memory.group,companion_v2\memory\group\__init__.py,companion_v2/memory,False,True,0,0,0,0,0,Collective group memory; private memory contracts remain separate.
+companion_v2.memory.group.access,companion_v2\memory\group\access.py,companion_v2/memory,True,True,1,8,0,6,15,Authenticated member evidence and stable group ownership across conversations.
+companion_v2.memory.group.context,companion_v2\memory\group\context.py,companion_v2/memory,True,False,1,6,0,5,2,Reference-only group memory snapshots and proof of changes made in this turn.
+companion_v2.memory.group.hits,companion_v2\memory\group\hits.py,companion_v2/memory,True,True,2,7,0,1,4,"Bounded, deterministic group member safety signals."
+companion_v2.memory.group.management,companion_v2\memory\group\management.py,companion_v2/memory,True,True,2,15,0,10,1,"Core governance of a collective archive, without impersonating its members."
+companion_v2.memory.group.service,companion_v2\memory\group\service.py,companion_v2/memory,True,True,1,8,0,11,4,"Group statements, exact revisions and atomic receipts in the shared memory store."
+companion_v2.memory.group.slang,companion_v2\memory\group\slang.py,companion_v2/memory,True,True,1,20,4,5,1,"Evidence-backed group vocabulary, with contextual approximate recall."
+companion_v2.memory.group.tools,companion_v2\memory\group\tools.py,companion_v2/memory,True,False,1,5,0,5,1,"Group-only role tools, immutable result verification and grounded source views."
+companion_v2.memory.habits,companion_v2\memory\habits.py,companion_v2/memory,True,True,1,24,0,4,3,"Repeated private utterances as soft, source-backed habit candidates."
+companion_v2.memory.legacy_materials,companion_v2\memory\legacy_materials.py,companion_v2/memory,True,True,3,39,0,7,3,"Governed, read-only projections of the V1 memory companion snapshot."
+companion_v2.memory.legacy_policy,companion_v2\memory\legacy_policy.py,companion_v2/memory,True,True,1,8,0,0,1,Pure access decisions for V1 memory windows and ACL rows.
+companion_v2.memory.management,companion_v2\memory\management.py,companion_v2/memory,True,True,1,14,0,11,6,Core administration records the actual operator separately from memory subject.
+companion_v2.memory.mmr,companion_v2\memory\mmr.py,companion_v2/memory,True,True,0,5,0,0,1,Pure maximum marginal relevance ordering for pre-filtered candidates.
+companion_v2.memory.models,companion_v2\memory\models.py,companion_v2/memory,True,True,4,9,0,2,53,Internal memory profile; host context supplies identity and authority.
+companion_v2.memory.operation_receipts,companion_v2\memory\operation_receipts.py,companion_v2/memory,True,False,0,4,0,2,3,Keep wire receipts current when a durable pending decision is resolved.
+companion_v2.memory.pending_query,companion_v2\memory\pending_query.py,companion_v2/memory,True,False,0,3,0,5,1,Bounded pending proposal pages alongside the ordinary fact wire query.
+companion_v2.memory.person,companion_v2\memory\person\__init__.py,companion_v2/memory,False,True,0,0,0,0,0,"Per-person acquaintance cards: one companion's durable, evidence-bounded"
+companion_v2.memory.person.access,companion_v2\memory\person\access.py,companion_v2/memory,True,True,0,5,0,2,3,Stable per-person ownership and trusted platform-account resolution.
+companion_v2.memory.person.admin_names,companion_v2\memory\person\admin_names.py,companion_v2/memory,True,True,1,4,0,8,1,Core-operator edits to a person's administrator-assigned display name.
+companion_v2.memory.person.configuration,companion_v2\memory\person\configuration.py,companion_v2/memory,True,True,1,10,0,4,2,Role defaults and per-person learning consent for acquaintance cards.
+companion_v2.memory.person.legacy_import,companion_v2\memory\person\legacy_import.py,companion_v2/memory,True,True,0,2,0,4,1,Import reviewed private contact summaries without replaying events or grants.
+companion_v2.memory.person.management,companion_v2\memory\person\management.py,companion_v2/memory,True,True,1,6,0,1,2,Read-only acquaintance directory for the management page.
+companion_v2.memory.person.models,companion_v2\memory\person\models.py,companion_v2/memory,True,True,0,10,0,1,5,Acquaintance document contract: bounded counters and platform-observed names.
+companion_v2.memory.person.service,companion_v2\memory\person\service.py,companion_v2/memory,True,False,1,14,0,6,2,"Acquaintance cards on the shared memory store: counting, names and bounded views."
+companion_v2.memory.person.tools,companion_v2\memory\person\tools.py,companion_v2/memory,True,False,1,4,0,3,1,Read-only acquaintance tool exposed to authorized conversations.
+companion_v2.memory.pinned,companion_v2\memory\pinned.py,companion_v2/memory,True,True,0,2,0,2,3,"Explicit core context selection, independent of similarity and retention."
+companion_v2.memory.private_legacy_import,companion_v2\memory\private_legacy_import.py,companion_v2/memory,True,True,0,1,0,2,1,Install reviewed V1 person-private records in the historical read model.
+companion_v2.memory.prompts,companion_v2\memory\prompts.py,companion_v2/memory,True,True,0,0,0,1,2,Semantic guidance shared by normal conversation and daily reflection.
+companion_v2.memory.proposal_input,companion_v2\memory\proposal_input.py,companion_v2/memory,True,False,0,3,0,2,3,Validate the synchronous private string-fact proposal wire profile.
+companion_v2.memory.proposal_wire,companion_v2\memory\proposal_wire.py,companion_v2/memory,True,False,1,7,0,9,1,Synchronous local commands; a side effect never uses the read lease registry.
+companion_v2.memory.provider,companion_v2\memory\provider.py,companion_v2/memory,True,True,0,8,0,5,1,The Memory owner adapter used by the process-local provider registry.
+companion_v2.memory.query,companion_v2\memory\query.py,companion_v2/memory,True,True,1,12,0,13,2,Bounded query sessions with current owner reads and original source spans.
+companion_v2.memory.recall_index,companion_v2\memory\recall_index.py,companion_v2/memory,True,False,1,11,0,4,2,"Paged object-change projection shared by source, experience and mixed recall."
+companion_v2.memory.recall_objects,companion_v2\memory\recall_objects.py,companion_v2/memory,True,False,1,10,0,9,1,Owner object projections and per-hit reads; cached metadata never grants access.
+companion_v2.memory.recall_query,companion_v2\memory\recall_query.py,companion_v2/memory,True,False,1,2,0,5,1,Finite candidate pages with current original-object and source checks.
+companion_v2.memory.recall_vectors,companion_v2\memory\recall_vectors.py,companion_v2/memory,True,False,0,5,0,1,1,Exact hybrid recall with resumable embedding reads and SQL result ranking.
+companion_v2.memory.reflection,companion_v2\memory\reflection.py,companion_v2/memory,True,True,1,23,4,23,3,"Incremental, durable memory extraction through the shared task/model services."
+companion_v2.memory.reflection_inputs,companion_v2\memory\reflection_inputs.py,companion_v2/memory,True,True,0,2,0,1,3,Indexed input membership; a reservation never authorizes original text.
+companion_v2.memory.reflection_jobs,companion_v2\memory\reflection_jobs.py,companion_v2/memory,True,False,1,13,2,5,2,"Host-driven continuation of explicitly requested, durable reflection work."
+companion_v2.memory.reflection_management,companion_v2\memory\reflection_management.py,companion_v2/memory,True,True,1,6,1,4,1,"Core administration of captured reflection failures, without raw-text exposure."
+companion_v2.memory.reflection_output,companion_v2\memory\reflection_output.py,companion_v2/memory,True,True,2,14,0,6,2,Small model-facing reflection format and independent candidate validation.
+companion_v2.memory.reflection_recovery,companion_v2\memory\reflection_recovery.py,companion_v2/memory,False,False,0,9,0,4,0,"Durable private output checkpoints and explicit, bounded repair attempts."
+companion_v2.memory.reflection_selection,companion_v2\memory\reflection_selection.py,companion_v2/memory,True,False,1,6,0,5,1,"Durable, finite selection steps before a reflection may dispatch its model."
+companion_v2.memory.reset,companion_v2\memory\reset.py,companion_v2/memory,True,False,0,1,0,1,1,Retire a reset window's session/short atoms without forgetting durable evidence.
+companion_v2.memory.scheduling,companion_v2\memory\scheduling.py,companion_v2/memory,True,False,1,20,5,6,1,"Persisted daily memory windows, driven by the existing host wake loop."
+companion_v2.memory.search,companion_v2\memory\search.py,companion_v2/memory,True,True,1,14,0,3,8,"Rebuildable, partitioned Chinese/Latin lexical and optional vector recall."
+companion_v2.memory.semantic,companion_v2\memory\semantic.py,companion_v2/memory,True,True,1,9,5,2,1,Generate real query vectors and incrementally fill authorized memory documents.
+companion_v2.memory.sent_sources,companion_v2\memory\sent_sources.py,companion_v2/memory,True,True,1,8,0,7,2,Confirmed reply quotes offered by the conversation owner to memory.
+companion_v2.memory.service,companion_v2\memory\service.py,companion_v2/memory,True,True,1,8,0,13,1,Memory composition without host SDK imports or a second fact database.
+companion_v2.memory.stream_consumer,companion_v2\memory\stream_consumer.py,companion_v2/memory,True,True,1,12,0,4,1,Durable reference inbox and staging/activation; never replays fact commands.
+companion_v2.memory.stream_delivery,companion_v2\memory\stream_delivery.py,companion_v2/memory,True,False,1,7,0,5,1,"One bounded in-flight batch, durable leases, ACK barriers and replay cursors."
+companion_v2.memory.stream_store,companion_v2\memory\stream_store.py,companion_v2/memory,True,True,1,14,0,5,5,"Durable bounded subscription sessions, on the existing memory session journal."
+companion_v2.memory.stream_validation,companion_v2\memory\stream_validation.py,companion_v2/memory,True,False,0,4,0,5,1,Validate subscription controls before touching durable stream state.
+companion_v2.memory.stream_visibility,companion_v2\memory\stream_visibility.py,companion_v2/memory,True,False,2,6,0,5,2,"Reference projections never bypass current source, session or identity access."
+companion_v2.memory.subscriptions,companion_v2\memory\subscriptions.py,companion_v2/memory,True,True,2,16,0,10,1,Trusted host subscription controls and durable reference-only recovery.
+companion_v2.memory.time_intent,companion_v2\memory\time_intent.py,companion_v2/memory,True,True,0,2,0,0,1,Resolve an explicit past calendar day for bounded memory recall.
+companion_v2.memory.tools,companion_v2\memory\tools.py,companion_v2/memory,True,False,1,7,0,6,2,The original role's internal tool adapter. Host identity is never an argument.
+companion_v2.memory.wire,companion_v2\memory\wire.py,companion_v2/memory,True,True,2,13,0,6,2,Read-only adapter for the review-stage memory.query.v1 wire contract.
+companion_v2.memory.wire_binding,companion_v2\memory\wire_binding.py,companion_v2/memory,True,False,2,13,0,3,10,Shared wire envelope validation against a trusted private host binding.
+companion_v2.memory.wire_evidence,companion_v2\memory\wire_evidence.py,companion_v2/memory,True,False,1,4,0,3,2,Opaque EvidenceRef handles backed by the original bounded query session.
+companion_v2.memory.wire_operations,companion_v2\memory\wire_operations.py,companion_v2/memory,True,False,1,6,0,5,4,Persistent wire receipts share the authoritative memory operation journal.
+companion_v2.memory.writer,companion_v2\memory\writer.py,companion_v2/memory,True,True,1,24,0,15,2,"One authoritative memory writer: evidence, CAS, pending work and receipts."
+companion_v2.model_gateway,companion_v2\model_gateway\__init__.py,companion_v2/model_gateway,False,True,0,0,0,0,0,Local model routing and accounting; no host or network adapter is registered.
+companion_v2.model_gateway.budget,companion_v2\model_gateway\budget.py,companion_v2/model_gateway,True,True,3,28,0,11,7,"Atomic daily reservations, receipt-based settlement and bounded reclamation."
+companion_v2.model_gateway.cache_diagnostics,companion_v2\model_gateway\cache_diagnostics.py,companion_v2/model_gateway,True,True,0,13,0,2,5,"Private, bounded cache-signature collection and comparison."
+companion_v2.model_gateway.core_observations,companion_v2\model_gateway\core_observations.py,companion_v2/model_gateway,True,True,0,8,0,4,4,Project real AstrBot observations without reserving V2 model calls or budget.
+companion_v2.model_gateway.embedding,companion_v2\model_gateway\embedding.py,companion_v2/model_gateway,True,True,1,5,2,1,1,"Typed, bounded embedding and rerank calls, shared by semantic consumers."
+companion_v2.model_gateway.failures,companion_v2\model_gateway\failures.py,companion_v2/model_gateway,True,True,1,1,0,0,7,Fixed failure classifications; never carry provider text or exception details.
+companion_v2.model_gateway.images,companion_v2\model_gateway\images.py,companion_v2/model_gateway,True,True,2,5,2,4,2,"Receipt-based accounting for native image providers, separate from text routing."
+companion_v2.model_gateway.management,companion_v2\model_gateway\management.py,companion_v2/model_gateway,True,True,1,24,0,14,3,Dashboard model task settings for one authorized private role context.
+companion_v2.model_gateway.models,companion_v2\model_gateway\models.py,companion_v2/model_gateway,True,True,13,19,0,7,63,Trusted model task contracts. Usage and reservations have different meanings.
+companion_v2.model_gateway.output_defaults,companion_v2\model_gateway\output_defaults.py,companion_v2/model_gateway,True,True,0,2,0,1,2,Registry defaults for each model task's output budget.
+companion_v2.model_gateway.perception,companion_v2\model_gateway\perception.py,companion_v2/model_gateway,True,True,0,2,0,1,1,Request-local capability context for a conversation model attempt.
+companion_v2.model_gateway.prompt_composer,companion_v2\model_gateway\prompt_composer.py,companion_v2/model_gateway,True,False,2,1,0,0,2,One ordered prompt composition contract for every model task.
+companion_v2.model_gateway.refusal,companion_v2\model_gateway\refusal.py,companion_v2/model_gateway,True,False,0,3,0,0,5,Configurable text cues for the model gateway's refusal fallback.
+companion_v2.model_gateway.replacement_rules,companion_v2\model_gateway\replacement_rules.py,companion_v2/model_gateway,True,True,3,9,0,0,6,Pure keyword/time-window model route matching; does not call a provider.
+companion_v2.model_gateway.reply_efficiency,companion_v2\model_gateway\reply_efficiency.py,companion_v2/model_gateway,True,True,0,12,0,2,1,Role-scoped reply latency projections from persisted conversation receipts.
+companion_v2.model_gateway.response_diagnostics,companion_v2\model_gateway\response_diagnostics.py,companion_v2/model_gateway,True,True,2,5,0,1,8,Immutable response-stage summaries; never retain model bodies or error text.
+companion_v2.model_gateway.routing,companion_v2\model_gateway\routing.py,companion_v2/model_gateway,True,True,2,12,0,9,5,Per-task configuration adoption with explicit provider and prompt provenance.
+companion_v2.model_gateway.semantic_search,companion_v2\model_gateway\semantic_search.py,companion_v2/model_gateway,True,True,1,5,2,1,2,"Shared ranking of domain-validated catalog items, with explicit coverage."
+companion_v2.model_gateway.service,companion_v2\model_gateway\service.py,companion_v2/model_gateway,True,True,5,26,5,15,3,A local asynchronous gateway that never retries an unknown model invocation.
+companion_v2.model_gateway.usage,companion_v2\model_gateway\usage.py,companion_v2/model_gateway,True,False,1,11,0,2,3,Role ledger projections split dialogue generation from companion tasks.
+companion_v2.persona_craft,companion_v2\persona_craft\__init__.py,companion_v2/persona_craft,True,True,0,0,0,3,1,人格工坊：把宿主的人格原文和一份可编辑草稿并排放，历史只增不删。
+companion_v2.persona_craft.models,companion_v2\persona_craft\models.py,companion_v2/persona_craft,True,True,2,7,0,1,3,Persona workshop contracts: immutable draft versions of one host persona.
+companion_v2.persona_craft.repositories,companion_v2\persona_craft\repositories.py,companion_v2/persona_craft,True,False,1,8,0,2,2,"Storage access for persona draft versions: append and read, never rewrite."
+companion_v2.persona_craft.service,companion_v2\persona_craft\service.py,companion_v2/persona_craft,True,False,1,6,0,3,1,The persona workshop: hand the operator a draft beside the host's own text.
+companion_v2.persona_designer,companion_v2\persona_designer\__init__.py,companion_v2/persona_designer,False,True,0,0,0,0,0,"Optional persona co-design, independent of the companion runtime database."
+companion_v2.persona_designer.protocol,companion_v2\persona_designer\protocol.py,companion_v2/persona_designer,True,True,0,5,0,1,2,"Bounded documents for a client-owned, explicitly saved design conversation."
+companion_v2.persona_designer.store,companion_v2\persona_designer\store.py,companion_v2/persona_designer,True,True,1,5,0,2,1,"Explicit draft snapshots in a separate SQLite file, never the host runtime DB."
+companion_v2.proactive,companion_v2\proactive\__init__.py,companion_v2/proactive,True,True,0,0,0,2,2,"Opportunity, thought competition, and local delivery-plan construction."
+companion_v2.proactive.balance_events,companion_v2\proactive\balance_events.py,companion_v2/proactive,True,True,2,16,1,7,4,"Opt-in, source-backed contact about the Bot service balance."
+companion_v2.proactive.budget,companion_v2\proactive\budget.py,companion_v2/proactive,True,True,1,11,0,3,1,Window-local contact allowances and projections of actual model usage.
+companion_v2.proactive.calendar_events,companion_v2\proactive\calendar_events.py,companion_v2/proactive,True,True,1,14,0,10,3,Upcoming accepted commitments as revision-bound private contact candidates.
+companion_v2.proactive.configuration,companion_v2\proactive\configuration.py,companion_v2/proactive,True,True,3,20,0,7,25,"Sparse contact preferences; pauses overlay, and never overwrite, permanent values."
+companion_v2.proactive.contact_models,companion_v2\proactive\contact_models.py,companion_v2/proactive,True,True,2,1,0,4,20,"Trusted, bounded inputs to the supervised contact worker."
+companion_v2.proactive.date_context,companion_v2\proactive\date_context.py,companion_v2/proactive,True,True,0,1,0,2,2,"Private, forward-only context for explicitly configured recurring dates."
+companion_v2.proactive.date_events,companion_v2\proactive\date_events.py,companion_v2/proactive,True,True,1,12,0,7,1,Optional greetings for explicit recurring dates and fixed Gregorian holidays.
+companion_v2.proactive.diagnostic_models,companion_v2\proactive\diagnostic_models.py,companion_v2/proactive,True,True,1,1,0,1,4,Source-stage results for a confirmed proactive functionality test.
+companion_v2.proactive.events,companion_v2\proactive\events.py,companion_v2/proactive,True,True,1,12,0,13,3,Bounded automatic contact candidates from committed role activity receipts.
+companion_v2.proactive.external_materials,companion_v2\proactive\external_materials.py,companion_v2/proactive,True,True,5,10,0,0,9,Pure normalization and deduplication for provider-supplied weather/news JSON.
+companion_v2.proactive.greetings,companion_v2\proactive\greetings.py,companion_v2/proactive,True,True,1,14,0,5,1,"Day anchors and one bounded insomnia window, in the relationship's local time."
+companion_v2.proactive.growth_events,companion_v2\proactive\growth_events.py,companion_v2/proactive,True,False,1,14,0,10,3,Bounded automatic contact candidates from confirmed role growth receipts.
+companion_v2.proactive.health_events,companion_v2\proactive\health_events.py,companion_v2/proactive,True,True,1,11,0,7,1,"Completed Huawei Health records as optional, source-backed contact material."
+companion_v2.proactive.inspirations,companion_v2\proactive\inspirations.py,companion_v2/proactive,True,True,1,9,0,4,4,Private-window inspiration lists backed by the durable contact ledger.
+companion_v2.proactive.journal_events,companion_v2\proactive\journal_events.py,companion_v2/proactive,True,True,1,12,0,9,3,Private diary and dream contact candidates from committed journal receipts.
+companion_v2.proactive.management,companion_v2\proactive\management.py,companion_v2/proactive,True,True,1,9,0,9,3,Core-managed contact preferences for the original private participant.
+companion_v2.proactive.material_pool,companion_v2\proactive\material_pool.py,companion_v2/proactive,True,True,0,14,0,14,1,"Read-only projection of current, governed sources for proactive contact."
+companion_v2.proactive.meal_events,companion_v2\proactive\meal_events.py,companion_v2/proactive,True,True,1,8,0,4,1,Optional local meal-time opportunities for the original private conversation.
+companion_v2.proactive.models,companion_v2\proactive\models.py,companion_v2/proactive,True,True,6,7,0,2,22,"Proactive planning records that separate opportunity, evidence, thought, and delivery."
+companion_v2.proactive.morning_rhythm,companion_v2\proactive\morning_rhythm.py,companion_v2/proactive,True,True,7,26,0,0,1,Morning rhythm: learn the user's routine and run the morning sequence.
+companion_v2.proactive.news_context,companion_v2\proactive\news_context.py,companion_v2/proactive,True,False,1,17,4,11,1,"On-demand, source-governed news context for ordinary conversation turns."
+companion_v2.proactive.news_events,companion_v2\proactive\news_events.py,companion_v2/proactive,True,True,1,44,7,10,4,"Opt-in, source-backed sharing of recent administrator-configured news."
+companion_v2.proactive.news_sources,companion_v2\proactive\news_sources.py,companion_v2/proactive,True,True,2,5,0,0,5,Public source selection and sanitized failures for external news ports.
+companion_v2.proactive.official_alert_events,companion_v2\proactive\official_alert_events.py,companion_v2/proactive,True,True,2,14,1,9,5,Opt-in official warnings for the configured role location.
+companion_v2.proactive.persona_judge,companion_v2\proactive\persona_judge.py,companion_v2/proactive,True,True,2,10,0,6,2,Post-draft persona judgement: the model may only allow or withhold one contact.
+companion_v2.proactive.planner,companion_v2\proactive\planner.py,companion_v2/proactive,True,True,1,3,0,2,2,Select at most one feasible thought per opportunity; no sender exists in this layer.
+companion_v2.proactive.platform_circuit,companion_v2\proactive\platform_circuit.py,companion_v2/proactive,True,True,1,5,0,2,1,Persistent account-level pause after repeated QQ proactive send refusals.
+companion_v2.proactive.preferences,companion_v2\proactive\preferences.py,companion_v2/proactive,True,True,2,9,0,5,3,Time-aware contact policy consumed at both generation and dispatch boundaries.
+companion_v2.proactive.prompt_templates,companion_v2\proactive\prompt_templates.py,companion_v2/proactive,True,True,0,2,0,0,3,"Operator-editable expression templates, independent of event and policy imports."
+companion_v2.proactive.prompts,companion_v2\proactive\prompts.py,companion_v2/proactive,True,True,0,17,0,23,3,Contact expression remains a persona decision; evidence and intent are data.
+companion_v2.proactive.relationship_events,companion_v2\proactive\relationship_events.py,companion_v2/proactive,True,False,1,6,0,4,1,"Scheduled relationship contacts, with private text used only when a route asks for it."
+companion_v2.proactive.reminiscence_events,companion_v2\proactive\reminiscence_events.py,companion_v2/proactive,True,False,1,13,0,9,3,Bounded reminiscence contact candidates from adopted relationship memories.
+companion_v2.proactive.rhythm,companion_v2\proactive\rhythm.py,companion_v2/proactive,True,True,2,18,0,2,1,"Voluntary rhythm: burst rounds, local-hour weighting and closing silence."
+companion_v2.proactive.rhythm_configuration,companion_v2\proactive\rhythm_configuration.py,companion_v2/proactive,True,True,0,6,0,4,3,Global contact defaults and read-only recovery of legacy personal settings.
+companion_v2.proactive.scheduling,companion_v2\proactive\scheduling.py,companion_v2/proactive,True,True,1,52,6,34,2,Bounded automatic opportunities from the latest accepted private conversation.
+companion_v2.proactive.screen_events,companion_v2\proactive\screen_events.py,companion_v2/proactive,True,False,1,22,2,14,2,"Bounded proactive sharing of explicitly captured, currently authorized Screen results."
+companion_v2.proactive.search_settings,companion_v2\proactive\search_settings.py,companion_v2/proactive,True,True,2,8,0,0,3,Global DeepSeek search credential binding for the host adapter.
+companion_v2.proactive.service,companion_v2\proactive\service.py,companion_v2/proactive,True,True,1,60,6,38,5,"One explicit opportunity, one supervised model decision, one durable delivery."
+companion_v2.proactive.sleep_context,companion_v2\proactive\sleep_context.py,companion_v2/proactive,True,True,1,8,0,0,2,"A small, optional sleep view shared by proactive contact and wake-up paths."
+companion_v2.proactive.staged_prompts,companion_v2\proactive\staged_prompts.py,companion_v2/proactive,True,False,0,7,0,7,1,Short planning and writing contracts for optional two-call proactive contact.
+companion_v2.proactive.wake_detection,companion_v2\proactive\wake_detection.py,companion_v2/proactive,True,True,4,15,0,0,1,"User wake-up observation: typed evidence fusion, never keyword inference."
+companion_v2.proactive.wake_events,companion_v2\proactive\wake_events.py,companion_v2/proactive,True,True,1,15,0,6,1,"Morning contact producer: one role greeting, then at most one wake nudge."
+companion_v2.proactive.weather_alerts,companion_v2\proactive\weather_alerts.py,companion_v2/proactive,True,True,2,5,0,1,2,"Official weather-alert observations, separate from current-weather codes."
+companion_v2.proactive.weather_change_events,companion_v2\proactive\weather_change_events.py,companion_v2/proactive,True,True,1,17,1,10,3,Opt-in contact for significant changes between fresh role-location observations.
+companion_v2.proactive.weather_events,companion_v2\proactive\weather_events.py,companion_v2/proactive,True,True,1,13,2,12,3,Optional current-weather contact from an explicit role location.
+companion_v2.product,companion_v2\product\__init__.py,companion_v2/product,True,True,0,0,0,0,6,Product identity and inventory of implemented V2 domains.
+companion_v2.qzone,companion_v2\qzone\__init__.py,companion_v2/qzone,True,True,0,0,0,1,1,QQ Zone as an installable creation extension.
+companion_v2.qzone.agenda_link,companion_v2\qzone\agenda_link.py,companion_v2/qzone,True,True,2,13,0,2,2,Pending agenda suggestions carried by a public help request.
+companion_v2.qzone.capability,companion_v2\qzone\capability.py,companion_v2/qzone,True,True,0,7,0,5,5,Trusted identity and model-facing tools of the included QQ Zone extension.
+companion_v2.qzone.comment_scan,companion_v2\qzone\comment_scan.py,companion_v2/qzone,True,True,4,21,2,5,1,"评论收件箱的后台扫描：把""扫到的动态与评论""变成""这一轮回哪一条""。"
+companion_v2.qzone.comments,companion_v2\qzone\comments.py,companion_v2/qzone,True,True,3,19,0,1,2,空间评论的身份与幂等规则（自 V1 迁移）。
+companion_v2.qzone.configuration,companion_v2\qzone\configuration.py,companion_v2/qzone,True,True,2,8,0,5,3,Role-wide switches and throttles for the QQ Zone extension.
+companion_v2.qzone.feed,companion_v2\qzone\feed.py,companion_v2/qzone,False,False,0,13,0,3,0,"Turn a Zone answer into bounded posts, without trusting its shape."
+companion_v2.qzone.inbox,companion_v2\qzone\inbox.py,companion_v2/qzone,True,True,3,11,0,3,1,评论收件箱：把识别与幂等规则接到 V2 的存储原语上。
+companion_v2.qzone.policy,companion_v2\qzone\policy.py,companion_v2/qzone,True,False,2,17,0,3,2,Runtime state the Zone extension must remember: cooling down and spacing out.
+companion_v2.qzone.protocol,companion_v2\qzone\protocol.py,companion_v2/qzone,True,False,2,32,0,1,3,"QQ Zone wire protocol: credentials, lenient JSON and the request shapes."
+companion_v2.qzone.references,companion_v2\qzone\references.py,companion_v2/qzone,True,True,3,11,0,1,3,Bounded post references: the only handles a like or reply may act on.
+companion_v2.qzone.service,companion_v2\qzone\service.py,companion_v2/qzone,True,True,1,35,11,12,4,"The Zone operations themselves: scan, like, comment and publish."
+companion_v2.qzone.topic_prompt,companion_v2\qzone\topic_prompt.py,companion_v2/qzone,True,True,0,4,0,4,1,Prompt contract used before composing a public QQ Zone post.
+companion_v2.qzone.topics,companion_v2\qzone\topics.py,companion_v2/qzone,True,True,5,10,0,0,6,Topic and scene contracts for public QQ Zone posts.
+companion_v2.qzone.transport,companion_v2\qzone\transport.py,companion_v2/qzone,True,True,2,4,3,1,1,The seam between the Zone domain and whatever performs the HTTP call.
+companion_v2.reality,companion_v2\reality\__init__.py,companion_v2/reality,False,True,0,0,0,0,0,Native reality state and contracts.
+companion_v2.reality.model_profile,companion_v2\reality\model_profile.py,companion_v2/reality,True,True,0,1,0,1,1,Model task profile for Reality's short text generation.
+companion_v2.reality.provider,companion_v2\reality\provider.py,companion_v2/reality,False,False,3,37,6,0,1,V2 native provider for the Reality Companion extension.
+companion_v2.references,companion_v2\references\__init__.py,companion_v2/references,False,True,0,0,0,2,0,"Role reference material: registrations, digest checks and the wardrobe."
+companion_v2.references.configuration,companion_v2\references\configuration.py,companion_v2/references,True,True,2,7,0,3,3,Whether a role may use registered reference material at all.
+companion_v2.references.management,companion_v2\references\management.py,companion_v2/references,True,True,1,26,0,14,2,Dashboard management for role-owned image references and wardrobe records.
+companion_v2.references.models,companion_v2\references\models.py,companion_v2/references,True,True,7,8,0,1,5,Value objects for role reference material.
+companion_v2.references.prompts,companion_v2\references\prompts.py,companion_v2/references,True,True,0,1,0,0,2,"Prompt framing for registered, role-owned Image material."
+companion_v2.references.repositories,companion_v2\references\repositories.py,companion_v2/references,True,True,1,25,0,5,4,Transactional store for role reference material.
+companion_v2.references.service,companion_v2\references\service.py,companion_v2/references,True,True,1,26,0,6,3,Reference material and wardrobe for one role.
+companion_v2.references.usage,companion_v2\references\usage.py,companion_v2/references,True,True,0,2,0,1,1,"Structured, role-owned guidance for selecting saved image references."
+companion_v2.references.wardrobe,companion_v2\references\wardrobe.py,companion_v2/references,True,True,2,7,0,4,3,"The role's wardrobe: how much of it may reach a generation, and how."
+companion_v2.relationships,companion_v2\relationships\__init__.py,companion_v2/relationships,True,True,0,0,0,4,8,Role-to-person relationship context and emotional episode records.
+companion_v2.relationships.anniversaries,companion_v2\relationships\anniversaries.py,companion_v2/relationships,False,True,0,10,0,2,0,Relationship milestones the bot can create for itself during daily reflection.
+companion_v2.relationships.codec,companion_v2\relationships\codec.py,companion_v2/relationships,True,True,0,3,0,3,2,Stable JSON codec for relationship memory snapshots.
+companion_v2.relationships.group_network,companion_v2\relationships\group_network.py,companion_v2/relationships,True,True,1,27,0,3,5,Unified group member profiles and the bounded interaction graph.
+companion_v2.relationships.harassment,companion_v2\relationships\harassment.py,companion_v2/relationships,False,False,0,22,0,0,0,防骚扰：判断、处置与黑名单目录。
+companion_v2.relationships.ledger,companion_v2\relationships\ledger.py,companion_v2/relationships,True,False,1,13,0,8,2,"Persistent, versioned records for one stable role/person relationship."
+companion_v2.relationships.legacy_import,companion_v2\relationships\legacy_import.py,companion_v2/relationships,True,False,0,11,0,5,1,Fill V2's operator-managed relationship profile from reviewed V1 records.
+companion_v2.relationships.management,companion_v2\relationships\management.py,companion_v2/relationships,True,True,1,8,0,7,1,Core administrators manage an explicit relationship without impersonating its human.
+companion_v2.relationships.models,companion_v2\relationships\models.py,companion_v2/relationships,True,True,4,4,0,1,8,Versioned relationship context kept separate from user facts and preferences.
+companion_v2.relationships.private_access,companion_v2\relationships\private_access.py,companion_v2/relationships,True,True,1,8,0,3,7,"Private-user access defaults: what a newcomer gets, and what a refusal sounds like."
+companion_v2.relationships.private_management,companion_v2\relationships\private_management.py,companion_v2/relationships,True,True,3,12,0,12,1,Private-member editors sharing the established configuration owners.
+companion_v2.relationships.private_notice,companion_v2\relationships\private_notice.py,companion_v2/relationships,True,False,2,13,0,3,1,一句话的礼貌拒绝：没有对话权限时不进对话，按配置回一句。
+companion_v2.relationships.profile,companion_v2\relationships\profile.py,companion_v2/relationships,True,True,2,10,0,6,7,"Operator-confirmed, per-person relationship context for one role."
+companion_v2.relationships.profile_drafts,companion_v2\relationships\profile_drafts.py,companion_v2/relationships,True,True,0,4,0,1,1,Reviewable drafts for a relationship profile kept separate from role canon.
+companion_v2.relationships.provenance,companion_v2\relationships\provenance.py,companion_v2/relationships,True,False,0,1,0,1,4,"A reset changes the conversation, never the private relationship's route."
+companion_v2.relationships.service,companion_v2\relationships\service.py,companion_v2/relationships,True,True,1,15,0,10,4,Authorized relationship-memory operations for the current private role route.
+companion_v2.relationships.tool_sources,companion_v2\relationships\tool_sources.py,companion_v2/relationships,True,False,1,4,0,4,1,Relationship proposals cite only originals offered by the current host turn.
+companion_v2.relationships.tools,companion_v2\relationships\tools.py,companion_v2/relationships,True,False,1,9,0,8,1,"The current private role may propose, but never review or adopt, interpretations."
+companion_v2.role_profile,companion_v2\role_profile\__init__.py,companion_v2/role_profile,False,True,0,0,0,2,0,"Stable identity, personality and world canon shared by one role."
+companion_v2.role_profile.configuration,companion_v2\role_profile\configuration.py,companion_v2/role_profile,True,True,1,7,0,3,8,Role-owned canon fields used by the dashboard and conversation runtime.
+companion_v2.role_profile.context,companion_v2\role_profile\context.py,companion_v2/role_profile,True,False,1,3,0,3,4,Seal the selected role's stable canon into each conversation turn.
+companion_v2.role_profile.drafts,companion_v2\role_profile\drafts.py,companion_v2/role_profile,True,True,0,5,0,1,1,Prompt and parse an editable role-profile draft from a persona source.
+companion_v2.role_profile.migration,companion_v2\role_profile\migration.py,companion_v2/role_profile,True,True,1,7,0,1,1,Conservatively map structured AstrBot persona canon into V2 role fields.
+companion_v2.role_profile.task_reference,companion_v2\role_profile\task_reference.py,companion_v2/role_profile,True,True,1,2,0,1,1,"Task-facing role reference: the self page, not the full AstrBot persona."
+companion_v2.role_work,companion_v2\role_work\__init__.py,companion_v2/role_work,False,True,0,0,0,3,0,Role activity and artifact records used by life simulation and sharing.
+companion_v2.role_work.awareness,companion_v2\role_work\awareness\__init__.py,companion_v2/role_work,True,True,0,0,0,2,1,Role-level cross-window presence and attention metadata.
+companion_v2.role_work.awareness.models,companion_v2\role_work\awareness\models.py,companion_v2/role_work,True,True,0,13,0,2,3,Bounded role-level cross-window presence documents.
+companion_v2.role_work.awareness.service,companion_v2\role_work\awareness\service.py,companion_v2/role_work,True,False,1,20,0,3,1,"Role-level cross-window presence: one bounded view, audience-filtered."
+companion_v2.role_work.awareness.store,companion_v2\role_work\awareness\store.py,companion_v2/role_work,True,False,1,8,0,2,2,Persistence for the role-level cross-window presence document.
+companion_v2.role_work.codec,companion_v2\role_work\codec.py,companion_v2/role_work,True,False,0,3,0,3,7,Restore role-owned records without resolving paths or changing source scope.
+companion_v2.role_work.growth,companion_v2\role_work\growth\__init__.py,companion_v2/role_work,True,True,0,0,0,4,2,Authoritative role-owned skills and long-term goals.
+companion_v2.role_work.growth.access_management,companion_v2\role_work\growth\access_management.py,companion_v2/role_work,True,True,1,3,0,5,1,Core operator settings for one pinned participant; no model access to grants.
+companion_v2.role_work.growth.codec,companion_v2\role_work\growth\codec.py,companion_v2/role_work,True,False,0,3,0,3,3,Stable JSON codec for role growth revisions.
+companion_v2.role_work.growth.configuration,companion_v2\role_work\growth\configuration.py,companion_v2/role_work,True,True,2,9,0,9,7,Role growth defaults and participant-scoped grants.
+companion_v2.role_work.growth.context,companion_v2\role_work\growth\context.py,companion_v2/role_work,True,True,3,8,0,4,2,"Authorized, source-governed reads of confirmed role growth records."
+companion_v2.role_work.growth.ledger,companion_v2\role_work\growth\ledger.py,companion_v2/role_work,True,False,1,15,0,7,1,Persistent role-owned growth records with explicit revisions and receipts.
+companion_v2.role_work.growth.management,companion_v2\role_work\growth\management.py,companion_v2/role_work,True,True,1,12,0,8,6,"Core Dashboard management over explicit, source-governed growth records."
+companion_v2.role_work.growth.models,companion_v2\role_work\growth\models.py,companion_v2/role_work,True,True,3,7,0,1,10,"Versioned, source-backed skill and long-term goal records for one role."
+companion_v2.role_work.growth.progress,companion_v2\role_work\growth\progress.py,companion_v2/role_work,True,True,1,18,4,11,4,Reviewable growth progress derived from original completed role receipts.
+companion_v2.role_work.growth.progress_management,companion_v2\role_work\growth\progress_management.py,companion_v2/role_work,True,True,1,6,0,6,1,Dashboard review of model-suggested growth progress.
+companion_v2.role_work.growth.tool_sources,companion_v2\role_work\growth\tool_sources.py,companion_v2/role_work,True,False,1,4,0,4,2,Growth evidence handles resolve only to this turn's host-bound originals.
+companion_v2.role_work.growth.tools,companion_v2\role_work\growth\tools.py,companion_v2/role_work,True,False,1,14,0,8,1,Role tools for governed reads and unconfirmed growth proposals.
+companion_v2.role_work.journal,companion_v2\role_work\journal\__init__.py,companion_v2/role_work,True,True,0,0,0,6,8,"Date archives for role-owned diaries, dreams and version-bound derived material."
+companion_v2.role_work.journal.codec,companion_v2\role_work\journal\codec.py,companion_v2/role_work,False,False,0,11,0,5,0,"Restore journal references without changing their date, owner or source scope."
+companion_v2.role_work.journal.collection,companion_v2\role_work\journal\collection.py,companion_v2/role_work,True,False,2,4,0,7,2,Collect a complete dated inventory before explicitly selecting writing inputs.
+companion_v2.role_work.journal.material_producer,companion_v2\role_work\journal\material_producer.py,companion_v2/role_work,True,True,4,12,0,8,4,"Conservative, source-bound journal material from trusted role and conversation records."
+companion_v2.role_work.journal.materials,companion_v2\role_work\journal\materials.py,companion_v2/role_work,True,False,2,4,0,2,11,Host-labeled writing material: an action does not authenticate its contents.
+companion_v2.role_work.journal.models,companion_v2\role_work\journal\models.py,companion_v2/role_work,True,True,13,9,0,3,16,"Dated subjective writing and its exact inputs, independent of any model or UI."
+companion_v2.role_work.journal.prompts,companion_v2\role_work\journal\prompts.py,companion_v2/role_work,True,True,0,4,0,3,2,"Writing instructions driven by material meaning, not forbidden-word filters."
+companion_v2.role_work.journal.reading_materials,companion_v2\role_work\journal\reading_materials.py,companion_v2/role_work,True,False,1,2,0,7,2,Dated excerpts limited to the exact text span in a trusted reading receipt.
+companion_v2.role_work.journal.scheduling,companion_v2\role_work\journal\scheduling.py,companion_v2/role_work,True,True,2,10,2,4,1,Explicit daily registrations driven by the application's existing wake loop.
+companion_v2.role_work.journal.selection,companion_v2\role_work\journal\selection.py,companion_v2/role_work,True,False,0,5,0,4,2,Select original material identities; never summarize them into new evidence.
+companion_v2.role_work.journal.self_review,companion_v2\role_work\journal\self_review.py,companion_v2/role_work,False,True,2,1,0,0,0,Model-facing self-review candidate contract.
+companion_v2.role_work.journal.self_review_evidence,companion_v2\role_work\journal\self_review_evidence.py,companion_v2/role_work,True,True,3,21,0,5,2,"Bounded, source-governed evidence for one role's self-review window."
+companion_v2.role_work.journal.self_review_management,companion_v2\role_work\journal\self_review_management.py,companion_v2/role_work,True,True,1,9,0,3,2,Dashboard review of model-suggested self-review guidance.
+companion_v2.role_work.journal.self_review_service,companion_v2\role_work\journal\self_review_service.py,companion_v2/role_work,True,True,1,25,5,11,3,Background self-review runs that propose reviewable guidance for one role.
+companion_v2.role_work.journal.service,companion_v2\role_work\journal\service.py,companion_v2/role_work,True,True,1,21,0,8,1,Trusted owner journal storage; these methods grant no audience permission.
+companion_v2.role_work.journal.triggers,companion_v2\role_work\journal\triggers.py,companion_v2/role_work,True,False,3,17,4,6,1,"Trusted daily/sleep ingress, with durable admission before any model work."
+companion_v2.role_work.journal.writing,companion_v2\role_work\journal\writing.py,companion_v2/role_work,True,True,6,20,9,14,3,"Explicit, supervised private writing; no implicit daily loop or message delivery."
+companion_v2.role_work.journal.writing_output,companion_v2\role_work\journal\writing_output.py,companion_v2/role_work,True,True,0,4,0,1,2,Parse storage structure only; literary quality belongs in the instructions.
+companion_v2.role_work.ledger,companion_v2\role_work\ledger.py,companion_v2/role_work,True,True,1,15,0,6,3,Durable role activity and artifact ownership for trusted framework consumers.
+companion_v2.role_work.life,companion_v2\role_work\life\__init__.py,companion_v2/role_work,True,True,0,0,0,0,5,"Persistent, explicitly enabled role routines and their management boundary."
+companion_v2.role_work.life.body_clock,companion_v2\role_work\life\body_clock.py,companion_v2/role_work,True,False,1,15,0,6,1,Role-owned physical sleep receipts and their derived physiological profile.
+companion_v2.role_work.life.configuration,companion_v2\role_work\life\configuration.py,companion_v2/role_work,True,True,1,8,0,5,7,Role-wide sleep defaults with explicit window overrides for routines.
+companion_v2.role_work.life.context,companion_v2\role_work\life\context.py,companion_v2/role_work,True,True,3,10,0,3,1,"Authorized projections of recorded role life, without executing background work."
+companion_v2.role_work.life.coordinator,companion_v2\role_work\life\coordinator.py,companion_v2/role_work,True,False,1,16,3,6,1,Host lifecycle for independently bound private role routines.
+companion_v2.role_work.life.management,companion_v2\role_work\life\management.py,companion_v2/role_work,True,True,1,16,1,13,7,"Core-only, versioned management of one original private role and participant."
+companion_v2.role_work.life.physiology,companion_v2\role_work\life\physiology.py,companion_v2/role_work,True,True,0,9,0,3,3,"Role-level sleep pressure, recovery, workload and bounded sleep quality."
+companion_v2.role_work.life.rest_gate,companion_v2\role_work\life\rest_gate.py,companion_v2/role_work,True,True,1,29,0,7,1,Rest reply gate and wake-after backlog over the role's own sleep receipts.
+companion_v2.role_work.life.runtime,companion_v2\role_work\life\runtime.py,companion_v2/role_work,True,True,1,27,8,11,1,"Role routines driven by the host wake loop, with durable activity intent."
+companion_v2.role_work.life.scheduling,companion_v2\role_work\life\scheduling.py,companion_v2/role_work,True,True,0,7,0,1,2,Smooth per-role bedtime variation and sleep-rhythm projection.
+companion_v2.role_work.models,companion_v2\role_work\models.py,companion_v2/role_work,True,True,8,15,0,2,16,Role-owned activity records and the small in-memory ledger used by fixtures.
+companion_v2.role_work.reader,companion_v2\role_work\reader.py,companion_v2/role_work,True,True,2,10,3,9,3,"Consume an authorized original span through the shared, supervised model port."
+companion_v2.role_work.reading,companion_v2\role_work\reading.py,companion_v2/role_work,True,False,1,2,0,5,1,Record a trusted reader's completion without simulating reading from a timer.
+companion_v2.role_work.state,companion_v2\role_work\state\__init__.py,companion_v2/role_work,True,True,0,0,0,0,9,Role-owned simulated state and supervised maintenance.
+companion_v2.role_work.state.access,companion_v2\role_work\state\access.py,companion_v2/role_work,True,True,1,2,0,4,1,Role-wide state injection with current reply authorization.
+companion_v2.role_work.state.configuration,companion_v2\role_work\state\configuration.py,companion_v2/role_work,True,True,1,10,0,13,7,Unified state and platform-presentation options with exact private grants.
+companion_v2.role_work.state.cycle,companion_v2\role_work\state\cycle.py,companion_v2/role_work,True,True,0,10,0,4,1,A persistent fictional calendar; feelings and persona applicability remain model material.
+companion_v2.role_work.state.cycle_feelings,companion_v2\role_work\state\cycle_feelings.py,companion_v2/role_work,True,False,0,2,0,1,1,"Optional continuity of a fictional feeling, without symptom classifiers or numeric penalties."
+companion_v2.role_work.state.cycle_prompts,companion_v2\role_work\state\cycle_prompts.py,companion_v2/role_work,True,True,0,1,0,0,2,Persona guidance selected for the material actually available in this conversation.
+companion_v2.role_work.state.cycle_state,companion_v2\role_work\state\cycle_state.py,companion_v2/role_work,True,False,1,5,0,7,1,Cycle provenance is independent of subsequent conversation-driven feelings.
+companion_v2.role_work.state.cycle_variation,companion_v2\role_work\state\cycle_variation.py,companion_v2/role_work,False,False,0,2,0,1,0,"Versioned, reproducible phase variation; independent of chat and model output."
+companion_v2.role_work.state.evidence,companion_v2\role_work\state\evidence.py,companion_v2/role_work,True,False,1,4,0,6,1,Governance of a role's shared simulation and its private input ancestry.
+companion_v2.role_work.state.humanized,companion_v2\role_work\state\humanized.py,companion_v2/role_work,True,False,0,19,0,4,1,Bounded humanised-state expression and the daily state patrol.
+companion_v2.role_work.state.maintenance,companion_v2\role_work\state\maintenance.py,companion_v2/role_work,True,True,1,40,4,19,3,"Background model maintenance on the shared supervisor, budget and host lifecycle."
+companion_v2.role_work.state.maintenance_context,companion_v2\role_work\state\maintenance_context.py,companion_v2/role_work,False,False,0,7,0,3,0,Time-bounded dialogue and simulation history for one authorized state round.
+companion_v2.role_work.state.management,companion_v2\role_work\state\management.py,companion_v2/role_work,True,True,1,8,0,10,2,"Explicit core operations for state, schedules and presentation of one private role."
+companion_v2.role_work.state.mood,companion_v2\role_work\state\mood\__init__.py,companion_v2/role_work,False,False,0,0,0,2,1,"Four bounded mood axes: validation, decay, update limits and tone guidance."
+companion_v2.role_work.state.mood.models,companion_v2\role_work\state\mood\models.py,companion_v2/role_work,False,False,0,13,0,1,2,Structured role mood: four independent axes with a personal baseline.
+companion_v2.role_work.state.mood.prompts,companion_v2\role_work\state\mood\prompts.py,companion_v2/role_work,False,False,0,2,0,1,0,Tone and state expression guidance for the four mood axes and maintenance.
+companion_v2.role_work.state.ownership,companion_v2\role_work\state\ownership.py,companion_v2/role_work,True,True,1,11,0,4,8,"One role body, with window receipts and conservative legacy provenance."
+companion_v2.role_work.state.service,companion_v2\role_work\state\service.py,companion_v2/role_work,True,True,1,16,0,12,4,Versioned role simulation; never a diagnosis or observation of the user.
+companion_v2.role_work.state.settings_scope,companion_v2\role_work\state\settings_scope.py,companion_v2/role_work,True,False,1,8,0,3,2,Role preferences with window-only typing controls.
+companion_v2.role_work.timeline,companion_v2\role_work\timeline\__init__.py,companion_v2/role_work,True,True,0,0,0,1,1,"Recorded role history, governed by each original domain's read authority."
+companion_v2.role_work.timeline.pagination,companion_v2\role_work\timeline\pagination.py,companion_v2/role_work,True,False,1,5,0,2,2,Runtime-local cursors seal query bounds; they never confer read authority.
+companion_v2.role_work.timeline.query,companion_v2\role_work\timeline\query.py,companion_v2/role_work,True,False,0,4,0,1,1,Bounded index reads of immutable versions and metadata-only journal receipts.
+companion_v2.role_work.timeline.service,companion_v2\role_work\timeline\service.py,companion_v2/role_work,True,False,1,11,0,7,1,One role's recorded history; no elapsed-time simulation or invented past.
+companion_v2.role_work.timeline.tools,companion_v2\role_work\timeline\tools.py,companion_v2/role_work,True,False,1,5,0,4,1,Read-only timeline entry point for the role's existing model tool loop.
+companion_v2.role_work.work_models,companion_v2\role_work\work_models.py,companion_v2/role_work,True,True,1,1,0,1,4,"Persisted execution intent on a role activity, separate from its completion."
+companion_v2.screen,companion_v2\screen\__init__.py,companion_v2/screen,True,True,0,0,0,7,2,Isolated Screen material and role-processing chain; no capture driver or sender.
+companion_v2.screen.capture,companion_v2\screen\capture.py,companion_v2/screen,True,True,5,8,2,8,1,One requested Screen capture through an injected device port.
+companion_v2.screen.configuration,companion_v2\screen\configuration.py,companion_v2/screen,True,True,2,7,0,4,4,"Explicit, private-window Screen options with one shared owner."
+companion_v2.screen.interpretation,companion_v2\screen\interpretation.py,companion_v2/screen,True,True,2,18,4,13,4,One supervised Screen interpretation for later journal and proactive use.
+companion_v2.screen.journal_materials,companion_v2\screen\journal_materials.py,companion_v2/screen,True,False,1,3,0,7,1,"Explicit, permission-checked Screen feedback for dated journal writing."
+companion_v2.screen.models,companion_v2\screen\models.py,companion_v2/screen,True,True,12,8,0,2,10,"Screen originals and interpretations, with explicit observed coverage."
+companion_v2.screen.originals,companion_v2\screen\originals.py,companion_v2/screen,True,True,2,6,0,1,4,Immutable Screen image bytes under the V2 data root.
+companion_v2.screen.peek,companion_v2\screen\peek.py,companion_v2/screen,True,True,1,15,4,9,2,"One supervised, explicitly authorized Screen peek past the model tool loop."
+companion_v2.screen.pipeline,companion_v2\screen\pipeline.py,companion_v2/screen,True,False,3,8,1,8,2,"Local Screen processing through an injected role port, without a sender."
+companion_v2.screen.proactive_access,companion_v2\screen\proactive_access.py,companion_v2/screen,True,False,0,1,0,4,3,Use the visible contact setting for Screen's proactive feedback consent.
+companion_v2.screen.repositories,companion_v2\screen\repositories.py,companion_v2/screen,True,True,4,35,0,14,10,"Durable Screen references, with governance checked on every material read."
+companion_v2.screen.review,companion_v2\screen\review.py,companion_v2/screen,True,True,1,5,0,6,1,Review the last durable proactive capture and its exact interpretation.
+companion_v2.sharing,companion_v2\sharing\__init__.py,companion_v2/sharing,False,True,0,0,0,2,0,Traceable material and candidate handling for proactive and requested sharing.
+companion_v2.sharing.models,companion_v2\sharing\models.py,companion_v2/sharing,True,True,3,6,0,2,5,Sharing records always point at actual source and optional asset originals.
+companion_v2.sharing.planner,companion_v2\sharing\planner.py,companion_v2/sharing,True,True,2,8,0,6,3,Prepare and recheck share candidates without generating empty share openings.
+companion_v2.sources,companion_v2\sources\__init__.py,companion_v2/sources,False,True,0,0,0,2,0,"Versioned sources, evidence, and asset registry repositories."
+companion_v2.sources.dependencies,companion_v2\sources\dependencies.py,companion_v2/sources,True,True,1,7,0,4,28,"Governance for derived sources, shared by all source consumers."
+companion_v2.sources.governance,companion_v2\sources\governance.py,companion_v2/sources,True,True,1,5,0,1,18,Runtime owner attestations whose absence cannot reactivate durable sources.
+companion_v2.sources.models,companion_v2\sources\models.py,companion_v2/sources,True,True,4,5,0,1,55,"Source, evidence, and asset records with explicit governance state."
+companion_v2.sources.privacy,companion_v2\sources\privacy.py,companion_v2/sources,True,True,0,4,0,1,14,Versioned credential redaction for durable message sources.
+companion_v2.sources.repositories,companion_v2\sources\repositories.py,companion_v2/sources,True,True,3,24,0,12,35,"Current-governance reads for V2 source, evidence, and asset records."
+companion_v2.storage,companion_v2\storage\__init__.py,companion_v2/storage,False,True,0,0,0,3,0,V2-owned SQLite runtime and transactional repository primitives.
+companion_v2.storage.activity_history,companion_v2\storage\activity_history.py,companion_v2/storage,True,False,0,2,0,3,1,Backfill only activity versions actually present in the V2 store.
+companion_v2.storage.audio_schema,companion_v2\storage\audio_schema.py,companion_v2/storage,True,False,0,0,0,0,1,"Voice originals and listening views, separate from image storage."
+companion_v2.storage.backup,companion_v2\storage\backup.py,companion_v2/storage,True,True,5,99,0,4,5,Whole-installation backup and restore for the V2 data root.
+companion_v2.storage.codec,companion_v2\storage\codec.py,companion_v2/storage,True,True,0,5,0,1,25,Encoding helpers for V2 SQLite rows; no repository receives raw path data.
+companion_v2.storage.core_reply_telemetry_schema,companion_v2\storage\core_reply_telemetry_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Optional body-free telemetry for replies executed by AstrBot itself.
+companion_v2.storage.expression_style_schema,companion_v2\storage\expression_style_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Storage owned by reviewable expression-style learning.
+companion_v2.storage.group_safety_schema,companion_v2\storage\group_safety_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Schema additions for deterministic group member safety evidence.
+companion_v2.storage.growth_progress_schema,companion_v2\storage\growth_progress_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Storage owned by reviewable growth progress suggestions.
+companion_v2.storage.management,companion_v2\storage\management.py,companion_v2/storage,True,True,0,21,0,1,4,Inventory V2-owned files and apply a bounded snapshot retention policy.
+companion_v2.storage.media_schema,companion_v2\storage\media_schema.py,companion_v2/storage,True,False,0,0,0,0,1,"Immutable image bodies; text, source authority and asset authority stay separate."
+companion_v2.storage.memory_recall_schema,companion_v2\storage\memory_recall_schema.py,companion_v2/storage,True,False,0,2,0,0,1,"Transactional object notices for rebuildable memory recall, without bodies."
+companion_v2.storage.memory_schema,companion_v2\storage\memory_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Authoritative memory tables live in the unified V2 database.
+companion_v2.storage.models,companion_v2\storage\models.py,companion_v2/storage,True,True,7,0,0,1,48,Small persistence result objects shared by the initial V2 repositories.
+companion_v2.storage.native_conversation_schema,companion_v2\storage\native_conversation_schema.py,companion_v2/storage,True,False,0,0,0,0,2,"Optional native conversation observations, independent of V2 reply batches."
+companion_v2.storage.persona_craft_schema,companion_v2\storage\persona_craft_schema.py,companion_v2/storage,True,True,0,0,0,0,1,Schema additions for the persona workshop: append-only draft versions.
+companion_v2.storage.reading_archive_schema,companion_v2\storage\reading_archive_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Schema additions for the reading archive.
+companion_v2.storage.reference_asset_schema,companion_v2\storage\reference_asset_schema.py,companion_v2/storage,True,True,0,1,0,0,3,Registered reference material for one role.
+companion_v2.storage.reflection_job_schema,companion_v2\storage\reflection_job_schema.py,companion_v2/storage,True,False,0,0,0,0,1,"Explicit, durable requests to continue one existing reflection batch."
+companion_v2.storage.reflection_schema,companion_v2\storage\reflection_schema.py,companion_v2/storage,True,False,0,2,0,0,1,"Indexed reflection input reservations, maintained with their original manifest."
+companion_v2.storage.relationship_anniversary_schema,companion_v2\storage\relationship_anniversary_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Auto-created relationship anniversaries discovered during daily reflection.
+companion_v2.storage.repositories,companion_v2\storage\repositories.py,companion_v2/storage,True,True,4,22,0,5,45,"Transactional namespace, operation, queue, and checkpoint repositories."
+companion_v2.storage.runtime,companion_v2\storage\runtime.py,companion_v2/storage,True,True,5,158,0,2,36,A V2-owned SQLite lifecycle with fail-closed schema upgrades.
+companion_v2.storage.schema,companion_v2\storage\schema.py,companion_v2/storage,True,True,0,2,0,16,3,Versioned SQLite schema and explicit in-place migrations owned by V2.
+companion_v2.storage.self_review_schema,companion_v2\storage\self_review_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Storage owned by reviewable role self-review guidance.
+companion_v2.storage.semantic,companion_v2\storage\semantic.py,companion_v2/storage,True,True,1,20,0,1,1,V2-only semantic catalog. Originals are versioned; vectors are disposable.
+companion_v2.storage.sqlite_path,companion_v2\storage\sqlite_path.py,companion_v2/storage,True,True,0,1,0,0,8,"SQLite read-only paths, including Windows network shares and Unicode names."
+companion_v2.storage.state_schema,companion_v2\storage\state_schema.py,companion_v2/storage,True,True,0,0,0,0,2,"Calendar and role-state owners, their revisions, maintenance and platform receipts."
+companion_v2.storage.versioned_records,companion_v2\storage\versioned_records.py,companion_v2/storage,True,True,1,9,0,5,3,Small transactional record primitive; authorization belongs to each domain owner.
+companion_v2.storage.video_schema,companion_v2\storage\video_schema.py,companion_v2/storage,True,False,0,0,0,0,1,Video originals have their own table; derived PNG frames use image storage.
+companion_v2.together,companion_v2\together\__init__.py,companion_v2/together,False,True,0,0,0,0,0,Native together state and contracts.
+companion_v2.together.mobile,companion_v2\together\mobile\__init__.py,companion_v2/together,False,True,0,0,0,0,0,Together's mobile protocol compatibility and request identity.
+companion_v2.together.mobile.requests,companion_v2\together\mobile\requests.py,companion_v2/together,True,True,1,5,0,1,1,"Mobile protocol journal, independent of the unchanged native room port."
+companion_v2.together.models,companion_v2\together\models.py,companion_v2/together,True,True,5,19,0,0,2,
+companion_v2.together.novel_library,companion_v2\together\novel_library.py,companion_v2/together,True,False,2,27,0,0,1,
+companion_v2.together.provider,companion_v2\together\provider.py,companion_v2/together,True,True,4,44,8,0,3,Plain JSON V2 native port for room lifecycle operations.
+main,main.py,main,True,True,1,63,26,51,1,AstrBot entry for private conversation and explicitly authorized groups.

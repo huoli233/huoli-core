@@ -98,12 +98,12 @@ describe('朝目标走', () => {
     expect(after.mortality).toBeCloseTo(tuning.mortalityTargetLow, 10)
   })
 
-  it('没有外部来源时保持原样', () => {
+  it('没有外部来源时向零恢复', () => {
     const kept = drift(fresh({ mortality: 0, last_update: START - HOUR }), START, tuning)
     const still = drift(fresh({ mortality: 0.4, last_update: START - HOUR }), START, tuning)
 
     expect(kept.mortality).toBe(0)
-    expect(still.mortality).toBeCloseTo(0.4, 10)
+    expect(still.mortality).toBeCloseTo(0.4 - tuning.mortalityFallPerBeat, 10)
   })
 
   it('两档步长都能从配置覆盖', () => {
@@ -147,13 +147,13 @@ describe('放进端口', () => {
     expect(after.mortality).toBeCloseTo(tuning.mortalityRisePerBeat, 6)
   })
 
-  it('把放进撤回去就不再动', async () => {
+  it('把放进撤回去就向零恢复', async () => {
     const file = tempFile()
     seeded(file, { mortality: 0.4 })
     const seam = await mount(file)
 
     seam.setBalance(undefined)
 
-    expect(seam.read().mortality).toBeCloseTo(0.4, 10)
+    expect(seam.read().mortality).toBeCloseTo(0.4 - tuning.mortalityFallPerBeat, 10)
   })
 })

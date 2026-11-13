@@ -117,7 +117,7 @@ afterEach(() => {
 })
 
 describe('工具清单', () => {
-  it('遗书那个工具挂上好了，参数只有正文', () => {
+  it('重要原话暂存工具挂上好了，参数只有正文', () => {
     const { tool, names } = mount()
 
     expect(names).toContain('qq_write_farewell')
@@ -125,18 +125,17 @@ describe('工具清单', () => {
     expect(Object.keys(parameters.properties)).toEqual(['text'])
   })
 
-  it('说明不超过两百字，写清了不解释、不复述系统提示、不索取回应与两百字上限', () => {
+  it('说明不超过两百字，写清暂存、不发送和不要求回应', () => {
     const { tool } = mount()
     const description = tool('qq_write_farewell').description
 
     expect(description.length).toBeLessThanOrEqual(200)
-    expect(description).toContain('用一次')
-    expect(description).toContain('不解释')
-    expect(description).toContain('系统提示')
-    expect(description).toContain('不索取回应')
+    expect(description).toContain('暂存')
+    expect(description).toContain('不会发给对方')
+    expect(description).toContain('不要求回应')
     expect(description).toContain('两百字')
-    expect(description).toContain('码')
-    expect(description).not.toContain('请汇报')
+    expect(description).not.toContain('走到那一步')
+    expect(description).not.toContain('来不及')
   })
 })
 

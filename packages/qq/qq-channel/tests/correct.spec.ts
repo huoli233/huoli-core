@@ -75,7 +75,7 @@ describe('撤回与改口', () => {
   it('撤回、看最近发过什么、改口三个工具都挂上了', () => {
     const { tools } = mount()
 
-    expect([...tools.keys()]).toEqual(expect.arrayContaining(['qq_unsend', 'qq_recent_sends', 'qq_correct']))
+    expect([...tools.keys()]).toEqual(expect.arrayContaining(['qq_unsend', 'qq_batch_unsend', 'qq_recent_sends', 'qq_correct']))
   })
 
   it('发出去的编号能被列出来', async () => {
@@ -106,6 +106,35 @@ describe('撤回与改口', () => {
     const recent = tools.get('qq_recent_sends')
     const after = await recent?.execute({}, execOf('group:1')) as { count: number }
     expect(after.count).toBe(0)
+  })
+
+  it('给编号时可以一次撤回多条', async () => {
+    const { tools } = mount()
+    const send = tools.get('qq_send_message')
+    const batch = tools.get('qq_batch_unsend')
+    if (send === undefined || batch === undefined) throw new Error('批量撤回没挂上')
+    const first = await send.execute({ text: '第一条说错了' }, execOf('group:1')) as { messageIds?: string[] }
+    const second = await send.execute({ text: '第二条也打错了' }, execOf('group:1')) as { messageIds?: string[] }
+
+    const result = await batch.execute({
+      message_ids: [first.messageIds?.[0], second.messageIds?.[0]],
+    }, execOf('group:1')) as { withdrawn: number; attempted: number }
+
+    expect(result).toMatchObject({ attempted: 2, withdrawn: 2 })
+  })
+
+  it('last 只挑当前会话最近几条', async () => {
+    const { tools } = mount()
+    const send = tools.get('qq_send_message')
+    const batch = tools.get('qq_batch_unsend')
+    if (send === undefined || batch === undefined) throw new Error('批量撤回没挂上')
+    await send.execute({ text: '群里第一条' }, execOf('group:1'))
+    await send.execute({ text: '另一个群' }, execOf('group:2'))
+    await send.execute({ text: '群里第二条' }, execOf('group:1'))
+
+    const result = await batch.execute({ last: 1 }, execOf('group:1')) as { attempted: number; withdrawn: number }
+
+    expect(result).toMatchObject({ attempted: 1, withdrawn: 1 })
   })
 
   it('不是自己发的编号不给撤', async () => {

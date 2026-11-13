@@ -222,6 +222,13 @@ export function renderMaterial(material: Material): string {
   if (material.thoughts.length > 0) {
     lines.push(`心里惦记着：${material.thoughts.map(item => item.text).join('；')}`)
   }
+  const needs = material.motives.map((item) => {
+    if (item.need === 'bored') return '有点无聊'
+    if (item.need === 'curious') return '有点好奇'
+    if (item.need === 'lonely') return '想有人说话'
+    return '想分享眼前这件事'
+  })
+  if (needs.length > 0) lines.push(`现在想：${needs.join('，')}`)
   return lines.length === 0 ? '群里没什么可接的话。' : lines.join('\n')
 }
 

@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.2-alpha.2/qq-proactive-hourly-quota/guide.md
+/:
+  en: 85c67a0bd5d0372e
+  zh: 83bf9b43296e4979
+/qq-proactive-settings-use-a-per-chat-hourly-quota:
+  en: ea7b8941a2b6ae93
+  zh: 3f17fe003d4d38c7
+/qq-proactive-settings-use-a-per-chat-hourly-quota/change:
+  en: 973e1abe0c33743e
+  zh: 5edb290af4062892
+/qq-proactive-settings-use-a-per-chat-hourly-quota/migration:
+  en: e9909b1e8a0876d3
+  zh: 8a488a088e60bf26

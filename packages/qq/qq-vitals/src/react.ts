@@ -20,6 +20,7 @@ export type BodyEvent =
   | { kind: 'dreaded' }
   | { kind: 'sick' }
   | { kind: 'hurt' }
+  | { kind: 'talked' }
 
 // 喝一杯水：写回五项，再抬多巴胺与内啡肽；last_drink 兼冷却与防重复
 function giveDrink(next: VitalsState, name: string, at: number, tuning: Tuning): void {
@@ -147,6 +148,10 @@ export function applyEvents(state: VitalsState, events: readonly BodyEvent[], at
     next.woken_at = at
     return next
   }
+  if (events.some(event => event.kind === 'talked')) {
+    next.loneliness = clamp(next.loneliness - 0.12)
+    next.oxytocin = clamp(next.oxytocin + 0.03)
+  }
   for (const event of events) {
     switch (event.kind) {
       case 'drank': giveDrink(next, event.name ?? '水', at, tuning); break
@@ -160,6 +165,7 @@ export function applyEvents(state: VitalsState, events: readonly BodyEvent[], at
       case 'dreaded': giveDread(next, at, tuning); break
       case 'sick': next.cytokines = clamp(next.cytokines + tuning.sickCytokinesGain); break
       case 'hurt': next.pain = clamp(next.pain + tuning.painGain); break
+      case 'talked': break
       default: break
     }
   }

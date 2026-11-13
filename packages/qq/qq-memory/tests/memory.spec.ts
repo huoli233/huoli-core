@@ -33,7 +33,7 @@ describe('记得住', () => {
     const { tool, seam } = mount({ file: tempFile() })
 
     const added = await call<{ id: string; layer: string }>(tool('memory_append'), {
-      text: '偷偷给自己做了点事', layer: 'private', secret: true,
+      text: '偷偷给自己做了点事', layer: 'private', secret: true, personId: 'u1',
     }, execOf('group:1'))
 
     expect(added.layer).toBe('private')
@@ -99,6 +99,59 @@ describe('找得回', () => {
     const searchForgotten = await call<{ text: string }>(tool('memory_query'), { query: '彻底忘掉' }, execOf('group:1'))
 
     expect(searchForgotten.text).not.toContain('彻底忘掉')
+  })
+})
+
+describe('完整记忆档案', () => {
+  it('个人档案只收这个用户在当前会话里的记忆', () => {
+    const { seam } = mount({ file: tempFile() })
+    seam.remember('小鱼喜欢橘子味的糖', 'private:u1', { personId: 'u1', layer: 'semantic', at: 1_000 })
+    seam.remember('另一个人喜欢别的', 'private:u1', { personId: 'u2', layer: 'semantic', at: 2_000 })
+
+    const profile = seam.profile('private:u1', { personId: 'u1' })
+
+    expect(profile.total).toBe(1)
+    expect(profile.items[0]?.text).toContain('橘子味')
+    expect(profile.firstSeenAt).toBe(1_000)
+  })
+
+  it('群档案不夹带私密层和秘密记忆', () => {
+    const { seam } = mount({ file: tempFile() })
+    seam.remember('群里约好周末爬山', 'group:1', { at: 1_000 })
+    seam.remember('私下知道的一件事', 'group:1', { layer: 'private', secret: true, personId: 'u1', at: 2_000 })
+
+    const profile = seam.profile('group:1')
+
+    expect(profile.total).toBe(1)
+    expect(profile.text).toContain('周末爬山')
+    expect(profile.text).not.toContain('私下知道')
+  })
+
+  it('档案条数和字数都能压住', () => {
+    const { seam } = mount({ file: tempFile(), profileMaxItems: 1, profileMaxChars: 80 })
+    seam.remember('第一条很长很长的长期印象', 'group:1', { layer: 'semantic', importance: 90, at: 1_000 })
+    seam.remember('第二条也很长但重要度低一些', 'group:1', { layer: 'semantic', importance: 20, at: 2_000 })
+
+    const profile = seam.profile('group:1')
+
+    expect(profile.items).toHaveLength(1)
+    expect(profile.items[0]?.importance).toBe(90)
+    expect(profile.text.length).toBeLessThanOrEqual(80)
+  })
+
+  it('档案工具能从私聊直接取当前人的档案', async () => {
+    const { seam, tool } = mount({ file: tempFile() })
+    await tool('memory_append').execute({
+      text: '他说最喜欢下雨天',
+      layer: 'semantic',
+      personId: 'u1',
+    }, execOf('private:u1'))
+
+    const profile = await call<{ count: number; text: string }>(tool('qq_memory_profile'), {}, execOf('private:u1'))
+
+    expect(profile.count).toBe(1)
+    expect(profile.text).toContain('下雨天')
+    expect(seam.store.all()).toHaveLength(1)
   })
 })
 

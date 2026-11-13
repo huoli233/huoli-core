@@ -134,7 +134,7 @@ export function runAccept(): AcceptRow[] {
   // 放进检查：提示词里真能看到这一段
   rows.push(row(
     '提示词里有神经状态那一段',
-    note.includes('【你现在的神经状态'),
+    note.includes('[SYSTEM_LOAD] QQ_BODY_STATE'),
     '提示词里没有抬头那一段',
   ))
 

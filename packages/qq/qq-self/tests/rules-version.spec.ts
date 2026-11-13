@@ -195,7 +195,7 @@ describe('用旧版盖回去', () => {
 })
 
 describe('人格正文进提示词', () => {
-  it('文件里有正文时，部署人格那一段就是它', async () => {
+  it('文件里有正文时，DSH 的原生部署人格就是它', async () => {
     const root = tempDir()
     const persona = path.join(root, 'persona.md')
     fs.writeFileSync(persona, '我是小鲸鱼，爱犯困。\n')
@@ -210,12 +210,29 @@ describe('人格正文进提示词', () => {
     })
 
     const assembly = await ctx.systemPrompt.assemble({ agent: { id: 'group:1' } as Agent })
-    const section = assembly.sections.find(entry => entry.name === 'qq:persona')
+    const section = assembly.sections.find(entry => entry.name === 'deployment:persona-prefix')
 
     expect(section?.text).toBe('我是小鲸鱼，爱犯困。')
   })
 
-  it('文件不在时不多出这一段', async () => {
+  it('文件改动后下一轮直接读到新正文', async () => {
+    const root = tempDir()
+    const persona = path.join(root, 'persona.md')
+    fs.writeFileSync(persona, '第一版。\n')
+    const ctx = new Context()
+    await ctx.plugin(SystemPrompt, {})
+    apply(ctx, { enabled: true, dir: path.join(root, 'self'), personaFile: persona, mainChatKey: 'group:1' })
+
+    const first = await ctx.systemPrompt.assemble({ agent: { id: 'group:1' } as Agent })
+    expect(first.sections.find(entry => entry.name === 'harness:identity')?.text).toContain('QQ chat participant')
+    expect(first.sections.find(entry => entry.name === 'deployment:persona-prefix')?.text).toBe('第一版。')
+
+    fs.writeFileSync(persona, '第二版。\n')
+    const second = await ctx.systemPrompt.assemble({ agent: { id: 'group:1' } as Agent })
+    expect(second.sections.find(entry => entry.name === 'deployment:persona-prefix')?.text).toBe('第二版。')
+  })
+
+  it('文件不在时部署人格为空，不留下平行人格段', async () => {
     const root = tempDir()
     const ctx = new Context()
     await ctx.plugin(SystemPrompt, {})
@@ -229,6 +246,7 @@ describe('人格正文进提示词', () => {
 
     const assembly = await ctx.systemPrompt.assemble({ agent: { id: 'group:1' } as Agent })
 
+    expect(assembly.sections.find(entry => entry.name === 'deployment:persona-prefix')?.text).toBe('')
     expect(assembly.sections.some(entry => entry.name === 'qq:persona')).toBe(false)
   })
 })

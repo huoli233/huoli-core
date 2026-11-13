@@ -100,6 +100,15 @@ function clamp01(value: number): number {
 export function settleGlobal(state: GlobalState, now: number): GlobalState {
   const passed = Math.max(0, now - state.updatedAt)
   if (passed <= 0) return state
+  const hours = Math.min(24, passed / 3_600_000)
+  const quiet = Math.max(0, hours - 1)
+  const drift: Partial<Record<keyof GlobalState, number>> = {
+    boredom: Math.min(1, quiet * 0.04),
+    socialHunger: Math.min(1, quiet * 0.035),
+    curiosity: Math.min(1, quiet * 0.025),
+    sleepPressure: Math.min(1, hours * 0.015),
+    energy: -Math.min(1, hours * 0.01),
+  }
   const next: GlobalState = { ...state, updatedAt: now }
   const keys: Array<[keyof GlobalState & TauKind, number]> = [
     ['mood', BASE.mood],
@@ -112,9 +121,15 @@ export function settleGlobal(state: GlobalState, now: number): GlobalState {
     ['sleepPressure', BASE.sleepPressure],
   ]
   for (const [key, base] of keys) {
-    next[key] = clamp01(relaxToBaseline(state[key], key, passed, base))
+    next[key] = clamp01(relaxToBaseline(state[key], key, passed, base) + (drift[key] ?? 0))
   }
   return next
+}
+
+/** 按过去多久把安静时间里累积的动机留痕，不产生行动结论 */
+export function tickGlobal(state: GlobalState, now: number): GlobalState {
+  const settled = settleGlobal(state, now)
+  return { ...settled, updatedAt: now }
 }
 
 /**

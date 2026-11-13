@@ -1,5 +1,22 @@
 // 收尾与事后想想：这段聊到哪、下次怎么接、今天聊成了什么样
 
+/**
+ * 收尾摘要里不再带任何一方的原话：整句回灌会让模型照着复读，同一句能被反复发很多遍。
+ * 只留话题、状态与时间；`我：…` / `对方：…` / 昵称开头的引语一律剥掉。
+ * @param summary - 原始收尾摘要
+ * @returns 去原话后的摘要
+ */
+export function stripQuotedLines(summary: string): string {
+  if (summary.trim() === '') return ''
+  return summary
+    .split(/[；;]/u)
+    .map(part => part.trim())
+    .filter(part => part !== '')
+    .filter(part => !/^(?:我|对方|自己|她|他)\s*[：:]/u.test(part))
+    .filter(part => !/^(?:我|对方|自己|她|他)\s*[^\s：:]{0,12}\s*[：:]/u.test(part))
+    .join('；')
+}
+
 /** 一段聊完留下的东西 */
 export interface CloseNote {
   chatKey: string
@@ -7,6 +24,10 @@ export interface CloseNote {
   summary: string
   nextOpening: string
   throughSeq: number
+  /** 普通轮次记录还是模型明确收尾 */
+  origin?: 'turn' | 'explicit'
+  /** 上一轮开口时留在心里的定调 */
+  thought?: string
 }
 
 /** 事后想一想记下的一条 */
@@ -33,6 +54,10 @@ export interface CloseInput {
   nextOpening: string
   throughSeq?: number
   at?: number
+  /** 收尾来源 */
+  origin?: 'turn' | 'explicit'
+  /** 上一轮开口时留在心里的定调 */
+  thought?: string
 }
 
 /** 收尾时留的话最多几个字 */
@@ -66,6 +91,8 @@ export function closeFacts(input: CloseFactsInput): CloseNote {
     summary: input.summary.slice(0, NOTE_MAX_CHARS),
     nextOpening: input.nextOpening.slice(0, NOTE_MAX_CHARS),
     throughSeq: Number(input.throughSeq) || 0,
+    origin: input.origin ?? 'turn',
+    ...input.thought === undefined || input.thought.trim() === '' ? {} : { thought: input.thought.slice(0, NOTE_MAX_CHARS) },
   }
 }
 
@@ -77,9 +104,12 @@ export function closeFacts(input: CloseFactsInput): CloseNote {
 export function renderContinuityFacts(input: ContinuityFactsInput = {}): string {
   const lines: string[] = []
   if (input.note !== undefined) {
-    lines.push(`上次聊到 ${new Date(input.note.closedAt).toLocaleString('zh-CN', { hour12: false })}`)
-    if (input.note.summary !== '') lines.push(`收在：${input.note.summary}`)
-    if (input.note.nextOpening !== '') lines.push(`下次可以：${input.note.nextOpening}`)
+    lines.push(`${input.note.origin === 'explicit' ? '上次明确收在' : '上次聊到'} ${new Date(input.note.closedAt).toLocaleString('zh-CN', { hour12: false })}`)
+    // 收尾摘要只摆话题，不把任何一方说过的原话回灌回来
+    const summary = stripQuotedLines(input.note.summary)
+    if (summary !== '') lines.push(`收在：${summary}`)
+    if (input.note.nextOpening !== '') lines.push(`下次可以：${stripQuotedLines(input.note.nextOpening)}`)
+    if (input.note.thought !== undefined && input.note.thought !== '') lines.push(`上一轮心里：${input.note.thought}`)
   }
   if (input.outcome !== undefined) lines.push(describeOutcome(input.outcome))
   for (const item of input.reflections ?? []) lines.push(`事后想过：${item.text}`)

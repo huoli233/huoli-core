@@ -1,0 +1,2126 @@
+{
+  "scannedAt": "2026-11-07T16:21:11.824Z",
+  "oldRoot": "E:/QQ-agent-six-mode-dev-20261012/src",
+  "currentRoot": "E:/HuoLiFish/huoli-core/packages/qq",
+  "oldFiles": 143,
+  "groupCounts": {
+    "planner": 4,
+    "admission": 7,
+    "initiative": 12,
+    "attention": 7,
+    "reply": 6,
+    "persona": 7,
+    "scheduler": 9,
+    "reflection": 2
+  },
+  "modelVisibleContracts": {
+    "mind": [
+      "move",
+      "reason",
+      "focus",
+      "tone",
+      "inner",
+      "next"
+    ],
+    "text": "只写真正发给对方的正文",
+    "autonomousNudge": "完整自主安静群给模型一次自己开口机会",
+    "privateReply": "私聊必须实际发出一条正文",
+    "noSecondLoop": "不额外请求规划模型，不复制旧发送器"
+  },
+  "currentFiles": [
+    {
+      "file": "qq-bundle/src/index.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-bundle/src/rounds.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-bundle/src/runtime.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-bundle/src/proactive-tools.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-bundle/prompts/rules.md",
+      "exists": true
+    },
+    {
+      "file": "qq-channel/src/final-text.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-channel/src/tools.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-attention/src/wake-policy.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-material/src/collect.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-self/src/assembly.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-self/src/tools.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-vitals/src/render.ts",
+      "exists": true
+    },
+    {
+      "file": "qq-memory/src/index.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/三份实施单落地对照.md",
+      "exists": true
+    }
+  ],
+  "rows": [
+    {
+      "file": "behavior/decision/adaptive-bridge.js",
+      "group": "other",
+      "lines": 2279,
+      "chars": 123711,
+      "exports": [
+        "onlinePlannerEvidence",
+        "CLASSPATH_LAYOUTS",
+        "normalizeJavaClasspath",
+        "javaClasspathEntries",
+        "AdaptiveCoreBridge"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/addressee-system-one.js",
+      "group": "attention",
+      "lines": 105,
+      "chars": 4610,
+      "exports": [
+        "ADDRESSEE_DEFAULTS",
+        "buildAddresseeState",
+        "buildAddresseeQuestions",
+        "readAddresseeAnswer",
+        "judgeAddresseeBySystemOne"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/addressee.js",
+      "group": "attention",
+      "lines": 116,
+      "chars": 4842,
+      "exports": [
+        "ADDRESSEE",
+        "resolveAddressee",
+        "shouldStaySilentForAddressee"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/admission-pipeline.js",
+      "group": "admission",
+      "lines": 33,
+      "chars": 1311,
+      "exports": [
+        "STAGE",
+        "runAdmission"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/advisory-note.js",
+      "group": "other",
+      "lines": 28,
+      "chars": 1230,
+      "exports": [
+        "setAdvisory",
+        "takeAdvisory",
+        "renderAdvisory"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/affect-system-one.js",
+      "group": "other",
+      "lines": 121,
+      "chars": 5311,
+      "exports": [
+        "AFFECT_DEFAULTS",
+        "levelToSigned",
+        "levelToUnit",
+        "mapTarget",
+        "buildAffectQuestions",
+        "buildEvidence",
+        "judgeAffectBySystemOne"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/ambient-guard.js",
+      "group": "initiative",
+      "lines": 58,
+      "chars": 2360,
+      "exports": [
+        "AMBIENT_GUARD_DEFAULTS",
+        "normalizeLevel",
+        "ambientGuardFor"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/atmosphere.js",
+      "group": "other",
+      "lines": 51,
+      "chars": 2284,
+      "exports": [
+        "ATMOSPHERE_DEFAULTS",
+        "atmosphereFor",
+        "atmosphereBlocksProactive",
+        "renderAtmosphere"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/attention-budget.js",
+      "group": "attention",
+      "lines": 150,
+      "chars": 6268,
+      "exports": [
+        "DEFAULT_ATTENTION",
+        "AttentionBudget",
+        "sharedAttentionBudget"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/behavior-authority.js",
+      "group": "other",
+      "lines": 53,
+      "chars": 2113,
+      "exports": [
+        "BEHAVIOR_OWNER",
+        "resolveBehaviorAuthority",
+        "nodeOwnsBehavior",
+        "javaOwnsBehavior",
+        "behaviorAuthorityFromConfig"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/burst-guard.js",
+      "group": "other",
+      "lines": 34,
+      "chars": 1224,
+      "exports": [
+        "BURST_DEFAULTS",
+        "burstVerdict"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/chat-pulse.js",
+      "group": "initiative",
+      "lines": 224,
+      "chars": 8511,
+      "exports": [
+        "CHAT_PULSE_DEFAULTS",
+        "repeatPingPressure",
+        "isDuplicateComplaint"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/chorus.js",
+      "group": "other",
+      "lines": 39,
+      "chars": 1730,
+      "exports": [
+        "normalizeChorusText",
+        "detectChorus"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/command-pressure.js",
+      "group": "other",
+      "lines": 128,
+      "chars": 3747,
+      "exports": [
+        "commandPressure",
+        "CommandPressureTracker",
+        "commandPressureState",
+        "describeDemand"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/conversation-thread.js",
+      "group": "attention",
+      "lines": 94,
+      "chars": 3791,
+      "exports": [
+        "THREAD_DEFAULTS",
+        "ownRecentLines",
+        "currentThreadHint",
+        "lastAddressedBy",
+        "renderThreadBlock"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/core-failover.js",
+      "group": "other",
+      "lines": 61,
+      "chars": 1988,
+      "exports": [
+        "isDirectedSummon",
+        "shouldNoticeOutage",
+        "expireWindowMs",
+        "outageNoticeText"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/counter-thinking.js",
+      "group": "reply",
+      "lines": 72,
+      "chars": 2657,
+      "exports": [
+        "COUNTER_THINKING_TIERS",
+        "counterThinkingLevel",
+        "counterThinkingGuidance",
+        "isPureEcho",
+        "counterThinkingVerdict"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/dynamic-budget.js",
+      "group": "admission",
+      "lines": 56,
+      "chars": 2142,
+      "exports": [
+        "WINDOW_MS",
+        "MIN_WINDOW_MESSAGES",
+        "VIRTUAL_ROUND_SECONDS",
+        "summarizeWindow",
+        "dynamicReplyBudget"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/friend-roster.js",
+      "group": "other",
+      "lines": 132,
+      "chars": 4127,
+      "exports": [
+        "FRIEND_ROSTER_TTL_MS",
+        "setFriendIds",
+        "friendIds",
+        "isFriend",
+        "friendRosterState",
+        "resetFriendRoster",
+        "refreshFriendRoster",
+        "startFriendRosterRefresh"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/fun-score.js",
+      "group": "other",
+      "lines": 71,
+      "chars": 2429,
+      "exports": [
+        "funScore",
+        "describeTone"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/habit-guard.js",
+      "group": "other",
+      "lines": 55,
+      "chars": 1787,
+      "exports": [
+        "normalizeCjkSpacing",
+        "leadingDecoration",
+        "dampenOpeningTic"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/heartbeat-decider.js",
+      "group": "initiative",
+      "lines": 162,
+      "chars": 7246,
+      "exports": [
+        "HEARTBEAT_DEFAULTS",
+        "buildHeartbeatPrompt",
+        "parseHeartbeatReply",
+        "SCORE_PREFILL",
+        "buildScorePrefillMessages",
+        "parseHeartbeatScore",
+        "scoreToProbability",
+        "heartbeatScoreDecision",
+        "heartbeatDecision"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/intent-competition.js",
+      "group": "attention",
+      "lines": 149,
+      "chars": 5959,
+      "exports": [
+        "INTENT_COMPETITION_DEFAULTS",
+        "motiveForIntent",
+        "proactiveOpportunity",
+        "renderIntentSection"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/interrupt-arbiter.js",
+      "group": "other",
+      "lines": 147,
+      "chars": 4705,
+      "exports": [
+        "INTERRUPT_LEVELS",
+        "isExplicitUserStop",
+        "arbitrateInterrupt"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/legacy/adapter.js",
+      "group": "other",
+      "lines": 90,
+      "chars": 4047,
+      "exports": [
+        "chatRhythmAdjustment",
+        "buildMotivationInput",
+        "evaluateShadow"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/legacy/grounding.js",
+      "group": "other",
+      "lines": 29,
+      "chars": 1510,
+      "exports": [
+        "proactiveDecision"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/legacy/index.js",
+      "group": "other",
+      "lines": 47,
+      "chars": 2613,
+      "exports": [
+        "MODES",
+        "evaluateDecision",
+        "canForceReply"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/legacy/motivation.js",
+      "group": "other",
+      "lines": 79,
+      "chars": 3416,
+      "exports": [
+        "DEFAULT_MOTIVATION_PARAMS",
+        "hazardRate",
+        "actProbability",
+        "softmaxUtilities",
+        "makeRng",
+        "seedFrom",
+        "decideAct"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/motive-map.js",
+      "group": "other",
+      "lines": 126,
+      "chars": 5138,
+      "exports": [
+        "MOTIVES",
+        "COLD_OPEN_MIN_IDLE_MS",
+        "motiveFromDecision",
+        "motiveGuidance",
+        "coldOpenGuidanceForIdle",
+        "proactiveModeForMotive"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/night-hibernation.js",
+      "group": "other",
+      "lines": 63,
+      "chars": 2728,
+      "exports": [
+        "HIBERNATION_DEFAULTS",
+        "isHibernationHour",
+        "hibernationPolicy",
+        "nightInterjectionOwed",
+        "scaleProbabilityForNight"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/opportunity-key.js",
+      "group": "other",
+      "lines": 43,
+      "chars": 1720,
+      "exports": [
+        "OPPORTUNITY_NAMESPACE",
+        "OPPORTUNITY_QUIET_MS",
+        "opportunityIdOf",
+        "opportunityStateKey",
+        "noteOpportunitySuppressed",
+        "opportunitySuppressed"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/proactive-chattiness.js",
+      "group": "initiative",
+      "lines": 12,
+      "chars": 1000,
+      "exports": [
+        "chattinessPrompt"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/proactive-gate-diagnostics.js",
+      "group": "initiative",
+      "lines": 73,
+      "chars": 3440,
+      "exports": [
+        "PROACTIVE_GATE_REASONS",
+        "proactiveGateLabel",
+        "describeProactiveGateBlock",
+        "proactiveProbeStatus"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/proactive-grounding.js",
+      "group": "initiative",
+      "lines": 83,
+      "chars": 4026,
+      "exports": [
+        "GROUNDING_DEFAULTS",
+        "groupGroundingVerdict",
+        "ICE_BREAK_COOLDOWN_DEFAULT_MS",
+        "ICE_BREAK_COOLDOWN_FLOOR_MS",
+        "iceBreakCooldownLeft",
+        "renderGrounding"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/proactive-guard.js",
+      "group": "initiative",
+      "lines": 288,
+      "chars": 14780,
+      "exports": [
+        "BUSY_QUEUE_LIMIT",
+        "isChatAllowed",
+        "shouldUseLegacyProactiveLoop",
+        "evaluateAdaptiveProactiveGate"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/proactive-lifecycle.js",
+      "group": "initiative",
+      "lines": 39,
+      "chars": 1847,
+      "exports": [
+        "proactiveLifecycleEvent",
+        "traceProactiveLifecycle"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/proactive-material.js",
+      "group": "initiative",
+      "lines": 105,
+      "chars": 4224,
+      "exports": [
+        "MATERIAL_KINDS",
+        "buildProactiveMaterial",
+        "renderProactiveMaterial",
+        "ANCHOR_GATE_DEFAULTS",
+        "shouldSpendProactiveTurn"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/proactive-probe-memory.js",
+      "group": "initiative",
+      "lines": 66,
+      "chars": 3339,
+      "exports": [
+        "PROBE_BACKOFF",
+        "coldOpenBand",
+        "probeContext",
+        "probeVerdict",
+        "rememberProbe"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/reflection-trigger.js",
+      "group": "reflection",
+      "lines": 80,
+      "chars": 2321,
+      "exports": [
+        "shouldReflect"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/relationship-weight.js",
+      "group": "other",
+      "lines": 44,
+      "chars": 1467,
+      "exports": [
+        "RELATION_WEIGHT_LIMITS",
+        "pickRelationSource",
+        "relationshipWeight"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/reply-likelihood.js",
+      "group": "admission",
+      "lines": 51,
+      "chars": 1690,
+      "exports": [
+        "replyLikelihood",
+        "likelihoodScale"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/self-repetition.js",
+      "group": "reply",
+      "lines": 126,
+      "chars": 4540,
+      "exports": [
+        "REPEAT_DEFAULTS",
+        "repeatedTopicEcho",
+        "similarity",
+        "recentSelfPhrases",
+        "findRepeat",
+        "findRepeatAbove",
+        "complaintLike",
+        "findRepeatedComplaint",
+        "renderSelfRepetitionGuard"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/semantic-addressee.js",
+      "group": "attention",
+      "lines": 63,
+      "chars": 2942,
+      "exports": [
+        "MODEL_ADDRESSEE_DEFAULTS",
+        "hardAddresseeFact",
+        "buildJudgePrompt",
+        "parseJudgeReply",
+        "decideFromJudge"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/semantic-look.js",
+      "group": "other",
+      "lines": 51,
+      "chars": 1811,
+      "exports": [
+        "buildSemanticLookMessages",
+        "parseSemanticLook"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/situation-brief.js",
+      "group": "attention",
+      "lines": 90,
+      "chars": 3839,
+      "exports": [
+        "BRIEF_DEFAULTS",
+        "formatIdle",
+        "estimateTokens",
+        "buildSituationBrief"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/speak-ladder.js",
+      "group": "admission",
+      "lines": 175,
+      "chars": 7832,
+      "exports": [
+        "SPEAK_TIERS",
+        "TIER_BUDGET",
+        "TIER_HINTS",
+        "selfTalkRounds",
+        "isDirectedTurn",
+        "speakTier",
+        "tierPromptLine",
+        "capBubbles"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/speak-system-one.js",
+      "group": "admission",
+      "lines": 92,
+      "chars": 4443,
+      "exports": [
+        "SPEAK_DEFAULTS",
+        "SPEAK_SCORE_CHOICES",
+        "buildSpeakState",
+        "readSpeakVerdict",
+        "judgeSpeakBySystemOne"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/speech-budget.js",
+      "group": "admission",
+      "lines": 95,
+      "chars": 5215,
+      "exports": [
+        "consecutiveVisibleCount",
+        "speechBudget"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/speech-occasion.js",
+      "group": "other",
+      "lines": 194,
+      "chars": 8258,
+      "exports": [
+        "assessSpeechOccasion",
+        "renderOccasionLine"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/subject-execution.js",
+      "group": "other",
+      "lines": 56,
+      "chars": 3922,
+      "exports": [
+        "numericState",
+        "subjectExecutionState",
+        "subjectSendGate"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/summon-signal.js",
+      "group": "other",
+      "lines": 201,
+      "chars": 8205,
+      "exports": [
+        "normalizeSummonText",
+        "mentionedByAlias",
+        "attributionFromText",
+        "hardSummonFromText",
+        "classifySummon",
+        "summonWeakBoost"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/tool-willingness.js",
+      "group": "other",
+      "lines": 56,
+      "chars": 2337,
+      "exports": [
+        "toolWillingness",
+        "willingnessAdvisory",
+        "noteFavorDone"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/decision/topic-system-one.js",
+      "group": "other",
+      "lines": 70,
+      "chars": 2770,
+      "exports": [
+        "TOPIC_DEFAULTS",
+        "buildTopicQuestions",
+        "judgeTopic"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/decision/worth-replying.js",
+      "group": "admission",
+      "lines": 73,
+      "chars": 3243,
+      "exports": [
+        "WORTH_DEFAULTS",
+        "localWorthlessVerdict",
+        "judgeWorthReplying"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/ack.js",
+      "group": "other",
+      "lines": 51,
+      "chars": 2722,
+      "exports": [
+        "preambleText",
+        "ackPlan"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/background-note.js",
+      "group": "other",
+      "lines": 116,
+      "chars": 4457,
+      "exports": [
+        "parseStructured",
+        "renderTiebaThreads",
+        "renderBackgroundValue",
+        "renderBackgroundNotes"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "conversation/context-window.js",
+      "group": "other",
+      "lines": 157,
+      "chars": 6169,
+      "exports": [
+        "CHAT_LEVELS",
+        "estimateChatFrequency",
+        "adaptiveHistoryCount",
+        "decideTickSemanticProbe",
+        "selectContextWindow"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/draft-review.js",
+      "group": "reply",
+      "lines": 151,
+      "chars": 7765,
+      "exports": [
+        "draftNeedsReview",
+        "reviewDraftBeforeSend"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/messages/md-to-plain.js",
+      "group": "other",
+      "lines": 71,
+      "chars": 2110,
+      "exports": [
+        "mdToPlain",
+        "splitForQQ"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "conversation/model-choice.js",
+      "group": "other",
+      "lines": 35,
+      "chars": 1453,
+      "exports": [
+        "isComplexReplyTurn",
+        "quietReplyModelFor",
+        "quietReplyModelForTurn"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "conversation/orchestrator.js",
+      "group": "other",
+      "lines": 5047,
+      "chars": 249156,
+      "exports": [
+        "adaptiveDecisionPrompt",
+        "adaptiveReceiptCorrelation",
+        "Orchestrator",
+        "parseInlineToolCalls"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/planner-prompt.js",
+      "group": "planner",
+      "lines": 162,
+      "chars": 7284,
+      "exports": [
+        "AFFECT_TARGET_SET",
+        "AFFECT_KEY_SET",
+        "AFFECT_SCHEMA",
+        "AFFECT_SYSTEM_PROMPT",
+        "buildPlannerSystemPrompt"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/prompt-budget.js",
+      "group": "other",
+      "lines": 220,
+      "chars": 7624,
+      "exports": [
+        "SECTION_BUDGETS",
+        "DEFAULT_SECTION_BUDGET",
+        "USER_PROMPT_TOTAL_BUDGET",
+        "isSimpleDirectTurn",
+        "promptBudgetForTurn",
+        "budgetSection",
+        "fitSections",
+        "describeSectionBudgetReport",
+        "SECTION_PRIORITY",
+        "REQUIRED_SECTIONS",
+        "applyBudgetToParts"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "conversation/prompt.js",
+      "group": "other",
+      "lines": 2139,
+      "chars": 101753,
+      "exports": [
+        "buildSystemPrompt",
+        "isAtMe",
+        "hitKeyword",
+        "stripMentions",
+        "deterministicTierRoll",
+        "resolveContextTier",
+        "buildPastState",
+        "buildTriggerBlock",
+        "resolvePromptAnchor",
+        "renderSelfState",
+        "detectSpamContext",
+        "buildUserPrompt"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/reply-rescue.js",
+      "group": "reply",
+      "lines": 65,
+      "chars": 2241,
+      "exports": [
+        "rescueUnsentReply"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/reply-rewriter.js",
+      "group": "reply",
+      "lines": 62,
+      "chars": 2599,
+      "exports": [
+        "rewriteConfig",
+        "shouldRewrite",
+        "buildRewritePrompt",
+        "rewriteBubbles"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/reply-splitter.js",
+      "group": "reply",
+      "lines": 103,
+      "chars": 3694,
+      "exports": [
+        "SPLITTER_DEFAULTS",
+        "shouldAskSplitter",
+        "buildSplitPrompt",
+        "parseSplitResult",
+        "splitReply"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/text-chat.js",
+      "group": "other",
+      "lines": 180,
+      "chars": 10109,
+      "exports": [
+        "buildTextChatMessages",
+        "runTextChat"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "conversation/translation.js",
+      "group": "other",
+      "lines": 31,
+      "chars": 1659,
+      "exports": [
+        "translateText"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "prompt/deep-state.js",
+      "group": "planner",
+      "lines": 59,
+      "chars": 1907,
+      "exports": [
+        "renderDeepStatePrompt",
+        "renderFondnessPrompt"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "prompt/persona.js",
+      "group": "persona",
+      "lines": 40,
+      "chars": 1640,
+      "exports": [
+        "renderPersonaPrompt",
+        "personaToneShift"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "prompt/registry.js",
+      "group": "other",
+      "lines": 83,
+      "chars": 2446,
+      "exports": [
+        "PROMPTS",
+        "renderPrompt",
+        "listPrompts",
+        "promptStatus"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "prompt/scope.js",
+      "group": "other",
+      "lines": 39,
+      "chars": 1647,
+      "exports": [
+        "renderScopePrompt",
+        "renderInterruptPrompt",
+        "renderRecoveryPrompt"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "prompt/style.js",
+      "group": "persona",
+      "lines": 37,
+      "chars": 1626,
+      "exports": [
+        "describeStyle",
+        "renderStylePrompt"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "prompt/unified.js",
+      "group": "persona",
+      "lines": 66,
+      "chars": 2092,
+      "exports": [
+        "renderUnifiedPrompt",
+        "renderConsequencePrompt",
+        "renderThoughtPrompt",
+        "describeLayerInfluence"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/acceptance.js",
+      "group": "other",
+      "lines": 33,
+      "chars": 2610,
+      "exports": [
+        "buildRuntimeAcceptance"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/activity-governor.js",
+      "group": "other",
+      "lines": 48,
+      "chars": 1847,
+      "exports": [
+        "GOVERNOR_DEFAULTS",
+        "noteHumanActivity",
+        "resetGovernorForTests",
+        "idleMsNow",
+        "governorLane",
+        "backgroundModelVerdict"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/adaptive-tick-cadence.js",
+      "group": "other",
+      "lines": 23,
+      "chars": 947,
+      "exports": [
+        "nextAdaptiveTickDelay"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/autonomous-life.js",
+      "group": "other",
+      "lines": 229,
+      "chars": 12236,
+      "exports": [
+        "isRestTime",
+        "advanceLife",
+        "AutonomousLife"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/background-jobs.js",
+      "group": "other",
+      "lines": 49,
+      "chars": 1564,
+      "exports": [
+        "planBackgroundJobs",
+        "seedHumanActivity"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/background-queue.js",
+      "group": "scheduler",
+      "lines": 367,
+      "chars": 13941,
+      "exports": [
+        "LANE_CHAT",
+        "LANE_INNER",
+        "BackgroundQueue",
+        "createBackgroundQueue",
+        "setActiveBackgroundQueue",
+        "activeBackgroundQueue",
+        "backgroundStatus"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/evidence-ledger.js",
+      "group": "other",
+      "lines": 152,
+      "chars": 4820,
+      "exports": [
+        "EVIDENCE_KEYS",
+        "noteEvidence",
+        "enableEvidenceFile",
+        "evidenceSnapshot",
+        "evidenceFor",
+        "resetEvidence"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/expression-policy.js",
+      "group": "scheduler",
+      "lines": 102,
+      "chars": 4804,
+      "exports": [
+        "EXPRESSION_POLICY_DEFAULTS",
+        "EXPRESSION_POLICY_BOUNDS",
+        "SETTLE_GAINS",
+        "resolveExpressionPolicy",
+        "acuteThresholds"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "runtime/expression-state.js",
+      "group": "other",
+      "lines": 703,
+      "chars": 39568,
+      "exports": [
+        "ExpressionState"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/idle-chat-scan.js",
+      "group": "other",
+      "lines": 48,
+      "chars": 1575,
+      "exports": [
+        "pickIdleChats"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "runtime/ingress/actor.js",
+      "group": "other",
+      "lines": 29,
+      "chars": 1071,
+      "exports": [
+        "mailboxVerdict"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/ingress/arbiter.js",
+      "group": "other",
+      "lines": 81,
+      "chars": 2956,
+      "exports": [
+        "IngressArbiter"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/ingress/gateway.js",
+      "group": "other",
+      "lines": 72,
+      "chars": 3482,
+      "exports": [
+        "IngressGateway"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/ingress/metrics.js",
+      "group": "other",
+      "lines": 108,
+      "chars": 3934,
+      "exports": [
+        "IngressMetrics"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/inner-model.js",
+      "group": "planner",
+      "lines": 208,
+      "chars": 8386,
+      "exports": [
+        "innerLaneConfig",
+        "pickInnerModel",
+        "innerModelInfo",
+        "runInnerModel",
+        "condenseToolResult",
+        "logInnerLaneReady"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/instance-lock.js",
+      "group": "other",
+      "lines": 82,
+      "chars": 2283,
+      "exports": [
+        "acquireInstanceLock",
+        "releaseInstanceLock",
+        "registerLockCleanup"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "runtime/jargon-learner.js",
+      "group": "other",
+      "lines": 186,
+      "chars": 7289,
+      "exports": [
+        "MIN_JARGON_POOL",
+        "MAX_JARGON_INJECT",
+        "loadJargon",
+        "saveJargon",
+        "parseJargonJson",
+        "normalizeJargon",
+        "mergeJargon",
+        "buildLearnJargonPrompt",
+        "matchJargonForContext",
+        "renderJargonBlock",
+        "matchJargonSemantic",
+        "touchJargon",
+        "markJargonChecked"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/learn-review.js",
+      "group": "other",
+      "lines": 69,
+      "chars": 2703,
+      "exports": [
+        "buildReviewPrompt",
+        "parseReviewResult",
+        "reviewItems"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/learning-buffer.js",
+      "group": "other",
+      "lines": 49,
+      "chars": 1319,
+      "exports": [
+        "beginBatch",
+        "endBatch",
+        "isBatchRunning",
+        "pushPending",
+        "pendingCount",
+        "takePending",
+        "dropPending"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "runtime/mode-activity.js",
+      "group": "other",
+      "lines": 69,
+      "chars": 3303,
+      "exports": [
+        "ModeActivity"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/mode-service.js",
+      "group": "other",
+      "lines": 501,
+      "chars": 27721,
+      "exports": [
+        "ModeService"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/online-planner.js",
+      "group": "planner",
+      "lines": 782,
+      "chars": 38042,
+      "exports": [
+        "PLANNER_SCENE_MAX",
+        "PLANNER_TEXT_MAX",
+        "compactPlannerScene",
+        "compactPlannerContext",
+        "resolvePromptMode",
+        "interruptEligibility",
+        "shouldFastPathHeartflow",
+        "extractPlannerJson",
+        "parsePlannerResult",
+        "OnlinePlanner"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/opportunity-ledger.js",
+      "group": "other",
+      "lines": 53,
+      "chars": 1803,
+      "exports": [
+        "LEDGER_DEFAULTS",
+        "slotOf",
+        "opportunityKey",
+        "claimOpportunity",
+        "prune",
+        "ledgerSize",
+        "resetLedger"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "runtime/proactive-diagnostics.js",
+      "group": "initiative",
+      "lines": 50,
+      "chars": 1789,
+      "exports": [
+        "recordProactiveCandidate",
+        "recentProactiveCandidates",
+        "proactiveCandidateSummary",
+        "resetProactiveCandidates"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/realtime-scheduler.js",
+      "group": "scheduler",
+      "lines": 1473,
+      "chars": 86905,
+      "exports": [
+        "isDirectedTurn",
+        "shouldApplyAnchorGate",
+        "RealtimeScheduler"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/reminders.js",
+      "group": "other",
+      "lines": 102,
+      "chars": 2634,
+      "exports": [
+        "ReminderStore"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "runtime/scheduler/clock.js",
+      "group": "scheduler",
+      "lines": 68,
+      "chars": 2035,
+      "exports": [
+        "createSchedulerClock"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "runtime/scheduler/decision.js",
+      "group": "scheduler",
+      "lines": 44,
+      "chars": 2135,
+      "exports": [
+        "SCHEDULER_DECISIONS",
+        "createSchedulerDecision"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/scheduler/dispatch.js",
+      "group": "scheduler",
+      "lines": 335,
+      "chars": 15043,
+      "exports": [
+        "ACTION_TYPES",
+        "normalizeActionType",
+        "resolveActionType",
+        "isPermanentReactionError",
+        "createAction",
+        "ActionReceiptLog",
+        "ActionBudget",
+        "ActionDispatcher"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/scheduler/metrics.js",
+      "group": "scheduler",
+      "lines": 46,
+      "chars": 1680,
+      "exports": [
+        "createSchedulerMetrics"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/scheduler/policy.js",
+      "group": "scheduler",
+      "lines": 40,
+      "chars": 1828,
+      "exports": [
+        "createSchedulerPolicy"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/scheduler/queue.js",
+      "group": "scheduler",
+      "lines": 67,
+      "chars": 2247,
+      "exports": [
+        "createActionQueue"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/sessions.js",
+      "group": "other",
+      "lines": 483,
+      "chars": 16269,
+      "exports": [
+        "DEFAULT_KEEP_SESSIONS",
+        "SESSIONS_HARD_LIMIT",
+        "SESSIONS_PAGE_DEFAULT",
+        "newSessionId",
+        "sessionFile",
+        "SessionRegistry"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/style-learner.js",
+      "group": "persona",
+      "lines": 298,
+      "chars": 11845,
+      "exports": [
+        "MIN_HABIT_POOL",
+        "MAX_HABIT_INJECT",
+        "loadStyleHabits",
+        "saveStyleHabits",
+        "parseHabitJson",
+        "normalizeHabits",
+        "mergeHabits",
+        "buildLearnStylePrompt",
+        "isHabitSafe",
+        "sanitizeHabits",
+        "sampleHabits",
+        "pickHabitsForContext",
+        "pickHabitsForContextSemantic",
+        "markHabitChecked",
+        "renderHabitBlock",
+        "touchHabits",
+        "shouldLearnStyle"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/tieba-knowledge.js",
+      "group": "other",
+      "lines": 137,
+      "chars": 6887,
+      "exports": [
+        "loadTiebaTopicNotes",
+        "matchTiebaTopicNotes",
+        "renderTiebaTopicNotes",
+        "loadTiebaAnecdotes",
+        "loadPendingShares",
+        "renderPendingShares",
+        "matchTiebaAnecdote",
+        "renderTiebaAnecdote"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "runtime/tool-bridge.js",
+      "group": "other",
+      "lines": 82,
+      "chars": 3227,
+      "exports": [
+        "invokeExternalTool",
+        "matchToolBridgePath"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "runtime/turn-timing.js",
+      "group": "other",
+      "lines": 76,
+      "chars": 4793,
+      "exports": [
+        "TURN_TIMING_DEFAULTS",
+        "turnTiming"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/affect-ledger.js",
+      "group": "other",
+      "lines": 549,
+      "chars": 28584,
+      "exports": [
+        "AFFECT_TRAUMA_MIN_CONFIDENCE",
+        "deriveScope",
+        "recordAffectEvent",
+        "getAffectEvent",
+        "listAffectEvents",
+        "reviseAffectEvent",
+        "retractAffectEvent",
+        "recordTrauma",
+        "archiveTraumaFromEvent",
+        "getTrauma",
+        "listTrauma",
+        "reviseTrauma",
+        "resolveTrauma",
+        "recordTraumaActivation",
+        "activateTraumaReferences",
+        "listTraumaActivations",
+        "recallFacts",
+        "backfillFromRuntimeState",
+        "ledgerStats",
+        "listRevisions",
+        "closeAffectLedger"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "memory/affect-recall.js",
+      "group": "other",
+      "lines": 74,
+      "chars": 3420,
+      "exports": [
+        "recallAffectSection"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/auto-impression.js",
+      "group": "other",
+      "lines": 78,
+      "chars": 3566,
+      "exports": [
+        "AUTO_IMPRESSION_DEFAULTS",
+        "impressionCandidates",
+        "buildImpressionPrompt",
+        "parseImpressions",
+        "shouldAutoImpression"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/chat-summary.js",
+      "group": "other",
+      "lines": 262,
+      "chars": 11256,
+      "exports": [
+        "loadChatSummary",
+        "saveChatSummary",
+        "cleanSummary",
+        "buildCompressPrompt",
+        "parseCompressReply",
+        "selectCompressPrefix",
+        "compressChatSummaryChunk",
+        "buildDiaryPrompt",
+        "compressProfile",
+        "resolveDiarySlot",
+        "shouldCompress",
+        "pickCompressChunk",
+        "renderSummarySection"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/embeddings.js",
+      "group": "other",
+      "lines": 139,
+      "chars": 7272,
+      "exports": [
+        "retrieveSemanticMemories"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/episodic.js",
+      "group": "other",
+      "lines": 49,
+      "chars": 2463,
+      "exports": [
+        "EpisodicMemory"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "memory/hippocampus.js",
+      "group": "other",
+      "lines": 30,
+      "chars": 1424,
+      "exports": [
+        "buildHippocampus"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "memory/index.js",
+      "group": "other",
+      "lines": 34,
+      "chars": 1834,
+      "exports": [
+        "MemoryIndex"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/memory-relations.js",
+      "group": "other",
+      "lines": 83,
+      "chars": 4007,
+      "exports": [
+        "buildMemoryRelationGraph",
+        "normalizeMemoryRelations"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/memory.js",
+      "group": "other",
+      "lines": 906,
+      "chars": 34823,
+      "exports": [
+        "readMemoryAudit",
+        "MemoryStore"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/person-profile.js",
+      "group": "other",
+      "lines": 149,
+      "chars": 5892,
+      "exports": [
+        "profileKey",
+        "loadProfile",
+        "absorbTexts",
+        "noteProfileCue",
+        "renderProfileBlock",
+        "personProfileBlock"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "memory/recall-events.js",
+      "group": "other",
+      "lines": 70,
+      "chars": 2783,
+      "exports": [
+        "RECALL_EVENT_WINDOW_MS",
+        "RECALL_EVENT_KEEP",
+        "rememberRecall",
+        "renderRecallSection"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/recall-weight.js",
+      "group": "other",
+      "lines": 134,
+      "chars": 5626,
+      "exports": [
+        "RECALL_DEFAULTS",
+        "recencyFactor",
+        "preferenceFactor",
+        "feedbackFactor",
+        "recallWeight",
+        "shouldLookBack",
+        "importanceFactor",
+        "applyImportance",
+        "rankRecallCandidates"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/reflection.js",
+      "group": "reflection",
+      "lines": 237,
+      "chars": 10198,
+      "exports": [
+        "REFLECTION_DIRECTIVES",
+        "NON_REPLY_DIRECTIVES",
+        "SEED_NUMBER_FIELDS",
+        "SEED_TTL_MS",
+        "summarizeSelfTalk",
+        "buildReflectionMessages",
+        "parseReflection",
+        "mergeSeed",
+        "seedStillFresh",
+        "renderSeedSection",
+        "reflectionAllowsReply"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/semantic-index.js",
+      "group": "other",
+      "lines": 133,
+      "chars": 4919,
+      "exports": [
+        "embeddingReady",
+        "embeddingCacheKey",
+        "getVectors",
+        "getVector",
+        "rankWithVectors",
+        "rankSemantic",
+        "rankSmart",
+        "semanticStats"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "memory/vector-pool.js",
+      "group": "other",
+      "lines": 67,
+      "chars": 2273,
+      "exports": [
+        "vectorize",
+        "cosine",
+        "buildIndex",
+        "queryIndex",
+        "rankByContext"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/identity/chat-topic.js",
+      "group": "other",
+      "lines": 45,
+      "chars": 1512,
+      "exports": [
+        "normalizeChatTopic",
+        "chatTopicFor",
+        "renderChatTopicBlock",
+        "chatTopicBlockFor"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/identity/creator-prompt.js",
+      "group": "persona",
+      "lines": 70,
+      "chars": 2834,
+      "exports": [
+        "renderCreatorIdentity",
+        "isCreatorSender",
+        "renderCreatorPresence",
+        "renderCreatorBlock"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/identity/keyword-reaction.js",
+      "group": "other",
+      "lines": 91,
+      "chars": 3034,
+      "exports": [
+        "normalizeKeywordRules",
+        "matchKeywordRules",
+        "renderKeywordReactionBlock",
+        "keywordReactionBlockFor"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/identity/name-identity.js",
+      "group": "other",
+      "lines": 88,
+      "chars": 3396,
+      "exports": [
+        "setRuntimeSelfNickname",
+        "PUSHBACK_LADDER",
+        "namePushbackStage",
+        "renderNameIdentity",
+        "countNicknameCalls"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/identity/persona-tags.js",
+      "group": "persona",
+      "lines": 246,
+      "chars": 9060,
+      "exports": [
+        "PERSONA_TAG_NS",
+        "PERSONA_TAG_DEFAULTS",
+        "STANCE_TEXT",
+        "personaTagKey",
+        "decayedHits",
+        "stanceForHits",
+        "personaTagFor",
+        "strongerStance",
+        "recordPersonaSignal",
+        "noteResistance",
+        "personaPreferenceHint",
+        "renderPersonaTagBlock",
+        "personaTagSnapshot"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/identity/relationship-prompt.js",
+      "group": "persona",
+      "lines": 34,
+      "chars": 1787,
+      "exports": [
+        "renderRelationshipPrompt"
+      ],
+      "hasPrompt": true,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/identity/roleplay-profile.js",
+      "group": "other",
+      "lines": 165,
+      "chars": 6151,
+      "exports": [
+        "ROLEPLAY_NS",
+        "ROLEPLAY_DEFAULTS",
+        "roleplayKey",
+        "roleplayAllowed",
+        "detectRoleplayIntent",
+        "detectRoleplayExit",
+        "roleplayStateFor",
+        "enterRoleplay",
+        "touchRoleplay",
+        "exitRoleplay",
+        "renderRoleplayBlock",
+        "roleplaySnapshot"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/identity/tone-rotation.js",
+      "group": "other",
+      "lines": 150,
+      "chars": 4407,
+      "exports": [
+        "pickToneLine",
+        "pickProactiveTone",
+        "toneSnapshot"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/feedback/complaint-engine.js",
+      "group": "other",
+      "lines": 240,
+      "chars": 9520,
+      "exports": [
+        "COMPLAINT_DEFAULTS",
+        "complaintVerdict",
+        "renderComplaintSection"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/feedback/conflict-accumulator.js",
+      "group": "other",
+      "lines": 100,
+      "chars": 3571,
+      "exports": [
+        "ConflictAccumulator"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/feedback/outcome-settlement.js",
+      "group": "other",
+      "lines": 254,
+      "chars": 10854,
+      "exports": [
+        "SETTLE_DEFAULTS",
+        "SETTLE_VALUES",
+        "emptyLedger",
+        "recordSpoken",
+        "recordSilent",
+        "similarRequest",
+        "settle",
+        "renderSettledLine"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/feedback/perception-accuracy.js",
+      "group": "other",
+      "lines": 110,
+      "chars": 4300,
+      "exports": [
+        "recordPerception",
+        "resolvePerception",
+        "accuracyStats",
+        "expirePending"
+      ],
+      "hasPrompt": false,
+      "hasDecision": false
+    },
+    {
+      "file": "behavior/feedback/proactive-self-review.js",
+      "group": "initiative",
+      "lines": 159,
+      "chars": 10406,
+      "exports": [
+        "SELF_REVIEW_DEFAULTS",
+        "ProactiveSelfReview"
+      ],
+      "hasPrompt": false,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/feedback/slip-review.js",
+      "group": "other",
+      "lines": 431,
+      "chars": 19947,
+      "exports": [
+        "SLIP_DEFAULTS",
+        "parseSlipVerdict",
+        "buildSlipReviewSystem",
+        "normalizeSlipVerdict",
+        "SlipReview"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    },
+    {
+      "file": "behavior/feedback/topic-feedback.js",
+      "group": "other",
+      "lines": 149,
+      "chars": 6819,
+      "exports": [
+        "themeTokens",
+        "topicFeedbackPrompt",
+        "shouldStayQuiet"
+      ],
+      "hasPrompt": true,
+      "hasDecision": true
+    }
+  ]
+}

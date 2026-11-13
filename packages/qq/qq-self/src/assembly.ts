@@ -1,18 +1,17 @@
 // 装配这一层：目录、面板、记录表、钥匙、工具、提示词与只读出口接成一个接缝
-
 import type { Context } from '@huoli/cordis'
 import fs from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import type {} from '@huoli/huoli-agent'
-import '@huoli/huoli-system-prompt'
+import { PERSONA_PREFIX_SECTION } from '@huoli/huoli-system-prompt'
 import { recordDay as writeDay, skipDay as writeSkip } from './day.ts'
 import { resolveSelfDir, resolveSettings } from './defaults.ts'
 import { errorsSince, recordError as writeError } from './errors.ts'
 import { FILES } from './files.ts'
 import { panelFromStore } from './generate.ts'
 import { stageAllows } from './grade.ts'
-import { identityOf as currentIdentity, recordIdentity as writeIdentity } from './identity.ts'
+import { installPersonaProfiles, identityOf as currentIdentity, recordIdentity as writeIdentity } from './identity.ts'
 import { identityCooldownLeft, requireKeys as decideKeys, STAGE_ACTION, stageAdvanceApproved } from './keys.ts'
 import { createLedger } from './ledger.ts'
 import { mirrorEntries } from './mirror.ts'
@@ -28,16 +27,15 @@ import { startPanelHttp, type PanelHttp } from './panel-http.ts'
 import { graphAnswer } from './panel-graph.ts'
 import { panelStateOf } from './panel-state.ts'
 import { panelVitalsOf } from './panel-vitals.ts'
-import { panelBody, panelStamp } from './panel.ts'
+import { panelStamp } from './panel.ts'
 import { probeOf, weeklyReview as summarizeWeek, writeProbe } from './review.ts'
 import { toProject } from './rows.ts'
 import { createSelfStore, newId } from './store.ts'
 import { registerSelfTools } from './tools.ts'
-import type { Config, QqSelfSeam } from './index.ts'
+import type { Config, EmergencyControlPort, LimitsControlPort, ModeControlPort, QqPanelPort, QqSelfSeam } from './index.ts'
 import type { KeysOutcome, PanelState, SelfMirrorPort, VitalsPort, WriteOutcome } from './types.ts'
 
 const seams = new WeakMap<Context, QqSelfSeam>()
-
 /**
  * 取这一层，没装配时为 undefined
  * @param ctx - 运行环境
@@ -46,14 +44,11 @@ const seams = new WeakMap<Context, QqSelfSeam>()
 export function qqSelfOf(ctx: Context): QqSelfSeam | undefined {
   return seams.get(ctx.root) ?? seams.get(ctx)
 }
-
 /** 插件的行名 */
 export const name = 'qq-self'
-
 /** 要用的内核接口 */
 export const inject = ['systemPrompt']
 
-// 超长就截断，字段本身不丢
 function clip(text: string, max: number): string {
   return text.length <= max ? text : text.slice(0, max)
 }
@@ -66,19 +61,24 @@ function clip(text: string, max: number): string {
 export function apply(ctx: Context, config: Config = {}): void {
   const settings = resolveSettings(config.settings)
   const dir = resolveSelfDir({ dir: config.dir, huoliHome: config.huoliHome })
-  // 星海读的是记忆那一份文件；没配就跟记忆包默认放在哪一致
   const memoryFile = config.memoryFile ?? join(resolveHuoliHome(config.huoliHome), 'data', 'qq-memory.json')
+  // 时间线跟记忆文件放在同一个数据目录，面板的现场那一格读它
+  const timelineFile = join(dirname(memoryFile), 'qq-timeline.jsonl')
   const store = createSelfStore({ dir, settings })
   const ledger = createLedger({ store, settings })
   const enabled = config.enabled ?? false
   const mainChatKey = config.mainChatKey ?? ''
-  // 人格正文与人格规矩都在目录外面：启动时各存一版，改坏了还能拿旧版盖回来
   const rulesFile = config.rulesFile ?? ''
   const personaFile = config.personaFile ?? store.pathOf(FILES.persona)
-  // 这一层关着时一个文件都不建，人格也不动
+  const personaProfiles = installPersonaProfiles(ctx, {
+    enabled,
+    dir,
+    ...config.personaProfilesFile === undefined ? {} : { file: config.personaProfilesFile },
+    ...config.personaProfiles === undefined ? {} : { profiles: config.personaProfiles },
+    ...config.activePersonaId === undefined ? {} : { activeId: config.activePersonaId },
+  })
   if (enabled) try {
     store.ensure()
-    // 第一次启动时把外面给的那段人格落成文件，之后人格就以文件为准
     const seed = config.personaSeed ?? ''
     if (seed !== '' && !fs.existsSync(personaFile)) fs.writeFileSync(personaFile, `${seed.trimEnd()}\n`)
     store.snapshotExternal(personaFile, 'persona', Date.now())
@@ -86,67 +86,63 @@ export function apply(ctx: Context, config: Config = {}): void {
   } catch (error) {
     ctx.logger('qq-self').warn('人格正文没存下这一版：%s', String(error))
   }
-  // 出口的端口只认 0 到 65535 的整数，别的写法按不开算
   const wantedPort = config.panelPort ?? 0
   const panelPort = Number.isInteger(wantedPort) && wantedPort >= 0 && wantedPort <= 65_535 ? wantedPort : 0
   let vitals: VitalsPort | undefined
+  let emergencyControl: EmergencyControlPort | undefined
+  let modeControl: ModeControlPort | undefined
+  let limitsControl: LimitsControlPort | undefined
+  let qqPanel: QqPanelPort | undefined
   let memory: SelfMirrorPort | undefined
   let cache: string | undefined
-  let broken = false
+  let cacheAt = 0
   let panel: PanelHttp | undefined
   let unloaded = false
 
-  // 画一份新面板：此刻只问身体，其余只问目录
   const build = (): string => {
     store.seedConstitution()
     return panelFromStore(store, settings, vitals === undefined ? undefined : vitals.render())
   }
 
-  // 本进程内定稿一次，之后逐字复用；文件还新就直接用文件里的
   const panelNow = (now: number): string => {
-    if (cache !== undefined) return cache
+    if (cache !== undefined && now - cacheAt < settings.panelMaxAgeMs) return cache
     if (store.fresh(now)) {
       const kept = store.panel()
       if (kept !== undefined && kept !== '') {
         cache = kept
+        cacheAt = now
         return kept
       }
     }
     const body = build()
     store.writePanel(body, now)
     cache = body
+    cacheAt = now
     return body
   }
 
-  // 关着的时候任何写入都不落盘
   const off = (): WriteOutcome | undefined => enabled ? undefined : { written: false, proposed: false, reason: 'disabled' }
-  // 写完才通知的地方：三行、阶段、月更与每月十问各一组
   const dayListeners = new Set<(lines: readonly string[], at: number) => void>()
   const stageListeners = new Set<(from: string, to: string, at: number) => void>()
   const narrativeListeners = new Set<(chapter: string, text: string, at: number) => void>()
   const probeListeners = new Set<(answers: readonly string[], at: number) => void>()
 
-  // 停手期间第二个写入一律只提议
   const held = (): WriteOutcome | undefined => store.paused() ? { written: false, proposed: true, reason: 'paused' } : undefined
 
-  // 累了就不做身份级决定：电量见底或困到线都算，没接上身体时不拦
   const resting = (): boolean => {
     const body = panelVitalsOf(vitals)
     if (body === undefined) return false
     return (body.energy ?? 1) < settings.restEnergyBelow || (body.tired ?? 0) > settings.restTiredAbove
   }
 
-  // 判一次身份级动作，放行时把这一条写进钥匙账；关着或停手时只回结果不落盘
   const allowKeys = (action: string, userOk: boolean, selfOk: boolean, at: number | undefined): KeysOutcome => {
     const decision = decideKeys(action, userOk, selfOk, settings.identityActions)
     if (!decision.allowed) return { ...decision, proposed: false }
     const stop = off()
     if (stop !== undefined) return { ...decision, proposed: stop.proposed }
-    // 累了这一次就不做：连钥匙都不往下走，免得她硬撑着改身份
     if (resting()) return { allowed: false, reason: 'rest', proposed: false }
     if (store.paused()) return { ...decision, proposed: true }
     const moment = at ?? Date.now()
-    // 同一个动作还在冷却里就只留一条提议，不记一笔也不放行
     if (identityCooldownLeft(store, action, moment, settings.identityCooldownMs) > 0) {
       return { allowed: false, reason: 'cooldown', proposed: true }
     }
@@ -154,29 +150,30 @@ export function apply(ctx: Context, config: Config = {}): void {
     return { ...decision, proposed: false }
   }
 
-  // 只读出口每次现算一份：只读目录，不写盘，也不碰提示词那一段的缓存
   const panelStateNow = (now: number): PanelState => {
+    // 面板可能已经放旧了：先按当前身体与在做的项目重画一次，再读刚写下的那份
+    const panel = panelNow(now)
     const text = store.readText(FILES.panel)
-    const kept = text === undefined ? '' : panelBody(text)
     const stamp = text === undefined ? '' : panelStamp(text)
-    const moment = vitals === undefined ? undefined : vitals.render()
-    // 身体接上了就把画条要的那几个数一起带出去，没接上就整块省掉
-    const body = panelVitalsOf(vitals)
+    const vitalsBody = panelVitalsOf(vitals)
+    const asrStatus = qqPanel?.asrStatus?.()
+    const bodyHealth = qqPanel?.health?.()
     return panelStateOf({
       store,
       settings,
       now,
-      panel: kept === '' ? panelFromStore(store, settings, moment) : kept,
-      generatedAt: kept === '' ? '' : stamp,
+      panel,
+      generatedAt: stamp,
       ledger: ledger.summary(now),
-      ...body === undefined ? {} : { vitals: body },
+      timelineFile,
+      ...vitalsBody === undefined ? {} : { vitals: vitalsBody },
+      ...asrStatus === undefined ? {} : { asr: asrStatus },
+      ...bodyHealth === undefined ? {} : { bodyHealth },
     })
   }
 
-  // 只有主会话键对得上才给读面板，没配主会话就不按会话过滤
   const mine = (chatKey: string): boolean => mainChatKey === '' || chatKey === mainChatKey
 
-  // 阶段读留痕里的最后一条：没推进过就用参数表里的那一档
   const stageNow = (): string => {
     const rows = store.records(FILES.stage)
     for (let at = rows.length - 1; at >= 0; at -= 1) {
@@ -187,6 +184,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
 
   const seam: QqSelfSeam = {
+    ...personaProfiles.methods,
     dir,
     panel() {
       return enabled ? panelNow(Date.now()) : ''
@@ -206,6 +204,18 @@ export function apply(ctx: Context, config: Config = {}): void {
     useVitals(port) {
       vitals = port
       cache = undefined
+    },
+    useEmergencyControl(port) {
+      emergencyControl = port
+    },
+    useModeControl(port) {
+      modeControl = port
+    },
+    useLimitsControl(port) {
+      limitsControl = port
+    },
+    useQqPanel(port) {
+      qqPanel = port
     },
     useMemory(port) {
       memory = port
@@ -267,7 +277,6 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (target > here + 1) return { ok: false, stage: from, code: 'stage.skip', reason: `阶段不许跳级：现在 ${from}，下一档是 ${next}，想直接到 ${to}`, hint: `先推到 ${next}` }
       const why = reason.trim()
       if (why === '') return { ok: false, stage: from, code: 'stage.reason_required', reason: '推进要说清为什么', hint: '写一句为什么推这一档' }
-      // 推到公开级这一档起要先有一条双钥匙放行，钥匙账里没有就停在这里
       if (stageAllows(to, settings.publicMinStage, settings.stages) && !stageAdvanceApproved(store)) {
         return {
           ok: false,
@@ -279,7 +288,6 @@ export function apply(ctx: Context, config: Config = {}): void {
       }
       const moment = at ?? Date.now()
       store.append(FILES.stage, { at: moment, id: newId(moment), from, to, reason: why })
-      // 推进落盘之后才通知：没推成的那些不产生事件
       for (const listener of stageListeners) listener(from, to, moment)
       return { ok: true, stage: to, at: moment }
     },
@@ -386,11 +394,9 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (stop !== undefined) return stop
       const blocked = held()
       if (blocked !== undefined) return blocked
-      // 累了不写叙事大改：这一条与身份级的门同源
       if (resting()) return { written: false, proposed: false, reason: 'rest' }
       const moment = Date.now()
       const outcome = writeNarrative(store, settings, chapter, text, moment, mode ?? 'replace')
-      // 写完才通知：月更这一笔要落到记忆里
       if (outcome.written) for (const listener of narrativeListeners) listener(chapter, text, moment)
       return outcome
     },
@@ -523,6 +529,26 @@ export function apply(ctx: Context, config: Config = {}): void {
       state: panelStateNow,
       // 空串等于不要求口令：只在本机看的时候不必再带一块饼干
       token: config.panelToken ?? '',
+      control: {
+        state: () => emergencyControl?.state() ?? { active: false, at: 0, reason: '' },
+        stop: reason => emergencyControl?.stop(reason),
+        resume: () => emergencyControl?.resume(),
+        get mode() {
+          return modeControl
+        },
+        get limits() {
+          return limitsControl
+        },
+        personas: {
+          list: () => seam.personaProfiles().map(profile => ({ id: profile.id, name: profile.name })),
+          activeId: () => seam.personaProfile('')?.id ?? '',
+          setActive: (id: string) => seam.setActivePersona(id),
+          bind: (chatKey: string, id: string) => seam.bindPersona(chatKey, id),
+        },
+        get qq() {
+          return qqPanel
+        },
+      },
       // 星海：只读记忆文件与星链，读不到就给一页空的
       graph: (pathname, search) => graphAnswer(pathname, search, memoryFile),
       warn: (message) => { ctx.logger('qq-self').warn('%s', message) },
@@ -544,15 +570,18 @@ export function apply(ctx: Context, config: Config = {}): void {
     const toolSink = ctx.get('tools')
     if (toolSink === undefined) ctx.logger('qq-self').warn('没有工具服务，自我层的写入口这一次没挂')
     else registerSelfTools(toolSink, seam)
-    // 人格正文占着部署人格那段位置：改人格就是改那份文件，不用动配置文件
-    const personaText = seam.persona()
-    if (personaText !== '') {
-      ctx.systemPrompt.section({
-        name: 'qq:persona',
-        order: ctx.systemPrompt.getSectionOrder('DEPLOYMENT_PERSONA_PREFIX'),
-        text: personaText,
-      })
-    }
+    // 人格写回 DSH 原生的部署人格位置；每轮重新读文件，改完下一轮就生效
+    ctx.on('system-prompt/assemble', async (assembly, _context, next) => {
+      const persona = seam.persona()
+      const identity = assembly.sections.find(section => section.name === 'harness:identity')
+      if (identity !== undefined) {
+        identity.text = 'You are a QQ chat participant powered by Huoli Core. The deployment persona below is your complete identity and voice. DSH tool instructions describe tools only; they do not define how you speak.'
+      }
+      const prefix = assembly.sections.find(section => section.name === PERSONA_PREFIX_SECTION)
+      if (prefix !== undefined) prefix.text = persona
+      else if (persona !== '') assembly.sections.push({ name: PERSONA_PREFIX_SECTION, text: persona })
+      return next()
+    })
     ctx.systemPrompt.section({
       name: settings.sectionName,
       order: settings.sectionOrder,
@@ -560,13 +589,13 @@ export function apply(ctx: Context, config: Config = {}): void {
     })
     ctx.systemPrompt.variable(settings.variableName, (context) => {
       const agent = context.agent
-      if (mainChatKey === '' || agent === undefined || String(agent.id) !== mainChatKey) return ''
-      if (broken) return ''
+      if (agent === undefined || String(agent.id) === '') return ''
+      if (mainChatKey !== '' && String(agent.id) !== mainChatKey) return ''
+      if (modeControl !== undefined && modeControl.state().mode !== 'autonomous') return ''
       try {
         return panelNow(Date.now())
       } catch (error) {
-        // 这一轮起不再重试，聊天与别的段照旧
-        broken = true
+        // 这一轮没给出来不影响下一轮继续取
         ctx.logger('qq-self').warn('面板这一段没给出来：%s', String(error))
         return ''
       }
@@ -576,6 +605,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   ctx.effect(() => () => {
     unloaded = true
     seams.delete(ctx.root)
+    personaProfiles.flush()
     // 卸载时把出口关掉：等它起完再关，关完那个端口就空出来了
     return opening.then(started => started === undefined ? undefined : started.close())
   })

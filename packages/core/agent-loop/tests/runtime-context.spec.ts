@@ -38,10 +38,15 @@ describe('RuntimeContextProjection', () => {
     const projection = new RuntimeContextProjection(ctx, session)
     expect(session.surface.nodes).toContain(retained.seq)
     expect(projection.project('retained', [])).toBeUndefined()
-    expect(projection.project('next', [{ name: 'sandbox:policy', text: 'policy' }])?.source).toEqual({
+    const update = projection.project('next', [{ name: 'sandbox:policy', text: 'policy' }])
+    expect(update?.message.source).toEqual({
       kind: SOURCE,
       form: 'snapshot',
       sections: [{ name: 'sandbox:policy', text: 'policy' }],
+    })
+    expect(update?.intent).toEqual({
+      surfaceOp: { op: 'replace', startSeq: retained.seq, endSeq: retained.seq },
+      sourceEventSeqs: [retained.seq],
     })
 
     const other = ctx.sessions.create(SessionId('runtime-context-other'))

@@ -1,0 +1,49 @@
+{
+  "name": "@huoli/huoli-agent-soul",
+  "version": "3.0.0",
+  "description": "Project-local DSH agent-soul plugin for soul architecture checks, scaffolding, and verification",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "cordis.patch.yml",
+    "index.d.ts",
+    "lib/",
+    "README.md",
+    "README.zh.md",
+    "UPSTREAM-README.txt",
+    "soul/",
+    "skeleton/",
+    "kit/",
+    "tools/",
+    "lib/",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@huoli/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@huoli/cordis": "workspace:~",
+    "@huoli/huoli-tools": "workspace:*"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "huoli": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

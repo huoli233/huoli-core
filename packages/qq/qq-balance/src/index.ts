@@ -30,6 +30,12 @@ export interface Config {
   defaultPrice?: TokenPrice
   /** 价目表文件放哪，填了就按文件来；文件里同时能写一天预算，改它不用动配置文件 */
   pricesFile?: string
+  /** 额度变化是否影响生命状态，默认只记账不影响 */
+  affectsVitals?: boolean
+  /** 到线后是否阻止新唤醒与后续模型步骤 */
+  enforce?: boolean
+  /** 到这个比例开始提醒 */
+  alertRatio?: number
 }
 
 /** 一个模型每百万 token 多少钱 */
@@ -54,6 +60,31 @@ export interface DayLedger {
   used: number
   /** 当天花掉的钱，配了价目表才有数，没配就是零 */
   cost?: number
+}
+
+/** 当前额度状态 */
+export interface BudgetStatus {
+  day: string
+  usedTokens: number
+  usedCost: number
+  metric: 'tokens' | 'cost'
+  limit: number
+  ratio: number
+  alert: boolean
+  blocked: boolean
+  remaining: number
+}
+
+/** 给装配层读取预算 */
+export interface QqBalanceSeam {
+  status(now?: number): BudgetStatus
+}
+
+const seams = new WeakMap<Context, QqBalanceSeam>()
+
+/** 取当前应用的预算状态 */
+export function qqBalanceOf(ctx: Context): QqBalanceSeam | undefined {
+  return seams.get(ctx.root) ?? seams.get(ctx)
 }
 
 /**
@@ -139,6 +170,39 @@ export function applyUsage(ledger: DayLedger, usage: UsageLike, at: number, time
   return { day, used: base.used + added, cost: (base.cost ?? 0) + spent }
 }
 
+/**
+ * 算当前预算状态
+ * @param ledger 当日记录
+ * @param metric 按 token 还是按钱
+ * @param limit 当日上限
+ * @param alertRatio 提醒比例
+ * @param enforce 到线是否阻止
+ * @returns 当前状态
+ */
+export function budgetStatusOf(
+  ledger: DayLedger,
+  metric: 'tokens' | 'cost',
+  limit: number,
+  alertRatio: number,
+  enforce: boolean,
+): BudgetStatus {
+  const safeLimit = Math.max(0, limit)
+  const used = metric === 'cost' ? Math.max(0, ledger.cost ?? 0) : Math.max(0, ledger.used)
+  const ratio = safeLimit > 0 ? used / safeLimit : 0
+  const alert = safeLimit > 0 && ratio >= Math.max(0, Math.min(1, alertRatio))
+  return {
+    day: ledger.day,
+    usedTokens: Math.max(0, ledger.used),
+    usedCost: Math.max(0, ledger.cost ?? 0),
+    metric,
+    limit: safeLimit,
+    ratio,
+    alert,
+    blocked: enforce && safeLimit > 0 && ratio >= 1,
+    remaining: safeLimit > 0 ? Math.max(0, safeLimit - used) : Number.POSITIVE_INFINITY,
+  }
+}
+
 /** 价目表文件里能写的东西 */
 export interface PriceSheet {
   /** 一天的预算，不写就按配置或 token 算 */
@@ -202,6 +266,10 @@ export function apply(ctx: Context, config: Config = {}): void {
   const defaultPrice = sheet?.defaultPrice ?? config.defaultPrice
   // 配了预算与价目才按钱算，否则还是按 token 算
   const byCost = dailyCost > 0 && (Object.keys(prices).length > 0 || defaultPrice !== undefined)
+  const metric = byCost ? 'cost' as const : 'tokens' as const
+  const limit = byCost ? dailyCost : dailyTokens
+  const enforce = config.enforce === true
+  const alertRatio = Math.max(0, Math.min(1, config.alertRatio ?? 0.8))
   const priceOf = (model: string): TokenPrice | undefined => prices[model] ?? defaultPrice
   const file = config.stateFile ?? join(resolveHuoliHome(config.home), 'data', 'qq-balance.json')
   let ledger = readLedger(file)
@@ -214,8 +282,18 @@ export function apply(ctx: Context, config: Config = {}): void {
     writeLedger(file, ledger)
   }
   const publish = (): void => {
-    qqVitalsOf(ctx)?.setBalance(levelOf(byCost ? ledger.cost ?? 0 : ledger.used, byCost ? dailyCost : dailyTokens, fullLevel))
+    const vitals = qqVitalsOf(ctx)
+    if (config.affectsVitals !== true) {
+      vitals?.setBalance(undefined)
+      return
+    }
+    vitals?.setBalance(levelOf(byCost ? ledger.cost ?? 0 : ledger.used, byCost ? dailyCost : dailyTokens, fullLevel))
   }
+  const status = (at = Date.now()): BudgetStatus => {
+    rollIfNeeded(at)
+    return budgetStatusOf(ledger, metric, limit, alertRatio, enforce)
+  }
+  seams.set(ctx.root, { status })
 
   rollIfNeeded(Date.now())
   publish()
@@ -236,5 +314,8 @@ export function apply(ctx: Context, config: Config = {}): void {
       log.warn('账没写进去，这一笔只在内存里：%s', error)
     }
     publish()
+  })
+  ctx.effect(() => () => {
+    seams.delete(ctx.root)
   })
 }

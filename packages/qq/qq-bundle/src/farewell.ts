@@ -6,8 +6,8 @@ import type { FarewellFact } from '@huoli/huoli-qq-vitals'
 /** 正文是谁写的：模型自己写过就是 model，没写才走到 fallback */
 export type FarewellAuthor = 'model' | 'fallback'
 
-/** 没给模型文本时写的那句中性话，措辞固定，不编造具体内容 */
-export const FAREWELL_NEUTRAL = '有些话想留给她'
+/** 没有原话时保留的普通说明，不编造具体内容 */
+export const FAREWELL_NEUTRAL = '一段值得记住的话'
 
 /**
  * 这一条记忆的正文：模型写过用它的，没写才用调用方给的文本，再没有就用中性那句

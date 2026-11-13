@@ -546,6 +546,17 @@ export interface DefineToolOptions<S extends ParameterSchemaSpec, O extends Valu
 }
 
 /**
+ * 没声明 output 时的兜底：结果原样转成一段文本
+ */
+const UNSPECIFIED_OUTPUT = {
+  schema: { type: 'json' } as ValueSchemaSpec,
+  render: (_args: unknown, value: unknown) => {
+    const text = typeof value === 'string' ? value : JSON.stringify(value ?? '') ?? ''
+    return [{ type: 'text' as const, text }]
+  },
+}
+
+/**
  * Define a first-party tool with inferred arguments and strict execution
  * validation. Replay-only presenters validate softly and fall back to generic
  * rendering for obsolete logged arguments.
@@ -563,9 +574,11 @@ export function defineTool<const S extends ParameterSchemaSpec, const O extends 
   // oxlint-disable-next-line typescript/unbound-method
   const userProjectContent = options.projectContent
   // oxlint-disable-next-line typescript/unbound-method
-  const userRender = options.output.render
+  // 外部插件常常不声明 output：给一份能把结果转成文本的兜底，别让注册整条失败
+  const output = options.output ?? UNSPECIFIED_OUTPUT
+  const userRender = output.render
   // oxlint-disable-next-line typescript/unbound-method
-  const userPresentationMeta = options.output.presentationMeta
+  const userPresentationMeta = output.presentationMeta
   // oxlint-disable-next-line typescript/unbound-method
   const userPresentCall = options.presentCall
   // oxlint-disable-next-line typescript/unbound-method
@@ -576,7 +589,7 @@ export function defineTool<const S extends ParameterSchemaSpec, const O extends 
     throw new Error(`defineTool(${options.name}): timeoutMs must be a positive finite number`)
   }
   const parameters = parameterSchemaSpecToJsonSchema(options.parameters)
-  const outputSchema = valueSchemaSpecToJsonSchema(options.output.schema)
+  const outputSchema = valueSchemaSpecToJsonSchema(output.schema)
   const validate = (args: unknown): string[] => validateJsonSchemaValue(parameters, args, '')
   const tool: ToolDefinition = {
     name: options.name,

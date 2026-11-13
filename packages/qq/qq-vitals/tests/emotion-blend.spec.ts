@@ -154,7 +154,8 @@ describe('语气开关', () => {
     const state = settled(HOT_AND_HURT, one)
 
     expect(state.emotion_blend).toHaveLength(1)
-    expect(renderPrompt(state, one, 0)).toContain('不用解释')
+    const configured = resolveTuning({ words: WORDS_PRESET, emotionToneEnabled: true, emotionToneFocus: '自定义的一路表达' })
+    expect(renderPrompt(state, configured, 0)).toContain('自定义的一路表达')
   })
 
   it('没有混合层时开着也不多一行', () => {

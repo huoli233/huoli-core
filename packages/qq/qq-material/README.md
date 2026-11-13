@@ -7,7 +7,7 @@ kind: "package-reference"
 
 ## Summary
 
-素材：群里在聊什么、在跟谁说话、有人没接的话、心里惦记着的事。惦记的事由模型自己写、自己删，放久了自动过期。
+素材：群里在聊什么、在跟谁说话、有人没接的话、心里惦记着的事，以及无聊、好奇、想有人说话、想分享眼前这件事这些当前动机。惦记的事由模型自己写、自己删，放久了自动过期。
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-两个工具 `write_thought` 与 `drop_thought`。提示词层另可取 `renderMaterialFacts` 渲染出的中文事实段，或由 `collectMaterialFacts` 直接取一份素材事实；两者都不要求先建运行件。
+两个工具 `write_thought` 与 `drop_thought`。提示词层另可取 `renderMaterialFacts` 渲染出的中文事实段，或由 `collectMaterialFacts` 直接取一份素材事实。自我层的无聊、好奇和想说话进入素材后只写成“有点无聊、有点好奇、想有人说话”这类事实，不替模型决定要不要开口。
 
 #### Token effect
 

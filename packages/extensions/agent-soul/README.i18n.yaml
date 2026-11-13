@@ -1,0 +1,46 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/extensions/agent-soul/README.md
+/:
+  en: 58b6d52625e6dc60
+  zh: 2c7c04ffbad1319e
+/huoli-huoli-agent-soul:
+  en: 602f61585a8376b1
+  zh: 76af1165a08d0438
+/huoli-huoli-agent-soul/summary:
+  en: 98e6888ec3d44f85
+  zh: 8d53352c6a410aef
+/huoli-huoli-agent-soul/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 988e839059414d27
+/huoli-huoli-agent-soul/use-this-package:
+  en: 588f86a648122391
+  zh: 2d8e64a7ca536310
+/huoli-huoli-agent-soul/understand-the-implementation:
+  en: ad7e42c12f7a9dc2
+  zh: e26d857ba228c321
+/huoli-huoli-agent-soul/further-exploration:
+  en: 079a899005817977
+  zh: 9d33fc0ad6cc156f
+/huoli-huoli-agent-soul/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/huoli-huoli-agent-soul/model-experience/prompt-content:
+  en: 7fca865c9895801f
+  zh: 04da264d70b1e58b
+/huoli-huoli-agent-soul/model-experience/prompt-content/what-the-model-sees:
+  en: b6b8425149b41c0d
+  zh: 331fc3c5842d1960
+/huoli-huoli-agent-soul/model-experience/prompt-content/token-effect:
+  en: e439e24d00495aba
+  zh: d7c61423119aa24f
+/huoli-huoli-agent-soul/model-experience/prompt-content/kv-cache-effect:
+  en: 60537e103c35ad00
+  zh: 2d6ef6cd00ef8f56
+/huoli-huoli-agent-soul/known-limitations-and-deferred-work:
+  en: 2a99c3ff31d3d274
+  zh: 7f567f459fcccecb
+/huoli-huoli-agent-soul/known-limitations-and-deferred-work/dev-note:
+  en: 050ba2cefbd609f9
+  zh: 4997f962c856b7ef

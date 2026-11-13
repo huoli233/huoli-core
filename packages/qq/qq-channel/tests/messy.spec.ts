@@ -175,6 +175,16 @@ describe('打岔与说法的工具', () => {
     await expect(messy.execute({ steps: [{ kind: 'withdraw' }], gap_ms: 0 }, execOf('group:1'))).rejects.toThrow(/messy.nothing_to_withdraw/u)
   })
 
+  it('同一会话可以连着演第二次：没有再硬的五分钟冷却', async () => {
+    const tools = mount()
+    const messy = tools.get('qq_send_messy')
+    if (messy === undefined) throw new Error('没挂上打岔工具')
+
+    await messy.execute({ steps: [{ kind: 'send', text: '第一句' }], gap_ms: 0 }, execOf('group:1'))
+    const second = await messy.execute({ steps: [{ kind: 'send', text: '第二句' }], gap_ms: 0 }, execOf('group:1'))
+    expect(second).toHaveProperty('sent', 1)
+  })
+
   it('步骤没说清做什么就在参数那层被拒，不靠猜字面', async () => {
     const tools = mount()
     const messy = tools.get('qq_send_messy')

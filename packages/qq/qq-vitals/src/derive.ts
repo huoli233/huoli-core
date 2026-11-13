@@ -51,7 +51,7 @@ function cortisolToIrritability(s: VitalsState, net: NetworkPass | undefined): n
   return net === undefined ? 0.9 * s.cortisol : deltaOf(net, 'irritability')
 }
 
-// 易怒：压力、低血糖、渴、睡不够、疼、体温高、经期前后都往里加；皮质醇那条原来的 0.2 起点并进了常数
+// 易怒：压力、低血糖、渴、睡不够、疼、体温高、经期前后都往里加；皮质醇的基础分并进常数
 function irritabilityOf(s: VitalsState, tuning: Tuning, net: NetworkPass | undefined): number {
   return clamp(
     -0.10 + cortisolToIrritability(s, net) - 0.2 * (s.serotonin - 0.65)

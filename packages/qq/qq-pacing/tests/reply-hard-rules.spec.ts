@@ -17,7 +17,7 @@ describe('条数硬规则：害怕与存在性恐惧', () => {
   })
 
   it('没过线就不压', () => {
-    expect(replyBudget({ ...CLINGY, fear: 0.2, dread: 0.2 })).toBe(4)
+    expect(replyBudget({ ...CLINGY, fear: 0.2, dread: 0.2 })).toBe(REPLY_DEFAULTS.maxCap)
   })
 })
 

@@ -101,6 +101,8 @@ export async function runCheck(options: CheckOptions = {}): Promise<CheckReport>
   if (!(temp >= 34 && temp <= 42)) problems.push(`体温 ${temp.toFixed(2)} 异常`)
   // 时间戳逐字段查：零是还没发生过，未来超出允许误差才算异常
   for (const field of STAMP_FIELDS) {
+    // 睡着时的醒点是排期，不该当成已经发生过的时间戳
+    if (field === 'wake_after' && state.asleep) continue
     const stamp = Number(state[field] ?? 0)
     if (stamp > now + CLOCK_SLACK_SECONDS * 1000) problems.push(`${String(field)} 在未来`)
   }

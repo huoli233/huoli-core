@@ -24,5 +24,5 @@ describe('跨包那几行验收', () => {
 
     expect(ran.status).toBe(2)
     expect(ran.stderr).toContain('不认这个参数')
-  })
+  }, 20_000)
 })

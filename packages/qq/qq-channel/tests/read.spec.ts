@@ -1,9 +1,12 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import type { WsChannel } from '../src/ws.ts'
-import { readHistory, readMembers, readMessage, textOf } from '../src/read.ts'
-import { apply } from '../src/index.ts'
+import { readForward, readHistory, readMembers, readMessage, textOf } from '../src/read.ts'
+import { apply, qqChannelOf } from '../src/index.ts'
 
 // 一个只回固定数据的假连接，问什么就答什么
 function fake(reply: { ok: true; data: Record<string, unknown> } | { ok: false; code: string; reason: string; hint: string }): WsChannel {
@@ -81,12 +84,40 @@ describe('工具真的挂上了', () => {
     apply(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999' })
     ReadingSocket.opened.at(-1)?.open()
 
-    expect([...tools.keys()]).toEqual(expect.arrayContaining(['qq_read_history', 'qq_read_members', 'qq_read_message']))
+    expect([...tools.keys()]).toEqual(expect.arrayContaining(['qq_read_history', 'qq_read_members', 'qq_read_message', 'qq_read_forward']))
     const history = tools.get('qq_read_history')
     if (history === undefined) throw new Error('没挂上翻记录的工具')
     const result = await history.execute({ count: 5 }, execOf('group:750677335')) as { count: number; items: { messageId: string }[] }
     expect(result.count).toBe(1)
     expect(result.items[0]?.messageId).toBe('12345')
+  })
+
+  it('上线补回的群历史进入同一个入站出口', async () => {
+    vi.stubGlobal('WebSocket', ReadingSocket)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qq-group-history-'))
+    const ctx = new Context()
+    ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
+    ctx.logger.exporter({ levels: { default: 3 }, export: () => {} })
+    apply(ctx, {
+      url: 'ws://127.0.0.1:6700',
+      selfId: '999',
+      groupHistoryPollMs: 60_000,
+      groupHistoryGroups: ['123'],
+      groupHistoryMaxAgeMs: Number.MAX_SAFE_INTEGER,
+      groupHistoryReplay: true,
+      groupHistoryStatusFile: path.join(dir, 'history.jsonl'),
+    })
+    const seam = qqChannelOf(ctx)
+    if (seam === undefined) throw new Error('通道没装上')
+    const received: string[] = []
+    seam.onIncoming(message => received.push(`${message.chatKey}:${message.history}`))
+    ReadingSocket.opened.at(-1)?.open()
+
+    await vi.waitFor(() => {
+      expect(received).toEqual(['group:123:group'])
+    })
+    await ctx.fiber.dispose()
+    fs.rmSync(dir, { recursive: true, force: true })
   })
 })
 
@@ -217,5 +248,73 @@ describe('看具体那一条', () => {
     expect(outcome.ok).toBe(false)
     if (outcome.ok) return
     expect(outcome.code).toBe('channel.read_empty')
+  })
+})
+
+describe('读合并转发', () => {
+  it('按原顺序给出名字、时间和正文', async () => {
+    const channel = fake({
+      ok: true,
+      data: {
+        messages: [
+          { message_id: 1, sender: { nickname: '甲' }, time: 1_700_000_000, content: [{ type: 'text', data: { text: '第一句' } }] },
+          { message_id: 2, sender: { nickname: '乙' }, time: 1_700_000_001, content: [{ type: 'text', data: { text: '第二句' } }] },
+        ],
+      },
+    })
+
+    const outcome = await readForward(channel, 'forward-1')
+
+    expect(outcome.ok).toBe(true)
+    if (!outcome.ok || !('items' in outcome)) return
+    expect(outcome.items.map(item => item.senderName)).toEqual(['甲', '乙'])
+    expect(outcome.text).toContain('不是当前用户自述')
+    expect(outcome.text).toContain('第一句')
+  })
+
+  it('嵌套转发受读取次数限制，截断会明说', async () => {
+    let calls = 0
+    const channel = {
+      ask: async () => {
+        calls += 1
+        return {
+          ok: true as const,
+          data: {
+            messages: [{
+              sender: { nickname: '甲' },
+              content: [{ type: 'forward', data: { id: `next-${calls}` } }],
+            }],
+          },
+        }
+      },
+    } as unknown as WsChannel
+
+    const outcome = await readForward(channel, 'root', { maxFetches: 2, maxDepth: 2 })
+
+    expect(outcome.ok).toBe(true)
+    if (!outcome.ok || !('items' in outcome)) return
+    expect(calls).toBe(2)
+    expect(outcome.truncated).toBe(true)
+    expect(outcome.text).toContain('已按读取上限截断')
+  })
+
+  it('第一条就超长时保留能放下的部分，不报成空内容', async () => {
+    const channel = fake({
+      ok: true,
+      data: {
+        messages: [{
+          sender: { nickname: '甲' },
+          content: [{ type: 'text', data: { text: '很长'.repeat(100) } }],
+        }],
+      },
+    })
+
+    const outcome = await readForward(channel, 'forward-1', { maxChars: 80 })
+
+    expect(outcome.ok).toBe(true)
+    if (!outcome.ok || !('items' in outcome)) return
+    expect(outcome.items).toHaveLength(1)
+    expect(outcome.truncated).toBe(true)
+    expect(outcome.text).toContain('已按读取上限截断')
   })
 })

@@ -5,7 +5,7 @@ import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqContinuityOf, type QqContinuitySeam } from '../src/index.ts'
-import { NOTE_MAX_CHARS, closeFacts, renderContinuityFacts } from '../src/close.ts'
+import { NOTE_MAX_CHARS, closeFacts, renderContinuityFacts, stripQuotedLines } from '../src/close.ts'
 
 // 工具体只读会话编号，其余字段由内核在真实调用时给
 function execOf(chatKey: string): ToolRunContext {
@@ -162,6 +162,33 @@ describe('装配层可直接取的收尾事实', () => {
     expect(text).not.toMatch(/该不该|建议说|应该回/)
   })
 
+  it('明确收尾和普通轮次用不同说法', () => {
+    const note = closeFacts({
+      chatKey: 'group:1',
+      summary: '这段收住了',
+      nextOpening: '下次再问',
+      at: Date.now(),
+      origin: 'explicit',
+    })
+
+    expect(note.origin).toBe('explicit')
+    expect(renderContinuityFacts({ note })).toContain('上次明确收在')
+  })
+
+  it('上一轮心里怎么想只写进上下文，不当成收尾摘要', () => {
+    const note = closeFacts({
+      chatKey: 'group:1',
+      summary: '对方问是不是不想理人；我回没有',
+      nextOpening: '下次先正面回答',
+      thought: '其实有点别扭，但不想让她一直等',
+      at: Date.now(),
+    })
+
+    expect(note.summary).not.toContain('别扭')
+    expect(note.thought).toBe('其实有点别扭，但不想让她一直等')
+    expect(renderContinuityFacts({ note })).toContain('上一轮心里：其实有点别扭')
+  })
+
   it('什么都不给时不硬编一句，这是负例', () => {
     expect(renderContinuityFacts()).toBe('')
     expect(renderContinuityFacts({ reflections: [] })).toBe('')
@@ -171,6 +198,30 @@ describe('装配层可直接取的收尾事实', () => {
     const note = closeFacts({ chatKey: 'group:1', summary: '长'.repeat(NOTE_MAX_CHARS + 10), nextOpening: '', at: Date.now() })
 
     expect(note.summary.length).toBeLessThanOrEqual(NOTE_MAX_CHARS)
+  })
+})
+
+describe('收尾摘要不再回灌任何一方原话', () => {
+  it('剥掉「我：」「对方：」开头的引语，只留话题', () => {
+    const raw = '群里有游戏截图和插件恶搞；对方：o；我：抓我？我网线一拔看谁抓谁 谁求你电了；最后冷下来'
+    const cleaned = stripQuotedLines(raw)
+
+    expect(cleaned).toContain('群里有游戏截图和插件恶搞')
+    expect(cleaned).toContain('最后冷下来')
+    expect(cleaned).not.toContain('网线一拔')
+    expect(cleaned).not.toContain('对方：o')
+  })
+
+  it('渲染出来也不带原话', () => {
+    const text = renderContinuityFacts({
+      note: {
+        chatKey: 'group:1', closedAt: Date.now(), throughSeq: 0, origin: 'turn',
+        summary: '聊了会儿图；我：这句被反复发了好几遍',
+        nextOpening: '',
+      },
+    })
+
+    expect(text).not.toContain('这句被反复发了好几遍')
   })
 })
 

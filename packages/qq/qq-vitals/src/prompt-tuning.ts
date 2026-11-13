@@ -2,7 +2,7 @@
 
 /** 提示词那一组的参数，与其它参数一起看全文进 Tuning */
 export interface PromptTuning {
-  /** 每轮身体提示词的字数上限，默认 600，超出就截断且至少保留 60 字 */
+  /** 每轮身体提示词的字数上限，默认 780，超出就截断且至少保留 60 字 */
   promptMaxChars: number
   /** 提示词截断时至少留几个字，默认 60 */
   promptMinChars: number
@@ -54,8 +54,8 @@ export interface PromptTuning {
 
 /** 提示词那一段的默认值，全仓只此一处 */
 export const PROMPT_TUNING: PromptTuning = {
-  // 底稿约二百九十正，可选段全成立时能到五百多，这里留足余量只当保险丝
-  promptMaxChars: 600,
+  // 底稿和情绪/应激段一起给足空间，可选段全成立时仍由保险丝截断
+  promptMaxChars: 780,
   promptMinChars: 60,
   promptHungerCrisis: 0.75,
   promptHungerHigh: 0.55,

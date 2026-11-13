@@ -26,6 +26,8 @@ export interface MaintenanceInput {
   memory: QqMemorySeam | undefined
   /** 自我层，没装上时不镜像，也没有记录表判据可查 */
   self: QqSelfSeam | undefined
+  /** 关系仓，每天让关系分数向中性回落一次 */
+  relations?: { maintain(at?: number): number } | undefined
   /** 日志写进哪个文件 */
   logFile: string
 }
@@ -104,14 +106,16 @@ export function mirrorPortOf(memory: QqMemorySeam): SelfMirrorPort {
  * @returns 写进日志的那一行，记忆仓没装上时是空串
  */
 export function runMaintenance(input: MaintenanceInput): string {
+  input.relations?.maintain(input.at)
   if (input.memory === undefined) return ''
   // 镜像前那次核对：这一趟之前库里本来就对得上几条
   const before = input.memory.ledger('verify').report
   input.memory.maintain(input.at)
   // 关着的那一层不写，镜像入口自己会返回没写
   const mirrored = input.self?.mirror(input.at)
-  // 镜像写入立刻记进记录表，这次核对才不会把它当成正文被改
-  if ((mirrored?.written ?? 0) > 0) input.memory.ledger('sync')
+  // 维护可能合并已有正文；镜像也可能写库，整理完统一补账再核对
+  input.memory.ledger('sync')
+  void mirrored
   const after = input.memory.ledger('verify').report
   // 判据三四只在自我层那本账上查，自我层没装上时一条都查不到
   const violations = input.self?.audit(input.at) ?? []

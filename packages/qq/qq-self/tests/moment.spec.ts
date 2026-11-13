@@ -51,6 +51,11 @@ describe('压句', () => {
     expect(compressMoment('（只有括号里的说明）')).toBe('')
   })
 
+  it('跳过系统抬头和键值行，取正文首句', () => {
+    expect(compressMoment('[SYSTEM_LOAD] QQ_BODY_STATE\nRULE: affect_tone_only\n你现在的感觉：还算平静。\n后面那行'))
+      .toBe('你现在的感觉：还算平静。')
+  })
+
   it('接上身体以后面板的此刻是压过的一句', async () => {
     const seam = await mount(tempDir())
     seam.useVitals(momentPort({ render: () => '【你现在的神经状态（只用来决定语气）】\n你有点渴，想喝点凉的。' }))
@@ -60,6 +65,20 @@ describe('压句', () => {
     expect(lines[1]).toBe('此刻：你现在的神经状态')
     expect(lines).toHaveLength(3)
     expect(seam.panel().length).toBeLessThanOrEqual(300)
+  })
+
+  it('压句按调用次数取正文，不因为上一轮没读到就永久停用', () => {
+    let calls = 0
+    const port = momentPort({
+      render: () => {
+        calls += 1
+        if (calls === 1) throw new Error('这一拍没读到')
+        return '你现在的感觉：还算平静。'
+      },
+    })
+
+    expect(() => port.render()).toThrow('这一拍没读到')
+    expect(port.render()).toBe('你现在的感觉：还算平静。')
   })
 
   it('身体给太长也压到上限以内，此刻那一行不整行丢', async () => {

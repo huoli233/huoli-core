@@ -4,7 +4,7 @@ import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { openVectorStore } from '../src/vector-store.ts'
 import { encodeVector } from '../src/recall.ts'
-import { cleanupTempDirs, mount, tempFile } from './harness.ts'
+import { cleanupTempDirs, execOf, mount, tempFile } from './harness.ts'
 
 const dirs: string[] = []
 
@@ -106,5 +106,22 @@ describe('接到记忆仓上', { timeout: 30_000 }, () => {
 
     expect(await seam.vectorSearch([1, 0, 0])).toEqual([])
     expect(await seam.vectorReindex()).toBe(0)
+  })
+
+  it('重建工具把记忆灌进向量库并记下嵌入模型', async () => {
+    const file = tempFile()
+    const vectorDir = vectorDirOf()
+    const { seam, tool } = mount({
+      file,
+      vectorStore: 'pglite',
+      vectorDir,
+      embedding: { baseURL: 'http://127.0.0.1:11434/v1', model: 'bge-m3', timeoutMs: 1000 },
+    })
+    seam.remember('周三去爬山', 'group:1', { at: 1, importance: 50 })
+
+    const result = await tool('memory_vector_reindex').execute({}, execOf('group:1')) as { ok: boolean; indexed: number }
+
+    expect(result).toMatchObject({ ok: true, indexed: 1 })
+    expect(fs.readFileSync(path.join(vectorDir, 'model.txt'), 'utf8').trim()).toBe('bge-m3')
   })
 })

@@ -120,7 +120,7 @@ afterEach(() => {
 
 describe('发到一半被叫停', () => {
   it('上限三条、但说完第一条就该停：真的只发一条', async () => {
-    const { tool, seam, socket } = mount()
+    const { tool, seam, socket } = mount({ replySingleMessage: false })
     seam.useReplyCap(() => 3)
     seam.useStop(sent => sent >= 1)
 
@@ -132,7 +132,7 @@ describe('发到一半被叫停', () => {
   })
 
   it('没人叫停时三条都发出去，证明上面的停是它造成的', async () => {
-    const { tool, seam, socket } = mount()
+    const { tool, seam, socket } = mount({ replySingleMessage: false })
     seam.useReplyCap(() => 3)
 
     const result = await tool('qq_send_message').execute({ text: THREE }, execOf('group:1')) as { parts: number }
@@ -142,7 +142,7 @@ describe('发到一半被叫停', () => {
   })
 
   it('一开口就该停：一条都不发', async () => {
-    const { tool, seam, socket } = mount()
+    const { tool, seam, socket } = mount({ replySingleMessage: false })
     seam.useReplyCap(() => 3)
     seam.useStop(() => true)
 
@@ -153,7 +153,7 @@ describe('发到一半被叫停', () => {
   })
 
   it('停下来的判定按已经发出去的条数走，不是按计划条数', async () => {
-    const { tool, seam, socket } = mount()
+    const { tool, seam, socket } = mount({ replySingleMessage: false })
     seam.useReplyCap(() => 3)
     const seen: number[] = []
     seam.useStop((sent) => {
@@ -166,5 +166,15 @@ describe('发到一半被叫停', () => {
     // 切句那一遍按计划位问，发送那一遍按已发条数问，最后问的是 1
     expect(seen.at(-1)).toBe(1)
     expect(socket.bodies()).toHaveLength(2)
+  })
+
+  it('装配层兜底发送按分句发成几条，不整段并成一条', async () => {
+    const { seam, socket } = mount({ replySingleMessage: false })
+    seam.useReplyCap(() => 3)
+
+    const result = await seam.send(THREE, 'group:1')
+
+    expect(result.ok).toBe(true)
+    expect(socket.bodies()).toEqual(['第一句在这儿。', '第二句也在这儿。', '第三句还在这儿。'])
   })
 })

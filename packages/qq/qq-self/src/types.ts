@@ -321,12 +321,35 @@ export interface PanelVitals {
   emotion?: readonly PanelEmotionBar[]
 }
 
+/** Safe speech-recognition runtime facts for local diagnostics; never includes audio, credentials, or file paths. */
+export interface PanelAsrStatus {
+  transport: string
+  providerId?: string
+  phase: string
+}
+
+/** 面板现场那一格：正在写哪一条、刚收到什么、叫醒判断最近一次的结果 */
+export interface PanelLive {
+  /** 这一份现场取自哪个时刻 */
+  at: number
+  /** 现在正在写这一条：哪条聊天、从什么时候开始写、走到第几步 */
+  typing?: { chatKey: string; since: number; step: number }
+  /** 刚收到的那条消息：哪条聊天、几时、这次一起看到几条 */
+  inbound?: { chatKey: string; at: number; count: number }
+  /** 叫醒判断最近一次的结果：被挡下为真，reason 是原因码 */
+  proactive?: { blocked: boolean; reason: string; at: number }
+}
+
 /** 只读出口露出去的全部内容：只有她自己的话与计数，没有用户原文、记忆正文与钥匙记录 */
 export interface PanelState {
   /** 面板正文与首行记的生成时间，还没生成时两个都是空串 */
   panel: { body: string; generatedAt: string }
+  /** 现场那一格，时间线还没写过时整个字段省掉 */
+  live?: PanelLive
   /** 画条要用的那几个数与情绪来由，没接上身体时整个字段省掉 */
   vitals?: PanelVitals
+  /** 本机 ASR 的安全运行状态，未接 ASR 时省略 */
+  asr?: PanelAsrStatus
   /** 当前身份主张，一条都没写过时不给 */
   identity?: { claim: IdentityClaim; why: string; at: number }
   /** 两档账汇总，两档从不相加 */

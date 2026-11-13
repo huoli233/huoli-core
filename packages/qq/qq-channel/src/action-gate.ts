@@ -1,7 +1,6 @@
 // 三类公共动作共用的入口：先判阶段与分级，再过确认、去重、冷却与额度，最后仍走出站体检
 
 import { createHash } from 'node:crypto'
-import { startOfNextDay } from '@huoli/huoli-qq-proactive'
 import { DEFAULTS, judgeComment, judgePostLevel, judgePrivate, type ActionKind, type GradeDecision } from '@huoli/huoli-qq-self'
 import { ACTION_STATE_VERSION, emptyActionState, type ActionKindState, type ActionState, type ActionStore, type PendingAction } from './action-store.ts'
 import type { ActionDelivery, ActionFacts, ActionGate, ActionResult, ActionTunings } from './actions.ts'
@@ -44,6 +43,11 @@ function fingerprintOf(text: string): string {
 function startOfDay(at: number): number {
   const date = new Date(at)
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+}
+
+function startOfNextDay(at: number): number {
+  const date = new Date(at)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime()
 }
 
 // 拒绝只回码、原因与下次时刻，不改写正文
@@ -167,7 +171,7 @@ export function createActionGate(options: ActionGateOptions): ActionGate {
       const next: ActionKindState = { dayStart, dayCount: slot.dayCount + 1, lastAt: at, fingerprints }
       const pending = ticket === undefined ? state.pending : state.pending.filter(entry => entry.confirmId !== ticket.confirmId)
       store.write({ version: ACTION_STATE_VERSION, kinds: withKind(state.kinds, kind, next), pending })
-      outbound.record(at)
+      outbound.record(facts.chatKey, at)
       return { ok: true, at, delivery }
     },
 

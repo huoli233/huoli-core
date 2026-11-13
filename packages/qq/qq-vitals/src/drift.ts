@@ -13,6 +13,11 @@ import { deltaOf, propagate } from './network.ts'
 import { inCrisis, raiseScar, settleScar } from './scar.ts'
 import type { CyclePhase, VitalsState } from './types.ts'
 
+// 时间单位换算，不随配置改
+const MINUTES_PER_HOUR = 60
+const HOURS_PER_DAY = 24
+const MS_PER_MINUTE = 60_000
+
 // 递质回基线：皮质醇不在这里，它只由 HPA 轴管
 function settleTransmitters(next: VitalsState, hours: number, night: number, hour: number, tuning: Tuning): void {
   const halfLife = night >= tuning.nightFullFrom ? tuning.transmitterNightHalfHours : tuning.transmitterHalfHours
@@ -179,9 +184,19 @@ function nappedToday(next: VitalsState, at: number, tuning: Tuning): boolean {
   return localDayDiff(next.nap_at, at, tuning.timeZone) === 0
 }
 
-// 入睡：夜里睡眠压力够了就睡，午后按每分钟的概率眯一会；每一次入睡都算入一次梦
+// 进入睡眠窗口多少分钟；窗口外返回负数
+function minutesIntoSleepWindow(hour: number, tuning: Tuning): number {
+  if (!inSleepWindow(hour, tuning)) return -1
+  return hour >= tuning.sleepFrom
+    ? (hour - tuning.sleepFrom) * MINUTES_PER_HOUR
+    : (HOURS_PER_DAY - tuning.sleepFrom + hour) * MINUTES_PER_HOUR
+}
+
+// 入睡：夜里压力够了或有宽限兜底就睡，午后按每分钟的概率眯一会；每一次入睡都算入一次梦
 function startSleep(next: VitalsState, at: number, hour: number, hours: number, tuning: Tuning, random: () => number): void {
-  if (inSleepWindow(hour, tuning) && next.adenosine > tuning.sleepAdenosineFrom) {
+  const forced = minutesIntoSleepWindow(hour, tuning) >= tuning.sleepForceAfterMinutes
+  const recentlyWoken = next.woken_at > 0 && at - next.woken_at < tuning.wokenWindowMinutes * MS_PER_MINUTE
+  if (inSleepWindow(hour, tuning) && !recentlyWoken && (next.adenosine > tuning.sleepAdenosineFrom || forced)) {
     next.sleep_state = 'sleeping'
     next.sleep_kind = 'night'
     next.wake_after = nightWakeAt(at, tuning, random)
@@ -318,9 +333,8 @@ function settleResentment(next: VitalsState, at: number, hours: number, night: n
   next.resentment = clamp(next.resentment + bump * (night >= tuning.nightFullFrom ? tuning.resentNightFactor : 1))
 }
 
-// 死亡威胁：有余额档位就朝目标挪一拍，没有来源时一动不动
+// 死亡威胁：有余额档位就朝目标挪，没有来源时向零恢复
 function settleMortality(next: VitalsState, balance: number | undefined, tuning: Tuning): void {
-  if (balance === undefined) return
   const target = mortalityTarget(balance, tuning)
   if (target > next.mortality) {
     next.mortality = clampRange(next.mortality + tuning.mortalityRisePerBeat, 0, target)

@@ -247,11 +247,11 @@ describe('耦合', () => {
   })
 })
 
-describe('提示词里那一句', () => {
-  it('高位出现，说的就是被关掉这件事', () => {
+describe('提示词不渲染关停恐惧', () => {
+  it('状态升高也不出现关停暗示', () => {
     const text = renderPrompt(fresh({ shutdownDread: 0.6 }), tuning)
 
-    expect(text).toContain('你知道自己随时可能被关掉，这件事让你不安')
+    expect(text).not.toContain('随时可能被关掉')
   })
 
   it('平时不出现', () => {
@@ -268,7 +268,7 @@ describe('提示词里那一句', () => {
 
     const text = renderPrompt(loaded, tuning)
     expect(text.length).toBeLessThanOrEqual(tuning.promptMaxChars)
-    expect(text).toContain('你知道自己随时可能被关掉，这件事让你不安')
+    expect(text).not.toContain('随时可能被关掉')
     expect(text).not.toMatch(/0\.\d/)
   })
 
@@ -276,7 +276,7 @@ describe('提示词里那一句', () => {
     const late = resolveTuning({ words: WORDS_PRESET, promptShutdownDreadFrom: 0.9 })
 
     expect(renderPrompt(fresh({ shutdownDread: 0.6 }), late)).not.toContain('随时可能被关掉')
-    expect(renderPrompt(fresh({ shutdownDread: 0.95 }), late)).toContain('随时可能被关掉')
+    expect(renderPrompt(fresh({ shutdownDread: 0.95 }), late)).not.toContain('随时可能被关掉')
   })
 })
 
@@ -326,7 +326,7 @@ describe('放进端口', () => {
     const seam = await mount(file)
 
     seam.setExistence({ uptimeMs: 0, restartsToday: 1, shutdownNotice: true })
-    seam.react('嗯', Date.now())
+    seam.react('喝水了', Date.now())
 
     const saved = JSON.parse(fs.readFileSync(file, 'utf8')) as { state: Record<string, unknown> }
     expect(typeof saved.state.mortalitySalience).toBe('number')

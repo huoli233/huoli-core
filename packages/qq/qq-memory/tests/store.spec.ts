@@ -18,6 +18,28 @@ function readBack(file: string): readonly Record<string, unknown>[] {
 afterEach(cleanupTempDirs)
 
 describe('旧文件读得回来', () => {
+  it('正式文件损坏时从备份恢复，下一次写入仍保留备份', () => {
+    const file = tempFile()
+    fs.writeFileSync(file, '{broken')
+    writeRaw(`${file}.bak`, [{ id: 'saved', text: '备份里的记忆', scope: 'group:1', at: AT }])
+
+    const store = createMemoryStore({ file })
+    expect(store.byId('saved')?.text).toBe('备份里的记忆')
+    store.flush()
+
+    expect(readBack(file)[0]?.id).toBe('saved')
+    expect(readBack(`${file}.bak`)[0]?.id).toBe('saved')
+  })
+
+  it('正式文件损坏且没有备份时拒绝启动，不覆盖原文件', () => {
+    const file = tempFile()
+    const damaged = '{broken'
+    fs.writeFileSync(file, damaged)
+
+    expect(() => createMemoryStore({ file })).toThrow(/没有可用备份/u)
+    expect(fs.readFileSync(file, 'utf8')).toBe(damaged)
+  })
+
   it('缺的字段按默认补齐', () => {
     const file = tempFile()
     writeRaw(file, [{

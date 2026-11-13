@@ -12,7 +12,7 @@ const LABELS: PanelLabels = {
   doing: '我在做：',
   next: '下一步：',
   question: '我想弄明白：',
-  refuse: '我可以说不，也可以说不知道。',
+  refuse: '按事实判断；能做的事就去做。',
 }
 
 // 身份级动作：只有清单里的名字逐字出现，才谈得上两把钥匙
@@ -36,7 +36,8 @@ const STAGES: readonly string[] = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5a', 'P5b', '
 /** 默认值都在这张表里，改默认值只改这里 */
 export const DEFAULTS: SelfSettings = {
   panelMaxChars: 300,
-  panelMaxAgeMs: 24 * 60 * 60 * 1000,
+  // 状态栏要能反映此刻：十分钟最多沿用手上一份，超过就按身体与项目重画
+  panelMaxAgeMs: 10 * 60 * 1000,
   momentMaxChars: 120,
   // 累了不做身份级决定：电量低于一成半、或困到七成半就停
   restEnergyBelow: 0.15,

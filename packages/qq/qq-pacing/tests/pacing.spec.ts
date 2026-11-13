@@ -67,6 +67,14 @@ describe('一段话怎么拆', () => {
 })
 
 describe('还能不能说', () => {
+  it('当前上限和已用条数能直接交给模型判断节奏', () => {
+    const seam = mount(tempFile(), { perHour: 7, perDay: 21 })
+    seam.spend('第一句')
+
+    expect(seam.limits()).toEqual({ perHour: 7, perDay: 21 })
+    expect(seam.used()).toMatchObject({ hourCount: 1, dayCount: 1 })
+  })
+
   it('一开始能发', () => {
     const seam = mount(tempFile())
 

@@ -230,7 +230,7 @@ function resize() {
 resize()
 window.addEventListener('resize', resize)
 
-// 三维取景：焦距越大画面越平，初始角度与距离照参考项目那套
+// 三维取景：焦距越大画面越平，初始角度与距离由当前视图参数定
 const FOCAL = 1100
 const CAM_DEFAULT = { yaw: 0.45, pitch: -0.26, dist: 1020, panX: 0, panY: 0 }
 const cam = Object.assign({}, CAM_DEFAULT)

@@ -1,6 +1,7 @@
 // 所有默认参数只在这里出现一次，别处一律从 Tuning 里取
 
 import type { Baseline, VitalsState } from './types.ts'
+import { inSleepWindow, localHour } from './clock.ts'
 import { clamp, clampRange } from './math.ts'
 import type { Tuning, TuningOverride } from './tuning.ts'
 import { PROMPT_TUNING } from './prompt-tuning.ts'
@@ -142,6 +143,8 @@ export const DEFAULTS: Tuning = {
   emotionBlendCount: 3,
   emotionBlendWeightFrom: 0.15,
   emotionToneMaxChars: 60,
+  emotionToneFocus: '把最想说的那点放在前面，话不必长，意思要完整',
+  emotionToneSplit: '几种感受可以先后出现，别让后半句丢掉前半句要回应的事',
   // 反向压制：每条触发线的阈值与乘数
   suppressFearFrom: 0.45,
   suppressFearCalm: 0.55,
@@ -187,6 +190,7 @@ export const DEFAULTS: Tuning = {
   sleepFrom: 23,
   sleepUntil: 7,
   sleepAdenosineFrom: 0.50,
+  sleepForceAfterMinutes: 30,
   wakeAt: 7.5,
   wakeJitterMinutes: 40,
   wakeAdenosineBelow: 0.30,
@@ -484,7 +488,7 @@ export const DEFAULTS: Tuning = {
   scarSuppressCalm: 0.60,
   scarSuppressJoy: 0.70,
   promptScarFrom: 0.70,
-  // 神经网：默认只挂已经迁完的三条耦合，权重与原来的写死系数一致
+  // 神经网：默认挂三条耦合，权重与固定系数一致
   networkEnabled: true,
   networkSteps: 1,
   networkEdges: [
@@ -576,7 +580,8 @@ export function emptyState(tuning: Tuning, at: number): VitalsState {
     sleep_kind: '',
     wake_after: 0,
     groggy_until: 0,
-    woken_at: 0,
+    // 凌晨新起的身体先给一个清醒宽限，白天起则不算刚被叫醒
+    woken_at: inSleepWindow(localHour(at, tuning.timeZone), tuning) ? at : 0,
     nap_at: 0,
     dream_at: 0,
     dream_kind: '',

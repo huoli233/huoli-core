@@ -111,7 +111,8 @@ export class SenseVoiceWorker {
   private lastProgressAt = 0
   /** Configured origins available for explicit downloads; offline deployments expose no choices. */
   readonly downloadSources: readonly string[]
-  private preparing: { abort: AbortController; settled: Promise<void>; completed: boolean; downloadSource: string | undefined } | undefined
+  private preparing: { abort: AbortController; settled: Promise<void>; completed: boolean; downloadSource: string | undefined; kind: 'inspect' | 'prepare' } | undefined
+  private prepareAfterInspect: { options: SpeechPreparationOptions; downloadSource: string | undefined } | undefined
 
   constructor(private readonly ctx: Context, private readonly config: Config) {
     this.downloadSources = config.modelDirectory !== undefined && config.vadModelPath !== undefined ? []
@@ -173,7 +174,7 @@ export class SenseVoiceWorker {
       this.publish({ phase: runtime ? 'standby' : 'unprepared', steps: this.state.steps.map(({ kind }) => ({ kind,
         status: kind === 'check' || runtime && kind !== 'load' ? 'complete' : 'pending',
       })) })
-    })
+    }, undefined, 'inspect')
   }
 
   /**
@@ -183,16 +184,23 @@ export class SenseVoiceWorker {
   prepare(options: SpeechPreparationOptions = {}): void {
     const source = options.downloadSource
     if (source !== undefined && !this.downloadSources.includes(source)) throw new Error('Speech download source is unavailable')
+    if (this.preparing?.kind === 'inspect') {
+      if (this.prepareAfterInspect !== undefined && this.prepareAfterInspect.downloadSource !== source) {
+        throw new Error('Cancel preparation before changing the download source')
+      }
+      this.prepareAfterInspect ??= { options, downloadSource: source }
+      return
+    }
     const config = source === undefined ? this.config : Object.assign({}, this.config, { modelOrigin: source })
-    this.runPreparation(async (signal) => { await this.start(signal, config) }, source)
+    this.runPreparation(async (signal) => { await this.start(signal, config) }, source, 'prepare')
   }
 
-  private runPreparation(run: (signal: AbortSignal) => Promise<void>, downloadSource?: string): void {
+  private runPreparation(run: (signal: AbortSignal) => Promise<void>, downloadSource: string | undefined, kind: 'inspect' | 'prepare'): void {
     if (this.preparing && this.preparing.downloadSource !== downloadSource) throw new Error('Cancel preparation before changing its download source')
     if (this.preparing || this.worker) return
     this.lifetime.signal.throwIfAborted()
     const abort = new AbortController()
-    const task = { abort, settled: Promise.resolve(), completed: false, downloadSource }
+    const task = { abort, settled: Promise.resolve(), completed: false, downloadSource, kind }
     this.preparing = task
     task.settled = this.enqueue(run, abort.signal)
       .catch((error: unknown) => {
@@ -200,13 +208,19 @@ export class SenseVoiceWorker {
         this.publish(abort.signal.aborted ? { phase: 'cancelled' }
           : { phase: 'failed', message: error instanceof Error ? error.message : String(error),
             ...error instanceof SpeechDownloadError ? { download: error.download } : {} })
-      }).finally(() => { this.preparing = undefined })
+      }).finally(() => {
+        this.preparing = undefined
+        const queued = kind === 'inspect' ? this.prepareAfterInspect : undefined
+        if (kind === 'inspect') this.prepareAfterInspect = undefined
+        if (queued !== undefined && !this.lifetime.signal.aborted) this.prepare(queued.options)
+      })
   }
 
   /** Cancel unfinished preparation; completed readiness is retained. @returns after its queued or active work settles. */
   async cancel(): Promise<void> {
     const task = this.preparing
     if (!task) return
+    if (task.kind === 'inspect') this.prepareAfterInspect = undefined
     if (!task.completed) {
       this.publish({ phase: 'cancelling', startedAt: Date.now() })
       task.abort.abort(new Error('Speech preparation cancelled'))
@@ -319,6 +333,7 @@ export class SenseVoiceWorker {
   /** Stop the local recognizer. @returns after admission closes, queued jobs settle, and the managed worker exits. */
   async dispose(): Promise<void> {
     this.listeners.clear()
+    this.prepareAfterInspect = undefined
     this.lifetime.abort(new Error('SenseVoice provider disposed'))
     clearTimeout(this.idle)
     try { await this.tail } finally { await this.stop() }

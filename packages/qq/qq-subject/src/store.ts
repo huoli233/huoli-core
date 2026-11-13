@@ -2,7 +2,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { emptyChat, emptySubject, settleChat, settleGlobal, type ChatState, type GlobalState, type SubjectState } from './state.ts'
+import { emptyChat, emptySubject, settleChat, settleGlobal, tickGlobal, type ChatState, type GlobalState, type SubjectState } from './state.ts'
 
 /** 存盘的选项 */
 export interface SubjectStoreOptions {
@@ -17,6 +17,8 @@ export interface SubjectStore {
   setActive(chatKey: string): void
   changeGlobal(field: keyof GlobalState, delta: number): void
   changeChat(chatKey: string, field: keyof ChatState, delta: number): void
+  /** 按当前时刻结算一次安静时间里累积的动机并落盘 */
+  tick(at?: number): void
   flush(): void
 }
 
@@ -70,6 +72,8 @@ function save(file: string, state: SubjectState): void {
 export function createSubjectStore(options: SubjectStoreOptions): SubjectStore {
   const now = options.now ?? (() => Date.now())
   let state = load(options.file, now())
+  let lastPersistAt = now()
+  let dirty = false
 
   const flatten = (): SubjectState => {
     const at = now()
@@ -81,6 +85,8 @@ export function createSubjectStore(options: SubjectStoreOptions): SubjectStore {
 
   const persist = (): void => {
     save(options.file, state)
+    lastPersistAt = now()
+    dirty = false
   }
 
   return {
@@ -93,13 +99,16 @@ export function createSubjectStore(options: SubjectStoreOptions): SubjectStore {
       if (existing !== undefined) return existing
       const created = emptyChat(now())
       state = { ...state, chats: { ...state.chats, [chatKey]: created } }
+      dirty = true
       return created
     },
     setActive(chatKey) {
       flatten()
       if (state.lastActive === chatKey) return
+      const previous = state.lastActive
       state = { ...state, lastActive: chatKey }
-      persist()
+      if (previous === '' || now() - lastPersistAt >= 5_000) persist()
+      else dirty = true
     },
     changeGlobal(field, delta) {
       flatten()
@@ -116,8 +125,12 @@ export function createSubjectStore(options: SubjectStoreOptions): SubjectStore {
       state = { ...state, chats: { ...state.chats, [chatKey]: { ...chat, [field]: value, updatedAt: now() } } }
       persist()
     },
-    flush() {
+    tick(at) {
+      state = { ...state, global: tickGlobal(state.global, at ?? now()) }
       persist()
+    },
+    flush() {
+      if (dirty) persist()
     },
   }
 }

@@ -4,6 +4,10 @@
 export interface QqMessage {
   seq: number
   chatKey: string
+  /** 平台消息编号；撤回时用来找回刚看过的那条 */
+  messageId?: string
+  /** 这是一条撤回事实，不是一条新的真人发言 */
+  isRecall?: boolean
   senderId: string
   senderName?: string
   text: string
@@ -15,6 +19,8 @@ export interface QqMessage {
 
 /** 通道推消息时给的字段 */
 export interface InboxPush {
+  messageId?: string
+  isRecall?: boolean
   senderId: string
   senderName?: string
   text: string
@@ -95,6 +101,8 @@ export function createInbox(now: () => number = () => Date.now()): QqInbox {
       const item: QqMessage = {
         seq: list.length + 1,
         chatKey,
+        ...message.messageId === undefined || message.messageId === '' ? {} : { messageId: message.messageId },
+        ...message.isRecall === undefined ? {} : { isRecall: message.isRecall },
         senderId: message.senderId,
         ...message.senderName !== undefined ? { senderName: message.senderName } : {},
         text: message.text,

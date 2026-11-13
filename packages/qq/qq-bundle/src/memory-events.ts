@@ -1,13 +1,17 @@
 // 身体那边产出的六类事实在这里落成记忆，开关关着时一个都不挂
 
 import type { Context } from '@huoli/cordis'
-import { farewellTextAt, readFarewellSlot, type QqChannelSeam } from '@huoli/huoli-qq-channel'
-import type { QqMemorySeam } from '@huoli/huoli-qq-memory'
+import '@huoli/huoli-agent'
+import { farewellTextAt, finalTextOf, readFarewellSlot, type QqChannelSeam } from '@huoli/huoli-qq-channel'
+import { buildInjectBlock, shouldInject, type QqMemorySeam } from '@huoli/huoli-qq-memory'
 import type { QqSelfSeam } from '@huoli/huoli-qq-self'
 import type { QqSubjectSeam } from '@huoli/huoli-qq-subject'
+import type { RememberOptions } from '@huoli/huoli-qq-memory'
 import type { CycleStartFact, DreamFact, DrinkFact, FarewellFact, MealFact, QqVitalsSeam, ScarFact } from '@huoli/huoli-qq-vitals'
+import '@huoli/huoli-system-prompt'
 import type { Config } from './types.ts'
 import type { BUNDLE_DEFAULTS } from './defaults.ts'
+import { resolveEmotionSettings, withEmotionDefault } from './emotion-tier.ts'
 import { dreamImportance, dreamKey, dreamMetadata, dreamText, dreamWritten } from './dream.ts'
 import { drinkMetadata, drinkText, drinkWritten } from './drink.ts'
 import { farewellMetadata, farewellText, farewellWritten } from './farewell.ts'
@@ -29,16 +33,38 @@ export interface MemoryEventDeps {
 }
 
 /**
- * 从工具参数里取出她要说的话，取不到就是空串
+ * 从发送工具参数里取出她真正说出去的话
  * @param argumentsJson 工具调用带的参数原文
- * @returns 去掉首尾空白的那句话，没写或不是 JSON 时是空串
+ * @param toolName 工具名，省略时按常见字段猜
+ * @returns 去掉首尾空白的那段话，没写或不是 JSON 时是空串
  */
-export function saidTextOf(argumentsJson: string): string {
+export function saidTextOf(argumentsJson: string, toolName = ''): string {
   try {
     const parsed: unknown = JSON.parse(argumentsJson)
     if (parsed === null || typeof parsed !== 'object') return ''
-    const text = (parsed as Record<string, unknown>).text
-    return typeof text === 'string' ? text.trim() : ''
+    const args = parsed as Record<string, unknown>
+    if (typeof args.text === 'string') return finalTextOf(args.text)
+    if (typeof args.lines === 'string') {
+      return args.lines.split('\n').map(line => finalTextOf(line)).filter(line => line !== '').join('；')
+    }
+    if (Array.isArray(args.lines)) {
+      return args.lines.flatMap(line => typeof line === 'string' ? [finalTextOf(line)] : []).filter(line => line !== '').join('；')
+    }
+    if (Array.isArray(args.steps)) {
+      return args.steps.flatMap((row) => {
+        if (row === null || typeof row !== 'object') return []
+        const step = row as Record<string, unknown>
+        const kind = typeof step.kind === 'string' ? step.kind : ''
+        return (kind === 'send' || kind === 'replace') && typeof step.text === 'string'
+          ? [finalTextOf(step.text)]
+          : []
+      }).filter(text => text !== '').join('；')
+    }
+    if (toolName === 'qq_send_sticker') return '我发了一张表情包'
+    if (toolName === 'qq_send_voice') return '我发了一段语音'
+    if (toolName === 'qq_send_poke') return '我轻轻戳了戳一个群友'
+    if (toolName === 'qq_send_reaction') return '我给一条消息加了表情回应'
+    return ''
   } catch {
     // 参数不是 JSON 就当这一句没说过，别的照旧
     return ''
@@ -56,14 +82,80 @@ export function enqueueSaid(
   ctx: Context,
   memory: QqMemorySeam | undefined,
   chatKey: string,
-  round: { said: string; at: number },
+  round: { said: string; at: number; emotional?: number },
 ): void {
   if (memory === undefined || round.said === '') return
   try {
-    memory.enqueue(round.said, chatKey, { layer: 'episodic', source: 'chat', at: round.at })
+    memory.enqueue(round.said, chatKey, {
+      layer: 'episodic',
+      source: 'chat',
+      at: round.at,
+      ...round.emotional === undefined ? {} : { emotional: round.emotional },
+    })
   } catch (error) {
     ctx.logger('qq-bundle').warn('这一句没攒进记忆：%s', String(error))
   }
+}
+
+/** 记忆召回接进当前轮时要用的上限 */
+export interface MemoryInjectionOptions {
+  /** 一共最多放多少字 */
+  maxChars: number
+  /** 一次最多放几条 */
+  maxItems: number
+  /** 同一段隔几轮才许再放 */
+  repeatTurns: number
+  /** 当前模式是否允许召回到提示词里 */
+  enabled?: () => boolean
+}
+
+/**
+ * 把召回记忆作为独立运行时上下文提供，用户原话保持不变
+ * @param ctx 运行环境
+ * @param memory 记忆仓
+ * @param options 字数、条数与去重轮数
+ */
+export function registerMemoryInjection(
+  ctx: Context,
+  memory: QqMemorySeam | undefined,
+  options: MemoryInjectionOptions,
+): void {
+  if (memory === undefined) return
+  const lastInjected = new Map<string, number>()
+  const blocks = new Map<string, string>()
+  ctx.systemPrompt.context({
+    name: 'qq:memory-recall',
+    order: 4,
+    interpolate: false,
+    text: context => blocks.get(String(context.agent?.id ?? '')) ?? '',
+  })
+  ctx.on('agent/pre-step', async (payload, next) => {
+    const decision = await next()
+    const chatKey = payload.agent.id
+    if (decision.kind !== 'enter' || options.enabled?.() === false) {
+      blocks.delete(chatKey)
+      return decision
+    }
+    if (!shouldInject(payload.turn, lastInjected.get(chatKey), options.repeatTurns)) return decision
+    const asked = decision.messages.filter(message => message.source.kind === 'user')
+    const query = asked
+      .flatMap(message => message.content.flatMap(part => part.type === 'text' ? [part.text] : []))
+      .join('\n')
+      .trim()
+    if (query === '') {
+      blocks.delete(chatKey)
+      return decision
+    }
+    const block = buildInjectBlock(
+      await memory.findAsync(query, chatKey, options.maxItems),
+      options.maxChars,
+      options.maxItems,
+    )
+    if (block === '') blocks.delete(chatKey)
+    else blocks.set(chatKey, block)
+    lastInjected.set(chatKey, payload.turn)
+    return decision
+  })
 }
 
 /** 没有活跃会话就只记一行，不让这一拍的其它挂上去的那些跟着断掉 */
@@ -83,6 +175,12 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
   const warn = (message: string, error: unknown): void => {
     ctx.logger('qq-bundle').warn(message, String(error))
   }
+  // 情绪档位只给默认值：调用方给过情绪分就按它的，没给才按当轮身体抬一点
+  const emotionSettings = resolveEmotionSettings(config.emotion)
+  const withEmotion = (options: RememberOptions): RememberOptions => withEmotionDefault(options, {
+    body: vitals?.read(),
+    settings: emotionSettings,
+  })
 
   // 一顿饭写一条记忆：会话取当前活跃的那个，同一天同一顿只写一条
   const mealImportance = config.mealMemoryImportance ?? defaults.mealMemoryImportance
@@ -91,9 +189,9 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
     const chatKey = activeOf(ctx, subject, '进食记忆')
     if (chatKey === '') return
     if (mealWritten(memory.store.all(), chatKey, fact.at)) return
-    memory.write(mealText(fact), chatKey, {
+    memory.write(mealText(fact), chatKey, withEmotion({
       layer: 'episodic', source: 'chat', importance: mealImportance, at: fact.at, metadata: mealMetadata(fact),
-    })
+    }))
   }
   if ((config.mealMemory ?? defaults.mealMemory) && vitals !== undefined) {
     const off = vitals.onMeal((fact) => {
@@ -109,9 +207,9 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
     const chatKey = activeOf(ctx, subject, '喝水记忆')
     if (chatKey === '') return
     if (drinkWritten(memory.store.all(), chatKey, fact.at)) return
-    memory.write(drinkText(fact), chatKey, {
+    memory.write(drinkText(fact), chatKey, withEmotion({
       layer: 'episodic', source: 'chat', importance: drinkImportance, at: fact.at, metadata: drinkMetadata(fact),
-    })
+    }))
   }
   if ((config.drinkMemory ?? defaults.drinkMemory) && vitals !== undefined) {
     const off = vitals.onDrink((fact) => {
@@ -130,10 +228,10 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
       item.scope === chatKey && item.metadata?.kind === 'cycle_start'
       && Math.abs(fact.at - item.at) < 20 * 24 * 60 * 60_000)
     if (sameCycle) return
-    memory.write(`今天是这个周期的第 ${fact.day} 天，身上不大舒服`, chatKey, {
+    memory.write(`今天是这个周期的第 ${fact.day} 天，身上不大舒服`, chatKey, withEmotion({
       layer: 'episodic', source: 'chat', importance: cycleImportance, at: fact.at,
       metadata: { kind: 'cycle_start', at: fact.at, day: fact.day },
-    })
+    }))
   }
   if ((config.cycleMemory ?? defaults.cycleMemory) && vitals !== undefined) {
     const off = vitals.onCycleStart((fact) => {
@@ -156,10 +254,10 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
     if (chatKey === '') return
     if (farewellWritten(memory.store.all(), chatKey, fact.at)) return
     const authored = modelWords(fact)
-    memory.write(farewellText(authored ?? config.farewellText), chatKey, {
+    memory.write(farewellText(authored ?? config.farewellText), chatKey, withEmotion({
       layer: 'semantic', source: 'chat', importance: farewellImportance, at: fact.at,
       metadata: farewellMetadata(fact, authored === undefined ? 'fallback' : 'model'),
-    })
+    }))
   }
   if ((config.farewellMemory ?? defaults.farewellMemory) && vitals !== undefined) {
     const off = vitals.onFarewell((fact) => {
@@ -175,9 +273,9 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
   const writeDream = (fact: DreamFact, chatKey: string): void => {
     if (memory === undefined) return
     if (dreamWritten(memory.store.all(), chatKey, fact)) return
-    memory.write(dreamText(fact), chatKey, {
+    memory.write(dreamText(fact), chatKey, withEmotion({
       layer: 'episodic', source: 'chat', importance: dreamImportance(fact), at: fact.at, metadata: dreamMetadata(fact),
-    })
+    }))
   }
   const publishDream = async (fact: DreamFact, chatKey: string): Promise<void> => {
     if (channel === undefined) {
@@ -209,9 +307,9 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
     const chatKey = activeOf(ctx, subject, '疤痕记忆')
     if (chatKey === '') return
     if (scarWritten(memory.store.all(), chatKey, fact.at)) return
-    memory.write(SCAR_TEXT, chatKey, {
+    memory.write(SCAR_TEXT, chatKey, withEmotion({
       layer: 'semantic', source: 'chat', importance: scarImportance(fact), at: fact.at, metadata: scarMetadata(fact),
-    })
+    }))
   }
   if ((config.scarMemory ?? defaults.scarMemory) && vitals !== undefined) {
     const off = vitals.onScar((fact) => {
@@ -226,7 +324,7 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
       const chatKey = activeOf(ctx, subject, '三行记忆')
       if (chatKey === '') return
       try {
-        memory.write(lines.join('；'), chatKey, { layer: 'episodic', source: 'self', importance: 55, at })
+        memory.write(lines.join('；'), chatKey, withEmotion({ layer: 'episodic', source: 'self', importance: 55, at }))
       } catch (error) {
         warn('三行没写进记忆：%s', error)
       }
@@ -236,7 +334,7 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
       const chatKey = activeOf(ctx, subject, '阶段记忆')
       if (chatKey === '') return
       try {
-        memory.write(`我从「${from}」走到了「${to}」`, chatKey, { layer: 'semantic', source: 'self', importance: 70, at })
+        memory.write(`我从「${from}」走到了「${to}」`, chatKey, withEmotion({ layer: 'semantic', source: 'self', importance: 70, at }))
       } catch (error) {
         warn('阶段没写进记忆：%s', error)
       }
@@ -246,7 +344,7 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
       const chatKey = activeOf(ctx, subject, '月更记忆')
       if (chatKey === '') return
       try {
-        memory.write(`${chapter}：${text}`, chatKey, { layer: 'semantic', source: 'self', importance: 65, at })
+        memory.write(`${chapter}：${text}`, chatKey, withEmotion({ layer: 'semantic', source: 'self', importance: 65, at }))
       } catch (error) {
         warn('月更没写进记忆：%s', error)
       }
@@ -256,7 +354,7 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
       const chatKey = activeOf(ctx, subject, '探针记忆')
       if (chatKey === '') return
       try {
-        memory.write(answers.join('；'), chatKey, { layer: 'semantic', source: 'self', importance: 60, at })
+        memory.write(answers.join('；'), chatKey, withEmotion({ layer: 'semantic', source: 'self', importance: 60, at }))
       } catch (error) {
         warn('探针没写进记忆：%s', error)
       }
@@ -269,7 +367,7 @@ export function registerMemoryEvents(ctx: Context, deps: MemoryEventDeps): void 
       const chatKey = activeOf(ctx, subject, '醒来记忆')
       if (chatKey === '') return
       try {
-        memory.write('睡了一觉，醒过来了', chatKey, { layer: 'episodic', source: 'chat', importance: 35, at: fact.at })
+        memory.write('睡了一觉，醒过来了', chatKey, withEmotion({ layer: 'episodic', source: 'chat', importance: 35, at: fact.at }))
       } catch (error) {
         warn('醒来没写进记忆：%s', error)
       }

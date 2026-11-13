@@ -4,7 +4,7 @@ import { DEFAULTS, type Tuning } from '../src/defaults.ts'
 import { healthLine } from '../src/health.ts'
 import type { QqMemorySeam } from '../src/index.ts'
 import { createMemoryStore } from '../src/store.ts'
-import { createWriteQueue, nearDuplicateOf, type QueuedFact } from '../src/write.ts'
+import { consolidateActive, createWriteQueue, nearDuplicateOf, type QueuedFact } from '../src/write.ts'
 import { cleanupTempDirs, mount, tempDir, tempFile } from './harness.ts'
 
 const NOW = new Date(2026, 9, 30, 18, 39).getTime()
@@ -209,6 +209,29 @@ describe('近似重复合并', () => {
     expect(other.merged).toBe(false)
     expect(other.id).not.toBe(kept.id)
     expect(seam.store.all()).toHaveLength(2)
+  })
+
+  it('同一个群里不同用户说得很像也不合并', () => {
+    const { seam } = mount({ file: tempFile() })
+
+    const first = seam.write(OLD, 'group:1', { at: EARLIER, personId: 'u1' })
+    const second = seam.write(NEAR, 'group:1', { at: NOW, personId: 'u2' })
+
+    expect(first.merged).toBe(false)
+    expect(second.merged).toBe(false)
+    expect(seam.store.all()).toHaveLength(2)
+  })
+
+  it('已有的近似条可以按会话和用户显式合并', () => {
+    const { seam } = mount({ file: tempFile() })
+    const first = seam.remember(OLD, 'group:1', { at: EARLIER, personId: 'u1' })
+    seam.remember(NEAR, 'group:1', { at: NOW, personId: 'u1' })
+
+    const result = consolidateActive(seam.store, { scope: 'group:1', personId: 'u1' })
+
+    expect(result.merged).toBe(1)
+    expect(seam.store.all()).toHaveLength(1)
+    expect(seam.store.byId(first.id)?.metadata?.['mergedFrom']).toContain(first.id)
   })
 
   it('退役的条目不参与合并', () => {

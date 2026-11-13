@@ -1,52 +1,236 @@
 # 把 QQ 机器人的零件挂进运行环境
 - insert:
+    - id: speech-to-text
+      name: '@huoli/huoli-experimental-speech-to-text'
+      config:
+        defaultProvider: sensevoice-local
+        language: zh
+
+    - id: speech-to-text-sensevoice
+      name: '@huoli/huoli-experimental-speech-to-text-sensevoice'
+      config:
+        dataRoot: !!js huoliHomePath('speech-to-text', 'sensevoice')
+        precision: int8
+        threads: 2
+        maxPending: 4
+
     - id: qq-attention
       name: '@huoli/huoli-qq-attention'
+      config:
+        home: !!js process.cwd()
+        selfNames: !!js (process.env.QQ_SELF_NAMES ?? '').split(',').map((value) => value.trim()).filter(Boolean)
 
     - id: qq-subject
       name: '@huoli/huoli-qq-subject'
+      config:
+        home: !!js process.cwd()
 
     - id: qq-memory
       name: '@huoli/huoli-qq-memory'
+      config:
+        home: !!js process.cwd()
 
     - id: qq-pacing
       name: '@huoli/huoli-qq-pacing'
+      config:
+        home: !!js process.cwd()
 
     - id: qq-material
       name: '@huoli/huoli-qq-material'
+      config:
+        home: !!js process.cwd()
 
     - id: qq-proactive
       name: '@huoli/huoli-qq-proactive'
       config:
-        enabled: false
+        home: !!js process.cwd()
+        enabled: true
 
     - id: qq-continuity
       name: '@huoli/huoli-qq-continuity'
+      config:
+        home: !!js process.cwd()
 
     - id: qq-channel
       name: '@huoli/huoli-qq-channel'
       config:
+        home: !!js process.cwd()
         url: !!js process.env.QQ_ONEBOT_URL ?? 'ws://127.0.0.1:6700'
         selfId: !!js process.env.QQ_SELF_ID ?? ''
         accessToken: !!js process.env.QQ_ACCESS_TOKEN ?? ''
+        pokeEnabled: !!js process.env.QQ_POKE_ENABLED === 'true'
+        replySingleMessage: true
+        replyPartMaxChars: 300
+        replyStripWrittenPunctuation: false
+        replyForward: false
+        # 普通一轮合成一条消息；完整解释由模型自然组织，不自动拆成多个气泡
+        replySemanticSplit: false
+        replySemanticMinChars: 6
+        replySemanticMinPieces: 2
+        replySemanticMinPartChars: 2
+        groupHistoryPollMs: 60000
+        groupHistoryCount: 30
+        groupHistoryMaxAgeMs: 1800000
 
     - id: qq-vitals
       name: '@huoli/huoli-qq-vitals'
+      config:
+        huoliHome: !!js process.cwd()
+        writeIntervalMs: !!js Number(process.env.QQ_VITALS_WRITE_INTERVAL_MS ?? 5000)
+        tuning:
+          emotionToneEnabled: true
+          # 作息由部署定，不靠包内默认值；醒来时刻在 wakeAt 上下浮动 wakeJitterMinutes 分钟，所以不会每天同一分钟睁眼
+          sleepFrom: !!js Number(process.env.QQ_SLEEP_FROM ?? 23)
+          sleepUntil: !!js Number(process.env.QQ_SLEEP_UNTIL ?? 7)
+          wakeAt: !!js Number(process.env.QQ_WAKE_AT ?? 7.5)
+          wakeJitterMinutes: !!js Number(process.env.QQ_WAKE_JITTER ?? 40)
+          wakeLatest: !!js Number(process.env.QQ_WAKE_LATEST ?? 11)
+          napFrom: !!js Number(process.env.QQ_NAP_FROM ?? 12)
+          napUntil: !!js Number(process.env.QQ_NAP_UNTIL ?? 15)
+          timeZone: !!js process.env.QQ_TIMEZONE ?? 'Asia/Shanghai'
+
+    - id: qq-balance
+      name: '@huoli/huoli-qq-balance'
+      config:
+        home: !!js process.cwd()
+
+    - id: qq-longing
+      name: '@huoli/huoli-qq-longing'
+      config:
+        home: !!js process.cwd()
+        enabled: false
+        nsfwEnabled: false
 
     - id: qq-self
       name: '@huoli/huoli-qq-self'
       config:
-        enabled: false
+        huoliHome: !!js process.cwd()
+        enabled: true
+        panelPort: !!js Number(process.env.QQ_PANEL_PORT ?? 4317)
+        panelToken: !!js process.env.QQ_PANEL_TOKEN ?? ''
 
     - id: qq-bundle
       name: '@huoli/huoli-qq-bundle'
       config:
+        home: !!js process.cwd()
+        interactionMode: autonomous
+        # 主人身份全部由部署环境给，代码与默认值里不留任何真实号与人名
+        creatorQq: !!js process.env.QQ_CREATOR_ID ?? ''
+        creatorTitle: !!js process.env.QQ_CREATOR_TITLE ?? ''
+        ownerAddress: !!js process.env.QQ_OWNER_ADDRESS ?? ''
+        # 唯一主人的私聊不受工具面、沙盒、睡眠、安静与发送额度限制；其他会话仍按原边界
+        ownerUnrestricted: true
+        selfName: 小鲸鱼
+        # 年龄只是可自定义的角色事实，不参与亲密内容放行；放行只看下面这个独立开关
+        characterAge: !!js Number(process.env.QQ_CHARACTER_AGE ?? 20)
+        adultIntimacyEnabled: !!js process.env.QQ_ADULT_INTIMACY !== '0'
+        proactivePerHour: !!js Number(process.env.QQ_PROACTIVE_PER_HOUR ?? 2)
+        proactivePerHourMax: !!js Number(process.env.QQ_PROACTIVE_PER_HOUR_MAX ?? 30)
+        selfQuietMinMinutes: 5
+        selfQuietMaxMinutes: 720
         maxSteps: 40
+        # 私聊直接写正文；需要部署自己的接手语时再填 privateWorkingAck
+        sleepingReplyCap: 3
+        restingReplyCap: 3
+        # 群友连续发来的普通短消息先合并成一轮；@或引用机器人仍立即接话
+        groupMergeMs: !!js Number(process.env.QQ_GROUP_MERGE_MS ?? 4000)
+        mergeImmediateChars: 500
         dailySweepAt: '04:00'
-        proactiveThrottleMs: 60000
+        proactiveThrottleMs: !!js Number(process.env.QQ_PROACTIVE_THROTTLE_MS ?? 120000)
+        nudgeMs: !!js Number(process.env.QQ_PROACTIVE_NUDGE_MS ?? 900000)
+        # 看视频、看图、联网和转写改到后台，不占本会话的回复队列
+        backgroundTools: [bili_look, bili_look_zoom, bili_surf, bili_highlight, qq_image_view, web_fetch, web_search]
+        backgroundToolTimeoutMs: !!js Number(process.env.QQ_BACKGROUND_TOOL_TIMEOUT_MS ?? 600000)
+        backgroundWorkingAckText: '这事我接着看，等下回你。'
+        backgroundFailureText: '刚才那件事没办完，我这边卡了一下。'
+        backgroundMaxPerChat: !!js Number(process.env.QQ_BACKGROUND_MAX_PER_CHAT ?? 2)
+        groupHistoryWake: false
+        # 回退路由与新会话默认模型由配置指定
+        primaryProvider: relay-103
+        primaryModel: deepseek-v4.1-flash
+        fallbackProvider: relay-103
+        fallbackModel: gemini-3.8-flash
+        visionProvider: relay-103
+        # 默认先走 GPT；Gemini 只作为主模型失败后的后备
+        visionModel: gpt-6-luna
+        visionHighModel: gpt-6.1-terra
+        visionModels:
+          - gpt-6-luna
+          - gemini-3.8-flash
+        visionHighModels:
+          - gpt-6.1-terra
+          - gemini-3.8-flash-high
+          - gpt-6-luna
+        visionAttemptTimeoutMs: 10000
+        visionFailureCooldownMs: 900000
+        visionMaxTokens: 900
+        visionAlwaysUseConfiguredModel: true
+        visionBatchMaxImages: 4
+        visionBatchMaxBytes: 16777216
+        # DSH 身体自诊：服务、Loader、插件、工具、模型与数据目录一起体检
+        selfHealthEnabled: true
+        selfHealthIntervalMs: 300000
+        selfHealthStartupDelayMs: 30000
+        selfHealthWindowMs: 21600000
+        selfHealthAlertCooldownMs: 1800000
+        selfHealthHealthyAt: 90
+        selfHealthWatchAt: 70
+        selfHealthDegradedAt: 40
+        mediaClassify: false
+        imageIgnorePhrases: ['别看', '不用看', '不必看', '不感兴趣', '跳过这张', '忽略这张']
+        imageQuickWeightFrom: 35
+        imageDeepWeightFrom: 60
+        imageRecognitionsPerHour: 12
+        imageRecognitionsPerDay: 60
+        videoRecognitionsPerHour: 3
+        videoRecognitionsPerDay: 10
+        groupImageRecognitionsPerHour: 6
+        groupVideoRecognitionsPerHour: 1
+        imageRecognitionMinEnergy: 0.18
+        videoRecognitionMinEnergy: 0.28
+        imageDeepAfterReply: false
+        videoVisionEnabled: true
+        videoVisionMaxSeconds: 60
+        groupVideoVisionMaxSeconds: 30
+        videoVisionFrameIntervalSeconds: 5
+        videoVisionMaxFrames: 12
+        groupVideoVisionMaxFrames: 6
+        videoVisionMaxFrameDimension: 768
+        videoVisionMaxFrameBytes: 1048576
+        videoVisionTimeoutMs: 15000
+        imageGenModel: gpt-image-2.5-sunburst
+        imageGenFallbackModel: gpt-image-2.5-flare
+        asrMode: local
+        asrEnabled: true
+        asrPrepareOnStart: true
+        asrLanguage: zh
+        asrTimeoutMs: 120000
+        asrMaxSeconds: 120
+        asrFfmpegPath: !!js process.env.QQ_FFMPEG_PATH ?? 'ffmpeg'
+        # 看视频与逛站按需加开，不占每轮的核心工具位
+        allowedTools:
+          - bili_look
+          - bili_look_zoom
+          - bili_comments
+          - bili_feed
+          - bili_find
+          - bili_surf
+          - bili_inbox
 
-# 中文比英文占 token 多，提前压一点；群聊要留更多最近的原话
+# 群聊内容只作聊天资料；本机文件操作保持只读，扩权需要人工确认
+- id: sandbox-policy
+  config:
+    mode: read-only
+    workspaceRoot: !!js process.cwd()
+
+- id: approval
+  config:
+    policy: ask
+
+# 长会话较早压成摘要，最近 16k tokens 保持逐字
 - id: compaction-basic
   config:
-    thresholdRatio: 0.72
-    retainRatio: 0.25
+    thresholdRatio: 0.08
+    retainTokens: 16384
+    headroomTokens: 8192
+    maxTokens: 2048

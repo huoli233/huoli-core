@@ -63,6 +63,10 @@ export interface RememberOptions {
   at?: number
   /** 跟着这条一起存的附加事实 */
   metadata?: Record<string, unknown>
+  /** 这条跟哪个稳定用户有关 */
+  personId?: string
+  /** 只在私密层使用的隐藏标记 */
+  secret?: boolean
 }
 
 /** 镜像一条时给的字段，四项元信息缺一不写 */

@@ -3,7 +3,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import SystemPrompt from '@huoli/huoli-system-prompt'
-import { afterEach, describe, expect, it } from 'vitest'
+import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { apply, qqSubjectOf, type Config, type QqSubjectSeam } from '../src/index.ts'
 
 const tempDirs: string[] = []
@@ -14,13 +15,24 @@ function tempFile(): string {
   return path.join(dir, 'subject.json')
 }
 
-async function mount(file: string, config: Config = {}): Promise<{ ctx: Context; seam: QqSubjectSeam }> {
+async function mount(file: string, config: Config = {}): Promise<{
+  ctx: Context
+  seam: QqSubjectSeam
+  tools: Map<string, ToolDefinition>
+}> {
   const ctx = new Context()
+  const tools = new Map<string, ToolDefinition>()
+  ctx.provide('tools', {
+    register(definition: ToolDefinition) {
+      tools.set(definition.name, definition)
+      return () => {}
+    },
+  })
   await ctx.plugin(SystemPrompt, {})
   apply(ctx, { file, ...config })
   const seam = qqSubjectOf(ctx)
   if (seam === undefined) throw new Error('状态没有装配')
-  return { ctx, seam }
+  return { ctx, seam, tools }
 }
 
 afterEach(() => {
@@ -136,11 +148,59 @@ describe('关掉再开', () => {
     expect(seam.store.read().lastActive).toBe('group:1')
   })
 
+  it('群切换只在内存即时更新，几秒内合并写一次', async () => {
+    vi.useFakeTimers()
+    try {
+      vi.setSystemTime(new Date(2026, 10, 10, 3, 0, 0))
+      const file = tempFile()
+      const { seam } = await mount(file)
+      seam.store.setActive('group:1')
+
+      vi.advanceTimersByTime(1_000)
+      seam.store.setActive('group:2')
+      const beforeFlush = JSON.parse(fs.readFileSync(file, 'utf8')) as { lastActive: string }
+      expect(beforeFlush.lastActive).toBe('group:1')
+
+      vi.advanceTimersByTime(5_000)
+      seam.store.setActive('group:3')
+      const afterFlush = JSON.parse(fs.readFileSync(file, 'utf8')) as { lastActive: string }
+      expect(afterFlush.lastActive).toBe('group:3')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('状态带着本次的更新时间', async () => {
     const { seam } = await mount(tempFile())
     seam.store.changeGlobal('mood', 0.1)
 
     expect(seam.store.read().global.updatedAt).toBeGreaterThan(0)
+  })
+})
+
+describe('关系工具', () => {
+  it('五个关系工具都挂上了，私聊能直接记事件', async () => {
+    const { seam, tools } = await mount(tempFile())
+
+    expect([...tools.keys()]).toEqual(expect.arrayContaining([
+      'qq_relation_get',
+      'qq_relation_record',
+      'qq_relation_name',
+      'qq_relation_anniversary',
+      'qq_relation_remove',
+    ]))
+    const record = tools.get('qq_relation_record')
+    if (record === undefined) throw new Error('关系事件工具没挂上')
+    seam.relations.observe({ personId: 'u1', name: '小鱼', chatKey: 'private:u1', at: Date.now() })
+    const exec = Object.assign({} as ToolRunContext, {
+      agent: { id: 'private:u1' },
+      signal: new AbortController().signal,
+    })
+
+    const result = await record.execute({ kind: 'promise', summary: '约好周末见' }, exec) as { ok: boolean }
+
+    expect(result.ok).toBe(true)
+    expect(seam.relations.events('u1', 5).some(event => event.summary === '约好周末见')).toBe(true)
   })
 })
 
@@ -167,5 +227,20 @@ describe('越界与读坏', () => {
 
     expect(seam.store.read().global.mood).toBeGreaterThan(0)
     expect(seam.render('group:1')).toContain('心情')
+  })
+})
+
+describe('安静时间里的动机', () => {
+  it('一段时间没人说话后，无聊、想说话和好奇会自己涨起来', async () => {
+    const { seam } = await mount(tempFile())
+    const before = seam.store.read().global
+
+    seam.store.tick(before.updatedAt + 3 * 3_600_000)
+    const after = seam.store.read().global
+
+    expect(after.boredom).toBeGreaterThan(before.boredom)
+    expect(after.socialHunger).toBeGreaterThan(before.socialHunger)
+    expect(after.curiosity).toBeGreaterThan(before.curiosity)
+    expect(after.updatedAt).toBe(before.updatedAt + 3 * 3_600_000)
   })
 })

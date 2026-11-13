@@ -75,6 +75,8 @@ export interface ActionDelivery {
   code?: string
   /** 没送出去的原因 */
   reason?: string
+  /** 请求已经发出但没收到明确回执时标成 unknown，调用方不得自动重放 */
+  outcome?: 'unknown'
 }
 
 /** 一次动作的结果，拒绝时只有码、原因与下次时刻 */
@@ -97,6 +99,8 @@ export interface ActionResult {
   confirmId?: string
   /** 待确认项到什么时候失效 */
   expiresAt?: number
+  /** 请求已经发出但没收到明确回执时标成 unknown，调用方不得自动重放 */
+  outcome?: 'unknown'
 }
 
 /** 三类动作与一次确认共用的入口 */

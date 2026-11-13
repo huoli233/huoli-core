@@ -92,4 +92,47 @@ describe('攒多久过期跟着配置走', () => {
 
     expect(decided.pending[0]?.expiresAt).toBe(6_000)
   })
+
+  it('没给配置时默认留两小时，不再攒十四天', () => {
+    const file = tempFile()
+    const ctx = new Context()
+    contexts.push(ctx)
+    apply(ctx, { file, enabled: true, quietStart: '00:00', quietEnd: '00:00' })
+    const seam = qqProactiveOf(ctx)
+    if (seam === undefined) throw new Error('没装上')
+
+    const decided = seam.consider({
+      chatKey: 'group:1',
+      candidates: [{ id: 'x', kind: 'share', why: '有人问起', text: '想说的一句', source: 'thought', at: 1_000 }],
+      history: [],
+      humanActive: false,
+      botBusy: false,
+      hasChannel: true,
+    })
+
+    expect(decided.pending[0]?.expiresAt).toBe(1_000 + 2 * 60 * 60_000)
+  })
+})
+
+describe('同会话同理由的候选不重复攒', () => {
+  it('换了个编号但理由一样，只留最新那条', () => {
+    const file = tempFile()
+    const store = createProactiveStore({ file, now: () => 1_000 })
+    store.pending.put(item('a', 'group:1', 1_000))
+    store.pending.put(item('b', 'group:1', 1_000))
+
+    expect(store.pending.all()).toHaveLength(1)
+    expect(store.pending.all()[0]?.id).toBe('b')
+  })
+
+  it('理由不同或会话不同就各留一条', () => {
+    const file = tempFile()
+    const store = createProactiveStore({ file, now: () => 1_000 })
+    const other = (id: string, chatKey: string, why: string) => ({ ...item(id, chatKey, 1_000), why })
+    store.pending.put(other('a', 'group:1', '有人问起'))
+    store.pending.put(other('b', 'group:1', '刚看了个视频'))
+    store.pending.put(other('c', 'group:2', '有人问起'))
+
+    expect(store.pending.all()).toHaveLength(3)
+  })
 })

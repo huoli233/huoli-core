@@ -70,8 +70,8 @@ describe('合并式遗忘', () => {
 
   it('私密的那条不动', () => {
     const { seam } = mount({ file: tempFile() })
-    const secret = seam.remember('偷偷做的一件事', 'private:1', { at: NOW - 30 * DAY, importance: 20, layer: 'private' })
-    seam.remember('偷偷做的另一件事', 'private:1', { at: NOW - 29 * DAY, importance: 20, layer: 'private' })
+    const secret = seam.remember('偷偷做的一件事', 'private:1', { at: NOW - 30 * DAY, importance: 20, layer: 'private', secret: true })
+    seam.remember('偷偷做的另一件事', 'private:1', { at: NOW - 29 * DAY, importance: 20, layer: 'private', secret: true })
 
     mergeForgotten(seam.store, resolveTuning(), NOW)
 

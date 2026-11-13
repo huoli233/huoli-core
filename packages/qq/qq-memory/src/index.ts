@@ -6,7 +6,18 @@ import type { Context } from '@huoli/cordis'
 import { initialImportance, type ImportanceInput } from '@huoli/huoli-qq-policy'
 import { createMemoryStore, defaultMemoryFile, type MemoryStore } from './store.ts'
 import { decayAll, mergeForgotten, promoteAll, sweepOnce } from './sweep.ts'
-import { recall, recallByFeeling, encodeVector, type FeelingFacts, type RecallHit, type RecollectResult } from './recall.ts'
+import {
+  buildMemoryProfile,
+  PROFILE_DEFAULTS,
+  recall,
+  recallByFeeling,
+  encodeVector,
+  type FeelingFacts,
+  type MemoryProfile,
+  type MemoryProfileInput,
+  type RecallHit,
+  type RecollectResult,
+} from './recall.ts'
 import { edgesFileOf, linkTogether, readEdges } from './edges.ts'
 import { openVectorStore, type VectorHit, type VectorStore } from './vector-store.ts'
 import { createEmbedder, type EmbeddingConfig, type Embedder } from './embed.ts'
@@ -14,16 +25,21 @@ import { redactSecrets } from './redact.ts'
 import { findWithVectors } from './find-async.ts'
 import { registerMemoryTools } from './tools.ts'
 import { resolveTuning, type Tuning } from './defaults.ts'
-import { defaultLedgerFile, runLedger, type LedgerAction, type LedgerRunResult } from './ledger.ts'
-import { appendHealthLine, defaultHealthLogFile, healthLine, localDay } from './health.ts'
-import { clampImportance, metadataOr, sourceOr } from './guard.ts'
 import {
+  defaultLedgerFile, reconcileMaintenanceBook, runLedger,
+  type LedgerAction, type LedgerRunResult,
+} from './ledger.ts'
+import { appendHealthLine, defaultHealthLogFile, healthLine, localDay } from './health.ts'
+import { assertPrivateMemoryItem, clampImportance, metadataOr, privateCoordinatesOf, sourceOr } from './guard.ts'
+import {
+  consolidateActive,
   createWriteQueue,
   defaultQueueFile,
   LOW_IMPORTANCE,
   writeFact,
   type EnqueueOutcome,
   type FlushOutcome,
+  type ConsolidateResult,
   type ReflectOutcome,
   type TurnOutcome,
   type WriteOutcome,
@@ -52,7 +68,8 @@ export { CLARITY_LABEL, LAYER_LABEL, LAYER_ORDER, MEMORY_SOURCES } from './types
 export type { MemoryStore, MemoryStoreOptions, MemoryStoreState } from './store.ts'
 export { defaultMemoryFile, MEMORY_SCHEMA_VERSION } from './store.ts'
 export type { RecallHit, RecallInput, RecallReasons } from './recall.ts'
-export { cosineSimilarity, encodeVector, keyGrams, recall, renderRecall } from './recall.ts'
+export { buildMemoryProfile, cosineSimilarity, encodeVector, keyGrams, PROFILE_DEFAULTS, recall, renderRecall } from './recall.ts'
+export type { MemoryProfile, MemoryProfileInput } from './recall.ts'
 export { buildInjectBlock, injectIntoUserText, shouldInject } from './inject.ts'
 export { decayAll, promoteAll, sweepOnce, touch } from './sweep.ts'
 export { DEFAULTS, resolveTuning } from './defaults.ts'
@@ -63,6 +80,7 @@ export {
   emptyBook,
   fingerprint,
   initBook,
+  reconcileMaintenanceBook,
   runLedger,
   syncBook,
   verifyBook,
@@ -83,6 +101,7 @@ export type {
 export { appendHealthLine, defaultHealthLogFile, healthAlerts, healthCounts, healthLine, ledgerLevel, localDay } from './health.ts'
 export type { HealthAlert, HealthCounts, HealthInput, LedgerLevel } from './health.ts'
 export {
+  consolidateActive,
   createWriteQueue,
   defaultQueueFile,
   importanceGate,
@@ -92,6 +111,7 @@ export {
   writeFact,
 } from './write.ts'
 export type {
+  ConsolidateResult,
   EnqueueOutcome,
   FlushOutcome,
   NearDuplicate,
@@ -120,6 +140,8 @@ export interface MaintainResult {
   forgotten: number
   /** 这次新记进记录表的条数 */
   added: number
+  /** 这次合并掉的近似重复条数 */
+  consolidated: number
   /** 当天那行健康记录；这次没真的做时是空串 */
   line: string
 }
@@ -149,6 +171,10 @@ export interface QqMemorySeam {
   /** 已经镜过的来源键，按镜像顺序 */
   mirroredSelfIds(): readonly string[]
   find(query: string, chatKey: string, limit?: number): RecallHit[]
+  /** 不按关键词，直接整理当前人或当前群的记忆档案 */
+  profile(chatKey: string, options?: Omit<MemoryProfileInput, 'chatKey'>): MemoryProfile
+  /** 把当前会话里已有的近似重复记忆合并 */
+  consolidate(chatKey: string, personId?: string): ConsolidateResult
   /** 带嵌入向量的那条路：塞了嵌入服务才走，出错退回 find 那套 */
   findAsync(query: string, chatKey: string, limit?: number): Promise<RecallHit[]>
   /** 按此刻的感觉主动回想：想起的几条与是哪种感觉带出来的 */
@@ -184,8 +210,16 @@ export interface Config {
   vectorDir?: string
   /** 嵌入服务：填了就用真向量，不填还是本地算 */
   embedding?: EmbeddingConfig
+  /** 私密记忆事后状态持续多久，默认三十分钟 */
+  privateSettleMs?: number
+  /** 查询嵌入最多等多久；超时退回纯关键词，默认 1200 毫秒 */
+  embeddingTimeoutMs?: number
   /** 想改哪些默认参数 */
   tuning?: Partial<Tuning>
+  /** 一份记忆档案最多收几条 */
+  profileMaxItems?: number
+  /** 一份记忆档案最多多少字 */
+  profileMaxChars?: number
 }
 
 const seams = new WeakMap<Context, QqMemorySeam>()
@@ -252,12 +286,18 @@ function sceneOf(layer: MemoryLayer, chatKey: string): ImportanceInput['scene'] 
  * @param config - 配置
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  const tuning = resolveTuning(config.tuning)
+  const tuning = resolveTuning({
+    ...config.tuning,
+    ...config.privateSettleMs === undefined ? {} : { privateSettleMs: config.privateSettleMs },
+  })
+  if (!Number.isFinite(tuning.privateSettleMs) || tuning.privateSettleMs < 0) {
+    throw new Error('qq-memory.privateSettleMs must be a finite non-negative number')
+  }
   const file = config.file ?? defaultMemoryFile(config.home)
   const ledgerFile = config.ledgerFile ?? defaultLedgerFile(config.home)
   const healthLogFile = config.healthLogFile ?? defaultHealthLogFile(config.home)
   const queueFile = config.queueFile ?? defaultQueueFile(config.home)
-  const store = createMemoryStore({ file })
+  const store = createMemoryStore({ file, privateSettleMs: tuning.privateSettleMs })
   // 星链与记忆同目录：谁跟谁一起被想起，都记在这一份里
   const edgesFile = edgesFileOf(file)
   // 向量仓：配置打开才起，没打开时一点开销都没有
@@ -342,15 +382,22 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
 
   // 拼一条待写的记忆，显式路径与排空路径共用这一处，字段不会两处对不上
-  const itemOf = (text: string, chatKey: string, options: RememberOptions, at: number): MemoryItem => {    const layer = options.layer ?? 'episodic'
+  const itemOf = (text: string, chatKey: string, options: RememberOptions, at: number): MemoryItem => {
+    const layer = options.layer ?? 'episodic'
     const emotional = options.emotional ?? 0
     const metadata = metadataOr(options.metadata)
-    return {
+    const privateCoordinates = privateCoordinatesOf(chatKey, layer, options.secret, options.personId)
+    const personId = privateCoordinates?.personId ?? options.personId?.trim() ?? ''
+    const scope = privateCoordinates?.scope ?? scopeOf(chatKey)
+    const privateMetadata = privateCoordinates?.originScope === undefined
+      ? metadata
+      : { ...metadata, privateOriginScope: privateCoordinates.originScope }
+    const item: MemoryItem = {
       id: newId(at),
       // 进库之前先把凭证与长号码抹掉：记进去容易，删干净难
       text: redactSecrets(text),
       layer,
-      scope: scopeOf(chatKey),
+      scope,
       importance: importanceOf(chatKey, options),
       emotional,
       clarity: 'vivid',
@@ -361,8 +408,13 @@ export function apply(ctx: Context, config: Config = {}): void {
       lastSeenAt: at,
       state: 'active',
       source: sourceOr(options.source, 'chat'),
-      ...metadata === undefined ? {} : { metadata },
+      ...personId === '' ? {} : { personId },
+      ...options.secret === true ? { secret: true } : {},
+      ...layer === 'private' ? { settledAt: at + tuning.privateSettleMs } : {},
+      ...privateMetadata === undefined ? {} : { metadata: privateMetadata },
     }
+    assertPrivateMemoryItem(item)
+    return item
   }
 
   const queue = createWriteQueue({
@@ -454,6 +506,21 @@ export function apply(ctx: Context, config: Config = {}): void {
     find(query, chatKey, limit) {
       return findHere(query, chatKey, limit)
     },
+    profile(chatKey, options = {}) {
+      return buildMemoryProfile(store, {
+        chatKey,
+        ...options,
+        maxItems: options.maxItems ?? config.profileMaxItems ?? PROFILE_DEFAULTS.maxItems,
+        maxChars: options.maxChars ?? config.profileMaxChars ?? PROFILE_DEFAULTS.maxChars,
+      })
+    },
+    consolidate(chatKey, personId) {
+      return consolidateActive(store, {
+        scope: scopeOf(chatKey),
+        ...personId === undefined ? {} : { personId },
+        ratio: tuning.nearDuplicateRatio,
+      })
+    },
     async findAsync(query, chatKey, limit) {
       // 向量仓没开、或者里面装的是别的模型算的向量，就还是走本地那条路
       const opened = embedder === undefined || !vectorModelMatches() ? undefined : await vectorOf()
@@ -462,6 +529,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         const hits = await findWithVectors({
           store, vectors: opened, embed: vectorOfText, query, scope: scopeOf(chatKey), tuning,
           edges: readEdges(edgesFile),
+          ...config.embeddingTimeoutMs === undefined ? {} : { embedTimeoutMs: config.embeddingTimeoutMs },
           ...limit === undefined ? {} : { limit },
         })
         if (hits.length > 1) linkTogether(edgesFile, hits.map(hit => hit.id), 'recalledTogether', Date.now())
@@ -490,7 +558,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     wander(now = Date.now()) {
       // 同一段时间里只乱想一次，想太多就成了噪声机
       if (now - lastWanderAt < tuning.wanderEveryMs) return undefined
-      const alive = store.all().filter(item => item.state === 'active' && item.text !== '')
+      const alive = store.all().filter(item => item.state === 'active' && item.text !== '' && item.layer !== 'private' && item.secret !== true)
       if (alive.length < 2) return undefined
       const slot = Math.floor(now / tuning.wanderEveryMs)
       const first = alive[slot % alive.length]
@@ -519,11 +587,16 @@ export function apply(ctx: Context, config: Config = {}): void {
           stepped: 0,
           forgotten: 0,
           added: 0,
+          consolidated: 0,
           line: '',
         }
       }
       // 排空在衰减之前：这一轮攒下的事先落库，健康一行的 pending 才是排空之后的真实积压
       queue.flush(now)
+      // 已有的近似重复条先合并，衰减与健康统计看到的就是整理后的库
+      const consolidated = consolidateActive(store, { ratio: tuning.nearDuplicateRatio }).merged
+      // 合并会换掉保留条正文并移除重复条，先修记录表再让衰减继续跑
+      const reconciled = reconcileMaintenanceBook(ledgerFile, store.all())
       // 先掉重要度，再按新的重要度算清晰度，最后才清正文
       const decayed = decayAll(store, tuning)
       // 合并式遗忘接在衰减之后：又旧又不重要的几乎同文并成一条，重要的不动
@@ -531,6 +604,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       const swept = sweepOnce(store, now)
       // 补记录在退役之后，记录表才记得住这次退的是哪条
       const synced = run('sync')
+      const added = [...new Set([...reconciled.added, ...synced.added])]
       const line = healthLine({
         items: store.all(),
         now,
@@ -550,7 +624,8 @@ export function apply(ctx: Context, config: Config = {}): void {
         decayed,
         stepped: swept.stepped,
         forgotten: swept.forgotten,
-        added: synced.added.length,
+        added: added.length,
+        consolidated,
         line,
       }
     },
@@ -588,7 +663,16 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
   seams.set(ctx.root, seam)
 
-  registerMemoryTools(ctx, { store, scopeOf, sceneOf, tuning, findAsync: (query, chatKey, limit) => seam.findAsync(query, chatKey, limit) })
+  registerMemoryTools(ctx, {
+    store,
+    scopeOf,
+    sceneOf,
+    tuning,
+    findAsync: (query, chatKey, limit) => seam.findAsync(query, chatKey, limit),
+    reindex: () => seam.vectorReindex(),
+    profile: (chatKey, options) => seam.profile(chatKey, options),
+    consolidate: (chatKey, personId) => seam.consolidate(chatKey, personId),
+  })
 
   // 卸载时排空队列再落一次盘，攒着的那几条不会跟着进程一起没
   ctx.effect(() => () => {

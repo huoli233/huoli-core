@@ -6,9 +6,10 @@ import type { Agent } from '@huoli/huoli-agent'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply, qqSelfOf, type Config, type QqSelfSeam } from '../src/index.ts'
-import { panelBody } from '../src/panel.ts'
+import { liveLine, panelBody } from '../src/panel.ts'
 
 const roots: string[] = []
+const AT = Date.parse('2026-11-04T03:33:13.000Z')
 const LABELS = ['【自我】', '此刻：', '我在做：', '我想弄明白：', '我可以说不']
 
 function tempDir(): string {
@@ -114,6 +115,28 @@ describe('面板', () => {
 
     expect(await panelOf(ctx, 'group:2')).toBe('')
     expect(await panelOf(ctx, 'private:9')).toBe('')
+  })
+
+  it('没指定主会话时，完整自主模式里每个聊天都能拿到同一份自我面板', async () => {
+    const { ctx } = await mount({ enabled: true, dir: tempDir(), mainChatKey: '' })
+
+    expect(await panelOf(ctx, 'group:1')).toContain('【自我】')
+    expect(await panelOf(ctx, 'private:9')).toContain('【自我】')
+  })
+
+  it('只有完整自主模式把自我面板放进主会话', async () => {
+    const { ctx, seam } = await mount({ enabled: true, dir: tempDir(), mainChatKey: 'group:1' })
+    seam.useModeControl({
+      state: () => ({ mode: 'heartflow', changedAt: 1 }),
+      options: [
+        { value: 'probability', label: '概率闲聊' },
+        { value: 'heartflow', label: '心流模式' },
+        { value: 'autonomous', label: '完整拟人自主' },
+      ],
+      set: () => {},
+    })
+
+    expect(await panelOf(ctx, 'group:1')).toBe('')
   })
 
   it('宪法八条，前三条带两把钥匙', async () => {
@@ -254,6 +277,25 @@ describe('关着的时候', () => {
   })
 })
 
+describe('现场那一行', () => {
+  it('正在写、刚收到与被挡的判断都压成一句', () => {
+    const line = liveLine({
+      at: AT,
+      typing: { chatKey: 'private:555', since: AT, step: 2 },
+      inbound: { chatKey: 'group:1', at: AT, count: 2 },
+      proactive: { blocked: true, reason: 'timed_rest', at: AT },
+    })
+
+    expect(line).toContain('正在写 private:555 第 2 步')
+    expect(line).toContain('刚收到 group:1 2 条')
+    expect(line).toContain('主动开口被挡：timed_rest')
+  })
+
+  it('三样都没有时为空串，不写一句假的现场', () => {
+    expect(liveLine({ at: AT })).toBe('')
+  })
+})
+
 describe('落在哪', () => {
   it('不给目录就落在数据根目录下的 data/qq-self', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qq-self-home-'))
@@ -264,10 +306,10 @@ describe('落在哪', () => {
     expect(seam.dir).toBe(path.join(root, 'data', 'qq-self'))
   })
 
-  it('没配主会话就哪个会话都不给', async () => {
+  it('没配主会话就每个真实会话都给，空会话不给', async () => {
     const { ctx } = await mount({ enabled: true, dir: tempDir() })
 
-    expect(await panelOf(ctx, 'group:1')).toBe('')
+    expect(await panelOf(ctx, 'group:1')).toContain('【自我】')
     expect(await panelOf(ctx, '')).toBe('')
   })
 })

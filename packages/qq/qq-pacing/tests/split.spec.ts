@@ -9,6 +9,21 @@ describe('按上限切一段话', () => {
     expect(splitByBudget('在的', { maxParts: 4, maxCharsPerPart: 50 })).toEqual(['在的'])
   })
 
+  it('优先一条时，不超过单条上限就整段不拆', () => {
+    const body = '第一句。第二句。第三句。'
+    const parts = splitByBudget(body, { maxParts: 4, maxCharsPerPart: 50, preferSingle: true })
+
+    expect(parts).toEqual([body])
+  })
+
+  it('优先一条仍守住单条上限，太长才拆', () => {
+    const body = '第一句。第二句。第三句。'
+    const parts = splitByBudget(body, { maxParts: 4, maxCharsPerPart: 7, preferSingle: true })
+
+    expect(parts.length).toBeGreaterThan(1)
+    expect(parts.every(part => part.length <= 7)).toBe(true)
+  })
+
   it('空话切出来一条都没有', () => {
     expect(splitByBudget('   ', { maxParts: 4, maxCharsPerPart: 50 })).toEqual([])
   })

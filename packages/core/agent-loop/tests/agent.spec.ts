@@ -39,6 +39,19 @@ function send(agent: Agent, text: string): void {
 }
 
 describe('Agent', () => {
+  it('awaits tools-resolving listeners before continuing each step', async () => {
+    const ctx = await harness(new MockAdapter([textResponse('ok')]))
+    const agent = await ctx.agentLoop.create(SessionId('tools-resolving'), { provider: 'mock', model: 'mock' })
+    const order: string[] = []
+    ctx.on('agent/tools-resolving', async ({ agent: subject }) => {
+      if (subject !== agent) return
+      await Promise.resolve()
+      order.push('listener')
+    })
+    agent.followup(createUserMessage({ content: [{ type: 'text', text: 'run' }], source: { kind: 'user' } }))
+    await agent.whenIdle()
+    expect(order).toEqual(['listener'])
+  })
   it('idle inject() durably stages context without opening a turn', async () => {
     const adapter = new MockAdapter([textResponse('ok')])
     const ctx = await harness(adapter)

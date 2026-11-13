@@ -47,9 +47,9 @@ describe('两层放进', () => {
 
   it('私密记忆在群里取不到全文', async () => {
     const { seam, tool } = mount({ file: tempFile() })
-    const item = seam.remember('偷偷做的事', 'group:1', { at: AT, importance: 60, layer: 'private' })
+    const item = seam.remember('偷偷做的事', 'group:1', { at: AT, importance: 60, layer: 'private', secret: true, personId: '1' })
 
     await expect(tool('qq_memory_detail').execute({ id: item.id }, execOf('group:1')))
-      .rejects.toThrow(/memory\.private/u)
+      .rejects.toThrow(/memory\.not_found/u)
   })
 })

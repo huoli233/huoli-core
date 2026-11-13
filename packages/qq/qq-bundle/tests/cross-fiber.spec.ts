@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { Context, Service, type Plugin } from '@huoli/cordis'
+import type { Agent } from '@huoli/huoli-agent'
 import SystemPrompt from '@huoli/huoli-system-prompt'
 import * as attentionRow from '@huoli/huoli-qq-attention'
 import * as channelRow from '@huoli/huoli-qq-channel'
@@ -64,6 +65,12 @@ async function mountStack(options: { vitals?: boolean } = {}): Promise<Context> 
   const root = new Context()
   await root.plugin(SystemPrompt, {})
   await root.plugin(FakeTools)
+  root.provide('agentDefaultModel', { currentSelection: () => ({ provider: 'test', model: 'test' }) })
+  root.provide('agents', {
+    get: () => undefined,
+    async create() { throw new Error('这个用例不该开真实会话') },
+    async resume() { throw new Error('这个用例不该恢复真实会话') },
+  })
   await mountRow(root, attentionRow, { file: path.join(dir, 'attention.json'), selfNames: ['小岸'] })
   await mountRow(root, subjectRow, { file: path.join(dir, 'subject.json') })
   await mountRow(root, memoryRow, {
@@ -204,7 +211,41 @@ describe('跨 fiber 取接缝', () => {
     const assembly = await root.systemPrompt.assemble()
     const budget = assembly.sections.find(section => section.name === 'qq:reply-budget')?.text ?? ''
 
-    expect(budget).toContain('最多说 4 条')
+    expect(budget).toContain('physical_cap=')
+  })
+
+  it('并行会话的注意力提示词按 Agent 会话隔离，不跟随最近活跃群', async () => {
+    const root = await mountStack()
+    const attention = attentionRow.qqAttentionOf(root)
+    const subject = subjectRow.qqSubjectOf(root)
+    if (attention === undefined || subject === undefined) throw new Error('注意力或状态层没装上')
+    attention.inbox.push('group:1', { senderId: 'u1', senderName: '甲群的人', text: '@小岸', atMe: true })
+    attention.inbox.push('group:2', { senderId: 'u2', senderName: '乙群的人', text: '戳了一下', isPoke: true })
+    subject.store.setActive('group:2')
+
+    const promptOf = async (id: string): Promise<string> => {
+      const assembly = await root.systemPrompt.assemble({ agent: { id } as Agent })
+      return assembly.sections.find(section => section.name === 'qq:attention')?.text ?? ''
+    }
+    const first = await promptOf('group:1')
+    const second = await promptOf('group:2')
+
+    expect(first).toContain('这几条在叫你')
+    expect(first).not.toContain('有人在戳你')
+    expect(second).toContain('有人在戳你')
+    expect(second).not.toContain('这几条在叫你')
+  })
+
+  it('配置的称呼会进入当前会话给模型看的注意力内容', async () => {
+    const root = await mountStack()
+    const attention = attentionRow.qqAttentionOf(root)
+    if (attention === undefined) throw new Error('注意力层没装上')
+    attention.inbox.push('group:3', { senderId: 'u3', text: '小岸你看这个' })
+
+    const assembly = await root.systemPrompt.assemble({ agent: { id: 'group:3' } as Agent })
+    const section = assembly.sections.find(item => item.name === 'qq:attention')?.text ?? ''
+
+    expect(section).toContain('文本里出现名字：小岸')
   })
 
   it('没装身体时取到的是 undefined', async () => {
@@ -216,7 +257,7 @@ describe('跨 fiber 取接缝', () => {
 
     expect(kind).toBe('undefined')
     // 身体缺席时条数退回中性那档，跟装上时是两条不同的路
-    expect(budget).toContain('最多说 2 条')
+    expect(budget).toContain('physical_cap=')
   })
 
   it('同一个 ctx 直接装配的老写法照样取得到', async () => {

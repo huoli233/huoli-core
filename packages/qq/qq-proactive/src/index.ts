@@ -17,7 +17,7 @@ import { createProactiveStore, PENDING_TTL_MS, type PendingStore, type TimingSto
 
 export type { Candidate, CandidateFacts, GateConfig, GateVerdict, PendingItem } from './score.ts'
 export { orderByArrival, dropRepeats, sameThing, PROACTIVE_DEFAULTS } from './score.ts'
-export { runGates, inQuietHours, endOfQuiet, startOfNextDay, cooldownMs, dailyCapOf } from './gates.ts'
+export { runGates, inQuietHours, endOfQuiet } from './gates.ts'
 export type { PendingStore, TimingStore } from './store.ts'
 export { describeWait, PENDING_TTL_MS } from './store.ts'
 
@@ -60,6 +60,11 @@ export interface QqProactiveSeam {
   readonly enabled: boolean
   consider(input: ConsiderInput): ProactiveDecision
   preview(chatKey: string): PendingItem[]
+  /** 占住一条已预览的候选，避免并发重复发送 */
+  claim(chatKey: string, id: string): DeliverResult
+  /** 按真实发送结果结算；失败时保留候选且不扣额度 */
+  settle(chatKey: string, id: string, sent: boolean): DeliverResult
+  /** 供不经过网络发送的调用方直接完成一条候选 */
   deliver(chatKey: string, id: string): DeliverResult
 }
 
@@ -73,14 +78,14 @@ export interface ConsiderInput {
   humanActive: boolean
   botBusy: boolean
   hasChannel: boolean
-  /** 身体那边给的想开口的劲，零到一，冷却与每天额度都按它缩放 */
+  /** 身体给的想开口读数，只作为模型可见事实 */
   proactiveBias?: number
   /** 身体那边给的睡眠事实：现在睡着就一条候选都不攒 */
   asleep?: boolean
   /** 睡着时预计醒来的毫秒时间戳，零表示没排期 */
   wakeAfter?: number
-  /** 刚被吵醒、还没缓过来 */
-  waking?: boolean
+  /** 身体已经需要收口休息 */
+  resting?: boolean
   config?: Partial<GateConfig>
 }
 
@@ -92,24 +97,14 @@ export interface Config {
   home?: string
   /** 要不要主动开口 */
   enabled?: boolean
-  /** 一天最多开口几次 */
-  dailyMax?: number
-  /** 一天至少开口几次，劲头再低也不低于这个数 */
-  dailyFloor?: number
   /** 安静时段从几点开始 */
   quietStart?: string
   /** 安静时段到几点结束 */
   quietEnd?: string
-  /** 冷却区间下限 */
-  gapMinMs?: number
-  /** 冷却区间上限 */
-  gapMaxMs?: number
-  /** 读数折回倍率时的下限 */
-  biasMin?: number
-  /** 读数折回倍率时的上限 */
-  biasMax?: number
-  /** 刚被吵醒之后还要安静多久，毫秒 */
-  wakingDelayMs?: number
+  /** 正忙时多久后再看，毫秒 */
+  busyRetryMs?: number
+  /** 身体需要休息时多久后再看，毫秒 */
+  restRetryMs?: number
   /** 一条候选攒着多久就过期，毫秒 */
   pendingTtlMs?: number
 }
@@ -148,17 +143,13 @@ export function apply(ctx: Context, config: Config = {}): void {
   const store = createProactiveStore({ file })
   const pending = store.pending
   const timing = store.timing
+  const claimed = new Map<string, PendingItem>()
   const gateConfig: Partial<GateConfig> = {
     ...config.enabled !== undefined ? { enabled: config.enabled } : {},
-    ...config.dailyMax !== undefined ? { dailyMax: config.dailyMax } : {},
-    ...config.dailyFloor !== undefined ? { dailyFloor: config.dailyFloor } : {},
     ...config.quietStart !== undefined ? { quietStart: config.quietStart } : {},
     ...config.quietEnd !== undefined ? { quietEnd: config.quietEnd } : {},
-    ...config.gapMinMs !== undefined ? { gapMinMs: config.gapMinMs } : {},
-    ...config.gapMaxMs !== undefined ? { gapMaxMs: config.gapMaxMs } : {},
-    ...config.biasMin !== undefined ? { biasMin: config.biasMin } : {},
-    ...config.biasMax !== undefined ? { biasMax: config.biasMax } : {},
-    ...config.wakingDelayMs !== undefined ? { wakingDelayMs: config.wakingDelayMs } : {},
+    ...config.busyRetryMs !== undefined ? { busyRetryMs: config.busyRetryMs } : {},
+    ...config.restRetryMs !== undefined ? { restRetryMs: config.restRetryMs } : {},
     ...config.pendingTtlMs !== undefined ? { pendingTtlMs: config.pendingTtlMs } : {},
   }
   const enabled = config.enabled ?? PROACTIVE_DEFAULTS.enabled
@@ -173,15 +164,11 @@ export function apply(ctx: Context, config: Config = {}): void {
       const gateInput: GateInput = {
         now,
         config: { ...gateConfig, ...(input.config ?? {}) },
-        lastSpokenAt: timing.lastSpokenAt(input.chatKey),
-        todayCount: timing.todayCount(input.chatKey),
-        humanActive: input.humanActive,
         botBusy: input.botBusy,
         hasChannel: input.hasChannel,
-        ...input.proactiveBias !== undefined ? { proactiveBias: input.proactiveBias } : {},
         ...input.asleep !== undefined ? { asleep: input.asleep } : {},
         ...input.wakeAfter !== undefined ? { wakeAfter: input.wakeAfter } : {},
-        ...input.waking !== undefined ? { waking: input.waking } : {},
+        ...input.resting !== undefined ? { resting: input.resting } : {},
       }
       const gate = runGates(gateInput)
       if (!gate.ok) return { verdict: gate, pending: [], considered: [], facts }
@@ -218,7 +205,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       pending.notePreviewed(live.map(item => item.id))
       return live
     },
-    deliver(chatKey, id) {
+    claim(chatKey, id) {
       const found = pending.live(chatKey).find(item => item.id === id)
       if (found === undefined) {
         return { ok: false, code: 'proactive.unknown_item', reason: '待发里没有这一条', hint: '先用 preview 看一遍，拿里面的编号来投' }
@@ -226,9 +213,34 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (!pending.isPreviewed(found.id)) {
         return { ok: false, code: 'proactive.not_previewed', reason: '这一条还没先给人看', hint: '先调 preview 摆出来，再投这一条' }
       }
-      pending.markSent(found.id)
+      if (claimed.has(found.id)) {
+        return { ok: false, code: 'proactive.already_sending', reason: '这一条正在发送', hint: '等这次发送结果回来再决定' }
+      }
+      const gate = runGates({
+        now: Date.now(),
+        config: gateConfig,
+        botBusy: false,
+        hasChannel: true,
+      })
+      if (!gate.ok) return gate
+      claimed.set(found.id, found)
+      return { ok: true, item: found }
+    },
+    settle(chatKey, id, sent) {
+      const found = claimed.get(id)
+      if (found === undefined || found.chatKey !== chatKey) {
+        return { ok: false, code: 'proactive.not_claimed', reason: '这一条没有正在发送', hint: '重新预览后再试' }
+      }
+      claimed.delete(id)
+      if (!sent) return { ok: false, item: found }
+      pending.markSent(id)
       timing.noteSpoken(chatKey)
       return { ok: true, item: found }
+    },
+    deliver(chatKey, id) {
+      const reservation = seam.claim(chatKey, id)
+      if (!reservation.ok) return reservation
+      return seam.settle(chatKey, id, true)
     },
   }
   seams.set(ctx.root, seam)

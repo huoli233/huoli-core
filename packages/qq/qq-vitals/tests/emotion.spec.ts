@@ -300,16 +300,38 @@ describe('提示词的措辞', () => {
 
     expect(angry).not.toBe(calm)
     expect(angry).toContain('憋着火')
-    expect(angry).toContain('能不接就不接')
+    expect(angry).toContain('有人直接找你时把对方那件事接住')
   })
 
-  it('怕、担心、生死各有各的说法，平时不出现', () => {
+  it('怕、担心与不安各有说法，平时不出现', () => {
     const calm = renderPrompt(settled(), tuning, 0)
 
     expect(calm).toContain('心里是稳的')
     expect(renderPrompt(settled({ fear: 0.8 }), tuning, 0)).toContain('发慌')
     expect(renderPrompt(settled({ worry: 0.8 }), tuning, 0)).toContain('悬着')
-    expect(renderPrompt(settled({ mortality: 0.6 }), tuning, 0)).toContain('怕有什么会不见')
+    expect(renderPrompt(settled({ mortality: 0.6 }), tuning, 0)).toContain('心里有点发紧')
+  })
+
+  it('担心更强时仍保留生气和记恨', () => {
+    const text = renderPrompt(settled({ worry: 0.9, anger: 0.9, resentment: 0.9 }), tuning, 0)
+
+    expect(text).toContain('心里悬着')
+    expect(text).toContain('憋着火')
+    expect(text).toContain('记着刚才那一下')
+  })
+
+  it('嘴硬、想靠近和孤独会形成内部矛盾', () => {
+    const text = renderPrompt(settled({
+      anger: 0.8,
+      resentment: 0.8,
+      fear: 0.8,
+      oxytocin: 1,
+      endorphin: 1,
+    }), tuning, 0)
+
+    expect(text).toContain('嘴上想冷一点')
+    expect(text).toContain('想让人陪')
+    expect(text).not.toContain('内心冲突度')
   })
 
   it('触发句与三百字上限都还在，也不出现激素名与数字', () => {
@@ -320,7 +342,8 @@ describe('提示词的措辞', () => {
     const text = renderPrompt(heavy, tuning, 0)
 
     expect(text.length).toBeLessThanOrEqual(tuning.promptMaxChars)
-    expect(text).toContain('怕和担心只在被触发时出现')
+    expect(text).not.toContain('生死')
+    expect(text).not.toContain('怕来不及说')
     expect(/\d/u.test(text)).toBe(false)
     for (const name of HORMONE_NAMES) expect(text).not.toContain(name)
   })

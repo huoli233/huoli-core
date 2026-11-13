@@ -39,6 +39,7 @@ describe('每天整理的时刻', () => {
     expect(BUNDLE_DEFAULTS.dailySweepAt).toBe('00:20')
   })
 
+
   it('正常写法不记日志', async () => {
     const { logs } = await mount({ dailySweepAt: '03:15' })
 

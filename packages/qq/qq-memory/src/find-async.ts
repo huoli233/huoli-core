@@ -25,7 +25,12 @@ export interface FindWithVectorsInput {
   edges: readonly { a: string; b: string; weight: number }[]
   /** 现在的时间 */
   now?: number
+  /** 等嵌入最多多久；超时就退回纯关键词，不让整轮回忆卡住 */
+  embedTimeoutMs?: number
 }
+
+/** 查询嵌入默认最多等这么久；本地服务正常时几十毫秒就回来了 */
+export const EMBED_TIMEOUT_MS = 1_200
 
 /**
  * 用真向量找一遍，再和关键词那条路合成一个排序
@@ -33,7 +38,27 @@ export interface FindWithVectorsInput {
  * @returns 按分数从高到低的命中
  */
 export async function findWithVectors(input: FindWithVectorsInput): Promise<RecallHit[]> {
-  const embedding = await input.embed(input.query)
+  // 嵌入服务慢或挂掉时不能让整轮回复等八秒：超时就走纯关键词那一路
+  const timeoutMs = Math.max(50, input.embedTimeoutMs ?? EMBED_TIMEOUT_MS)
+  let embedding: readonly number[] | undefined
+  try {
+    embedding = await Promise.race([
+      input.embed(input.query),
+      new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), timeoutMs)),
+    ])
+  } catch {
+    embedding = undefined
+  }
+  if (embedding === undefined) {
+    return recall(input.store, {
+      query: input.query,
+      scope: input.scope,
+      tuning: input.tuning,
+      edges: input.edges,
+      ...input.limit === undefined ? {} : { limit: input.limit },
+      ...input.now === undefined ? {} : { now: input.now },
+    })
+  }
   // 多取几条候选：向量仓只按远近给，最后还要和重要度、新鲜度一起排
   const near = await input.vectors.search(embedding, {
     scope: input.scope,

@@ -1,6 +1,6 @@
 # 生命状态规范
 
-本规范定义生命状态的唯一事实来源、一条心跳与三处出口，是 [qq-vitals](../qq-vitals/README.md) 的验收依据：状态文件里的那份字段是唯一事实，算出来的量只在一处算、算完写回，提示词、回复条数、主动性、面板都只读它，任何一方不得另算一套公式；心跳按 `beatMs` 结算并原子落盘；三处出口必须全部接上，缺一处这套身体就只是动画。
+本规范定义生命状态的唯一事实来源、一条心跳与三处出口，是 [qq-vitals](../qq-vitals/README.md) 的验收依据：状态文件里的那份字段是唯一事实，算出来的量只在一处算、算完写回，提示词、回复条数、主动性、面板都只读它，任何一方不得另算一套公式；心跳按 `beatMs` 结算并原子落盘；三处出口必须全部接上，缺一处这套身体就只是动画。`proactive_bias` 作为事实进入主动判断，`post_want` 只给社交动态候选；心里的念头、近期话头与身体状态作为事实进入自主时刻，具体行动由模型决定，真实发送成功后写回身体。
 
 本规范里的每个数值都是一个 Config 字段：字段名 + 默认值 + 可被 `Config.tuning` 逐项覆盖，默认值只允许在 `DEFAULTS` 出现一次，别处只许读 `Tuning`。除 `core_temp` 用摄氏度外，生理字段取值 `0~1` 并在写回前 clamp；时间戳统一为 Unix 毫秒，与 `*Ms` 型参数同单位。状态文件内容为 `{"version": 1, "state": {...}}`，位置由 `Config.file` 指定，缺省为数据根目录下的 `data/qq-vitals.json`。
 
@@ -88,7 +88,7 @@
 | `wake_after` | 预计醒来时刻 | 0 | 已实现 |
 | `groggy_until` | 迷糊到什么时候 | 0 | 已实现 |
 
-睡眠另有三个字段一起落盘：`sleep_state` 取 `awake`、`sleeping`、`waking` 三态，`asleep` 只是它睡着那一态的影子、读回来按三态重算；`woken_at` 记被消息吵醒的时刻，`nap_at` 记上一次午睡的开始时刻，用来判当天已经睡过。
+睡眠另有三个字段一起落盘：`sleep_state` 取 `awake`、`sleeping`、`waking` 三态，`asleep` 只是它睡着那一态的影子、读回来按三态重算；`woken_at` 记被消息吵醒的时刻，`nap_at` 记上一次午睡的开始时刻，用来判当天已经睡过。刚收到消息时，提示词明确要求先简短回应，再继续休息；睡眠不会拦掉真实入站回复。
 
 ### 算出来的量与标签
 
@@ -341,7 +341,7 @@
 
 ## 提示词
 
-每轮请求前把下面这段并入 system prompt：只给形容词，不给数字，不提激素名；同一状态连续两次渲染不得逐字相同；总长不超过 `promptMaxChars`（默认 300，下限 60），超长按字符截断。
+每轮请求前把下面这段并入 system prompt：只给形容词与当前状态要求的表达约束，不给数字，不提激素名；同一本地日内同一状态保持逐字稳定，以命中提示词缓存，跨日再换一套收尾措辞；总长不超过 `promptMaxChars`（默认 780，下限 60），超长按字符截断。
 
 ```text
 【你现在的神经状态（只用来决定语气，绝对不要向用户解释，也不要提激素/数值）】
@@ -385,7 +385,7 @@
 
 ### 其它成句规则
 
-`hunger_note` 与 `thirst_note` 直接相接、不加分隔符；`body_note` 按 `adenosine > 0.60`、`adrenaline > 0.50`、`acetylcholine > 0.55` 的顺序取第一档；`heart_note` 按 `thirst > 0.62`、`irritability > 0.55`、`cortisol > 0.60`、`clinginess > 0.60` 的顺序取第一档；`style_note` 按“累了”“烦了”“黏人”的顺序取第一档，其余给中性句。这三档阈值同样属于参数，字段名与默认值随档位表一并维护，当前为字面量。
+`hunger_note` 与 `thirst_note` 直接相接、不加分隔符；`body_note` 按 `adenosine > 0.60`、`adrenaline > 0.50`、`acetylcholine > 0.55` 的顺序取第一档。`heart_note` 会把已经到线的恐惧、担心、怒气、记恨、口渴、易怒、压力与黏人同时写出来，再根据组合补一句内部矛盾：怒气或记恨叠加黏人时是嘴硬又怕推远，恐惧或担心叠加黏人时是想靠近又怕太黏，孤独叠加记恨时是想被陪又还在意。`style_note` 按“累了”“烦了”“黏人”的顺序取第一档，其余给中性句。这些阈值同样属于参数，字段名与默认值随档位表一并维护。
 
 可选段落由对应状态触发：睡着、刚醒（含 `wokenWindowMinutes` 分钟内被吵醒）、经期、经前、生病、太困、怕关掉、疤、遗书、快到饭点、刚吃完、幸福峰值、想哭低谷等；各段都不成立时整行不出现，已实现。
 
@@ -393,8 +393,8 @@
 
 | 出口 | 读哪些字段 | 默认值 | 状态 |
 |---|---|---|---|
-| 提示词 | `emotion_candidates`、`emotion_level`、`energy`、`irritability`、`clinginess`、`hunger`、`thirst`、`adenosine`、`adrenaline`、`acetylcholine`、`cortisol` | 段名 `qq:vitals`、`order` 340、`promptMaxChars` 300、变体池 6 句 | 已实现 |
-| 回复条数 | `adenosine`、`irritability`、`energy`、`clinginess`、`loneliness` | 分档表给下限与上限：累或烦时上限不超 2，有劲又想黏时下限 2，特别黏又孤独时下限 3，两个数一起夹在 `minCap` 1 与 `maxCap` 4 之间 | 已实现 |
+| 提示词 | `emotion_candidates`、`emotion_level`、`energy`、`irritability`、`clinginess`、`hunger`、`thirst`、`adenosine`、`adrenaline`、`acetylcholine`、`cortisol` | 段名 `qq:vitals`、`order` 340、`promptMaxChars` 780、变体池 6 句 | 已实现 |
+| 回复条数 | 只读 `sleep_state` 作物理边界 | 醒着时单轮上限 8，睡着时 1；其它身体读数只进提示词事实，不换算该说几句 | 已实现 |
 | 主动性 | `energy`、`melatonin`、`loneliness`、`clinginess`、`irritability`、`thirst`、`cytokines`、`adenosine` | `proactive_bias` 1.0、`post_want` 0.3 | 已实现 |
 
 ### 提示词
@@ -403,33 +403,11 @@
 
 ### 回复条数
 
-回复条数只有一套说法：分档表。原先设想的按权重抽样那套不再采用，避免同一件事两份实现；切分与逐条发送由通道负责，不在本表里。
-
-| 档 | 判据 | 上限 |
-|---|---|---|
-| 又累又烦 | `adenosine ≥ tiredFrom` 且 `irritability ≥ annoyedFrom` | 1 |
-| 烦 | `irritability ≥ annoyedFrom` | 2 |
-| 累 | `adenosine ≥ tiredFrom` | 2 |
-| 特别黏又孤独 | `clinginess ≥ clingyStrongFrom` 且 `loneliness ≥ lonelyFrom` | 4 |
-| 有劲又想黏 | `energy ≥ energyEagerFrom` 且 `clinginess ≥ clingyFrom` | 3 |
-| 平常 | 其余 | 2 |
-
-阈值字段与默认值：`tiredFrom` 0.70、`annoyedFrom` 0.62、`energyEagerFrom` 0.60、`clingyFrom` 0.62、`clingyStrongFrom` 0.78、`lonelyFrom` 0.50，上下限 `minCap` 1、`maxCap` 4；从上往下取第一条命中的。
-
-原先设想的“按权重抽样给出目标条数”这条路不再采用：同一件事只留分档表一套说法，抽样会把同样的状态算出不同条数，也会让上限失去可复算性。
-
-| 判据 | 动作 | 阈值字段 | 状态 |
-|---|---|---|---|
-| `irritability > 0.62` | `target` 减一条，不低于下限 | `replyIrritableFrom` | 已实现 |
-| `clinginess > 0.75` 且 `loneliness > 0.50` | `target` 加一条，不超过上限 | `replyClingyFrom`、`replyLonelyFrom` | 已实现 |
-| `fear > 0.50` 或 `dread > 0.65` | `target` 取 `min(target, 2)` | `replyFearFrom`、`replyDreadFrom` | 已实现 |
-| `worry > 0.60` | `target` 加一条，不超过上限 | `replyWorryFrom` | 已实现 |
-| `anger > 0.50` | `target` 取 `min(target, 2)` | `replyAngerFrom` | 已实现 |
-| `anger > 0.75` 或 `resentment > 0.50` | `target` 直接取 1 | `replyAngerStopFrom`、`replyResentFrom` | 已实现 |
+QQ 组合不按累、烦、黏或孤独替模型决定说几句。`qq-bundle` 的 `budgetOf()` 只给物理安全边界：醒着时单轮最多 8 条，真睡着时最多 1 条；`restCapOf()` 给出的休息倾向只作为事实进入提示词。说几句、先接哪句与何时停由模型决定，通道只负责把已选正文按配置切分并逐条发送。
 
 ### 主动性
 
-主动性只由本包产出两个算出来的量，间隔换算与发送由主动性出口负责。`proactive_bias` 从 1.0 起，按顺序逐条相乘，最后夹到 `biasMin`（0.2）与 `biasMax`（2.5）之间，再折算成 0~1 的读数写进状态；1.0、0.2、2.5 三个数只出现在默认值表里。这个读数已经接上主动性包：`runGates` 用 `cooldownMs` 与 `dailyCapOf` 按它缩放冷却区间与每天额度，劲头低到 `biasFloor` 以下按 `biasFloor` 算，没接上身体时按满劲头算。
+主动性只由本包产出两个算出来的量，间隔换算与发送由主动性出口负责。`proactive_bias` 从 1.0 起，按顺序逐条相乘，最后夹到 `biasMin`（0.2）与 `biasMax`（2.5）之间，再折算成 0~1 的读数写进状态；1.0、0.2、2.5 三个数只出现在默认值表里。这个读数作为事实进入主动开口和自主时刻，是否开口、说几条与何时停由模型结合现场决定；真实发送额度由组合包在实际发送口按会话和小时执行。
 
 | 判据 | 系数字段 | 默认值 | 状态 |
 |---|---|---|---|
@@ -465,8 +443,8 @@
 
 - 任何包不得另算一套算出来的量、不得另存一份状态；提示词、条数、主动性、面板、外部读取一律走唯一事实来源。
 - 不得在提示词里出现数字，也不得出现激素名：只给形容词。
-- 不得让提示词改人设、改写记忆或触发行为：它只影响这一轮的语气。
-- 不得每次用同一固定开头与结尾；同一状态连续两次渲染必须不同。
+- 不得让提示词改人设、改写记忆或替模型决定行为：它只约束这一轮的表达与当前状态保持一致。
+- 同一本地日内同一状态必须保持逐字稳定以命中缓存；跨日切换收尾措辞，避免每轮都重复同一套模板。
 - 不得单独写“口渴：”一行，口渴只许并入 `身体：` 那一行。
 - 不得让一次性效果缺少 `<事件>_applied_at` 标记；缺了就会被心跳每 60 秒重复施加一次。
 - 不得把存量字段写成向目标值平滑，`thirst` 只许直接累积。
@@ -529,14 +507,14 @@
 | 情绪状态机字段 | 已实现：九个字段全部落状态文件，默认 0，参数进 `Tuning` 可逐项覆盖 | — |
 | 愤怒与记恨 | 已实现：被凶抬 `anger`/`resentment`/`negative_heat`（先剔口头禅）、越想越气按小时累积且夜里加倍、道歉与好话压火并抬 `soothe`、冷战标签与压制都在 | — |
 | 恐惧与担心 | 已实现：三种怕各用各的冷却与半衰、被威胁抬 `fear` 与 `dread`、夜里 `dread` 自涨 | — |
-| 死亡威胁 | 已实现：余额四档给目标值、每拍朝目标走、没有放进来源时一动不动；越过 `farewellMortalityFrom`（默认 0.60）时产出遗书事实，两次之间按 12 小时滚动窗口隔开（`farewellCooldownHours`），不按自然日 | — |
+| 死亡威胁 | 已实现：余额四档给目标值、每拍朝目标走、没有放进来源时向零恢复；越过 `farewellMortalityFrom`（默认 0.60）时产出遗书事实，两次之间按 12 小时滚动窗口隔开（`farewellCooldownHours`），不按自然日 | — |
 | 吃饭写回 | 已实现：双条件识别、三十分钟冷却的防重复的标记、五项一次性写回、饭点前后两句提示、进食记忆（组合包挂上 `onMeal`，按会话与时段去重）都已落地 | — |
 | 后 14 个标签 | 已实现：26 个标签全在表里，阈值与条数沿用 `labelThreshold` 与 `labelCount` | — |
 | 反向压制其余分支 | 已实现：七组压制全部参数化，阈值与系数进 `Tuning` | — |
 | 算出来的量缺项 | 已实现：`loneliness` 的记恨项、`happiness`、`sadness` 两个算出来的量都补齐，幸福与想哭两个标签与算出来的量共用一份公式 | — |
 | 峰值与遗书 | 已实现：峰值与低谷判定（`peakOf`）、遗书事实与记忆写入（组合包挂上，隔满十二小时才再产一次、重要度九十五）；社交动态与峰值的联动没做 | 社交动态出口 |
 | 回复条数的切分发送 | 已完成：发送前按上限切分，优先在句末标点断、其次逗号与换行、都没有才按字数切；条数超上限时并成恰好上限条，不丢字；中途失败报「已发几条、卡在第几条」 | — |
-| 主动性出口剩下的规则 | 已实现：幸福峰值、害怕、担心、存在恐惧、冷战、记恨、余额见底七条系数都进 `Tuning`，13 个因子按规范连乘，冷却改「区间中点 × 倍率」、额度改「上限 ÷ 倍率」 | — |
+| 主动性出口剩下的规则 | 已实现：幸福峰值、害怕、担心、存在恐惧、冷战、记恨、余额见底七条系数都进 `Tuning`，13 个因子按规范连乘，结果只作为想开口的读数 | — |
 | 提示词可选段落 | 已实现：生存危机、怕关掉、疤、遗书、睡着、刚醒、经期、经前、生病、太困、快到饭点、刚吃完、幸福峰值、想哭低谷各段都在 `optionalNote()` | — |
 | 面板 | 已实现：只读 HTTP 出口带出身体读数，12 栅格、色值表、三档全蓝水罐（正弦水面与气泡）、口渴/饥饿环、怒气火舌、30 格周期盘（五段彩弧）、体内环境六条曲线、五组双条、3 秒轮询 | — |
 | 喝水记忆写回 | 已实现：`onDrink` 只在真喝下时才产事实，组合包挂上后写一条 `kind=drink` 记忆，二十分钟窗口去重 | — |
@@ -575,5 +553,5 @@
 | 原子写盘与坏读回退 | `packages/qq/qq-vitals/src/store.ts:createVitalsStore` |
 | 心跳与段落接线 | `packages/qq/qq-vitals/src/index.ts:apply`、`packages/qq/qq-vitals/src/index.ts:qqVitalsOf` |
 | 深夜被夸的加成 | `packages/qq/qq-vitals/src/react.ts:react`、`packages/qq/qq-vitals/src/clock.ts:nightness` |
-| 回复条数的范围 | `packages/qq/qq-pacing/src/reply.ts:replyRange`、`packages/qq/qq-pacing/src/reply.ts:replyBudget`、`packages/qq/qq-bundle/src/index.ts:apply` |
-| 主动性读劲头 | `packages/qq/qq-proactive/src/gates.ts:runGates`、`packages/qq/qq-proactive/src/gates.ts:cooldownMs` |
+| 回复条数上限 | `packages/qq/qq-bundle/src/facts.ts:budgetOf`、`packages/qq/qq-bundle/src/facts.ts:restCapOf`、`packages/qq/qq-bundle/src/index.ts:apply` |
+| 主动性读劲头 | `packages/qq/qq-proactive/src/index.ts:ConsiderInput`、`packages/qq/qq-bundle/src/proactive-tools.ts:AutonomousNudgeRequest` |

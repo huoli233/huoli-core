@@ -73,11 +73,12 @@ async function mount(bundle: BundleConfig, vitals: VitalsConfig = {}): Promise<C
   ctx.accessor('tools', { get: () => ({ register: () => () => {} }) })
   await ctx.plugin(SystemPrompt, {})
   applyVitals(ctx, { file, tuning: { words: WORDS_PRESET, startDelayMs: 60 * 60_000 }, ...vitals })
-  applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999' })
+  applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999', sentLedgerFile: path.join(dir, 'sent.json') })
   applyBundle(ctx, {
     maxSteps: 5,
     dailySweepAt: '04:00',
     decisionsFile: path.join(dir, 'decisions.jsonl'),
+    wakeLogFile: path.join(dir, 'wake.jsonl'),
     livenessFile: path.join(dir, 'liveness.json'),
     ...bundle,
   })

@@ -5,7 +5,7 @@ import path from 'node:path'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
 import { cosineSimilarity, encodeVector } from './recall.ts'
 import { DEFAULTS, type Tuning } from './defaults.ts'
-import { layerOr } from './guard.ts'
+import { assertPrivateMemoryItem, layerOr, privateCoordinatesOf } from './guard.ts'
 import type { MemoryStore } from './store.ts'
 import { MEMORY_SOURCES, newId, type MemoryItem, type MemorySource, type RememberOptions } from './types.ts'
 
@@ -180,6 +180,8 @@ function optionsOf(raw: Record<string, unknown>): RememberOptions {
   if (typeof raw.source === 'string' && (MEMORY_SOURCES as readonly string[]).includes(raw.source)) options.source = raw.source as MemorySource
   if (typeof raw.at === 'number' && Number.isFinite(raw.at)) options.at = raw.at
   if (isRecord(raw.metadata)) options.metadata = raw.metadata
+  if (typeof raw.personId === 'string' && raw.personId.trim() !== '') options.personId = raw.personId.trim()
+  if (typeof raw.secret === 'boolean') options.secret = raw.secret
   return options
 }
 
@@ -190,6 +192,11 @@ function factOf(raw: Record<string, unknown>): QueuedFact | undefined {
   if (text === '' || chatKey === '') return undefined
   const at = numberOr(raw.enqueuedAt, 0)
   const options = isRecord(raw.options) ? optionsOf(raw.options) : {}
+  try {
+    privateCoordinatesOf(chatKey, options.layer ?? 'episodic', options.secret, options.personId)
+  } catch {
+    return undefined
+  }
   return { text, chatKey, enqueuedAt: at, options }
 }
 
@@ -246,6 +253,8 @@ export function defaultQueueFile(home?: string): string {
  * @param text - 想写进去的那句话
  * @param scope - 只在同一个会话里比
  * @param ratio - 相似度到这条线以上才算近似重复
+ * @param personId - 只在同一个用户下比；空串表示不按人分
+ * @param privateEntry - 是否只找私密记忆
  * @returns 最像的那条，够不上就是 undefined
  */
 export function nearDuplicateOf(
@@ -253,12 +262,16 @@ export function nearDuplicateOf(
   text: string,
   scope: string,
   ratio: number = DEFAULTS.nearDuplicateRatio,
+  personId = '',
+  privateEntry = false,
 ): NearDuplicate | undefined {
   const body = encodeVector(text)
   let best: NearDuplicate | undefined
   for (const item of store.all()) {
     if (item.state === 'forgotten') continue
     if (item.scope !== scope) continue
+    if ((item.personId ?? '') !== personId) continue
+    if ((item.layer === 'private' || item.secret === true) !== privateEntry) continue
     const similarity = cosineSimilarity(body, encodeVector(item.text))
     if (similarity === null || similarity < ratio) continue
     if (best === undefined || similarity > best.similarity) best = { id: item.id, similarity }
@@ -274,24 +287,119 @@ export function nearDuplicateOf(
  * @returns 处理结果
  */
 export function writeFact(store: MemoryStore, draft: MemoryItem, tuning: Tuning = DEFAULTS): WriteOutcome {
-  const found = nearDuplicateOf(store, draft.text, draft.scope, tuning.nearDuplicateRatio)
+  const privateEntry = draft.layer === 'private' || draft.secret === true
+  const item = privateEntry && draft.layer === 'private'
+    ? { ...draft, settledAt: draft.at + tuning.privateSettleMs }
+    : draft
+  assertPrivateMemoryItem(item)
+  const found = nearDuplicateOf(store, item.text, item.scope, tuning.nearDuplicateRatio, item.personId ?? '', privateEntry)
   const old = found === undefined ? undefined : store.byId(found.id)
   if (old !== undefined) {
     // 并进旧条不看门槛：门槛只管新写入，已经记下的事不该因为这次算得低就被丢掉
     const mergedCount = Math.max(0, Math.round(numberOr(old.metadata?.['mergedCount'], 0))) + 1
     // 合并只动被提起时刻、重要度与一条合并记录：正文与召回次数保持旧条的样子，记录表指纹才不会漂移
+    const metadata: Record<string, unknown> = { ...old.metadata, ...item.metadata, mergedCount }
+    if (privateEntry && item.metadata?.privateOriginScope === undefined) delete metadata.privateOriginScope
     store.update(old.id, {
-      lastSeenAt: draft.lastSeenAt,
-      importance: Math.max(old.importance, draft.importance),
-      metadata: { ...old.metadata, mergedCount },
+      lastSeenAt: item.lastSeenAt,
+      importance: Math.max(old.importance, item.importance),
+      ...privateEntry ? { settledAt: Math.max(old.settledAt ?? 0, item.settledAt ?? 0) } : {},
+      metadata,
     })
     return { written: true, code: '', reason: '', hint: '', merged: true, id: old.id, item: store.byId(old.id) ?? old }
   }
-  const gate = importanceGate(draft.importance, tuning.writeMinImportance)
+  const gate = importanceGate(item.importance, tuning.writeMinImportance)
   // 门槛不放行就一条都不落盘，把理由交被叫到时做的事用方，丢掉的那条由装配层计数
   if (!gate.written) return { ...gate, merged: false, id: '', item: undefined }
-  store.add(draft)
-  return { ...gate, merged: false, id: draft.id, item: draft }
+  store.add(item)
+  return { ...gate, merged: false, id: item.id, item: store.byId(item.id) ?? item }
+}
+
+/** 一次整理能合并多少同类记忆 */
+export interface ConsolidateResult {
+  merged: number
+  groups: number
+  kept: string[]
+}
+
+/**
+ * 把同一个会话、同一个用户下已经存在的近似重复记忆合起来
+ * @param store - 记忆仓
+ * @param options - 会话、用户与相似度门槛
+ * @returns 合并条数与保留的编号
+ */
+export function consolidateActive(
+  store: MemoryStore,
+  options: { scope?: string; personId?: string; ratio?: number } = {},
+): ConsolidateResult {
+  const ratio = options.ratio ?? DEFAULTS.nearDuplicateRatio
+  const buckets = new Map<string, MemoryItem[]>()
+  for (const item of store.all()) {
+    if (item.state === 'forgotten' || item.text.trim() === '') continue
+    if (options.scope !== undefined && item.scope !== options.scope) continue
+    if (options.personId !== undefined && (item.personId ?? '') !== options.personId) continue
+    const privacy = item.layer === 'private' || item.secret === true ? 'private' : 'ordinary'
+    const key = `${item.scope}\u0000${item.personId ?? ''}\u0000${privacy}`
+    const bucket = buckets.get(key) ?? []
+    bucket.push(item)
+    buckets.set(key, bucket)
+  }
+  const replaced = new Map<string, MemoryItem>()
+  const removed = new Set<string>()
+  const kept: string[] = []
+  let groups = 0
+  for (const bucket of buckets.values()) {
+    const cluster: MemoryItem[] = []
+    for (const item of bucket) {
+      let target = -1
+      for (let at = 0; at < cluster.length; at += 1) {
+        const base = cluster[at]
+        if (base === undefined) continue
+        const similarity = cosineSimilarity(encodeVector(base.text), encodeVector(item.text))
+        if (similarity !== null && similarity >= ratio) {
+          target = at
+          break
+        }
+      }
+      if (target < 0) {
+        cluster.push(item)
+        kept.push(item.id)
+        continue
+      }
+      const base = cluster[target]
+      if (base === undefined) continue
+      const mergedFrom = [...new Set([
+        ...Array.isArray(base.metadata?.mergedFrom) ? base.metadata.mergedFrom.filter(value => typeof value === 'string') : [],
+        ...Array.isArray(item.metadata?.mergedFrom) ? item.metadata.mergedFrom.filter(value => typeof value === 'string') : [],
+        base.id,
+        item.id,
+      ])]
+      const next: MemoryItem = {
+        ...base,
+        text: base.text.length >= item.text.length ? base.text : item.text,
+        layer: base.layer === 'private' || item.layer === 'private' ? 'private' : base.layer,
+        importance: Math.max(base.importance, item.importance),
+        emotional: Math.max(base.emotional, item.emotional),
+        clarity: base.importance >= item.importance ? base.clarity : item.clarity,
+        recallCount: base.recallCount + item.recallCount,
+        at: Math.min(base.at, item.at),
+        lastSeenAt: Math.max(base.lastSeenAt, item.lastSeenAt),
+        ...(base.layer === 'private' || item.layer === 'private'
+          ? { settledAt: Math.max(base.settledAt ?? 0, item.settledAt ?? 0) }
+          : {}),
+        metadata: { ...base.metadata, ...item.metadata, mergedFrom },
+        ...base.secret === true || item.secret === true ? { secret: true } : {},
+      }
+      cluster[target] = next
+      replaced.set(base.id, next)
+      removed.add(item.id)
+      groups += 1
+    }
+  }
+  if (removed.size > 0) {
+    store.replaceAll(store.all().filter(item => !removed.has(item.id)).map(item => replaced.get(item.id) ?? item))
+  }
+  return { merged: removed.size, groups, kept }
 }
 
 // 把攒下的几条合成一条：正文按时间顺序接起来，重要度取最高的那条
@@ -414,6 +522,7 @@ export function createWriteQueue(options: WriteQueueOptions): WriteQueue {
       if (body === '') refuse('memory.empty', '空的一句入不了队', '写一件能独立读懂的事')
       if (body.length < tuning.minTextChars) refuse('memory.too_short', `短过 ${tuning.minTextChars} 字当噪声`, '写清一件事再入队')
       if (body.length > tuning.maxTextChars) refuse('memory.too_long', `一条最多 ${tuning.maxTextChars} 字`, '长事拆成几条再入队')
+      privateCoordinatesOf(chatKey, given.layer ?? 'episodic', given.secret, given.personId)
       // 重要度不够的新写入不占队列的位置：丢了几条记在 droppedLow 里，入队返回值与队列文件都看得见
       const gate = importanceGate(options.importanceOf(chatKey, given), tuning.writeMinImportance)
       if (!gate.written) {

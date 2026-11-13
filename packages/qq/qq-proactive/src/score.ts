@@ -61,24 +61,10 @@ export interface GateConfig {
   enabled: boolean
   quietStart: string
   quietEnd: string
-  /** 一天最多开口几次，写死的上限，不由身体读数改 */
-  dailyMax: number
-  /** 旧配置，判定不再读它 */
-  dailyFloor: number
-  /** 冷却区间下限 */
-  gapMinMs: number
-  /** 冷却区间上限，下一次可开口时刻取区间中点 */
-  gapMaxMs: number
-  /** 旧配置，判定不再读它 */
-  biasMin: number
-  /** 旧配置，判定不再读它 */
-  biasMax: number
-  /** 旧配置，判定不再读它 */
-  wakingDelayMs: number
   /** 正忙时多久再看 */
   busyRetryMs: number
-  /** 旧配置，判定不再读它 */
-  talkingRetryMs: number
+  /** 身体需要休息时多久再看 */
+  restRetryMs: number
   pendingTtlMs: number
 }
 
@@ -87,16 +73,9 @@ export const PROACTIVE_DEFAULTS: GateConfig = {
   enabled: false,
   quietStart: '23:30',
   quietEnd: '08:30',
-  dailyMax: 4,
-  dailyFloor: 1,
-  gapMinMs: 150 * 60_000,
-  gapMaxMs: 300 * 60_000,
-  biasMin: 0.2,
-  biasMax: 2.5,
-  wakingDelayMs: 10 * 60_000,
   busyRetryMs: 60_000,
-  talkingRetryMs: 5 * 60_000,
-  pendingTtlMs: 14 * 86_400_000,
+  restRetryMs: 10 * 60_000,
+  pendingTtlMs: 2 * 60 * 60_000,
 }
 
 /**
@@ -133,8 +112,8 @@ export function sameThing(a: string, b: string): boolean {
 export function dropRepeats(candidates: readonly Candidate[], history: readonly string[]): Candidate[] {
   const kept: Candidate[] = []
   for (const candidate of candidates) {
-    if (history.some(old => sameThing(old, candidate.text))) continue
-    if (kept.some(already => sameThing(already.text, candidate.text))) continue
+    if (candidate.text.trim() !== '' && history.some(old => sameThing(old, candidate.text))) continue
+    if (candidate.text.trim() !== '' && kept.some(already => sameThing(already.text, candidate.text))) continue
     kept.push(candidate)
   }
   return kept

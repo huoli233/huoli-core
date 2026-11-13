@@ -1,7 +1,8 @@
 // 面板只有四类内容：此刻、我在做、我想弄明白、可以说不
 
 import { DEFAULTS } from './defaults.ts'
-import type { PanelInput, PanelState, SelfSettings, VitalsPort } from './types.ts'
+import { PANEL_LIMITS_SCRIPT } from './panel-limits.ts'
+import type { PanelInput, PanelLive, PanelState, SelfSettings, VitalsPort } from './types.ts'
 
 // 首行生成时间的写法，读与写共用同一处
 const STAMP_PREFIX = '<!-- generated_at: '
@@ -128,7 +129,10 @@ function stripMarks(text: string): string {
  * @returns 一句主体，一行都没有时为空串
  */
 export function compressMoment(text: string, max: number = DEFAULTS.momentMaxChars): string {
-  const first = text.split('\n').find(line => line.trim() !== '') ?? ''
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line !== '')
+    .filter(line => !/^\[SYSTEM_LOAD\]\s+\S+\s*$/u.test(line))
+    .filter(line => !/^[A-Z_]+:\s/u.test(line))
+  const first = lines[0] ?? ''
   const bare = stripMarks(stripNotes(first)).replace(NUMBERING, '').replace(/\s+/gu, ' ').trim()
   const limit = Math.max(0, max)
   return bare.length <= limit ? bare : bare.slice(0, limit)
@@ -187,6 +191,23 @@ export function percent(value: number): string {
 }
 
 /**
+ * 现场那一行：正在写哪一条、刚收到什么、叫醒判断最近一次的结果
+ * @param live - 时间线算出来的现场
+ * @returns 一句中文；三样都没有时为空串
+ */
+export function liveLine(live: PanelLive): string {
+  const clock = (at: number): string => new Date(at).toLocaleTimeString('zh-CN', { hour12: false })
+  const parts = [
+    live.typing === undefined ? '' : `正在写 ${live.typing.chatKey} 第 ${live.typing.step} 步（${clock(live.typing.since)} 起）`,
+    live.inbound === undefined ? '' : `刚收到 ${live.inbound.chatKey} ${live.inbound.count} 条（${clock(live.inbound.at)}）`,
+    live.proactive === undefined
+      ? ''
+      : `主动开口${live.proactive.blocked ? '被挡' : '放行'}：${live.proactive.reason}（${clock(live.proactive.at)}）`,
+  ].filter(part => part !== '')
+  return parts.join(' · ')
+}
+
+/**
  * 简短版整页：别的实例只读这一屏，不画任何画布，也不带轮询
  * @param state - 只读出口的内容
  * @param style - 内联样式，由调用方给
@@ -210,6 +231,84 @@ export function briefShell(state: PanelState, style: string): string {
     '',
   ].join('\n')
 }
+
+/** 面板上的三种互动模式 */
+export interface PanelModeView {
+  current: string
+  options: readonly { value: string; label: string; description?: string }[]
+}
+
+/**
+ * 模式下拉框那一块 HTML
+ * @param mode 当前模式与可选项
+ * @returns 已转义的 HTML
+ */
+export function panelModeHtml(mode: PanelModeView): string {
+  const current = mode.options.find(option => option.value === mode.current)
+  return [
+    '<p><label for="mode-select">互动模式</label></p>',
+    '<select id="mode-select">',
+    ...mode.options.map(option => `<option value="${escapeHtml(option.value)}"${option.value === mode.current ? ' selected' : ''}>${escapeHtml(option.label)}</option>`),
+    '</select>',
+    `<p class="muted">${escapeHtml(current?.description ?? '')}</p>`,
+  ].join('')
+}
+
+/** 角色选择和诊断输入的页面片段 */
+export function panelPersonaHtml(
+  personas: readonly { id: string; name: string }[],
+  activeId: string,
+  hasQq: boolean,
+): string {
+  return [
+    '<p><label for="persona-select">角色补充</label></p>',
+    '<select id="persona-select">',
+    ...personas.map(persona => `<option value="${escapeHtml(persona.id)}"${persona.id === activeId ? ' selected' : ''}>${escapeHtml(persona.name)}</option>`),
+    '</select>',
+    '<p><input id="persona-chat" placeholder="群聊或私聊键"><button id="persona-bind" type="button">绑定</button></p>',
+    ...hasQq ? [
+      '<p><input id="relation-person" placeholder="用户编号"><input id="relation-chat" placeholder="会话键，可不填">',
+      '<button id="relation-query" type="button">查关系</button></p>',
+      '<pre id="relation-result" class="muted">还没有查询</pre>',
+      '<p><input id="trace-id" placeholder="消息追踪编号"><button id="trace-query" type="button">查时间线</button></p>',
+      '<pre id="trace-result" class="muted">还没有查询</pre>',
+    ] : [],
+  ].join('')
+}
+
+/** 急停和模式切换共用的页内脚本 */
+export const PANEL_CONTROL_SCRIPT = [
+  '(function(){',  'var label=document.getElementById("emergency-status");',
+  'var stop=document.getElementById("emergency-stop");',
+  'var resume=document.getElementById("emergency-resume");',
+  'var show=function(s){if(label)label.textContent=s.active?("已急停："+(s.reason||"")):"正在运行"};',
+  'var call=function(path){fetch(path,{method:"POST",headers:{accept:"application/json"}})',
+  '.then(function(r){return r.json()}).then(show).catch(function(){})};',
+  'if(stop)stop.addEventListener("click",function(){call("/api/emergency-stop?reason="+encodeURIComponent("面板急停"))});',
+  'if(resume)resume.addEventListener("click",function(){call("/api/emergency-resume")});',
+  'if(label)fetch("/api/emergency-status",{headers:{accept:"application/json"}}).then(function(r){return r.json()}).then(show).catch(function(){});',
+  'var mode=document.getElementById("mode-select");',
+  'if(mode)mode.addEventListener("change",function(){fetch("/api/mode?value="+encodeURIComponent(mode.value),',
+  '{method:"POST",headers:{accept:"application/json"}}).then(function(r){return r.json()}).then(function(s){mode.value=s.mode}).catch(function(){})});',
+  'var persona=document.getElementById("persona-select"),personaChat=document.getElementById("persona-chat");',
+  ...PANEL_LIMITS_SCRIPT,
+  'if(persona)persona.addEventListener("change",function(){fetch("/api/persona-active?value="+encodeURIComponent(persona.value),',
+  '{method:"POST",headers:{accept:"application/json"}}).catch(function(){})});',
+  'var bind=document.getElementById("persona-bind");',
+  'if(bind)bind.addEventListener("click",function(){var chat=personaChat&&personaChat.value.trim();if(!chat||!persona)return;',
+  'fetch("/api/persona-bind?chatKey="+encodeURIComponent(chat)+"&value="+encodeURIComponent(persona.value),',
+  '{method:"POST",headers:{accept:"application/json"}}).catch(function(){})});',
+  'var trace=document.getElementById("trace-id"),traceButton=document.getElementById("trace-query"),traceResult=document.getElementById("trace-result");',  'if(traceButton)traceButton.addEventListener("click",function(){var id=trace&&trace.value.trim();if(!id||!traceResult)return;',
+  'fetch("/api/timeline?traceId="+encodeURIComponent(id),{headers:{accept:"application/json"}})',
+  '.then(function(r){return r.json()}).then(function(v){traceResult.textContent=JSON.stringify(v,null,2)}).catch(function(){})});',
+  'var relationPerson=document.getElementById("relation-person"),relationChat=document.getElementById("relation-chat"),',
+  'relationButton=document.getElementById("relation-query"),relationResult=document.getElementById("relation-result");',
+  'if(relationButton)relationButton.addEventListener("click",function(){var person=relationPerson&&relationPerson.value.trim();if(!person||!relationResult)return;',
+  'var chat=relationChat&&relationChat.value.trim()?"&chatKey="+encodeURIComponent(relationChat.value.trim()):"";',
+  'fetch("/api/relation?personId="+encodeURIComponent(person)+chat,{headers:{accept:"application/json"}})',
+  '.then(function(r){return r.json()}).then(function(v){relationResult.textContent=JSON.stringify(v,null,2)}).catch(function(){})});',
+  '})();',
+].join('')
 
 /**
  * 简短版：只给别的实例看的那一屏，不画任何画布，也不带轮询

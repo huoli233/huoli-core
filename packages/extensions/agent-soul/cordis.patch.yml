@@ -1,0 +1,4 @@
+# 项目内 agent-soul 插件
+- insert:
+    - id: agent-soul
+      name: '@huoli/huoli-agent-soul'

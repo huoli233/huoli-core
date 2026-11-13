@@ -23,6 +23,12 @@ kind: "package-reference"
 
 一个工具 `note_reflection`。提示词层另可取 `renderContinuityFacts` 渲染出的中文事实段：把上次收尾、这段对话的成色与事后回想并列写出；`closeFacts` 可不建运行件直接截出一条收尾事实。
 
+##### Reply continuity
+
+```markdown
+普通轮次的摘要由双方这次实际来往组成，不再只记对方最后一句。发送工具同一次调用里的 `mind.next` 会进入下次可接的话头，`mind.inner` 只作为“上一轮心里”留在上下文里，不混进收尾摘要，也不会当成消息发出去。
+```
+
 #### Token effect
 
 每次最多读回几条回想，每条三百字以内。

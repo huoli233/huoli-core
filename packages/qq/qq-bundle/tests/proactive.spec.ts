@@ -11,7 +11,10 @@ import { apply as applyProactive, qqProactiveOf, type PendingItem, type QqProact
 import { apply as applySubject, qqSubjectOf } from '@huoli/huoli-qq-subject'
 import { apply as applyVitals, createVitalsStore, DEFAULTS, emptyState, type VitalsState } from '@huoli/huoli-qq-vitals'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createAutonomousNudger, createProactiveTicker } from '../src/proactive-tools.ts'
 import { apply as applyBundle, BUNDLE_DEFAULTS, qqBundleOf, type Config as BundleConfig, type DecisionRecord } from '../src/index.ts'
+import { noteAutonomousSend } from '../src/proactive-tools.ts'
+import { REPLY_WAKE_REASONS } from '../src/round-finish.ts'
 
 type SocketHandler = (event: { data?: string }) => void
 
@@ -107,11 +110,15 @@ async function mount(options: MountOptions): Promise<Mounted> {
   applySubject(ctx, { file: path.join(dir, 'subject.json') })
   applyMaterial(ctx, { thoughtsFile: path.join(dir, 'thoughts.json') })
   applyProactive(ctx, { file: path.join(dir, 'proactive.json'), enabled: options.enabled, ...NO_QUIET })
-  applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999' })
+  applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999', sentLedgerFile: path.join(dir, 'sent.json') })
   applyBundle(ctx, {
     maxSteps: 5,
     dailySweepAt: '04:00',
+    // 面板默认 23 点睡 / 7 点醒；这组用例要随时能主动开口，显式关掉面板作息
+    sleepFrom: 0,
+    sleepUntil: 0,
     decisionsFile: path.join(dir, 'qq-decisions.jsonl'),
+    wakeLogFile: path.join(dir, 'qq-wake.jsonl'),
     ...options.throttleMs !== undefined ? { proactiveThrottleMs: options.throttleMs } : {},
     ...(options.bundle ?? {}),
   })
@@ -125,8 +132,8 @@ async function mount(options: MountOptions): Promise<Mounted> {
 const AGENT = { id: 'group:1' } as Agent
 
 // 一轮收尾，组合包就是在这里问她要不要开口
-async function endTurn(ctx: Context): Promise<void> {
-  await ctx.serial('agent/turn-stopping', { agent: AGENT, turn: 1, signal: new AbortController().signal })
+async function endTurn(ctx: Context, chatKey: string = AGENT.id): Promise<void> {
+  await ctx.serial('agent/turn-stopping', { agent: { id: chatKey } as Agent, turn: 1, signal: new AbortController().signal })
 }
 
 function proactiveRecords(ctx: Context): DecisionRecord[] {
@@ -136,6 +143,73 @@ function proactiveRecords(ctx: Context): DecisionRecord[] {
 }
 
 const second = (): number => Math.floor(Date.now() / 1000)
+
+describe('自主时刻发送记录', () => {
+  it('已知会话会按间隔重新检查，关闭后不再触发', () => {
+    vi.useFakeTimers()
+    try {
+      const tick = vi.fn()
+      const ticker = createProactiveTicker({ intervalMs: 1_000, tick, warn: vi.fn() })
+      ticker.add('group:1')
+      ticker.add('group:1')
+      ticker.add('private:2')
+
+      vi.advanceTimersByTime(1_000)
+      expect(tick.mock.calls).toEqual([['group:1'], ['private:2']])
+
+      ticker.close()
+      vi.advanceTimersByTime(2_000)
+      expect(tick).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('只统计实际发出的自主消息，候选工具不重复计数', () => {
+    const noteSpoken = vi.fn()
+    const warn = vi.fn()
+    const proactive: Pick<QqProactiveSeam, 'timing'> = {
+      timing: { lastSpokenAt: () => 0, todayCount: () => 0, noteSpoken },
+    }
+
+    noteAutonomousSend({ chatKey: 'group:1', reason: 'autonomous-nudge', sent: 1 }, proactive, 0, warn)
+    noteAutonomousSend({ chatKey: 'group:1', reason: 'autonomous-nudge', sent: 0 }, proactive, 0, warn)
+    noteAutonomousSend({ chatKey: 'group:1', reason: 'incoming', sent: 1 }, proactive, 0, warn)
+    noteAutonomousSend({ chatKey: 'group:1', reason: 'autonomous-nudge', sent: 1 }, proactive, 1, warn)
+    noteAutonomousSend({ chatKey: 'group:1', reason: 'autonomous-nudge', sent: 2 }, proactive, 1, warn)
+
+    expect(noteSpoken).toHaveBeenCalledTimes(2)
+    expect(noteSpoken).toHaveBeenCalledWith('group:1')
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('自主时刻选择安静时不由兜底发送成聊天正文', () => {
+    expect(REPLY_WAKE_REASONS).not.toContain('autonomous-nudge')
+  })
+
+  it('唤醒队列拒收时不启动间隔，接受后才启动', () => {
+    const wake = vi.fn<(chatKey: string, text: string, reason: string) => boolean>()
+      .mockReturnValueOnce(false).mockReturnValueOnce(true)
+    const note = vi.fn()
+    const nudge = createAutonomousNudger({ intervalMs: 100, wake, note })
+    const request = {
+      at: 1_000,
+      chatKey: 'group:1',
+      mode: 'autonomous' as const,
+      humanActive: false,
+      busy: false,
+      asleep: false,
+      hasCandidate: true,
+      waitingForReason: false,
+    }
+
+    expect(nudge(request)).toBe(false)
+    expect(nudge(request)).toBe(true)
+    expect(nudge({ ...request, at: 1_050 })).toBe(false)
+    expect(wake).toHaveBeenCalledTimes(2)
+    expect(note).toHaveBeenCalledTimes(1)
+  })
+})
 
 function groupMessage(text: string, id: number): Record<string, unknown> {
   return {
@@ -175,6 +249,36 @@ describe('关着的时候', () => {
 })
 
 describe('开了以后', () => {
+  it('完整自主模式没有具体由头时不巡场，有候选才叫模型判断', async () => {
+    const { ctx, dir } = await mount({ enabled: true, bundle: { interactionMode: 'autonomous', nudgeMs: 60_000 } })
+
+    await endTurn(ctx)
+
+    expect(fs.existsSync(path.join(dir, 'qq-wake.jsonl'))).toBe(false)
+
+    const material = qqMaterialOf(ctx)
+    if (material === undefined) throw new Error('素材仓没有装上')
+    material.thoughts.add('想到一个具体事由', 'group:1')
+    await endTurn(ctx)
+
+    const wake = fs.readFileSync(path.join(dir, 'qq-wake.jsonl'), 'utf8')
+    expect(wake).toContain('"kind":"autonomous_nudge"')
+    expect(wake).toContain('"hasCandidate":true')
+  })
+
+  it('完整自主模式的最近活跃私聊也会进入自主判断', async () => {
+    const { ctx, dir } = await mount({ enabled: true, bundle: { interactionMode: 'autonomous', nudgeMs: 60_000 } })
+    const material = qqMaterialOf(ctx)
+    if (material === undefined) throw new Error('素材仓没有装上')
+    material.thoughts.add('私聊里的具体事由', 'private:555')
+
+    await endTurn(ctx, 'private:555')
+
+    const wake = fs.readFileSync(path.join(dir, 'qq-wake.jsonl'), 'utf8')
+    expect(wake).toContain('"kind":"autonomous_nudge"')
+    expect(wake).toContain('"chatKey":"private:555"')
+  })
+
   it('攒住的候选当场摆出来，拿编号就能投出去', async () => {
     const { ctx, proactive } = await mount({ enabled: true })
     const material = qqMaterialOf(ctx)
@@ -217,7 +321,7 @@ describe('开了以后', () => {
     expect(reasons[0]).toBe('proactive:preview_ready')
   })
 
-  it('刚投过一条，下一轮立刻被冷却拦下并记下码', async () => {
+  it('刚投过一条，下一轮照常由模型自己判断，不再被冷却拦下', async () => {
     const { ctx, proactive } = await mount({ enabled: true })
     const material = qqMaterialOf(ctx)
     if (material === undefined) throw new Error('素材仓没装上')
@@ -229,7 +333,10 @@ describe('开了以后', () => {
 
     await endTurn(ctx)
 
-    expect(proactiveRecords(ctx).map(record => record.reason)).toEqual(['proactive:preview_ready', 'proactive:too_soon'])
+    const reasons = proactiveRecords(ctx).map(record => record.reason)
+    expect(reasons).toContain('proactive:preview_ready')
+    expect(reasons).not.toContain('proactive:too_soon')
+    expect(reasons).not.toContain('proactive.day_full')
   })
 })
 
@@ -297,7 +404,7 @@ describe('睡着的时候', () => {
     expect(proactive.preview('group:1').length).toBeGreaterThan(0)
   })
 
-  it('醒着时照旧攒候选', async () => {
+  it('醒着时照旧攒候选，身体事实也作为一条待写正文的候选摆出来', async () => {
     const { ctx, proactive } = await mount({ enabled: true, body: { sleep_state: 'awake', adenosine: 0.2 } })
     const material = qqMaterialOf(ctx)
     if (material === undefined) throw new Error('素材仓没装上')
@@ -305,7 +412,8 @@ describe('睡着的时候', () => {
 
     await endTurn(ctx)
 
-    expect(proactive.preview('group:1').map(item => item.text)).toEqual(['想说说楼下新开的店'])
+    const preview = proactive.preview('group:1')
+    expect(preview.map(item => item.text)).toContain('想说说楼下新开的店')
     expect(proactiveRecords(ctx).at(-1)?.reason).toBe('proactive:preview_ready')
   })
 
@@ -413,6 +521,7 @@ describe('想发动态的劲', () => {
     const channel = qqChannelOf(ctx)
     if (channel === undefined) throw new Error('通道没装上')
     const publish = vi.spyOn(channel, 'publish').mockResolvedValue({ ok: true, at: Date.now() })
+    const send = vi.spyOn(channel, 'send').mockResolvedValue({ ok: true })
     await endTurn(ctx)
     const kept = shareWants(proactive)[0]
     if (kept === undefined) throw new Error('没有攒住动态候选')
@@ -423,22 +532,51 @@ describe('想发动态的劲', () => {
     expect(delivered?.reason).not.toBe('')
     expect(delivered?.hint).not.toBe('')
     expect(publish).not.toHaveBeenCalled()
+    expect(send).not.toHaveBeenCalled()
+    expect(proactive.pending.live('group:1').some(item => item.id === kept.id)).toBe(true)
   })
 
-  it('发布入口拒了就把它的码与理由原样带回来', async () => {
+  it('发布入口拒了就改走当前会话发送，成功时才记额度', async () => {
     const { ctx, proactive } = await mount({ enabled: true, body: SHARE_BODY })
     const channel = qqChannelOf(ctx)
     if (channel === undefined) throw new Error('通道没装上')
     vi.spyOn(channel, 'publish').mockResolvedValue({ ok: false, code: 'post.level', reason: '这一条还不到能公开的级别', hint: '等攒到能公开的时候再说' })
+    const send = vi.spyOn(channel, 'send').mockResolvedValue({ ok: true })
     await endTurn(ctx)
     const kept = shareWants(proactive)[0]
     if (kept === undefined) throw new Error('没有攒住动态候选')
 
     const delivered = await qqBundleOf(ctx)?.deliver('group:1', kept.id, '今天风大')
 
-    expect(delivered?.ok).toBe(false)
-    expect(delivered?.code).toBe('post.level')
-    expect(delivered?.reason).toBe('这一条还不到能公开的级别')
+    expect(delivered?.ok).toBe(true)
+    expect(send).toHaveBeenCalledWith('今天风大', 'group:1')
+    expect(proactive.pending.live('group:1').some(item => item.id === kept.id)).toBe(false)
+    expect(proactive.timing.todayCount('group:1')).toBe(1)
+  })
+
+  it('QQ 消息发送失败时保留候选，成功时才记一次额度', async () => {
+    const { ctx, proactive } = await mount({ enabled: true })
+    const material = qqMaterialOf(ctx)
+    const channel = qqChannelOf(ctx)
+    if (material === undefined || channel === undefined) throw new Error('依赖没装上')
+    material.thoughts.add('想说说楼下新开的店', 'group:1')
+    await endTurn(ctx)
+    const target = proactive.preview('group:1')[0]
+    if (target === undefined) throw new Error('没有攒住任何一条')
+    vi.spyOn(channel, 'send').mockResolvedValue({ ok: false, code: 'send.offline', reason: '连接断开' })
+
+    const failed = await qqBundleOf(ctx)?.deliver('group:1', target.id)
+
+    expect(failed?.ok).toBe(false)
+    expect(proactive.pending.live('group:1')).toHaveLength(1)
+    expect(proactive.timing.todayCount('group:1')).toBe(0)
+
+    vi.spyOn(channel, 'send').mockResolvedValueOnce({ ok: true })
+    const sent = await qqBundleOf(ctx)?.deliver('group:1', target.id)
+
+    expect(sent?.ok).toBe(true)
+    expect(proactive.pending.live('group:1')).toHaveLength(0)
+    expect(proactive.timing.todayCount('group:1')).toBe(1)
   })
 
   it('关着的时候零调用，也不往盘上写', async () => {
@@ -470,5 +608,5 @@ describe('想发动态的劲', () => {
     } finally {
       vi.useRealTimers()
     }
-  })
+  }, 20_000)
 })

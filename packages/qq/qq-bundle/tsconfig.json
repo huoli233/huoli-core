@@ -18,10 +18,22 @@
       "path": "../../core/session"
     },
     {
+      "path": "../../schedule/schedule"
+    },
+    {
+      "path": "../../sandbox/sandbox-policy"
+    },
+    {
       "path": "../../util/brand"
     },
     {
       "path": "../../core/tools"
+    },
+    {
+      "path": "../../attachment/attachment"
+    },
+    {
+      "path": "../../experimental/speech-to-text"
     },
     {
       "path": "../../util/home-paths"
@@ -30,16 +42,25 @@
       "path": "../qq-attention"
     },
     {
+      "path": "../qq-balance"
+    },
+    {
       "path": "../qq-channel"
     },
     {
       "path": "../qq-continuity"
     },
     {
+      "path": "../qq-longing"
+    },
+    {
       "path": "../qq-material"
     },
     {
       "path": "../qq-memory"
+    },
+    {
+      "path": "../qq-longing"
     },
     {
       "path": "../qq-pacing"

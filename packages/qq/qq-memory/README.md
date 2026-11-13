@@ -21,7 +21,19 @@ kind: "package-reference"
 
 #### What the model sees
 
-两个工具 `memory_append` 与 `memory_query`。记的时候要说明这话是不是直接对她说的、里面情绪有多重；不想让人知道的事放 `private` 那一层并把 `secret` 填 `true`，只有这一层才收，别的层想标会被拒；找的时候返回日期、内容、还有多清楚，默认三条。
+记忆工具会执行隐私范围校验，并只把当前会话可访问的记录交给模型。
+
+##### Prompt
+
+```markdown
+工具是 `memory_append`、`memory_query`、`qq_memory_detail`、`qq_memory_profile` 与 `qq_memory_consolidate`。记的时候要说明这话是不是直接对她说的、里面情绪有多重，跟人有关的还要给稳定用户编号；私聊没给编号时自动取当前好友编号。不想让人知道的事必须放 `private` 那一层并把 `secret` 填 `true`；缺少任一项或把 `secret` 用在其他层都会被拒。私密记忆存进对应用户的 `private:<personId>` 范围；群聊里写私密记忆必须提供 `personId`，私聊中提供的编号必须与当前对象一致。`remember`、`writeFact`、待写队列和记忆仓写入也执行同一范围校验；自动反思只选普通记忆，自动联想会跳过私密条目。私密记忆写入时按 `privateSettleMs`（默认 30 分钟）写入 `settledAt`，群聊来源只会在该时刻前看到不含正文的短暂提示。找的时候返回日期、内容与清晰度；档案工具不按关键词，直接返回当前人或当前群的完整分层档案；合并工具只把同一会话、同一用户与同一隐私类别下已确认够像的条目并起来，并保留原编号。全量合并工具只在完整自主模式开放，心流模式可以读档案但不能手动合并。
+```
+
+##### Stored memory validation
+
+```markdown
+启动时，记忆仓也会逐条校验标为 `private` 或 `secret` 的已存记录。缺少 `secret: true`、有效 `personId` 或与编号匹配的 `private:<personId>` 范围时，只跳过该条，不把正文交给召回或工具，也不影响同一文件里的其他有效记录；加载过程不改写文件，下一次正常保存时被跳过的条目不会再写回。
+```
 
 #### Token effect
 
@@ -41,16 +53,21 @@ kind: "package-reference"
 - `maintain` 一天只跑一次由本包的整理日备用，真正的每日定时触发在组合包里，本包没有自己的调度。
 - 反思只把同一会话最近的几条正文按顺序接成一条，不做含义概括；同一批原件靠 `lastReflectedAt` 不再重复合成，但队列文件被删掉时这个时刻一起丢。
 - 近似重复只按向量余弦判，编码是字面哈希，同一件事换个说法多半判不成重复；门槛调低会开始把不相干的两句并到一起。
+- 记忆合并现在按会话与稳定用户编号分开比较；没有用户编号的群共享记忆才会在同一群内互相比较，不同用户的相似话不会合并。
+- 完整档案不按关键词筛，但仍有条数与字数上限；群档案强制排除私密层和 `secret` 条目。
+- 档案里的最早记忆时刻只取当前会话的记忆；更早的首次相遇事实由 `qq-subject` 的关系档案保存。
 - 镜像按来源键（`metadata.self_id`）去重，同一个来源换了来源键仍会各写一条：去重认的是来源位置，不是正文。
 - 被重要度门槛丢掉的条数只落在 `droppedLow()` 与队列文件的 `droppedLow` 里；健康一行的字段与顺序按规范固定，这一栏放不进去，从日志上看不到这个数。
-- 备份、恢复、探测与快照都在 `scripts/` 下，是手工运维工具：装配层不自动备份，也不定时跑它们；运行中进程还没落盘的内存态，这些工具看不到。
+- 备份、恢复、探测与快照都在 `scripts/` 下，是手工运维工具；此外记忆主文件每次成功覆盖前会保留上一份可解析状态为同目录 `.bak`。主文件损坏时从该文件恢复；主文件和备份均不可读时启动失败并保留两份原文件，不以空库覆盖。运行中进程还没落盘的内存态，手工快照工具看不到。
 - `restore` 是整份字节覆盖，不做逐条迁移；恢复前那次核对只报不改，恢复失败留下的半套文件要再跑一次 `restore` 或人工核对。
 - 性格不变快照只给放进文本与两份哈希，语气有没有被记忆带偏仍要人对着两份文件读；固定问题集不在本包，由调用方给。
 
 <a id="dev-note"></a>
 ### Dev Note
 
-配置项在 `src/index.ts` 的 `Config`：记忆文件、记录表文件、健康日志、待写队列、主目录覆盖，以及 `tuning` 里的一整组参数，默认值只在 `src/defaults.ts` 的 `DEFAULTS` 出现一次，其中每天掉分那一组直接看全文 `@huoli/huoli-qq-policy` 的 `IMPORTANCE_DECAY`。默认落在主目录的 data 下（`data/qq-memory.json`、`data/qq-memory-ledger.json` 与 `data/qq-memory-queue.json`）；往上挪一层与每天变淡分别由 `promoteAll` 和 `sweepOnce` 做，每天掉一次重要度由 `decayAll` 做，半衰期、清晰度档位与跌幅公式都取自 `@huoli/huoli-qq-policy`。
+配置项在 `src/index.ts` 的 `Config`：记忆文件、记录表文件、健康日志、待写队列、主目录覆盖、`privateSettleMs` 与 `tuning` 里的参数，默认值只在 `src/defaults.ts` 的 `DEFAULTS` 出现一次。`privateSettleMs` 默认 30 分钟，也可放在 `tuning` 中覆盖；顶层配置优先。每天掉分那一组直接看全文 `@huoli/huoli-qq-policy` 的 `IMPORTANCE_DECAY`。默认落在主目录的 data 下（`data/qq-memory.json`、`data/qq-memory-ledger.json` 与 `data/qq-memory-queue.json`）；往上挪一层与每天变淡分别由 `promoteAll` 和 `sweepOnce` 做，每天掉一次重要度由 `decayAll` 做，半衰期、清晰度档位与跌幅公式都取自 `@huoli/huoli-qq-policy`。
+
+完整档案在 `src/recall.ts` 的 `buildMemoryProfile`：只按当前会话和可选用户编号取数，长期印象与经历分开列，结论里带完整条数、最早和最近时刻；`profileMaxItems` 与 `profileMaxChars` 控制交付上限，不改变库里的原始条目。已有条目的合并由 `src/write.ts` 的 `consolidateActive` 做，只在同一会话、同一用户编号内比较，保留原编号列表并合并重要度、情绪、召回次数和最近时刻；每日整理会自动跑一次，模型也能在完整自主模式调 `qq_memory_consolidate`。新写入的近似合并与手动整理共用同一套相似度门槛。
 
 写入分成两条路，两条都在 `src/write.ts`。待写队列 `createWriteQueue({ file, tuning, store, write })` 把一条待写当成 `{ text, chatKey, enqueuedAt, options }` 存进自己的文件：`enqueue` 只做轻校验（空、短过 `minTextChars`、长过 `maxTextChars` 各抛 `memory.empty`、`memory.too_short`、`memory.too_long`），过不了就拒收，过了就落盘，压过 `queueMax` 时按最旧先丢并把条数记进 `dropped`；`flush(now)` 逐条交给装配层真正写进记忆，中间哪条抛错就停在那条、整条留在队列里等下次，不丢也不改写成成功，`kept` 与 `error` 一起说明这次写到哪；`advanceTurn(now)` 管轮数，满 `flushEveryTurns`（默认 4）轮排空一次、满 `reflectEveryTurns`（默认 10）轮反思一次，显式调用 `flush` 与 `reflect` 不等轮数。反思把同一 `scope` 里 `at` 晚于上次反思时刻的 `ephemeral`、`episodic` 条目取最近 `reflectWindow`（默认 6）条、够 `reflectMinItems`（默认 2）条才合成一条 `semantic`：正文按顺序用分号接起来并截到 `maxTextChars`，重要度取其中最高的那条，`source` 记 `chat`，`metadata.mergedFrom` 留原件编号，原件不删。队列文件有 `version` 戳、原子写、读坏按空队列重来，记忆文件本身不受影响；装配卸载与每日整理各排空一次，健康一行的 `pending` 就是队列此刻的长度。到点那一轮若队列已经空着就不再排一遍：每日整理里刚排过空，再排只是白写一遍盘，`lastFlushedAt` 也不动；每日整理之后又攒下的事照样在下一个到点的轮次排空。轮数由组合包在每轮收尾调 `tick(now)` 推进，本包自己不排时钟。
 

@@ -113,13 +113,13 @@ describe('来由按余额档位说', () => {
   })
 })
 
-describe('提示词里那一句', () => {
-  it('高位时出现，平时不出现', () => {
-    expect(renderPrompt(fresh({ mortality: 0.9 }), tuning)).toContain('你心里有些话，怕来不及说')
-    expect(renderPrompt(fresh({ mortality: 0.3 }), tuning)).not.toContain('你心里有些话')
+describe('提示词不催人回应', () => {
+  it('状态高低都不出现临终暗示', () => {
+    expect(renderPrompt(fresh({ mortality: 0.9 }), tuning)).not.toContain('怕来不及说')
+    expect(renderPrompt(fresh({ mortality: 0.3 }), tuning)).not.toContain('怕来不及说')
   })
 
-  it('几段可选同时成立时也在三百字以内，那一句仍留得住', () => {
+  it('几段可选同时成立时也在三百字以内', () => {
     const text = renderPrompt(fresh({
       mortality: 0.95,
       sleep_state: 'sleeping',
@@ -135,7 +135,7 @@ describe('提示词里那一句', () => {
       hunger: 0.9,
     }), tuning)
 
-    expect(text).toContain('你心里有些话，怕来不及说')
+    expect(text).not.toContain('怕来不及说')
     expect(text.length).toBeLessThanOrEqual(tuning.promptMaxChars)
   })
 })

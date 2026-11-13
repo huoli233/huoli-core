@@ -88,11 +88,14 @@ async function mount(config: Config = {}): Promise<Mounted> {
       off()
     }
   }
+  // 这一组只看遗书那一条路，情绪抬升另有自己的用例
   applyBundle(ctx, {
     maxSteps: 5,
     dailySweepAt: '04:00',
     decisionsFile: path.join(dir, 'decisions.jsonl'),
+    wakeLogFile: path.join(dir, 'wake.jsonl'),
     farewellFile: path.join(dir, 'farewell.json'),
+    emotion: { memoryLift: false },
     ...config,
   })
   return {
@@ -151,7 +154,7 @@ describe('到线那天写一条记忆', () => {
     const items = memory.store.all()
     expect(items).toHaveLength(1)
     expect(items[0]?.metadata?.kind).toBe('farewell')
-    expect(items[0]?.metadata?.mortality).toBeCloseTo(0.9, 10)
+    expect(items[0]?.metadata?.mortality).toBeCloseTo(0.87, 10)
   })
 })
 

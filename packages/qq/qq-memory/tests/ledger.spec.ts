@@ -7,6 +7,7 @@ import {
   emptyBook,
   fingerprint,
   initBook,
+  reconcileMaintenanceBook,
   runLedger,
   syncBook,
   verifyBook,
@@ -55,6 +56,22 @@ describe('指纹', () => {
 
   it('空记录表一条都没有', () => {
     expect(Object.keys(emptyBook().entries)).toHaveLength(0)
+  })
+})
+
+describe('维护合并后的记录表', () => {
+  it('移除的旧编号和改写的正文按当前记忆重新对齐', () => {
+    const file = tempFile()
+    const before = [FIRST, SECOND, make('会被并掉的一句')]
+    runLedger('init', { file, items: before })
+    const after = [{ ...SECOND, text: `${SECOND.text}；并进来的内容` }, make('新写的一句')]
+
+    const result = reconcileMaintenanceBook(file, after)
+
+    expect(result.report.ok).toBe(true)
+    expect(result.report.lost).toEqual([])
+    expect(result.report.changed).toEqual([])
+    expect(result.report.unrecorded).toEqual([])
   })
 })
 

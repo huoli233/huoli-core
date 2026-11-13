@@ -19,7 +19,7 @@
 | `ephemeral` 刚发生 | 刚刚发生、还没整理成一句话的事 | 停留 `promoteAfterMs` 默认 30 分钟，到期且未被召回则升入 `episodic` | 已实现，字面量 |
 | `episodic` 这段经历 | 一段里能独立读懂的完整事 | 重要度 ≥ `promoteImportance` 默认 60，或被召回 ≥ `promoteRecalls` 默认 2 次，升入 `semantic` | 已实现，字面量 |
 | `semantic` 长期印象 | 反复出现、跨天仍然成立的事 | 只参与衰减与遗忘，不再上移 | 已实现 |
-| `private` 私下的事 | 只在私聊会话里成立的事 | 与 `episodic` 同寿命，只对同一 `scope` 的私聊上下文可见 | 已实现（按 `scope` 过滤，没有额外规则） |
+| `private` 私下的事 | 模型明确选择记录且同时标记 `secret` | 与 `episodic` 同寿命，只对对应用户的私聊可见；群聊来源也必须存入 `private:<personId>` 范围 | 已实现：所有写入路径拒绝缺 `secret`、缺用户编号或范围不匹配的条目；私聊默认取当前对象编号，群聊写入必须提供 `personId` |
 
 判据：晋升只按 `ephemeral → episodic → semantic` 单向进行，同一轮内不得跨两级；`private` 不参与晋升链，也不因重要度高而改层。
 

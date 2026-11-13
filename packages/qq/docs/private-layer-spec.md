@@ -15,7 +15,9 @@
 | 面板 `/api/graph` | 默认不返回；带 `includePrivate=1` 且只在本机回环时返回 |
 | 主动开口 | 不因为它而开口 |
 
-现在的实现是两道过滤一起上：`scope` 之外还看 `layer` 与 `secret`，召回与详情各过滤一次，面板另按 `includePrivate` 过滤。私密层的星点写下来时 `scope` 就是 `private`，与任何群键都不相等，所以不会因为 `scope` 恰好是某个群而漏出去。判据见 `qq-memory/tests/private-layer.spec.ts`（私密空间自己取得到、同一个词在群里只返回群里的那条）与 `qq-memory/src/recall.ts` 的两处 `layer === 'private' || secret === true`。
+现在的实现是两道过滤一起上：`scope` 之外还看 `layer` 与 `secret`，召回与详情各过滤一次，面板另按 `includePrivate` 过滤。私密层的 `scope` 固定为 `private:<personId>`，不会与群键相等。写入入口还会拒绝缺 `personId`、缺 `secret: true`、用户编号不匹配或范围不对应的条目；记忆仓在保存新条目与隐私坐标变更时再校验一次，也不允许把已保存的私密条目改成公开或转给其他用户。群聊来源只作为 `metadata.privateOriginScope` 保存，不能改变正文的私聊范围。
+
+启动读取时，归一化后的私密或 `secret` 记录也按同一组坐标约束逐条校验。无效记录只从本次内存库中排除，不进入召回、详情或其他工具，也不会让同一文件中的有效记录丢失；加载不会改写源文件，下一次正常保存只写回仍有效的记录。有效的私密记录会保留已有 `settledAt`，缺少时按配置补出。
 
 ## 字段
 
@@ -24,17 +26,17 @@
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `secret` | 布尔 | 这件事不想让人知道；写下来就是 `true`，默认不写 |
-| `settled` | 毫秒时间戳 | 事后平静下来的时刻，用来决定此刻的语气 |
+| `settledAt` | 毫秒时间戳 | 事后平静下来的时刻，用来决定此刻的语气 |
 
-`settled` 不是「写下时刻」。她刚做完和过了半小时，说法是不一样的：刚做完注意力紧，过一会儿才松。
+`settledAt` 不是「写下时刻」。她刚做完和过一会儿，说法是不一样的：刚做完注意力紧，到了 `settledAt` 才松。
 
 ## 写入
 
 三条规矩：
 
-1. **只能由模型写**，不接受代码推断。代码不许因为「这句话看起来像」就写一条私密记忆——那又是关键词。
-2. **写的时候必须给 `layer: 'private'` 与 `secret: true`**，缺一个就当普通记忆处理。`memory_append` 加了 `secret` 这个参数，只有 `private` 那一层才收，别的层想标会回 `memory.secret_layer`；模型可见的规矩写在 `qq-bundle/src/body-tools.ts` 的 `PRIVATE_EVENT_LINE`，明说「听到别人的事、随口想想都别记」。判据见 `qq-memory/tests/memory.spec.ts` 的三条。
-3. **`settled` 由代码补**：写入后按 `Config.privateSettleMs` 算，默认三十分钟。这个值可配，因为不同角色不一样。
+1. **只能由模型决定写什么**，代码不接受关键词推断。代码不会因为「这句话看起来像」就写一条私密记忆。
+2. **写的时候必须给 `layer: 'private'` 与 `secret: true`**，缺一个就拒写。`memory_append`、`remember`、`writeFact`、待写队列与记忆仓都执行这项要求；私聊可从当前会话取用户编号，群聊必须给 `personId`。正文只存入与编号一致的 `private:<personId>` 范围。反思只挑 `ephemeral` 和 `episodic`，自动联想排除私密与 `secret` 条目。模型可见的规矩写在 `qq-bundle/src/body-tools.ts` 的 `PRIVATE_EVENT_LINE`，明说「听到别人的事、随口想想都别记」。
+3. **`settledAt` 由代码补**：新写入按 `Config.privateSettleMs` 算，默认三十分钟；该配置可设为零或更长时间。所有新私密条目都用这项配置，不接受调用方指定时刻。
 
 ## 召回
 
@@ -42,14 +44,14 @@
 
 ```
 可见 = (星点.layer ≠ 'private' 或 星点.scope == 当前 scope)
-      且 (星点.secret 为假 或 当前 scope 是私密空间)
+      且 (星点.secret 为假 或 当前 scope == private:<personId>)
 ```
 
-当前 `qq-memory/src/recall.ts` 只做了 `scope` 那一半。补的时候不改打分公式，只在进候选的地方多一道过滤。
+`qq-memory/src/recall.ts` 在打分前同时检查 `scope`、`layer` 与 `secret`；私密条目只会进入编号对应的私聊范围候选，不改打分公式。
 
 ## 事后怎么表现
 
-这一段进提示词，只在两个条件同时成立时放进：存在 `secret: true` 且未过期的星点，且当前会话不是私密空间。
+这一段进提示词，只在三个条件同时成立时放进：存在 `layer: private`、`secret: true` 且 `settledAt` 尚未到的星点；它的 `metadata.privateOriginScope` 与当前群聊一致；当前会话不是私密空间。提示只摆事后状态，不带记忆正文。
 
 ```
 【刚做过一件不想让人知道的事】
@@ -61,7 +63,7 @@
 
 **这四行是行为倾向，不是台词模板。** 模型怎么说得像她自己，由人设决定，这一段只负责给倾向。
 
-过了 `settled` 之后这一段不再放进。她不会一直紧绷，也不会一直记着这件事。
+到达 `settledAt` 后这一段不再放进。她不会一直紧绷，也不会一直记着这件事。
 
 ## 与两把钥匙的关系
 
@@ -93,6 +95,6 @@
 
 1. 在私密空间写一条 `secret: true`，群聊 `scope` 召回到它——**必须零条**
 2. 私密空间自己召回——**能取到**
-3. `settled` 之前放进事后那一段，之后不放进
+3. `settledAt` 之前放进事后那一段，之后不放进
 4. 面板不带 `includePrivate` 时，图里没有私密星点
 5. 好奇心抬到顶，身份级动作仍然要两把钥匙

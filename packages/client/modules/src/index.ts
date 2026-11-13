@@ -896,12 +896,14 @@ export class ClientModuleRegistry extends Service {
       return null
     }
     const { packageName, path: pkgPath } = located
-    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, unknown>
-    const huoli = pkg.huoli
-    const decl = parseHuoliClient(
-      packageName,
-      huoli !== null && typeof huoli === 'object' ? (huoli as Record<string, unknown>).client : undefined,
-    )
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+      huoli?: { client?: unknown }
+      dsh?: { client?: unknown }
+      exports?: unknown
+    }
+    // Upstream plugins declare the old key; the new declaration takes precedence.
+    const client = pkg.huoli?.client !== undefined ? pkg.huoli.client : pkg.dsh?.client
+    const decl = parseHuoliClient(packageName, client)
     if (decl === undefined || decl.platform !== 'web') return null
     const clientRel = clientExportOf(packageName, pkg.exports)
     if (clientRel === undefined) {

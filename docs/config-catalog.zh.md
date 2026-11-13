@@ -2824,7 +2824,7 @@ export type Config = LocalConfig
 ## `@huoli/huoli-qq-attention`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-attention/src/index.ts:31`](../packages/qq/qq-attention/src/index.ts)
+- `source`: [`packages/qq/qq-attention/src/index.ts:49`](../packages/qq/qq-attention/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2835,39 +2835,408 @@ export interface Config {
   home?: string
   /** 机器人叫什么，用来认名字 */
   selfNames?: readonly string[]
+  /** 群聊按活跃度分层的设置 */
+  groupPolicy?: GroupWakePolicy
+}
+
+/** 唤醒规则要用的组合设置 */
+export interface GroupWakePolicy {
+  /** 定时休息期间好友私聊是否仍能叫醒模型 */
+  privateWakeWhileTimedRest?: boolean
+  /** 完整自主模式仍把普通群消息交给模型判断 */
+  ambientAll?: boolean
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-attention -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-balance -->
+<a id="huolihuoli-qq-balance"></a>
+
+## `@huoli/huoli-qq-balance`
+
+- `source`: [`packages/qq/qq-balance/src/index.ts:14`](../packages/qq/qq-balance/src/index.ts)
+
+```ts config-catalog
+/** 这一行接受的配置 */
+export interface Config {
+  /** 一天给多少 token，用光了就当她没钱了，默认两百万 */
+  dailyTokens?: number
+  /** 账记在哪，不填就放在主目录的 data 下 */
+  stateFile?: string
+  /** 覆盖主目录，不填按 HUOLI_HOME 定 */
+  home?: string
+  /** 时区，空串跟随运行环境 */
+  timeZone?: string
+  /** 额度满时给几档，默认十，用光就是零 */
+  fullLevel?: number
+  /** 一天的预算，单位与价目表一致；配了它就按钱算档位，不配按 token 算 */
+  dailyCost?: number
+  /** 每个模型的价，按百万 token 算；键是模型名，没配的落到 default */
+  prices?: Record<string, TokenPrice>
+  /** 没在价目表里的模型按这个算 */
+  defaultPrice?: TokenPrice
+  /** 价目表文件放哪，填了就按文件来；文件里同时能写一天预算，改它不用动配置文件 */
+  pricesFile?: string
+  /** 额度变化是否影响生命状态，默认只记账不影响 */
+  affectsVitals?: boolean
+  /** 到线后是否阻止新唤醒与后续模型步骤 */
+  enforce?: boolean
+  /** 到这个比例开始提醒 */
+  alertRatio?: number
+}
+
+/** 一个模型每百万 token 多少钱 */
+export interface TokenPrice {
+  /** 输入每百万 token 的价钱 */
+  input?: number
+  /** 输出每百万 token 的价钱 */
+  output?: number
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-balance -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-bundle -->
 <a id="huolihuoli-qq-bundle"></a>
 
 ## `@huoli/huoli-qq-bundle`
 
-- `inject`: `systemPrompt` · `tools`
-- `source`: [`packages/qq/qq-bundle/src/types.ts:8`](../packages/qq/qq-bundle/src/types.ts)
+- `inject`: `systemPrompt` · `tools` · `agents` · `agentDefaultModel`
+- `source`: [`packages/qq/qq-bundle/src/types.ts:12`](../packages/qq/qq-bundle/src/types.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
 export interface Config {
+  /** 当前互动模式：概率闲聊、心流或完整拟人自主 */
+  interactionMode?: 'probability' | 'heartflow' | 'autonomous'
+  /** 角色年龄；仅作为可自定义的角色事实，不参与亲密内容放行判定 */
+  characterAge?: number
+  /** 主人的 QQ 号；留空就不注入来处，也不认任何人为主人 */
+  creatorQq?: string
+  /** 别人一般怎么称呼主人 */
+  creatorTitle?: string
+  /** 她自己称呼主人时用的叫法；留空就跟 creatorTitle */
+  ownerAddress?: string
+  /** 群里用的名字，写进每轮身份事实 */
+  selfName?: string
+  /** 安静状态文件 */
+  selfQuietFile?: string
+  /** 面板能拧的行为约束存哪 */
+  limitsFile?: string
+  /** 面板首次使用且尚未保存时，每个会话每小时最多主动发几条 */
+  proactivePerHour?: number
+  /** 面板允许把每会话每小时主动发送上限调到多少，默认 30 */
+  proactivePerHourMax?: number
+  /** 自己发过的原话、撤回改口与没接住的事实存哪；不填跟主数据目录 */
+  ownSpeechFile?: string
+  /** 自学记录存哪；不填跟主数据目录 */
+  selfLessonFile?: string
+  /** 默认几点入睡，面板与提示词用同一份 */
+  sleepFrom?: number
+  /** 默认几点醒 */
+  sleepUntil?: number
+  /** 安静最短分钟 */
+  selfQuietMinMinutes?: number
+  /** 安静最长分钟 */
+  selfQuietMaxMinutes?: number
+  /** 私聊是否允许双方自愿的亲密互动；独立开关，与年龄无关 */
+  adultIntimacyEnabled?: boolean
+  /** 真正睡着时连入站也不进入模型，默认开 */
+  hardRest?: boolean
+  /** 睡着时好友私聊仍进入模型，默认开；群聊仍受 hardRest 约束 */
+  privateWakeWhileSleeping?: boolean
+  /** 当前模式存哪，面板切换后写到这份文件 */
+  modeFile?: string
   /** 说话规矩那个文件放哪 */
   rulesFile?: string
+  /** 当前单轮回复判断规则放哪 */
+  personaRulesFile?: string
+  /** 系统级操作指令放哪 */
+  systemDirectivesFile?: string
+  /** 人格口吻配置放哪 */
+  personaVoiceFile?: string
+  /** 当前单轮回复判断规则要不要进提示词 */
+  personaRulesEnabled?: boolean
   /** 每天几点做整理与例行开口，形如 00:20 */
   dailySweepAt?: string
   /** 一轮最多走几步 */
   maxSteps?: number
+  /** 睡着时仍允许分出的最多气泡数 */
+  sleepingReplyCap?: number
+  /** 精力低、身体该休息时最多分出的气泡数 */
+  restingReplyCap?: number
+  /** 已授权私聊是否允许使用 DSH 原生长任务工具 */
+  longTaskMode?: boolean
+  /** 同一工具带着同一错误重复几次就停 */
+  maxRepeatedToolErrors?: number
+  /** 同时能处理几个不同聊天，同一个聊天仍按顺序 */
+  foregroundSlots?: number
+  /** 一个聊天最多排几项 */
+  queuedPerChat?: number
+  /** 私聊短消息等多久再合起来 */
+  privateMergeMs?: number
+  /** 私聊从第一句算起最多等多久 */
+  privateMergeMaxMs?: number
+  /** 私聊连续两次只写旁白时可选的真实短句；默认留空 */
+  privateFallbackText?: string
+  /** 私聊开始调用工具时可选的可见回复；默认留空 */
+  privateWorkingAck?: string
+  /** 私聊模型请求失败时发出的简短说明 */
+  privateErrorFallbackText?: string
+  /** 这一轮判读有多少把握才写回关系和身体 */
+  affectConfidenceFrom?: number
+  /** 有原话依据的情绪判读至少多少把握才保存 */
+  affectEvidenceFrom?: number
+  /** 判读到多强的敌意才当场记成被凶 */
+  affectHostilityFrom?: number
+  /** 判读到多强的亲近才当场记成被夸 */
+  affectPraiseFrom?: number
+  /** 群聊普通短消息等多久合并成一次现场，默认 800 毫秒 */
+  groupMergeMs?: number
+  /** 合起来最多多少字 */
+  mergeMaxChars?: number
+  /** 超过多少字就不再等，直接处理 */
+  mergeImmediateChars?: number
+  /** 一条消息最多保存几个附件 */
+  mediaMaxItems?: number
+  /** 一个附件最多下载多少字节 */
+  mediaMaxBytes?: number
+  /** 一个附件最多下载多久 */
+  mediaTimeoutMs?: number
+  /** 是否在本机分析入站视频 */
+  videoVisionEnabled?: boolean
+  /** 视频最多分析多少秒 */
+  videoVisionMaxSeconds?: number
+  /** 群聊视频最多分析多少秒 */
+  groupVideoVisionMaxSeconds?: number
+  /** 视频关键帧间隔秒数 */
+  videoVisionFrameIntervalSeconds?: number
+  /** 视频最多提取多少帧 */
+  videoVisionMaxFrames?: number
+  /** 群聊视频最多抽几帧 */
+  groupVideoVisionMaxFrames?: number
+  /** 视频关键帧最长边像素 */
+  videoVisionMaxFrameDimension?: number
+  /** 单张视频关键帧最大字节 */
+  videoVisionMaxFrameBytes?: number
+  /** 每个本机视频处理步骤最多等待多久 */
+  videoVisionTimeoutMs?: number
+  /** 读图用哪个提供方，空表示关闭 */
+  visionProvider?: string
+  /** 读图用哪个模型，空表示关闭 */
+  visionModel?: string
+  /** 普通图片自动路由的候选模型，按顺序轮换并在失败后暂时跳过 */
+  visionModels?: readonly string[]
+  /** 多图与复杂视觉任务使用的模型 */
+  visionHighModel?: string
+  /** 多图与复杂视觉任务自动路由的候选模型 */
+  visionHighModels?: readonly string[]
+  /** 图片是否优先走单独配置的视觉模型 */
+  visionAlwaysUseConfiguredModel?: boolean
+  /** 每轮最多交给聊天或视觉模型的图片数量 */
+  visionBatchMaxImages?: number
+  /** 每轮交给聊天或视觉模型的图片总字节上限 */
+  visionBatchMaxBytes?: number
+  /** 一次读图最多生成多少 token */
+  visionMaxTokens?: number
+  /** 一次读图最多留多少字 */
+  visionMaxChars?: number
+  /** 一次读图最多等多久 */
+  visionTimeoutMs?: number
+  /** 自动路由时单个候选模型最多等多久 */
+  visionAttemptTimeoutMs?: number
+  /** 候选模型失败后暂停多久再探测 */
+  visionFailureCooldownMs?: number
+  /** 图片档放哪 */
+  imageArchiveFile?: string
+  /** 图片与视频自动识别的小时和每日用量文件 */
+  mediaBudgetFile?: string
+  /** 图片档最多留几张 */
+  imageArchiveMax?: number
+  /** 生图接口的 OpenAI 兼容根地址；留空就不接生图 */
+  imageGenBaseURL?: string
+  /** 生图模型名 */
+  imageGenModel?: string
+  /** 主模型明确失败时使用的备用模型名 */
+  imageGenFallbackModel?: string
+  /** 生图参考图：三视图/立绘的绝对路径；有就优先走 /images/edits，失败再退回文生图 */
+  imageGenReferenceImages?: readonly string[]
+  /** 固定的外观锚点，拼在每次 prompt 前面；留空就用 selfReferenceDescription */
+  imageGenStyleAnchor?: string
+  /** 凭证文件里用哪个 ref 名 */
+  imageGenKeyRef?: string
+  /** 凭证文件放哪；留空用 ~/.huoli/.credentials.yaml */
+  imageGenCredentialFile?: string
+  /** 生图尺寸 */
+  imageGenSize?: string
+  /** 生图最多等多久 */
+  imageGenTimeoutMs?: number
+  /** 图片兴趣权重多久减半 */
+  imageWeightHalfLifeHours?: number
+  /** 到这个权重就先快速看 */
+  imageQuickWeightFrom?: number
+  /** 到这个权重可以在首轮回复后深入看 */
+  imageDeepWeightFrom?: number
+  /** 消息明确要求不看图片时识别的短语 */
+  imageIgnorePhrases?: readonly string[]
+  /** 是否在首轮回复后自动深入看 */
+  imageDeepAfterReply?: boolean
+  /** 图片记忆提示词最多列几张 */
+  imageRecentPromptMax?: number
+  /** 私聊或普通会话每小时最多自动识别几张图片 */
+  imageRecognitionsPerHour?: number
+  /** 一天最多自动识别几张图片 */
+  imageRecognitionsPerDay?: number
+  /** 私聊或普通会话每小时最多分析几个视频 */
+  videoRecognitionsPerHour?: number
+  /** 一天最多分析几个视频 */
+  videoRecognitionsPerDay?: number
+  /** 群聊每小时最多自动识别几张图片 */
+  groupImageRecognitionsPerHour?: number
+  /** 群聊每小时最多分析几个视频 */
+  groupVideoRecognitionsPerHour?: number
+  /** 自动识图需要的最低精力 */
+  imageRecognitionMinEnergy?: number
+  /** 自动分析视频需要的最低精力 */
+  videoRecognitionMinEnergy?: number
+  /** 机器人自己的形象参考图，本地路径或 HTTP(S) 地址 */
+  selfReferenceImages?: readonly string[]
+  /** 给自我识别看的稳定外观特征 */
+  selfReferenceDescription?: string
+  /** 单张形象参考图最大字节 */
+  selfImageMaxBytes?: number
+  /** 一次自我识别最多带几张参考图 */
+  selfImageMaxReferences?: number
+  /** 自动读取链接的范围：关闭、只读私聊、全部会话 */
+  linkFetch?: 'off' | 'private' | 'all'
+  /** 一条消息最多读几个链接 */
+  linkFetchMaxLinks?: number
+  /** 一个链接最多留多少字 */
+  linkFetchMaxChars?: number
+  /** 一个链接最多读多久 */
+  linkFetchTimeoutMs?: number
+  /** 急停状态文件放哪 */
+  emergencyStopFile?: string
+  /** 多久检查一次急停状态 */
+  emergencyCheckMs?: number
   /** 去重表最多留多少条 */
   seenMax?: number
+  /** 群历史补回来时要不要进入模型判断 */
+  groupHistoryWake?: boolean
+  /** 主模型 id，只有当前模型等于它时才允许退到备用 */
+  primaryProvider?: string
+  /** 主模型 id，只有当前模型与提供方都匹配时才允许退到备用 */
+  primaryModel?: string
+  /** 备用模型的 provider，留空表示不启用回退 */
+  fallbackProvider?: string
+  /** 备用模型的 id */
+  fallbackModel?: string
+  /** 退到备用后隔多久试着切回主模型，零表示不切回 */
+  fallbackRetryMs?: number
   /** 轮次记录放哪，不填就用主目录下的 data */
   decisionsFile?: string
+  /** 入站唤醒 Agent 的诊断记录放哪，不填就用主目录下的 data */
+  wakeLogFile?: string
+  /** 统一诊断时间线放哪，不填就沿用旧唤醒日志位置 */
+  timelineFile?: string
+  /** 时间线最多留几条 */
+  timelineMaxLines?: number
+  /** 时间线最多留多久 */
+  timelineRetentionMs?: number
   /** 每日维护日志放哪，不填就用主目录下的 data */
   maintenanceLogFile?: string
+  /** 是否自动检查 DSH 服务、插件、工具、模型故障与数据目录 */
+  selfHealthEnabled?: boolean
+  /** 自动体检隔多久跑一次，毫秒 */
+  selfHealthIntervalMs?: number
+  /** 启动后多久做第一次完整体检，毫秒 */
+  selfHealthStartupDelayMs?: number
+  /** 故障回看多久，毫秒 */
+  selfHealthWindowMs?: number
+  /** 同一问题隔多久再叫醒主人一次，毫秒 */
+  selfHealthAlertCooldownMs?: number
+  /** 健康分不低于多少算健康 */
+  selfHealthHealthyAt?: number
+  /** 健康分不低于多少算留意 */
+  selfHealthWatchAt?: number
+  /** 健康分不低于多少算退化 */
+  selfHealthDegradedAt?: number
+  /** 最新健康快照与复测状态放哪 */
+  selfHealthStateFile?: string
+  /** 每月健康日记目录 */
+  selfHealthJournalDir?: string
   /** 入站之后隔多久才再问一次要不要主动开口 */
   proactiveThrottleMs?: number
+  /** 主动开口用软节奏：跳过每日上限与 150–300 分钟硬间隔，由模型按事实决定 */
+  proactiveSoftPacing?: boolean
+  /** 主动候选段最多摆几条，别让攒下来的旧候选撑大提示词 */
+  pendingMaxLines?: number
+  /** 主动候选段整段最多多少字 */
+  pendingMaxChars?: number
+  /** 理由一字不差地重复时只留一条 */
+  pendingDedupeByWhy?: boolean
+  /** 行为倾向事实文件，换文件就能改语气提示 */
+  toneFactsFile?: string
+  /** 是否把身体与关系读数写成当前轮事实 */
+  stateDriveFacts?: boolean
   /** 覆盖主目录，不填按 HUOLI_HOME 定 */
   home?: string
-  /** 允许调用的工具名，空表示不限制 */
+  /** 允许调用的工具名，空表示不限制：插件注册什么就能用什么 */
   allowedTools?: readonly string[]
+  /** 群聊专用工具面；空则沿用 allowedTools */
+  groupAllowedTools?: readonly string[]
+  /** 按群配置敏感能力授权；每个群可分开授权敏感读取与写入，未列出的群默认仅主人私聊受信 */
+  groupSensitivePermissions?: Readonly<Record<string, {
+    /** 可在此群使用敏感读取工具的 QQ 号；多人合并时每位发送者都须获授权 */
+    readers?: readonly string[]
+    /** 可在此群使用敏感写入工具的 QQ 号；多人合并时每位发送者都须获授权 */
+    writers?: readonly string[]
+    /** 可在此群使用消息管理工具的 QQ 号；多人合并时每位发送者都须获授权 */
+    moderators?: readonly string[]
+  }>>
+  /** 好友私聊专用工具面；空则沿用 allowedTools */
+  privateAllowedTools?: readonly string[]
+  /** 主人私聊专用工具面；空则沿用 privateAllowedTools，再退 allowedTools */
+  ownerAllowedTools?: readonly string[]
+  /** 主人私聊额外获得的自我诊断、代码编辑与插件管理工具；其他会话永远不并入 */
+  ownerSelfRepairTools?: readonly string[]
+  /** 主人私聊是否放开全部已注册工具、全权限沙盒、睡眠/安静/停顿与发送额度限制 */
+  ownerUnrestricted?: boolean
+  /** 是否转写 QQ 语音 */
+  asrEnabled?: boolean
+  /** local = Huoli 管理的本机识别器；external = 显式配置的 OpenAI 兼容 API */
+  asrMode?: 'local' | 'external'
+  /** 启动时是否准备本机识别模型；首次准备会下载并校验约 241 MB 的 INT8 模型 */
+  asrPrepareOnStart?: boolean
+  /** OpenAI 兼容接口地址；本机模式只允许环回地址 */
+  asrBaseURL?: string
+  /** OpenAI 兼容接口模型名 */
+  asrModel?: string
+  /** 本机服务没开时是否自动拉起 */
+  asrAutoStart?: boolean
+  /** 显式配置本机 OpenAI 兼容 ASR 时的启动命令 */
+  asrStartCommand?: readonly string[]
+  /** 拉起本机服务后等多久再试 */
+  asrStartWaitMs?: number
+  /** ASR 的凭证名；优先环境变量或 ~/.huoli/.credentials.yaml */
+  asrKeyRef?: string
+  /** 凭证文件，留空用默认 */
+  asrCredentialFile?: string
+  /** 转写语言，默认 zh */
+  asrLanguage?: string
+  /** 一次转写最多等多久 */
+  asrTimeoutMs?: number
+  /** 一段语音最多转多少秒 */
+  asrMaxSeconds?: number
+  /** ffmpeg 可执行文件；留空走 PATH */
+  asrFfmpegPath?: string
+  /** 和 B 站插件共用的 asr.json；留空按 DSH_HOME 找 */
+  asrConfigFile?: string
+  /** B 站插件留下的待分享推荐；留空按 DSH_HOME/bili-eyes/pending-share.json 找 */
+  biliShareFile?: string
+  /** 未读 B站推荐主动叫醒同一会话的最小间隔，毫秒 */
+  biliShareWakeMs?: number
+  /** 额外禁掉的工具名；本机与自我改造类已由代码一律拦住，不必写这里 */
+  deniedTools?: readonly string[]
   /** 每轮是否把召回到的记忆接在用户原话之后，关掉就一次都不召回 */
   memoryInject?: boolean
   /** 放进整串的字数上限 */
@@ -2916,6 +3285,130 @@ export interface Config {
   balanceLevel?: number
   /** 启动账放哪，用来算今天重启过几次 */
   livenessFile?: string
+  /** 没人说话时每隔多久给她一次主动开口的机会，毫秒，默认十分钟；真开不开口由主动那一路的间隔与额度定 */
+  nudgeMs?: number
+  /** 要不要把这一轮合适的表情候选写成提示词事实，默认开 */
+  stickerSuggest?: boolean
+  /** 同一处刚发过表情包后多久不再推，毫秒，默认十分钟 */
+  stickerRecentWindowMs?: number
+  /** 一次最多给几张表情候选 */
+  stickerCandidateLimit?: number
+  /** 表情包库放哪，不填就与通道那一份用同一个文件 */
+  stickerFile?: string
+  /** 表情包使用反馈放哪，不填就与通道那一份用同一个文件 */
+  stickerUsageFile?: string
+  /** 发牢骚的门槛：驱力、事由条数、窗口、指名与单靠牢骚开场的下限 */
+  complaint?: ComplaintSettingsInput
+  /** 情绪档位这一层：档位怎么分、抬多少、两条回路各自的开关 */
+  emotion?: EmotionSettingsInput
+  /** 项目内的图片目录，不填就用主目录下的 data/media */
+  mediaRoot?: string
+  /** 图片目录的索引放哪，不填就用主目录下的 data/qq-media.json */
+  mediaIndexFile?: string
+  /** 表情包库放哪，不填就与通道那一份用同一个文件 */
+  mediaStickerFile?: string
+  /** 图片目录的索引最多留几条 */
+  mediaIndexMax?: number
+  /** 图片权重多久减半，小时 */
+  mediaHalfLifeHours?: number
+  /** 收藏档的权重倍数 */
+  mediaFavoriteWeight?: number
+  /** 权重低于这条线就降到冷归档档 */
+  mediaArchiveBelowWeight?: number
+  /** 缓存档最多留多久，小时 */
+  mediaCacheMaxAgeHours?: number
+  /** 缓存档最多留几条 */
+  mediaCacheMaxItems?: number
+  /** 多久按档位清理一次图片目录，毫秒；零表示不自动清理 */
+  mediaSweepIntervalMs?: number
+  /** 入站素材要不要让视觉模型判类，关掉就按扩展名粗分 */
+  mediaClassify?: boolean
+  /** 一次判类最多生成多少 token */
+  mediaClassifyMaxTokens?: number
+  /** 一次判类最多留多少字 */
+  mediaClassifyMaxChars?: number
+  /** 一次判类最多等多久，毫秒 */
+  mediaClassifyTimeoutMs?: number
+  /** 要不要在第一次进某个群或私聊时给一段环境说明，默认开 */
+  briefingEnabled?: boolean
+  /** 会话级环境说明表放哪，一个会话一段，不填就落在数据根目录下的 data */
+  briefingFile?: string
+  /** 已经给过说明的会话记在哪，记过的不再重复给，不填就落在数据根目录下的 data */
+  briefingLedgerFile?: string
+  /** 要不要给发言统计、自身资料与群上下文这几段事实，默认开 */
+  selfAwarenessEnabled?: boolean
+  /** 发言统计的三档窗口，毫秒，依次给近五分钟、二十分钟与一小时 */
+  selfTalkWindowsMs?: readonly number[]
+  /** 群友原话、素材与表情包各最多摆几条，防提示词变长 */
+  selfMaxSamples?: number
+  /** 整段自知事实最多多少个字符，超了直接从整段末尾收口 */
+  selfMaxChars?: number
+  /** 要不要给「可以顺着找什么」这段视频线索，默认关，开了才占提示词 */
+  videoInterestEnabled?: boolean
+  /** 视频线索里最多摆几条原话样本 */
+  videoInterestMaxSamples?: number
+  /** 整段视频线索最多多少个字符，超了直接从整段末尾收口 */
+  videoInterestMaxChars?: number
+  /** 要不要把站内插件想转达的话送回主人私聊 */
+  biliGateEnabled?: boolean
+  /** 转达正文最多多少个字符 */
+  biliGateMaxChars?: number
+  /** 门卫一次最多翻多少条最近消息 */
+  biliGateMaxMessages?: number
+}
+
+/** 配置里能改的那几项 */
+export interface ComplaintSettingsInput {
+  /** 要不要发牢骚这回事，关掉就整段不出现 */
+  enabled?: boolean
+  /** 低于这条线的读数不单独列出来，零到一 */
+  driveThreshold?: number
+  /** 至少要有几条具体事由才放行 */
+  minGrounds?: number
+  /** 事由只认这段时间内的真实消息，毫秒 */
+  windowMs?: number
+  /** 自己刚连发到这么多条，就不再允许抱怨没人理 */
+  maxRecentOwn?: number
+  /** 同一个外号被叫够几回算一条事由 */
+  repeatedNameHits?: number
+  /** 同一个人冲你说够几句算一条事由 */
+  repeatedCallHits?: number
+  /** 你说完以后有几句在聊却没回你，算一条事由 */
+  ignoredAfter?: number
+  /** 允不允许把不满指向具体某个人，默认只指向现象 */
+  allowNamedTarget?: boolean
+  /** 允不允许只拿自己的身体状态当事由 */
+  allowSelfStateGround?: boolean
+  /** 候选只提供由头时使用的读数下限 */
+  soloDriveFloor?: number
+  /** 隔多久没跟这个人说话算一条具体事实，分钟 */
+  idleGroundMinutes?: number
+}
+
+/** 配置里能改的那几项 */
+export interface EmotionSettingsInput {
+  /** 情绪这一层要不要生效，关掉两条回路都回到原样 */
+  enabled?: boolean
+  /** 情绪分数要不要抬记忆的基础重要度 */
+  memoryLift?: boolean
+  /** 要不要把当前情绪档位写进注意力那段事实 */
+  attentionFact?: boolean
+  /** 读数到这条线算峰值档，零到一 */
+  peakFrom?: number
+  /** 读数到这条线算偏高档 */
+  highFrom?: number
+  /** 读数到这条线算轻微档 */
+  mildFrom?: number
+  /** 峰值档给记忆抬几分 */
+  peakLift?: number
+  /** 偏高档抬几分 */
+  highLift?: number
+  /** 轻微档抬几分 */
+  mildLift?: number
+  /** 同时有几项过线时，每多一项再加几分 */
+  mixBonus?: number
+  /** 一次最多抬几分，也是情绪分上限 */
+  maxLift?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-bundle -->
@@ -2926,7 +3419,7 @@ export interface Config {
 ## `@huoli/huoli-qq-channel`
 
 - `inject`: `tools`
-- `source`: [`packages/qq/qq-channel/src/index.ts:74`](../packages/qq/qq-channel/src/index.ts)
+- `source`: [`packages/qq/qq-channel/src/index.ts:189`](../packages/qq/qq-channel/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -2937,24 +3430,102 @@ export interface Config {
   selfId: string
   /** 连接口令，没设就不带 */
   accessToken?: string
+  /** 网关没读到身份时用的名字，默认用组合包里那个名字 */
+  selfName?: string
+  /** 连上后要不要问网关当前身份；默认关，开了会另起一条短连接 */
+  selfInfoEnabled?: boolean
+  /** 问网关身份等回话多久，默认 5000 毫秒 */
+  selfInfoTimeoutMs?: number
+  /** 重连后要不要再问一次身份；默认开 */
+  selfInfoRefreshOnReconnect?: boolean
   /** 断了之后隔多久重连 */
   reconnectMs?: number
   /** 一段等 QQ 那头回话的超时 */
   callTimeoutMs?: number
+  /** 数据根目录，不填按 HUOLI_HOME 定 */
+  home?: string
+  /** 一条聊天消息最多多少字；默认比出站硬上限更短，方便自然分段 */
+  replyPartMaxChars?: number
+  /** 不超单条字数时优先塞成一条，不再按句号主动拆段 */
+  replySingleMessage?: boolean
+  /** 长话按分句拆成几个气泡，短话仍一条；默认开 */
+  replySemanticSplit?: boolean
+  /** 兼容旧配置；实际只收敛连续重复的标点，不删除正常标点 */
+  replyStripWrittenPunctuation?: boolean
+  /** 正文短于这个字数就不拆 */
+  replySemanticMinChars?: number
+  /** 至少几个分句才拆 */
+  replySemanticMinPieces?: number
+  /** 拆出来短于这个字数的碎片并回邻居 */
+  replySemanticMinPartChars?: number
+  /** 机器人被禁言的状态放哪，不填用主目录 data */
+  muteFile?: string
   /** 多段回复要不要合成一条合并转发 */
   replyForward?: boolean
+  /** 模型能否自己调用合并转发工具 */
+  forwardToolEnabled?: boolean
   /** 合并转发卡片上显示的名字 */
   replyForwardName?: string
   /** 允许发声的群编号，空表示不限制 */
   allowGroups?: readonly string[]
+  /** 群里发 B站小程序卡的总开关；默认关 */
+  groupCardEnabled?: boolean
+  /** 群卡片是否开放给所有群；默认关 */
+  groupCardAllGroups?: boolean
+  /** 群卡片允许名单；未开放全部群时，只允许名单里的群 */
+  groupCardGroups?: readonly string[]
   /** 允许发声的人编号，空表示不限制 */
   allowPeople?: readonly string[]
+  /** 好友私聊事件不可达时，每隔多久从历史接口补一次；0 表示关闭 */
+  privatePollMs?: number
+  /** 好友私聊轮询的诊断记录放哪，不填就落在数据根目录下的 data */
+  privatePollStatusFile?: string
+  /** 自己发过的消息编号放哪，不填就落在数据根目录下的 data */
+  sentLedgerFile?: string
+  /** 跨重启最多保留多少条自发消息编号，默认 200 */
+  sendHistoryMax?: number
+  /** 每个会话最多返回多少条近期自发消息，默认 20 */
+  recentSendMax?: number
+  /** 自发消息编号最多保留多久，毫秒，默认 7 天 */
+  sentLedgerKeepMs?: number
+  /** 首次轮询时从这个 ISO 时刻之后补交漏掉的好友消息 */
+  privatePollReplaySince?: string
+  /** 上线后每隔多久补一次指定群的近期历史；0 表示关闭 */
+  groupHistoryPollMs?: number
+  /** 要补历史的群编号，不填就沿用允许发声的群名单 */
+  groupHistoryGroups?: readonly string[]
+  /** 一次最多补几条群历史 */
+  groupHistoryCount?: number
+  /** 只补最近多久以内的群历史 */
+  groupHistoryMaxAgeMs?: number
+  /** 群历史补收的诊断记录放哪 */
+  groupHistoryStatusFile?: string
+  /** 首次群历史轮询是否回放近期旧消息；默认只建立基线 */
+  groupHistoryReplay?: boolean
+  /** 连上之后要不要补读断线期间错过的消息；默认开 */
+  catchupEnabled?: boolean
+  /** 断线补读一次最多补几条 */
+  catchupMaxMessages?: number
+  /** 断线补读只补多久以内的消息 */
+  catchupWindowMs?: number
+  /** 断线补读失败后最多再试几次 */
+  catchupMaxRetries?: number
+  /** 一次最多读几条合并转发内容 */
+  forwardMaxNodes?: number
+  /** 合并转发最多往里读几层 */
+  forwardMaxDepth?: number
+  /** 一次最多请求几次转发内容 */
+  forwardMaxFetches?: number
+  /** 合并转发读出来最多多少字 */
+  forwardMaxChars?: number
   /** 一条最多几个字 */
   maxChars?: number
   /** 一分钟最多几条 */
   perMinute?: number
   /** 条数往回看的窗口 */
   windowMs?: number
+  /** 上一条与这一条之间至少隔多久，毫秒，默认 0 不拦 */
+  sendGapMs?: number
   /** 静默时段从几点开始 */
   quietStart?: string
   /** 静默时段到几点结束 */
@@ -2963,6 +3534,16 @@ export interface Config {
   banned?: readonly string[]
   /** 允许的名单、长度、敏感词这三类拒绝给出的下次时间 */
   retryMs?: number
+  /** 同一个人连着触发到几条就算在刷，回他这条先挡一下 */
+  floodBurstCount?: number
+  /** 连发往回看多久 */
+  floodBurstWindowMs?: number
+  /** 同一个发送者已经回过几条 */
+  floodReplyPerSender?: number
+  /** 回条数往回看多久 */
+  floodReplyWindowMs?: number
+  /** 关掉就不管连发，别的关卡照旧 */
+  floodGuardEnabled?: boolean
   /** 两条动态之间至少隔多久 */
   postCoolDownMs?: number
   /** 同一段正文隔多久才许再发 */
@@ -2999,8 +3580,78 @@ export interface Config {
   privateMinStage?: string
   /** 三类动作的状态文件放哪，不填就落在数据根目录下的 data */
   actionsFile?: string
+  /** 发送结果的状态文件放哪，不填就落在数据根目录下的 data */
+  sendStateFile?: string
+  /** 发不出去时留几条失败码，够看出是不是一直卡在同一处 */
+  sendFailureKeep?: number
   /** 遗书正文的暂存槽放哪，不填就落在数据根目录下的 data */
   farewellFile?: string
+  /** 表情包库放哪，不填就落在数据根目录下的 data */
+  stickerFile?: string
+  /** 表情包使用反馈放哪 */
+  stickerUsageFile?: string
+  /** 语音库放哪，不填就落在数据根目录下的 data */
+  voiceFile?: string
+  /** 学来的词放哪，不填就落在数据根目录下的 data */
+  slangFile?: string
+  /** 是否从普通群消息里自动提取黑话候选 */
+  slangAutoLearn?: boolean
+  /** 攒够多少条群消息提取一次 */
+  slangWindowSize?: number
+  /** 一个词至少出现在几条消息里 */
+  slangMinMessages?: number
+  /** 一个词至少出现几次 */
+  slangMinOccurrences?: number
+  /** 候选词最少几个字 */
+  slangMinWordChars?: number
+  /** 候选词最多几个字 */
+  slangMaxWordChars?: number
+  /** 一次最多提几个候选 */
+  slangMaxCandidates?: number
+  /** 词表最多留几条 */
+  slangMaxItems?: number
+  /** 学来的说法放哪，不填就落在数据根目录下的 data */
+  sayingFile?: string
+  /** 准不准戳人，默认不准；开了也只是多一个动作，不改变判级 */
+  pokeEnabled?: boolean
+  /** 群资料留多久，毫秒，默认十分钟 */
+  groupInfoTtlMs?: number
+  /** 成员名片留多久，毫秒，默认五分钟 */
+  groupCardTtlMs?: number
+  /** 成员集合留多久，毫秒，默认六十秒 */
+  groupMembersTtlMs?: number
+  /** 引用解析留多久，毫秒，默认十分钟 */
+  groupRefTtlMs?: number
+  /** 读取失败只留多久，毫秒，默认五秒 */
+  groupFailureTtlMs?: number
+  /** 群上下文缓存最多几条，超了按最近最少用清 */
+  groupCacheMax?: number
+  /** 群资料、文件名、公告正文一段最多几个字 */
+  groupTextMaxChars?: number
+  /** 一次最多列几个群文件 */
+  groupFilesMax?: number
+  /** 一次最多翻几个群文件夹 */
+  groupMaxFolders?: number
+  /** 成员集合最多缓存几个 */
+  groupMembersMax?: number
+  /** 一次最多列几条群公告 */
+  groupNoticeMax?: number
+  /** 快照一次读几条最近消息 */
+  snapshotMaxHistory?: number
+  /** 快照里还没接的话最多几条 */
+  snapshotMaxUnread?: number
+  /** 快照里最近消息最多几条 */
+  snapshotMaxRecent?: number
+  /** 快照里成员最多几条 */
+  snapshotMaxMembers?: number
+  /** 快照里活跃者最多几条 */
+  snapshotMaxActive?: number
+  /** 活跃者往回数几条非自己消息 */
+  snapshotActiveWindow?: number
+  /** 活跃者取前几名 */
+  snapshotActiveTop?: number
+  /** 快照整段最多几个字 */
+  snapshotMaxChars?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-channel -->
@@ -3023,6 +3674,46 @@ export interface Config {
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-continuity -->
+
+<!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-longing -->
+<a id="huolihuoli-qq-longing"></a>
+
+## `@huoli/huoli-qq-longing`
+
+- `source`: [`packages/qq/qq-longing/src/index.ts:39`](../packages/qq/qq-longing/src/index.ts)
+
+```ts config-catalog
+/** 这一行接受的配置 */
+export interface Config {
+  /** 状态文件，不填落在 data/qq-longing.json */
+  file?: string
+  /** 覆盖数据根目录 */
+  home?: string
+  /** 总开关 */
+  enabled?: boolean
+  /** 成人事件总闸 */
+  nsfwEnabled?: boolean
+  /** 事件倍率 */
+  eventGain?: number
+  /** 是否启用维度互相牵制 */
+  couplingEnabled?: boolean
+  /** 牵制速度 */
+  couplingRate?: number
+  /** 平时每小时性欲回落 */
+  decayPerHour?: number
+  /** 高峰时段每小时性欲回落 */
+  nightDecayPerHour?: number
+  /** 晚间高峰窗口 */
+  peakWindow?: string
+  /** 每天第一次进入高峰的加成 */
+  peakBonus?: number
+  /** 私聊一次增加的性欲 */
+  interactionLust?: number
+  /** 私聊一次增加的好感 */
+  affectionGain?: number
+}
+```
+<!-- END GENERATED config-catalog:@huoli/huoli-qq-longing -->
 
 <!-- BEGIN GENERATED config-catalog:@huoli/huoli-qq-material -->
 <a id="huolihuoli-qq-material"></a>
@@ -3050,7 +3741,7 @@ export interface Config {
 
 - `inject`: `tools`
 - `refs`: [`DecayParams`](../packages/qq/qq-policy/src/index.ts) · [`RecoverParams`](../packages/qq/qq-policy/src/index.ts)
-- `source`: [`packages/qq/qq-memory/src/index.ts:164`](../packages/qq/qq-memory/src/index.ts)
+- `source`: [`packages/qq/qq-memory/src/index.ts:196`](../packages/qq/qq-memory/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3069,8 +3760,32 @@ export interface Config {
   vectorStore?: 'off' | 'pglite'
   /** 向量仓的数据放哪，不填就跟记忆文件同目录 */
   vectorDir?: string
+  /** 嵌入服务：填了就用真向量，不填还是本地算 */
+  embedding?: EmbeddingConfig
+  /** 私密记忆事后状态持续多久，默认三十分钟 */
+  privateSettleMs?: number
+  /** 查询嵌入最多等多久；超时退回纯关键词，默认 1200 毫秒 */
+  embeddingTimeoutMs?: number
   /** 想改哪些默认参数 */
   tuning?: Partial<Tuning>
+  /** 一份记忆档案最多收几条 */
+  profileMaxItems?: number
+  /** 一份记忆档案最多多少字 */
+  profileMaxChars?: number
+}
+
+/** 嵌入服务怎么接 */
+export interface EmbeddingConfig {
+  /** 服务根地址，形如 https://api.siliconflow.cn/v1 */
+  baseURL: string
+  /** 模型名，形如 BAAI/bge-m3 */
+  model: string
+  /** 直接写在这里的 key */
+  apiKey?: string
+  /** key 放在哪个环境变量里，和上一条二选一 */
+  apiKeyEnv?: string
+  /** 一次调用最多等多久，默认六秒 */
+  timeoutMs?: number
 }
 
 /** 可被 Config 覆盖的参数集合 */
@@ -3121,6 +3836,8 @@ export interface Tuning extends DecayParams, RecoverParams {
   freshnessDays: number
   /** 镜像写进来时重要度不低于这条线 */
   selfImportanceFloor: number
+  /** 私密记忆事后状态持续多久，默认三十分钟 */
+  privateSettleMs: number
   /** 一条待写的正文短过这几个字当噪声，不入队 */
   minTextChars: number
   /** 一条正文长过这几个字要求拆分，不入队 */
@@ -3147,6 +3864,10 @@ export interface Tuning extends DecayParams, RecoverParams {
   pinnedAlert: number
   /** 已退役与只剩印象的条数占未退役条数的比例超过它就在健康一行末尾告警 */
   coldRatioAlert: number
+  /** 总条数占到上限的这个比例就在健康一行末尾告警，默认 0.8 */
+  totalWarnAt: number
+  /** 总条数最多留多少条，超过就在末尾报超，默认两万条 */
+  totalCap: number
   /** 备份留几份，超出的按最旧先删 */
   backupKeep: number
   /** 性格不变快照拿来找记忆的那句，空串只按重要度与新鲜度挑 */
@@ -3162,7 +3883,7 @@ export interface Tuning extends DecayParams, RecoverParams {
 
 ## `@huoli/huoli-qq-pacing`
 
-- `source`: [`packages/qq/qq-pacing/src/index.ts:26`](../packages/qq/qq-pacing/src/index.ts)
+- `source`: [`packages/qq/qq-pacing/src/index.ts:38`](../packages/qq/qq-pacing/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3179,6 +3900,16 @@ export interface Config {
   perHour?: number
   /** 一天最多说几句 */
   perDay?: number
+  /** 一小时最多发几段语音，与文本额度分开算 */
+  voicePerHour?: number
+  /** 一天最多发几段语音 */
+  voicePerDay?: number
+  /** 一段语音最多几秒 */
+  voiceMaxSeconds?: number
+  /** 一段语音最多多少字节 */
+  voiceMaxBytes?: number
+  /** 认不出音频格式时按多少字节一秒估时长 */
+  voiceBytesPerSecond?: number
   /** 同一句隔多久才算说旧了 */
   repeatWindowMs?: number
   /** 留最近几句用来认重复 */
@@ -3192,7 +3923,7 @@ export interface Config {
 
 ## `@huoli/huoli-qq-proactive`
 
-- `source`: [`packages/qq/qq-proactive/src/index.ts:88`](../packages/qq/qq-proactive/src/index.ts)
+- `source`: [`packages/qq/qq-proactive/src/index.ts:93`](../packages/qq/qq-proactive/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3203,24 +3934,14 @@ export interface Config {
   home?: string
   /** 要不要主动开口 */
   enabled?: boolean
-  /** 一天最多开口几次 */
-  dailyMax?: number
-  /** 一天至少开口几次，劲头再低也不低于这个数 */
-  dailyFloor?: number
   /** 安静时段从几点开始 */
   quietStart?: string
   /** 安静时段到几点结束 */
   quietEnd?: string
-  /** 冷却区间下限 */
-  gapMinMs?: number
-  /** 冷却区间上限 */
-  gapMaxMs?: number
-  /** 读数折回倍率时的下限 */
-  biasMin?: number
-  /** 读数折回倍率时的上限 */
-  biasMax?: number
-  /** 刚被吵醒之后还要安静多久，毫秒 */
-  wakingDelayMs?: number
+  /** 正忙时多久后再看，毫秒 */
+  busyRetryMs?: number
+  /** 身体需要休息时多久后再看，毫秒 */
+  restRetryMs?: number
   /** 一条候选攒着多久就过期，毫秒 */
   pendingTtlMs?: number
 }
@@ -3232,8 +3953,8 @@ export interface Config {
 
 ## `@huoli/huoli-qq-subject`
 
-- `inject`: `systemPrompt`
-- `source`: [`packages/qq/qq-subject/src/index.ts:25`](../packages/qq/qq-subject/src/index.ts)
+- `inject`: `systemPrompt` · `tools`
+- `source`: [`packages/qq/qq-subject/src/index.ts:59`](../packages/qq/qq-subject/src/index.ts)
 
 ```ts config-catalog
 /** 这一行接受的配置 */
@@ -3248,6 +3969,42 @@ export interface Config {
   chatNames?: Record<string, string>
   /** 一次陌生话题把好奇心抬多少，默认零点一二 */
   curiosityNoveltyGain?: number
+  /** 关系资料放哪 */
+  relationFile?: string
+  /** 每看到一次关系涨多少 */
+  relationFamiliarityGain?: number
+  /** 一次有把握的亲近或疏远让好感变多少 */
+  relationFeelingAffectionGain?: number
+  /** 一次有把握的信任变化让信任变多少 */
+  relationFeelingTrustGain?: number
+  /** 一次有把握的烦躁变化让烦躁变多少 */
+  relationFeelingAnnoyanceGain?: number
+  /** 情绪事实多久减半 */
+  relationFeelingHalfLifeMs?: number
+  /** 情绪事实多久忘掉 */
+  relationFeelingForgetMs?: number
+  /** 有证据的情绪判读至少多少把握才保存 */
+  relationFeelingEvidenceFrom?: number
+  /** 最多留几条情绪事实 */
+  relationMaxFeelingFacts?: number
+  /** 关系提示最多列几条仍有效的情绪事实 */
+  relationFeelingPromptLimit?: number
+  /** 外号次数按多久折半 */
+  relationNicknameHalfLifeMs?: number
+  /** 外号多久没再叫就忘掉 */
+  relationNicknameForgetMs?: number
+  /** 一个人最多记几个外号 */
+  relationMaxNicknameTags?: number
+  /** 一个人最多留几个别名 */
+  relationMaxAliases?: number
+  /** 最多留几条关系事件 */
+  relationMaxEvents?: number
+  /** 最多留几个纪念日 */
+  relationMaxAnniversaries?: number
+  /** 提前几天提示纪念日 */
+  relationUpcomingDays?: number
+  /** 关系提示最多多少字 */
+  relationPromptMaxChars?: number
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-qq-subject -->
@@ -3267,10 +4024,14 @@ export interface Config {
   file?: string
   /** 数据根目录，不给就用默认的家目录 */
   huoliHome?: string
+  /** 普通状态写入的最短落盘间隔，默认 5000 毫秒；设为 0 每次都写 */
+  writeIntervalMs?: number
   /** 想改哪些默认参数 */
   tuning?: TuningOverride
   /** 口语词表：只写要换的那几张，没写的还用默认 */
   words?: Partial<WordLists>
+  /** 是否启用内置口语词表作为模型事件之外的备用事实来源 */
+  wordPreset?: boolean
 }
 
 /** 覆盖项：别的字段按字段覆盖，词表按表覆盖 */
@@ -3480,6 +4241,8 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   sleepUntil: number
   /** 睡眠压力高过这条线才睡得着，0~1 标度，默认 0.50 */
   sleepAdenosineFrom: number
+  /** 进入夜睡时段后最多再撑多少分钟，之后不再等睡眠压力过线，默认 30 */
+  sleepForceAfterMinutes: number
   /** 夜睡该醒的钟点，本地小时 0~24，默认 7.5 即七点半 */
   wakeAt: number
   /** 该醒时刻前后随机的分钟数，默认 40，让每天不完全一样 */
@@ -3581,6 +4344,12 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   transmitterNightHalfHours: number
   /** 白天回基线的半衰期，小时，默认 0.75 */
   transmitterHalfHours: number
+  /** 褪黑素的半衰期，小时，默认 0.70，比递质慢 */
+  melatoninHalfHours: number
+  /** 去甲肾上腺素的时段基线，按「到几点之前」分段，最后一档兜底 */
+  noradrenalineBands: readonly NoradrenalineBand[]
+  /** 体温保留几位小数，默认 2 */
+  coreTempDecimals: number
   /** 多巴胺的白天回落目标，0~1 标度，默认 0.50 */
   transmitterDopamineBase: number
   /** 夜色把多巴胺目标压下去多少，默认 0.16，按夜色浓度打折 */
@@ -3818,8 +4587,10 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   mortalityRisePerBeat: number
   /** 每拍朝目标退多少，0~1 标度，默认 0.03，退得比涨慢得多 */
   mortalityFallPerBeat: number
-  /** 死亡威胁高过这条线算高位，0~1 标度，默认 0.85；到线那天才产出一条想说最后的话的事实 */
+  /** 死亡威胁高过这条线算高位，0~1 标度，默认 0.60；过线才产出一条想说最后的话的事实 */
   farewellMortalityFrom: number
+  /** 两次遗书之间至少隔多少小时，默认 12，按滚动窗口算不按自然日 */
+  farewellCooldownHours: number
 }
 
 /** 愤怒、记仇、恐惧这几套的触发与衰减参数 */
@@ -4114,11 +4885,15 @@ export interface EmotionBlendTuning {
   emotionBlendWeightFrom: number
   /** 语气提示那一行最多多少字，默认 60，至少留 20 字 */
   emotionToneMaxChars: number
+  /** 单一感受压过其余时给模型看的表达提示 */
+  emotionToneFocus: string
+  /** 几种感受掺在一起时给模型看的表达提示 */
+  emotionToneSplit: string
 }
 
 /** 提示词那一组的参数，与其它参数一起看全文进 Tuning */
 export interface PromptTuning {
-  /** 每轮身体提示词的字数上限，默认 600，超出就截断且至少保留 60 字 */
+  /** 每轮身体提示词的字数上限，默认 780，超出就截断且至少保留 60 字 */
   promptMaxChars: number
   /** 提示词截断时至少留几个字，默认 60 */
   promptMinChars: number
@@ -4256,6 +5031,14 @@ export interface Baseline {
   shutdownDread: number
   /** 疤痕权重，0~1，默认 0.0，只有真经历过极端生存威胁才会起来，之后一直留在底线上 */
   scar: number
+}
+
+/** 去甲肾上腺素的一档：到几点之前用哪个基线 */
+export interface NoradrenalineBand {
+  /** 到这个小时之前（不含）用这一档 */
+  until: number
+  /** 这一档的基线，0~1 标度 */
+  value: number
 }
 
 /** 图上的一条边 */
@@ -6216,6 +6999,8 @@ export interface Config {
 export interface Config {
   /** Absolute execution-world fallback directory; omitted values use the launch directory. */
   defaultDirectory?: string
+  /** 是否把当前目录写进模型上下文；默认写，聊天型 profile 可以关掉 */
+  promptContext?: boolean
 }
 ```
 <!-- END GENERATED config-catalog:@huoli/huoli-working-directory -->
@@ -6410,6 +7195,7 @@ export interface Config {
 | `package` | `inject` | `source` |
 | --- | --- | --- |
 | `@huoli/huoli-agent-loop-testkit` | — | [`packages/test-support/agent-loop-testkit/src/index.ts`](../packages/test-support/agent-loop-testkit/src/index.ts) |
+| `@huoli/huoli-agent-soul` | — | [`packages/extensions/agent-soul/src/index.ts`](../packages/extensions/agent-soul/src/index.ts) |
 | `@huoli/huoli-anonymous-user-id` | — | [`packages/identity/anonymous-user-id/src/index.ts`](../packages/identity/anonymous-user-id/src/index.ts) |
 | `@huoli/huoli-app-boot` | — | [`packages/boot/app-boot/src/index.ts`](../packages/boot/app-boot/src/index.ts) |
 | `@huoli/huoli-atomic-write` | — | [`packages/util/atomic-write/src/index.ts`](../packages/util/atomic-write/src/index.ts) |

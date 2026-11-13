@@ -272,6 +272,78 @@ export function renderRecall(hits: readonly RecallHit[]): string {
   return hits.map(hit => `${localDate(hit.at)} ${hit.text}`).join('\n')
 }
 
+/** 一份档案最多收几条、写多少字 */
+export const PROFILE_DEFAULTS = {
+  maxItems: 120,
+  maxChars: 8_000,
+} as const
+
+/** 建档时给的条件 */
+export interface MemoryProfileInput {
+  chatKey: string
+  personId?: string
+  firstSeenAt?: number
+  maxItems?: number
+  maxChars?: number
+}
+
+/** 一份按人或按群整理的记忆档案 */
+export interface MemoryProfile {
+  chatKey: string
+  personId: string
+  firstSeenAt: number
+  lastSeenAt: number
+  total: number
+  items: MemoryItem[]
+  text: string
+}
+
+function profileDate(at: number): string {
+  return at <= 0 ? '时间不明' : localDate(at)
+}
+
+/**
+ * 不按关键词，直接把当前会话里这个人或这个群的记忆整理成档案
+ * @param store - 记忆仓
+ * @param input - 会话、人物和字数上限
+ * @returns 档案与模型可读正文
+ */
+export function buildMemoryProfile(store: MemoryStore, input: MemoryProfileInput): MemoryProfile {
+  const personId = input.personId?.trim() ?? ''
+  const inPrivate = input.chatKey.startsWith('private:')
+  const alive = store.all().filter((item) => {
+    if (item.state === 'forgotten' || item.clarity === 'forgotten') return false
+    if (item.scope !== input.chatKey) return false
+    if (personId !== '' && item.personId !== personId) return false
+    if (!inPrivate && (item.layer === 'private' || item.secret === true)) return false
+    return item.text.trim() !== ''
+  })
+  const sorted = [...alive].sort((left, right) => right.importance - left.importance || right.lastSeenAt - left.lastSeenAt)
+  const items = sorted.slice(0, Math.max(1, Math.floor(input.maxItems ?? PROFILE_DEFAULTS.maxItems)))
+  const firstSeenAt = input.firstSeenAt ?? (alive.length === 0 ? 0 : Math.min(...alive.map(item => item.at)))
+  const lastSeenAt = alive.length === 0 ? 0 : Math.max(...alive.map(item => item.lastSeenAt))
+  const stable = items.filter(item => item.layer === 'semantic').slice(0, 40)
+  const recent = items.filter(item => item.layer !== 'semantic').sort((left, right) => right.at - left.at).slice(0, 60)
+  const subject = personId === '' ? `群聊 ${input.chatKey}` : `用户 ${personId}`
+  const lines = [
+    `【记忆档案】${subject}｜共 ${alive.length} 条｜最早 ${profileDate(firstSeenAt)}｜最近 ${profileDate(lastSeenAt)}`,
+    stable.length === 0 ? '' : `长期印象：\n${stable.map(item => `- [${item.id}] ${item.text}`).join('\n')}`,
+    recent.length === 0 ? '' : `经历过的事：\n${recent.map(item => `- [${item.id}] ${profileDate(item.at)} ${item.text}`).join('\n')}`,
+  ].filter(line => line !== '')
+  const maxChars = Math.max(1, Math.floor(input.maxChars ?? PROFILE_DEFAULTS.maxChars))
+  const full = lines.join('\n')
+  const text = full.length > maxChars ? `${full.slice(0, Math.max(1, maxChars - 1))}…` : full
+  return {
+    chatKey: input.chatKey,
+    personId,
+    firstSeenAt,
+    lastSeenAt,
+    total: alive.length,
+    items,
+    text,
+  }
+}
+
 /** 她此刻的感觉，用来说清是哪种感觉把这件事带出来的 */
 export interface FeelingFacts {
   /** 心情，越低越难过 */

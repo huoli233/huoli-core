@@ -1,11 +1,11 @@
-// 两个判断：这一轮该不该开口，开口之后什么时候闭嘴
+// 插话事实只交给模型判断，不在代码里决定该不该说
 
-/** 该不该开口的结论 */
+/** 该不该开口的结论保留给调用方解释，不替模型下结论 */
 export type SpeakVerdict =
   | { speak: true; why: 'addressed' | 'private' | 'cold' }
   | { speak: false; why: 'silenced' | 'cooldown' | 'crowded' | 'notAddressed' | 'tired' }
 
-/** 什么时候闭嘴的结论 */
+/** 什么时候闭嘴的结论保留给调用方解释，不替模型下结论 */
 export type StopVerdict =
   | { stop: true; why: 'silenced' | 'budget' | 'ignored' | 'tense' }
   | { stop: false }
@@ -17,11 +17,13 @@ export interface SpeakFacts {
   /** 有没有点名 */
   named: boolean
   /** 场面：几个人、上一条隔了多久、每分钟多少条 */
-  ambient: { humanCount: number; lastHumanAgeMs: number | null; speakingRate: number }
+  ambient: { humanCount: number; speakerCount: number; lastHumanAgeMs: number | null; speakingRate: number }
   /** 累到什么程度 */
   fatigueLevel: number
   /** 她上次开口离现在多久，没说过给 null */
   sinceSelfSpokeMs: number | null
+  /** 当前自适应话痨度，零到一；没给按中间值 */
+  talkativeness?: number
   /** 对方是不是明确要她别说话 */
   silenced: boolean
 }
@@ -40,72 +42,51 @@ export interface StopFacts {
   silenced: boolean
 }
 
-/** 这两个判断的门槛，全部可配 */
+/** 观察窗口只由配置给 */
 export interface InterjectTuning {
-  /** 她说过一句之后多久内不再主动开口 */
-  cooldownMs: number
-  /** 每分钟到多少条就算场面太密 */
-  crowdedRate: number
-  /** 累到这条线就不开口 */
-  tiredAt: number
-  /** 冷场多久她可以自己开一句 */
-  coldAfterMs: number
-  /** 连着几条没人接就停 */
-  ignoredAfter: number
-  /** 场面紧到这条线就停 */
-  tenseAt: number
+  /** 看多久内的消息 */
+  activeWindowMs: number
 }
 
 /** 插话那组默认值 */
 export const INTERJECT_DEFAULTS: InterjectTuning = {
-  // 说过一句之后一分钟内不主动再开
-  cooldownMs: 60_000,
-  // 一分钟六条以上算密，让给别人
-  crowdedRate: 6,
-  // 累到七成就不主动开口
-  tiredAt: 0.7,
-  // 冷场十分钟她可以开一句
-  coldAfterMs: 10 * 60_000,
-  // 连着两条没人接就停
-  ignoredAfter: 2,
-  // 场面紧到七成先停
-  tenseAt: 0.7,
+  activeWindowMs: 10 * 60_000,
 }
 
 /**
- * 这一轮该不该开口
+ * 把现场写成一行可观察事实
  * @param facts - 现场
- * @param tuning - 门槛
- * @returns 结论与理由
+ * @returns 只陈述事实的一段中文
  */
-export function shouldSpeak(facts: SpeakFacts, tuning: InterjectTuning = INTERJECT_DEFAULTS): SpeakVerdict {
-  // 人家明确要她别说，那就不说，别的条件一概不看
-  if (facts.silenced) return { speak: false, why: 'silenced' }
-  if (facts.directed.isPrivate) return { speak: true, why: 'private' }
-  if (facts.directed.at || facts.directed.poke || facts.directed.replyToBot) return { speak: true, why: 'addressed' }
-  if (facts.fatigueLevel >= tuning.tiredAt) return { speak: false, why: 'tired' }
-  if (facts.sinceSelfSpokeMs !== null && facts.sinceSelfSpokeMs < tuning.cooldownMs) {
-    return { speak: false, why: 'cooldown' }
-  }
-  // 点名但没直接对着她说：算搭话的门槛，仍受冷却与场面约束
-  if (facts.named) return { speak: true, why: 'addressed' }
-  if (facts.ambient.speakingRate >= tuning.crowdedRate) return { speak: false, why: 'crowded' }
-  if (facts.ambient.lastHumanAgeMs !== null && facts.ambient.lastHumanAgeMs >= tuning.coldAfterMs) {
-    return { speak: true, why: 'cold' }
-  }
-  return { speak: false, why: 'notAddressed' }
+export function renderSpeakFacts(facts: SpeakFacts): string {
+  const parts = [
+    facts.directed.isPrivate ? '这是一对一的对话' : '',
+    facts.directed.at ? '这几条在叫你' : '',
+    facts.directed.poke ? '有人在戳你' : '',
+    facts.directed.replyToBot ? '有人在回你刚说过的话' : '',
+    facts.named ? '文本里出现名字' : '',
+    facts.ambient.humanCount > 0 ? `最近一段有 ${facts.ambient.humanCount} 条真人发言，来自 ${facts.ambient.speakerCount} 个人` : '',
+    facts.ambient.lastHumanAgeMs === null ? '' : `上一条真人发言是 ${Math.round(facts.ambient.lastHumanAgeMs / 60_000)} 分钟前`,
+    `现场每分钟约 ${Math.round(facts.ambient.speakingRate)} 条消息`,
+    `身体累的程度是 ${Math.round(facts.fatigueLevel * 100)} 分`,
+    facts.sinceSelfSpokeMs === null ? '你还没在这里成功发过言' : `你上次成功发言是 ${Math.round(facts.sinceSelfSpokeMs / 60_000)} 分钟前`,
+    `你最近的说话倾向是 ${Math.round((facts.talkativeness ?? 0.5) * 100)} 分`,
+    facts.silenced ? '对方明确表示要安静' : '',
+  ].filter(part => part !== '')
+  return `【插话现场】\n${parts.join('\n')}\nRULE: decide_with_scene_and_own_judgment`
 }
 
 /**
- * 开口之后什么时候闭嘴
+ * 把这一轮说到哪了写成一行可观察事实
  * @param facts - 这一轮说到哪了
- * @param tuning - 门槛
- * @returns 结论与理由
+ * @returns 只陈述事实的一段中文
  */
-export function shouldStop(facts: StopFacts, tuning: InterjectTuning = INTERJECT_DEFAULTS): StopVerdict {
-  if (facts.silenced) return { stop: true, why: 'silenced' }
-  if (facts.spoken >= facts.budget) return { stop: true, why: 'budget' }
-  if (facts.ignoredStreak >= tuning.ignoredAfter) return { stop: true, why: 'ignored' }
-  if (facts.tension >= tuning.tenseAt) return { stop: true, why: 'tense' }
-  return { stop: false }
+export function renderStopFacts(facts: StopFacts): string {
+  const parts = [
+    `这一轮已经说了 ${facts.spoken} 条，上限是 ${facts.budget} 条`,
+    `连着 ${facts.ignoredStreak} 条没等到人接`,
+    `场面紧的程度是 ${Math.round(facts.tension * 100)} 分`,
+    facts.silenced ? '对方明确表示要安静' : '',
+  ].filter(part => part !== '')
+  return `【收尾现场】\n${parts.join('\n')}\nRULE: decide_with_scene_and_own_judgment`
 }

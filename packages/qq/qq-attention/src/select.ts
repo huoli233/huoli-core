@@ -22,8 +22,14 @@ export interface Candidate {
 /** 一个会话的事实集合 */
 export interface AttentionSignals {
   directed: { at: boolean; poke: boolean; isPrivate: boolean; replyToBot: boolean }
-  ambient: { humanCount: number; lastHumanAgeMs: number | null; speakingRate: number }
-  addressee: { named: boolean; confidence: number; evidence: readonly string[] }
+  ambient: { humanCount: number; speakerCount: number; lastHumanAgeMs: number | null; speakingRate: number }
+  addressee: {
+    named: boolean
+    matchedName: string
+    recentCount: number
+    confidence: number
+    evidence: readonly string[]
+  }
   novelty: { newTopic: boolean; repeated: boolean }
   fun: { evidence: string; signals: string[] }
   fatigue: { level: number; reason: string }
@@ -82,6 +88,7 @@ export function collectSignals(input: CollectInput): AttentionSignals {
   const latest = messages[messages.length - 1]
   const humans = messages.filter(isHuman)
   const recentHumans = humans.filter(message => now - message.at <= windowMs)
+  const speakerCount = new Set(recentHumans.map(message => message.senderId).filter(id => id !== '')).size
   const lastHumanAt = humans.reduce((acc, message) => Math.max(acc, message.at), 0)
   const lastHumanAgeMs = lastHumanAt > 0 ? Math.max(0, now - lastHumanAt) : null
 
@@ -92,18 +99,26 @@ export function collectSignals(input: CollectInput): AttentionSignals {
     replyToBot: latest?.replyToBot === true,
   }
 
-  const names = (input.selfNames ?? []).map(normalize).filter(name => name.length >= 2)
+  const names = (input.selfNames ?? [])
+    .map(normalize)
+    .filter(name => name.length >= 2)
+    .sort((left, right) => right.length - left.length)
   const body = latest !== undefined ? normalize(latest.text) : ''
   const evidence: string[] = []
   let named = false
+  let matchedName = ''
   for (const name of names) {
     if (!body.includes(name)) continue
     named = true
+    matchedName = name
     evidence.push(`文本里出现名字：${name}`)
     break
   }
 
   const normalizedTexts = humans.map(message => normalize(message.text).replace(/\s+/g, ''))
+  const recentCount = names.length === 0
+    ? 0
+    : normalizedTexts.filter(text => names.some(name => text.includes(name))).length
   const repeated = normalizedTexts.length >= 3
     && new Set(normalizedTexts.slice(-3)).size === 1
   const firstOfGroup = normalizedTexts.length >= 2
@@ -119,7 +134,13 @@ export function collectSignals(input: CollectInput): AttentionSignals {
     else if (text.length >= SELECT_DEFAULTS.mediumChars) funSignals.push('是中长消息')
   }
 
-  const speakingRate = recentHumans.length === 0 ? 0 : recentHumans.length / (windowMs / MS_PER_MINUTE)
+  const observedSpanMs = recentHumans.length === 0
+    ? 0
+    : Math.max(
+      MS_PER_MINUTE,
+      Math.max(...recentHumans.map(message => message.at)) - Math.min(...recentHumans.map(message => message.at)),
+    )
+  const speakingRate = observedSpanMs === 0 ? 0 : recentHumans.length / (observedSpanMs / MS_PER_MINUTE)
 
   const candidates: Candidate[] = []
   if (directed.at || directed.poke || directed.replyToBot || directed.isPrivate) {
@@ -129,7 +150,7 @@ export function collectSignals(input: CollectInput): AttentionSignals {
     candidates.push({ kind: 'reply', why: '文本里出现名字，可能在叫它' })
   }
   if (recentHumans.length >= 2 && !directed.at) {
-    candidates.push({ kind: 'join', why: `近 ${Math.round(windowMs / MS_PER_MINUTE)} 分钟有 ${recentHumans.length} 条真人发言` })
+    candidates.push({ kind: 'join', why: `近 ${Math.round(windowMs / MS_PER_MINUTE)} 分钟有 ${recentHumans.length} 条真人发言，来自 ${speakerCount} 个人` })
   }
   if (repeated) {
     candidates.push({ kind: 'observe', why: '最近三条内容重复，像在刷屏' })
@@ -143,8 +164,8 @@ export function collectSignals(input: CollectInput): AttentionSignals {
 
   return {
     directed,
-    ambient: { humanCount: recentHumans.length, lastHumanAgeMs, speakingRate },
-    addressee: { named, confidence: named ? SELECT_DEFAULTS.namedConfidence : 0, evidence },
+    ambient: { humanCount: recentHumans.length, speakerCount, lastHumanAgeMs, speakingRate },
+    addressee: { named, matchedName, recentCount, confidence: named ? SELECT_DEFAULTS.namedConfidence : 0, evidence },
     novelty: { newTopic, repeated },
     fun: { evidence: funSignals.length === 0 ? '没有特别之处' : funSignals.join('、'), signals: funSignals },
     fatigue: { level: Math.min(1, Math.max(0, input.fatigueLevel ?? 0)), reason: input.fatigueReason ?? '' },

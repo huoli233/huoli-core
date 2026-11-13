@@ -6,19 +6,14 @@ import { PROACTIVE_DEFAULTS, type GateConfig, type GateVerdict } from './score.t
 export interface GateInput {
   now: number
   config?: Partial<GateConfig>
-  lastSpokenAt: number
-  todayCount: number
-  humanActive: boolean
   botBusy: boolean
   hasChannel: boolean
-  /** 身体给的想开口的劲，零到一，没接上身体时为空 */
-  proactiveBias?: number
   /** 现在是不是睡着，没接上身体时为空 */
   asleep?: boolean
   /** 睡着时预计醒来的毫秒时间戳，零表示没排期 */
   wakeAfter?: number
-  /** 刚被吵醒、还没缓过来时为真，没接上身体时为空 */
-  waking?: boolean
+  /** 身体已经需要收口休息时为真 */
+  resting?: boolean
 }
 
 /** 一小时多少分钟，单位换算，不随配置改 */
@@ -34,25 +29,6 @@ function toMinutes(hhmm: string): number {
   const minute = Number(parts[1])
   if (!Number.isFinite(hour) || !Number.isFinite(minute)) return -1
   return hour * MINUTES_PER_HOUR + minute
-}
-
-/**
- * 两次开口之间隔多久：取配置里那段区间的中点，同样的配置永远得到同样的数
- * @param config - 关卡配置
- * @returns 毫秒数
- */
-export function cooldownMs(config: GateConfig): number {
-  const span = Math.max(0, config.gapMaxMs - config.gapMinMs)
-  return config.gapMinMs + Math.floor(span / 2)
-}
-
-/**
- * 这一天最多开口几次：只按配置里的上限，不由身体读数改
- * @param config - 关卡配置
- * @returns 次数
- */
-export function dailyCapOf(config: GateConfig): number {
-  return Math.min(config.dailyMax, Math.max(config.dailyFloor, config.dailyMax))
 }
 
 /**
@@ -91,6 +67,15 @@ export function runGates(input: GateInput): GateVerdict {
       ...wakeAfter > 0 ? { retryAt: wakeAfter } : {},
     }
   }
+  if (input.resting === true) {
+    return {
+      ok: false,
+      code: 'proactive.resting',
+      reason: '身体已经该休息了',
+      hint: '先安静一会儿，等身体缓过来再想主动开口',
+      retryAt: input.now + config.restRetryMs,
+    }
+  }
   if (!input.hasChannel) return { ok: false, code: 'proactive.no_channel', reason: '没有能发出去的通道', hint: '先把通道那一行装上' }
   if (input.botBusy) {
     return { ok: false, code: 'proactive.busy', reason: '正在说话', hint: '等这一轮说完再问', retryAt: input.now + config.busyRetryMs }
@@ -100,15 +85,7 @@ export function runGates(input: GateInput): GateVerdict {
     return { ok: false, code: 'proactive.quiet', reason: '现在是安静时段', hint: '等安静时段过去', retryAt: endOfQuiet(input.now, config.quietEnd) }
   }
 
-  if (input.todayCount >= dailyCapOf(config)) {
-    return { ok: false, code: 'proactive.day_full', reason: '今天主动开口够了', hint: '明天再说', retryAt: startOfNextDay(input.now) }
-  }
-
-  const gap = cooldownMs(config)
-  if (input.lastSpokenAt > 0 && input.now - input.lastSpokenAt < gap) {
-    return { ok: false, code: 'proactive.too_soon', reason: '上次开口还不久', hint: '等冷却过去', retryAt: input.lastSpokenAt + gap }
-  }
-
+  // 社交时机交给模型；这里只执行显式安静设置和运行状态约束
   return { ok: true }
 }
 
@@ -126,14 +103,4 @@ export function endOfQuiet(now: number, end: string): number {
   const target = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, to % MINUTES_PER_HOUR, 0, 0)
   if (target.getTime() <= now) target.setDate(target.getDate() + 1)
   return target.getTime()
-}
-
-/**
- * 第二天开始的时间
- * @param now - 现在的时间
- * @returns 算出来的数
- */
-export function startOfNextDay(now: number): number {
-  const date = new Date(now)
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0, 0).getTime()
 }

@@ -3,7 +3,7 @@
 import path from 'node:path'
 import type { Context } from '@huoli/cordis'
 import { resolveHuoliHome } from '@huoli/huoli-home-paths'
-import { evaluateOutcome, type CloseInput, type CloseNote, type Outcome, type Reflection } from './close.ts'
+import { evaluateOutcome, stripQuotedLines, type CloseInput, type CloseNote, type Outcome, type Reflection } from './close.ts'
 import { createContinuityStore, type ContinuityStore } from './store.ts'
 import { registerContinuityTools } from './tools.ts'
 
@@ -66,8 +66,10 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (note === undefined) return ''
       const when = new Date(note.closedAt).toLocaleString('zh-CN', { hour12: false })
       const parts = [`上次聊到 ${when}`]
-      if (note.summary !== '') parts.push(`收在：${note.summary}`)
-      if (note.nextOpening !== '') parts.push(`下次可以：${note.nextOpening}`)
+      // 收尾摘要只摆话题，不把任何一方说过的原话回灌回来，免得照着复读
+      const summary = stripQuotedLines(note.summary)
+      if (summary !== '') parts.push(`收在：${summary}`)
+      if (note.nextOpening !== '') parts.push(`下次可以：${stripQuotedLines(note.nextOpening)}`)
       return parts.join('｜')
     },
     judge(messages) {

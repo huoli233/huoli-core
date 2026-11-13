@@ -131,6 +131,52 @@ it('keeps absent caches unprepared and reports unreadable caches as retryable fa
   expect(prepareRuntime).toHaveBeenCalledOnce()
 })
 
+it('queues preparation requested during cache inspection and starts it exactly once', async () => {
+  const { worker, spawn } = await fixture()
+  const entered = Promise.withResolvers<undefined>(), released = Promise.withResolvers<undefined>()
+  vi.mocked(inspectRuntime).mockImplementationOnce(async (_config, signal) => {
+    entered.resolve(undefined)
+    await released.promise
+    signal.throwIfAborted()
+    return undefined
+  })
+
+  worker.inspect()
+  await entered.promise
+  worker.prepare()
+  worker.prepare()
+  expect(prepareRuntime).not.toHaveBeenCalled()
+  released.resolve(undefined)
+
+  await vi.waitFor(() => { expect(worker.snapshot().phase).toBe('ready') }, { timeout: 10000 })
+  expect(inspectRuntime).toHaveBeenCalledOnce()
+  expect(prepareRuntime).toHaveBeenCalledOnce()
+  expect(spawn).toHaveBeenCalledOnce()
+  expect(worker.snapshot().phase).toBe('ready')
+})
+
+it('clears preparation queued during cache inspection when cancellation wins', async () => {
+  const { worker, spawn } = await fixture()
+  const entered = Promise.withResolvers<undefined>(), released = Promise.withResolvers<undefined>()
+  vi.mocked(inspectRuntime).mockImplementationOnce(async (_config, signal) => {
+    entered.resolve(undefined)
+    await released.promise
+    signal.throwIfAborted()
+    return undefined
+  })
+
+  worker.inspect()
+  await entered.promise
+  worker.prepare()
+  const cancelled = worker.cancel()
+  released.resolve(undefined)
+  await cancelled
+
+  expect(worker.snapshot().phase).toBe('cancelled')
+  expect(prepareRuntime).not.toHaveBeenCalled()
+  expect(spawn).not.toHaveBeenCalled()
+})
+
 it('cancels cache inspection and joins it without late notifications when the provider unloads', async () => {
   const { worker } = await fixture(), entered = Promise.withResolvers<undefined>(), released = Promise.withResolvers<undefined>()
   vi.mocked(inspectRuntime).mockImplementationOnce(async (_config, signal) => {

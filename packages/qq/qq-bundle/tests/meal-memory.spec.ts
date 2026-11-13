@@ -90,7 +90,8 @@ afterEach(async () => {
 
 describe('一顿饭写一条记忆', () => {
   it('正文带时刻与吃的东西，来源是聊天，重要度按配置', async () => {
-    const { vitals, memory, live } = await mount({ mealMemoryImportance: 42 })
+    // 这条只看「配置项怎么落到重要度」，情绪抬升由情绪那组用例单独测
+    const { vitals, memory, live } = await mount({ mealMemoryImportance: 42, emotion: { memoryLift: false } })
 
     vitals.react('给你点了碗面', at(11, 45))
 
@@ -106,7 +107,7 @@ describe('一顿饭写一条记忆', () => {
   })
 
   it('不给配置时用默认值表里的那一档', async () => {
-    const { vitals, memory } = await mount()
+    const { vitals, memory } = await mount({ emotion: { memoryLift: false } })
 
     vitals.react('我去吃饭了', at(8, 5))
 

@@ -652,6 +652,34 @@ describe('client bundle activation', () => {
     expect(construct([currentName]).graph().entries.map(entry => entry.id)).toEqual([currentName])
   })
 
+  it('recognizes a legacy client declaration as a web client row', () => {
+    const packageName = '@fixture/legacy-client-field'
+    const clientPath = writePackage(packageName, {
+      dsh: { client: { platform: 'web', inject: [] } },
+    })
+    mkdirSync(dirname(clientPath), { recursive: true })
+    writeFileSync(clientPath, 'module.exports = {}\n')
+
+    const service = construct([packageName])
+    expect(service.graph().entries.map(entry => entry.id)).toEqual([packageName])
+    expect(service.clientPath(packageName)).toBe(clientPath)
+  })
+
+  it('prefers the current client declaration when both keys are present', () => {
+    const packageName = '@fixture/preferred-client-field'
+    const clientPath = writePackage(packageName, {
+      huoli: { client: { platform: 'web', inject: ['@fixture/current'] } },
+      dsh: { client: { platform: 'web', inject: ['@fixture/legacy'] } },
+    })
+    mkdirSync(dirname(clientPath), { recursive: true })
+    writeFileSync(clientPath, 'module.exports = {}\n')
+
+    expect(construct([packageName]).graph().entries[0]).toMatchObject({
+      id: packageName,
+      inject: ['@fixture/current'],
+    })
+  })
+
   it('groups missing bundles under one source-build instruction with a package/path list', () => {
     const firstName = '@fixture/missing-first'
     const secondName = '@fixture/missing-second'

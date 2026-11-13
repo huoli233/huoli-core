@@ -16,6 +16,7 @@ import type {
   LedgerViolation,
   MirrorResult,
   NarrativeTick,
+  PanelAsrStatus,
   ProjectInput,
   RollbackCheck,
   RollbackOutcome,
@@ -28,6 +29,7 @@ import type {
   WeeklyReview,
   WriteOutcome,
 } from './types.ts'
+import type { PersonaProfile, PersonaProfileInput } from './identity.ts'
 
 export { apply, inject, name, qqSelfOf } from './assembly.ts'
 export { CLAUSES, renderConstitution } from './constitution.ts'
@@ -35,7 +37,22 @@ export { DAY_LINES, localDay } from './day.ts'
 export { DEFAULTS, DIR_NAME, resolveSelfDir, resolveSettings } from './defaults.ts'
 export { ACTION_KINDS, judgeComment, judgePostLevel, judgePrivate, POST_LEVELS, stageAllows } from './grade.ts'
 export { generatePanelFile, panelFromStore } from './generate.ts'
-export { IDENTITY_CLAIMS, identityHistory, identityOf, isIdentityClaim, recordIdentity, toIdentity } from './identity.ts'
+export {
+  createPersonaCatalog,
+  IDENTITY_CLAIMS,
+  identityHistory,
+  identityOf,
+  isIdentityClaim,
+  recordIdentity,
+  toIdentity,
+} from './identity.ts'
+export type {
+  PersonaCatalog,
+  PersonaCatalogState,
+  PersonaProfile,
+  PersonaProfileInput,
+  PersonaTone,
+} from './identity.ts'
 export { requireKeys, STAGE_ACTION, stageAdvanceApproved } from './keys.ts'
 export { auditLedger, createLedger } from './ledger.ts'
 export type { LedgerOptions, SelfLedger } from './ledger.ts'
@@ -92,9 +109,11 @@ export type {
   NarrativeState,
   NarrativeTick,
   NarrativeTickReason,
+  PanelAsrStatus,
   PanelDayRow,
   PanelInput,
   PanelLabels,
+  PanelLive,
   PanelState,
   PostLevelFacts,
   PrivateFacts,
@@ -134,6 +153,14 @@ export interface QqSelfSeam {
   panelPort(): number
   /** 接上身体，面板的此刻只从这里取 */
   useVitals(port: VitalsPort | undefined): void
+  /** 接上全局急停控制 */
+  useEmergencyControl(port: EmergencyControlPort | undefined): void
+  /** 接上互动模式控制，面板只显示当前层提供的三种模式 */
+  useModeControl(port: ModeControlPort | undefined): void
+  /** 面板能拧的行为约束 */
+  useLimitsControl(port: LimitsControlPort | undefined): void
+  /** 接上关系与诊断查看，只供本机面板查询 */
+  useQqPanel(port: QqPanelPort | undefined): void
   /** 接上记忆库，镜像只往那里写 */
   useMemory(port: SelfMirrorPort | undefined): void
   /** 把还没镜过的三类记录写进记忆库 */
@@ -274,6 +301,71 @@ export interface QqSelfSeam {
    * @returns 从哪一份恢复、现场存成了哪一份，或一个带原因与提示的码
    */
   restorePersona(name: string): RollbackOutcome
+  /** 当前会话选中的角色补充档案 */
+  personaProfile(chatKey: string): PersonaProfile | undefined
+  /** 所有角色补充档案 */
+  personaProfiles(): PersonaProfile[]
+  /** 新建或修改一份角色补充档案 */
+  savePersonaProfile(input: PersonaProfileInput, at?: number): WriteOutcome
+  /** 选全局默认角色 */
+  setActivePersona(id: string): WriteOutcome
+  /** 给某个群或私聊绑定角色，空串表示解除绑定 */
+  bindPersona(chatKey: string, id: string): WriteOutcome
+  /** 删除一份角色补充档案 */
+  removePersonaProfile(id: string): WriteOutcome
+}
+
+/** 面板能操作的全局急停 */
+export interface EmergencyControlPort {
+  /** 当前状态 */
+  state(): { active: boolean; at: number; reason: string }
+  /** 打开急停 */
+  stop(reason: string): unknown
+  /** 解除急停 */
+  resume(): unknown
+}
+
+/** 面板能切换的互动模式 */
+export interface ModeControlPort {
+  state(): { mode: string; changedAt: number }
+  options: readonly { value: string; label: string; description?: string }[]
+  set(mode: string): unknown
+}
+
+/** 面板能拧的几个约束：静默多久、还开不开口、每小时几条、几点睡 */
+export interface LimitsControlPort {
+  /** 现在这几项各是多少 */
+  state(): LimitsState
+  /** 改其中任意几项，返回改完的结果 */
+  set(patch: Partial<LimitsState>): LimitsState
+}
+
+/** 面板上能改的行为约束 */
+export interface LimitsState {
+  /** 还要静默多少分钟，0 表示不静默 */
+  quietMinutes: number
+  /** 关掉之后完全不主动开口，只回人 */
+  proactiveAllowed: boolean
+  /** 每小时最多主动开口几次 */
+  proactivePerHour: number
+  /** 几点开始睡 */
+  sleepFrom: number
+  /** 几点醒 */
+  sleepUntil: number
+}
+
+/** QQ 关系与诊断的本机只读出口 */
+export interface QqPanelPort {
+  relation(personId: string, chatKey: string): unknown
+  timeline(traceId: string, limit: number): unknown
+  asrStatus?(): PanelAsrStatus | undefined
+  /** DSH 与 QQ 运行身体的真实健康读数 */
+  health?(): {
+    score: number
+    status: string
+    checkedAt: number
+    issues: readonly string[]
+  } | undefined
 }
 
 /** 这一行接受的配置 */
@@ -290,6 +382,12 @@ export interface Config {
   personaFile?: string
   /** 第一次启动时用来落成文件的那段人格，文件已经在就不覆盖 */
   personaSeed?: string
+  /** 角色补充档案文件，不填就放在自我层目录下的 persona-profiles.json */
+  personaProfilesFile?: string
+  /** 首次启动时写入的角色补充档案；已有同编号不覆盖 */
+  personaProfiles?: readonly PersonaProfileInput[]
+  /** 第一次启动时默认选哪个角色 */
+  activePersonaId?: string
   /** 主会话的键，不配就哪个会话都不放进 */
   mainChatKey?: string
   /** 只读面板出口绑哪个端口，默认 0 表示不开；开了只绑回环地址 */

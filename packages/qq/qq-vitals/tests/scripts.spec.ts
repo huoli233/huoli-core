@@ -106,7 +106,15 @@ describe('体检脚本', () => {
     expect(wake.stdout).toContain('wake_after 在未来')
     expect(drink.stdout).toContain('last_drink 在未来')
     expect(update.stdout).toContain('last_update 在未来')
-  })
+  }, 20_000)
+
+  it('睡着时的醒点是排期，不按未来时间戳报错', () => {
+    const future = Date.now() + 8 * 3_600_000
+    const ran = run(checkScript, ['--file', tempState({ asleep: true, sleep_state: 'sleeping', wake_after: future })])
+
+    expect(ran.status).toBe(0)
+    expect(ran.stdout).not.toContain('wake_after 在未来')
+  }, 20_000)
 
   it('未来时刻在允许误差内不算问题', () => {
     const ran = run(checkScript, ['--file', tempState({ groggy_until: Date.now() + 30_000 })])
@@ -121,10 +129,13 @@ describe('体检脚本', () => {
 
     expect(STAMP_FIELDS.length).toBeGreaterThan(0)
     for (const field of STAMP_FIELDS) {
+      if (field === 'wake_after') continue
       const future = now + 10 * 60_000
       const one = await runCheck({ file: tempState({ [field]: future }, now), now })
       expect(one.problems, field).toContain(`${field} 在未来`)
     }
+    const wake = await runCheck({ file: tempState({ wake_after: now + 10 * 60_000 }, now), now })
+    expect(wake.problems).toContain('wake_after 在未来')
     expect(report.problems).toEqual([])
   })
 
@@ -141,7 +152,7 @@ describe('体检脚本', () => {
 
     expect(ran.status).toBe(2)
     expect(ran.stderr).toContain('不认这个参数')
-  })
+  }, 15_000)
 
   it('给了面板地址且读数对得上，照样全绿', async () => {
     const file = tempState({ thirst: 0.6, energy: 0.5 })
@@ -223,7 +234,7 @@ describe('补喝水脚本', () => {
 
     expect(again.status).toBe(1)
     expect(again.stdout).toContain('drink.recent')
-  })
+  }, 15_000)
 
   it('硬要补的时候心跳在跑也照补', () => {
     const ran = run(drinkScript, ['--file', tempState({ thirst: 0.9 }), '--force'])

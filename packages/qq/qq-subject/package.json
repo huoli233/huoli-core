@@ -22,12 +22,14 @@
   "peerDependencies": {
     "@huoli/cordis": "workspace:~",
     "@huoli/huoli-home-paths": "workspace:*",
-    "@huoli/huoli-system-prompt": "workspace:*"
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*"
   },
   "devDependencies": {
     "@huoli/cordis": "workspace:~",
     "@huoli/huoli-home-paths": "workspace:*",
-    "@huoli/huoli-system-prompt": "workspace:*"
+    "@huoli/huoli-system-prompt": "workspace:*",
+    "@huoli/huoli-tools": "workspace:*"
   },
   "dependencies": {
     "@huoli/huoli-qq-policy": "workspace:*"

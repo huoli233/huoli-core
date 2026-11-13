@@ -100,7 +100,7 @@ async function mount(config: Config = {}, options: MountOptions = {}): Promise<M
     healthLogFile: path.join(dir, 'health.log'),
     queueFile: path.join(dir, 'queue.json'),
   })
-  applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999' })
+  applyChannel(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999', sentLedgerFile: path.join(dir, 'sent.json') })
   if (options.active !== false) qqSubjectOf(ctx)?.store.setActive(CHAT)
   const vitals = qqVitalsOf(ctx)
   const memory = qqMemoryOf(ctx)
@@ -121,7 +121,14 @@ async function mount(config: Config = {}, options: MountOptions = {}): Promise<M
       off()
     }
   }
-  applyBundle(ctx, { maxSteps: 5, dailySweepAt: '04:00', decisionsFile: path.join(dir, 'decisions.jsonl'), ...config })
+  // 这一组只看梦境那一条路，情绪抬升另有自己的用例
+  applyBundle(ctx, {
+    maxSteps: 5,
+    dailySweepAt: '04:00',
+    decisionsFile: path.join(dir, 'decisions.jsonl'),
+    emotion: { memoryLift: false },
+    ...config,
+  })
   return {
     ctx,
     memory,

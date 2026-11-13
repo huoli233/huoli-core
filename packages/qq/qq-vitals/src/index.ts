@@ -17,7 +17,7 @@ import { renderPrompt } from './render.ts'
 import { scarFactOf, type ScarFact } from './scar.ts'
 import { createVitalsStore } from './store.ts'
 import type { VitalsState } from './types.ts'
-import { mealName, type WordLists } from './words.ts'
+import { mealName, WORDS_PRESET, type WordLists } from './words.ts'
 
 export type { Tuning } from './defaults.ts'
 export { biasUnit, DEFAULTS, emptyState, resolveTuning } from './defaults.ts'
@@ -46,7 +46,7 @@ export type { ScarFact } from './scar.ts'
 export {
   EMPTY_WORDS, isDrink, isMeal, mealName, WORDS, WORDS_PRESET, type WordLists,
 } from './words.ts'
-export { createVitalsStore } from './store.ts'
+export { createVitalsStore, VITALS_STORE_DEFAULTS } from './store.ts'
 export type { VitalsStoreOptions, VitalsStore } from './store.ts'
 export type {
   Baseline, CyclePhase, DreamKind, DreamMood, DreamTuning, EmotionBlend, EmotionBlendTuning, ExistenceTuning,
@@ -92,7 +92,7 @@ export interface QqVitalsSeam {
   /** 记一句话：写回身体并落盘，冷却窗口内的重复写法不再计入 */
   react(text: string, at?: number): void
   /** 按模型报的事件写回身体：一个事件只做一次，冷却照样管 */
-  reactEvents(events: readonly BodyEvent[], at?: number): void
+  reactEvents(events: readonly BodyEvent[], at?: number, chatKey?: string): void
   /** 放进外部余额档位：给了就按分档朝目标走，给 undefined 表示这一路没有来源 */
   setBalance(level: number | undefined): void
   /**
@@ -128,10 +128,14 @@ export interface Config {
   file?: string
   /** 数据根目录，不给就用默认的家目录 */
   huoliHome?: string
+  /** 普通状态写入的最短落盘间隔，默认 5000 毫秒；设为 0 每次都写 */
+  writeIntervalMs?: number
   /** 想改哪些默认参数 */
   tuning?: TuningOverride
   /** 口语词表：只写要换的那几张，没写的还用默认 */
   words?: Partial<WordLists>
+  /** 是否启用内置口语词表作为模型事件之外的备用事实来源 */
+  wordPreset?: boolean
 }
 
 const seams = new WeakMap<Context, QqVitalsSeam>()
@@ -166,10 +170,18 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 词表跟着参数一起合：只换一张表时，别的表还是默认那份
   const tuning = resolveTuning({
     ...config.tuning,
-    ...config.words === undefined ? {} : { words: { ...config.tuning?.words, ...config.words } },
+    words: {
+      ...config.wordPreset === true ? WORDS_PRESET : {},
+      ...config.tuning?.words,
+      ...config.words,
+    },
   })
   const file = config.file ?? join(resolveHuoliHome(config.huoliHome), 'data', 'qq-vitals.json')
-  const store = createVitalsStore({ file, tuning })
+  const store = createVitalsStore({
+    file,
+    tuning,
+    ...config.writeIntervalMs === undefined ? {} : { writeIntervalMs: config.writeIntervalMs },
+  })
   const meals = new Set<(fact: MealFact) => void>()
   const drinks = new Set<(fact: DrinkFact) => void>()
   const cycles = new Set<(fact: CycleFact) => void>()
@@ -177,7 +189,6 @@ export function apply(ctx: Context, config: Config = {}): void {
   const dreams = new Set<(fact: DreamFact) => void>()
   const scars = new Set<(fact: ScarFact) => void>()
   const wakes = new Set<(fact: WakeFact) => void>()
-  let variant = 0
   let balance: number | undefined
   let existence: ExistenceFacts | undefined
 
@@ -232,9 +243,9 @@ export function apply(ctx: Context, config: Config = {}): void {
       return current()
     },
     render() {
-      const text = renderPrompt(current(), tuning, variant)
-      variant += 1
-      return text
+      // 换措辞按天轮换，别每轮变一句，否则提示词前缀每轮都不同、缓存全失效
+      const day = Math.floor(Date.now() / 86_400_000)
+      return renderPrompt(current(), tuning, day % 6)
     },
     cycleBounds() {
       return [tuning.cycleMenstrualEnd, tuning.cycleFollicularEnd, tuning.cycleOvulationEnd, tuning.cycleLutealEnd]
@@ -270,10 +281,12 @@ export function apply(ctx: Context, config: Config = {}): void {
         const next: VitalsState = { ...settled }
         if (dream !== undefined) next.dream_applied_at = dream.at
         if (cycleStart !== undefined) next.cycle_start_applied_at = cycleStart.at
-        store.write(next)
         if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: mealName(text, tuning.words) }
         // 只在这一杯真写进去了才产事实：冷却挡掉的那次 last_drink 不动
         if (next.last_drink !== raw.last_drink) drink = { at: next.last_drink, name: next.last_drink_name }
+        const significant = dream !== undefined || scar !== undefined || cycleStart !== undefined
+          || meal !== undefined || drink !== undefined
+        store.write(next, significant)
       } catch (error) {
         ctx.logger('qq-vitals').warn('消息写盘失败：%s', String(error))
         return
@@ -284,7 +297,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (scar !== undefined) notify(scars, '疤痕', scar)
       if (cycleStart !== undefined) notify(cycles, '开经', cycleStart)
     },
-    reactEvents(events, at) {
+    reactEvents(events, at, _chatKey) {
       if (events.length === 0) return
       const raw = store.read()
       const moment = Math.max(at ?? Date.now(), raw.last_update)
@@ -304,10 +317,12 @@ export function apply(ctx: Context, config: Config = {}): void {
         const next: VitalsState = { ...settled }
         if (dream !== undefined) next.dream_applied_at = dream.at
         if (cycleStart !== undefined) next.cycle_start_applied_at = cycleStart.at
-        store.write(next)
         // 只有真吃进去、真喝下去才产事实：冷却挡掉的那次不动这两个时刻
         if (next.meal_applied_at !== raw.meal_applied_at) meal = { at: next.meal_applied_at, name: '饭' }
         if (next.last_drink !== raw.last_drink) drink = { at: next.last_drink, name: next.last_drink_name }
+        const significant = dream !== undefined || scar !== undefined || cycleStart !== undefined
+          || meal !== undefined || drink !== undefined
+        store.write(next, significant)
       } catch (error) {
         ctx.logger('qq-vitals').warn('事件写盘失败：%s', String(error))
         return

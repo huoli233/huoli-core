@@ -4,7 +4,16 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
-import { addSlang, defaultSlangFile, findSlangs, readSlangs } from '../src/slang.ts'
+import {
+  addSlang,
+  defaultSlangFile,
+  extractSlangCandidates,
+  findSlangs,
+  pendingSlangs,
+  readSlangs,
+  reviewSlang,
+  suggestSlangs,
+} from '../src/slang.ts'
 import { apply } from '../src/index.ts'
 
 const dirs: string[] = []
@@ -84,6 +93,39 @@ describe('学到的词', () => {
   it('默认路径落在数据目录下', () => {
     expect(defaultSlangFile()).toContain('qq-slang.json')
   })
+
+  it('近期群消息里重复出现的词先变成待审核候选', () => {
+    const messages = ['今天开黑吗', '晚上继续开黑', '开黑记得叫我']
+    const candidates = extractSlangCandidates(messages, {
+      minMessages: 2,
+      minOccurrences: 2,
+      minWordChars: 2,
+      maxWordChars: 8,
+    })
+
+    expect(candidates.some(item => item.word === '开黑')).toBe(true)
+  })
+
+  it('候选不会直接进入查询，审核通过后才算学会', () => {
+    const file = tempFile()
+    suggestSlangs(file, [{ word: '开黑', evidenceCount: 3 }], 'group:1', 1_000)
+
+    expect(findSlangs(file, 10)).toEqual([])
+    expect(pendingSlangs(file, 10)[0]?.word).toBe('开黑')
+    const approved = reviewSlang(file, '开黑', 'approve', '一起打游戏', '', 2_000)
+    expect(approved.ok).toBe(true)
+    expect(findSlangs(file, 10)[0]?.meaning).toBe('一起打游戏')
+  })
+
+  it('拒绝的候选不会出现在查询里', () => {
+    const file = tempFile()
+    suggestSlangs(file, [{ word: '不是词', evidenceCount: 2 }], 'group:1', 1_000)
+    const rejected = reviewSlang(file, '不是词', 'reject', '', '只是普通短语', 2_000)
+
+    expect(rejected.ok).toBe(true)
+    expect(findSlangs(file, 10)).toEqual([])
+    expect(pendingSlangs(file, 10)).toEqual([])
+  })
 })
 
 class BurstSocket {
@@ -117,6 +159,10 @@ class BurstSocket {
     this.emit('open')
   }
 
+  deliver(raw: Record<string, unknown>): void {
+    this.emit('message', JSON.stringify(raw))
+  }
+
   private emit(type: string, data?: string): void {
     for (const handler of this.handlers.get(type) ?? []) handler(data === undefined ? {} : { data })
   }
@@ -133,13 +179,20 @@ function sentTexts(): string[] {
   })
 }
 
-function mount(): Map<string, ToolDefinition> {
+function mount(patch: Record<string, unknown> = {}): Map<string, ToolDefinition> {
   vi.stubGlobal('WebSocket', BurstSocket)
   const ctx = new Context()
   const tools = new Map<string, ToolDefinition>()
   ctx.accessor('tools', { get: () => ({ register: (definition: ToolDefinition) => { tools.set(definition.name, definition); return () => {} } }) })
   ctx.logger.exporter({ levels: { default: 3 }, export: () => {} })
-  apply(ctx, { url: 'ws://127.0.0.1:6700', selfId: '999', slangFile: tempFile(), quietStart: '00:00', quietEnd: '00:00' })
+  apply(ctx, {
+    url: 'ws://127.0.0.1:6700',
+    selfId: '999',
+    slangFile: tempFile(),
+    quietStart: '00:00',
+    quietEnd: '00:00',
+    ...patch,
+  })
   BurstSocket.opened.at(-1)?.open()
   return tools
 }
@@ -152,7 +205,13 @@ describe('连发与黑话的工具', () => {
   it('三个工具都挂上了', () => {
     const tools = mount()
 
-    expect([...tools.keys()]).toEqual(expect.arrayContaining(['qq_send_burst', 'qq_slang_query', 'qq_slang_submit']))
+    expect([...tools.keys()]).toEqual(expect.arrayContaining([
+      'qq_send_burst',
+      'qq_slang_query',
+      'qq_slang_submit',
+      'qq_slang_pending',
+      'qq_slang_review',
+    ]))
   })
 
   it('连发按换行拆成几条，一条一条发出去', async () => {
@@ -167,12 +226,31 @@ describe('连发与黑话的工具', () => {
     expect(sentTexts()).toEqual(['啊？', '等下', '好'])
   })
 
+  it('一串纯标点不会从连发工具漏出去', async () => {
+    const tools = mount()
+    const burst = tools.get('qq_send_burst')
+    if (burst === undefined) throw new Error('没挂上连发的工具')
+
+    await expect(burst.execute({ lines: '？？？', gap_ms: 0 }, execOf('group:1')))
+      .rejects.toThrow(/burst.inner_only/u)
+    expect(sentTexts()).toEqual([])
+  })
+
   it('一句都没有就拒，不硬发', async () => {
     const tools = mount()
     const burst = tools.get('qq_send_burst')
     if (burst === undefined) throw new Error('没挂上连发的工具')
 
     await expect(burst.execute({ lines: '  \n  ' }, execOf('group:1'))).rejects.toThrow(/burst.empty/u)
+  })
+
+  it('好友私聊连着只发应声时拒掉', async () => {
+    const tools = mount()
+    const burst = tools.get('qq_send_burst')
+    if (burst === undefined) throw new Error('没挂上连发的工具')
+
+    await expect(burst.execute({ lines: '嗯\n在', gap_ms: 0 }, execOf('private:1')))
+      .rejects.toThrow(/burst\.empty_reply/u)
   })
 
   it('记一个词再查得到，走的是同一份词表', async () => {
@@ -187,5 +265,33 @@ describe('连发与黑话的工具', () => {
     const found = await query.execute({ query: '摸鱼' }, execOf('group:1')) as { count: number; items: { word: string }[] }
     expect(found.count).toBe(1)
     expect(found.items[0]?.word).toBe('摸鱼')
+  })
+
+  it('普通群消息攒够窗口后自动写出待审核候选', () => {
+    const file = tempFile()
+    mount({
+      slangFile: file,
+      slangWindowSize: 3,
+      slangMinMessages: 2,
+      slangMinOccurrences: 2,
+    })
+    const socket = BurstSocket.opened.at(-1)
+    if (socket === undefined) throw new Error('连接没起来')
+    const text = (body: string, id: number) => ({
+      post_type: 'message',
+      message_type: 'group',
+      group_id: 1,
+      user_id: 2,
+      sender: { card: '甲' },
+      message: body,
+      message_id: id,
+      time: Math.floor(Date.now() / 1000),
+    })
+
+    socket.deliver(text('今天开黑吗', 1))
+    socket.deliver(text('晚上继续开黑', 2))
+    socket.deliver(text('开黑记得叫我', 3))
+
+    expect(readSlangs(file).some(item => item.word === '开黑' && item.status === 'pending')).toBe(true)
   })
 })

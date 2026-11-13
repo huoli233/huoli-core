@@ -56,7 +56,7 @@ describe('等回话的超时', () => {
     expect(SilentSocket.opened[0]?.sent).toHaveLength(1)
 
     await vi.advanceTimersByTimeAsync(2)
-    await expect(sending).resolves.toMatchObject({ ok: false, code: 'channel.timeout' })
+    await expect(sending).resolves.toMatchObject({ ok: false, code: 'channel.timeout', outcome: 'unknown' })
   })
 
   it('不配就按参数表那一档', async () => {
@@ -68,6 +68,21 @@ describe('等回话的超时', () => {
     await vi.advanceTimersByTimeAsync(2)
 
     await expect(sending).resolves.toMatchObject({ ok: false, code: 'channel.timeout' })
+  })
+
+  it('请求发出后没收到回执，主动额度按保守方式记入', async () => {
+    const channel = mount({ callTimeoutMs: 2_000 })
+    const settled: boolean[] = []
+    channel.useProactiveSendQuota(() => ({
+      ok: true,
+      settle: (sent) => { settled.push(sent) },
+    }))
+    channel.start()
+    const sending = channel.send('喂', 'group:1')
+
+    await vi.advanceTimersByTimeAsync(2_001)
+    await expect(sending).resolves.toMatchObject({ ok: false, code: 'channel.timeout', outcome: 'unknown' })
+    expect(settled).toEqual([true])
   })
 
   it('配得比下限还小也按不低于下限算', async () => {

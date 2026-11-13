@@ -11,13 +11,17 @@ import type { CyclePhase, EmotionBlend, TasteRecord, VitalsState } from './types
 export interface VitalsStoreOptions {
   file: string
   tuning: Tuning
+  /** 普通状态写入的最短落盘间隔；0 表示每次都写 */
+  writeIntervalMs?: number
   now?: () => number
 }
+
+export const VITALS_STORE_DEFAULTS = { writeIntervalMs: 5_000 } as const
 
 /** 这一份状态的读写口 */
 export interface VitalsStore {
   read(): VitalsState
-  write(state: VitalsState): void
+  write(state: VitalsState, immediate?: boolean): void
 }
 
 // 文件里的样子，带版本号方便以后改格式
@@ -136,6 +140,39 @@ function sanitize(raw: unknown, fallback: VitalsState): VitalsState {
   return state
 }
 
+function validStateRecord(raw: unknown, fallback: VitalsState): raw is Record<string, unknown> {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return false
+  const record = raw as Record<string, unknown>
+  // Version 1 snapshots may predate fields added later; the stable core anchors
+  // distinguish a real older snapshot from an empty or unrelated object.
+  if (!Object.hasOwn(record, 'last_update') || !Object.hasOwn(record, 'dopamine')) return false
+  const fields = Object.keys(fallback).filter((key): key is keyof VitalsState => Object.hasOwn(fallback, key))
+  for (const field of fields) {
+    if (!Object.hasOwn(record, field)) continue
+    const value = record[field]
+    const expected: unknown = fallback[field]
+    if (expected === null) {
+      if (value !== null && toTaste(value) === null) return false
+    } else if (Array.isArray(expected)) {
+      if (!Array.isArray(value)) return false
+    } else if (typeof expected === 'number') {
+      if (typeof value !== 'number' || !Number.isFinite(value)) return false
+    } else if (typeof expected === 'string' || typeof expected === 'boolean') {
+      if (typeof value !== typeof expected) return false
+    } else {
+      return false
+    }
+  }
+  return true
+}
+
+function restoredState(raw: unknown, fallback: VitalsState): VitalsState | undefined {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const stored = raw as Record<string, unknown>
+  if (stored.version !== 1 || !validStateRecord(stored.state, fallback)) return undefined
+  return sanitize(stored.state, fallback)
+}
+
 // 先读本体，再读备份，最后回默认值
 function load(file: string, tuning: Tuning, at: number): VitalsState {
   const fallback = emptyState(tuning, at)
@@ -143,8 +180,9 @@ function load(file: string, tuning: Tuning, at: number): VitalsState {
     const text = readText(candidate)
     if (text === undefined || text.trim().length === 0) continue
     try {
-      const parsed = JSON.parse(text) as { state?: unknown }
-      return sanitize(parsed.state, fallback)
+      const parsed: unknown = JSON.parse(text)
+      const restored = restoredState(parsed, fallback)
+      if (restored !== undefined) return restored
     } catch (error) {
       // 半截的 JSON 直接跳过，去试下一份
       void error
@@ -153,10 +191,23 @@ function load(file: string, tuning: Tuning, at: number): VitalsState {
   return fallback
 }
 
-// 原子写：留旧文件当备份，临时文件改名顶上
+// 原子写：只把有效旧状态换成备份，再用临时文件替换主文件
 function save(file: string, state: VitalsState): void {
   fs.mkdirSync(path.dirname(file), { recursive: true })
-  if (fs.existsSync(file)) fs.copyFileSync(file, `${file}.bak`)
+  const current = readText(file)
+  if (current !== undefined) {
+    try {
+      const parsed: unknown = JSON.parse(current)
+      if (restoredState(parsed, state) !== undefined) {
+        const backupTemporary = `${file}.${process.pid}.bak.tmp`
+        fs.copyFileSync(file, backupTemporary)
+        fs.renameSync(backupTemporary, `${file}.bak`)
+      }
+    } catch (error) {
+      // 主文件无效时保留已有备份，不用坏文件覆盖它
+      void error
+    }
+  }
   const temporary = `${file}.${process.pid}.tmp`
   const body: StoredVitals = { version: 1, state }
   fs.writeFileSync(temporary, `${JSON.stringify(body, null, 2)}\n`, { mode: 0o600 })
@@ -170,14 +221,23 @@ function save(file: string, state: VitalsState): void {
  */
 export function createVitalsStore(options: VitalsStoreOptions): VitalsStore {
   const now = options.now ?? (() => Date.now())
+  const writeIntervalMs = options.writeIntervalMs === undefined || !Number.isFinite(options.writeIntervalMs)
+    ? VITALS_STORE_DEFAULTS.writeIntervalMs
+    : Math.max(0, Math.floor(options.writeIntervalMs))
   let state = load(options.file, options.tuning, now())
+  let lastWriteAt = now()
   return {
     read() {
       return state
     },
-    write(next) {
-      state = next
-      save(options.file, state)
+    write(next, immediate = true) {
+      if (immediate || now() - lastWriteAt >= writeIntervalMs) {
+        save(options.file, next)
+        state = next
+        lastWriteAt = now()
+      } else {
+        state = next
+      }
     },
   }
 }

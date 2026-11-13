@@ -1,5 +1,10 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { Context } from '@huoli/cordis'
+import SystemPrompt from '@huoli/huoli-system-prompt'
 import { describe, expect, it } from 'vitest'
-import { emptyState, isDrink, react, resolveTuning, WORDS_PRESET } from '../src/index.ts'
+import { apply, emptyState, isDrink, qqVitalsOf, react, resolveTuning, WORDS_PRESET } from '../src/index.ts'
 
 const AT = new Date(2026, 10, 5, 10, 0, 0).getTime()
 
@@ -42,5 +47,20 @@ describe('口语词表', () => {
 
     expect(after.thirst).toBe(before.thirst)
     expect(after.hunger).toBe(before.hunger)
+  })
+
+  it('装配时显式打开预设词表，普通消息也会产生身体事实', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qq-vitals-words-'))
+    const ctx = new Context()
+    await ctx.plugin(SystemPrompt, {})
+    apply(ctx, { file: path.join(dir, 'vitals.json'), wordPreset: true, tuning: { startDelayMs: 60 * 60_000 } })
+    const seam = qqVitalsOf(ctx)
+    if (seam === undefined) throw new Error('身体没装上')
+    const before = seam.read()
+
+    seam.react('抱抱你', AT)
+
+    expect(seam.read().oxytocin).toBeGreaterThan(before.oxytocin)
+    fs.rmSync(dir, { recursive: true, force: true })
   })
 })

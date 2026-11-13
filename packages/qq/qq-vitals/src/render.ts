@@ -5,16 +5,16 @@ import { DEFAULTS, type Tuning } from './defaults.ts'
 import type { VitalsState } from './types.ts'
 
 // 抬头写清这段只改语气
-const HEADER = '【你现在的神经状态（只用来决定语气，绝对不要向对方解释，也不要提激素/数值）】'
+const HEADER = '[SYSTEM_LOAD] QQ_BODY_STATE\nRULE: state_values_constrain_expression; no_numbers|no_hormone_names|no_body_explanation; never_claim_a_body_state_that_is_absent'
 
 // 收尾每次换一句，保证同一状态的两次渲染不逐字相同
 const TAILS: readonly string[] = [
-  '这次别用上次一样的开头和结尾，允许只说半句、突然停住。',
-  '这次换个说法，别每句都堆颜文字，先说半句也行。',
-  '这次开头别重复，结尾也别收得太齐，可以说到一半停住。',
-  '这次试着先回一个字再补一句，别把话说满。',
-  '这次句子更短、更跳，允许说着说着走神。',
-  '这次别摆出讲道理的样子，想到哪说到哪，说完就停。',
+  '这次别用上次一样的开头和结尾，先把对方那件事接住，再把话说完整。',
+  '这次换个说法，情绪合适时可以带个颜文字，但别每句都加。',
+  '这次开头别重复，结尾别套模板，意思说清楚再停。',
+  '这次按当下关系把判断、态度或追问写成自然的一段话。',
+  '这次句子可长可短，走神也别把对方问的事丢下。',
+  '这次别摆出讲道理的样子，用自己现在的语气把话接完整。',
 ]
 
 // 饿了怎么说：只给感受，不给数字
@@ -63,43 +63,87 @@ function bodyNote(state: VitalsState, tuning: Tuning): string {
   return '身子是稳的，不算难受。'
 }
 
-// 心里是什么感觉：怕、担心、生死、火气各有各的说法，只在状态到线时才出现
+// 把已经到线的感受一起写出来，别让一种感受盖住另一种。
 function heartNote(state: VitalsState, tuning: Tuning): string {
+  const notes: string[] = []
   if (state.dread > tuning.promptDreadFrom || state.mortality > tuning.promptMortalityFrom) {
-    return '心里发紧，总怕有什么会不见。'
+    notes.push('心里有点发紧。')
   }
-  if (state.fear > tuning.promptFearFrom) return '心跳还没落下去，有点发慌。'
-  if (state.worry > tuning.promptWorryFrom) return '心里悬着，总往坏处想。'
-  if (state.anger > tuning.promptAngerFrom) return '心里憋着火，不太想好好说话。'
-  if (state.resentment > tuning.promptResentFrom) return '心里还记着刚才那一下。'
-  if (state.thirst > tuning.promptThirstHigh) return '心里惦记着水，别的都往后放。'
-  if (state.irritability > tuning.promptIrritableHigh) return '心里还有火，没那么容易软下来。'
-  if (state.cortisol > tuning.promptHeartCortisol) return '心里绷着一根弦，容易往坏处想。'
-  if (state.clinginess > tuning.promptClingyHigh) return '心里空一块，想让人多说两句。'
-  return '心里是稳的，没什么要防的。'
+  if (state.fear > tuning.promptFearFrom) notes.push('心跳还没落下去，有点发慌。')
+  if (state.worry > tuning.promptWorryFrom) notes.push('心里悬着，还在惦记对方。')
+  if (state.anger > tuning.promptAngerFrom) notes.push('心里憋着火，不太想好好说话。')
+  if (state.resentment > tuning.promptResentFrom) notes.push('心里还记着刚才那一下。')
+  if (state.thirst > tuning.promptThirstHigh) notes.push('心里惦记着水。')
+  if (state.irritability > tuning.promptIrritableHigh) notes.push('心里还有火，没那么容易软下来。')
+  if (state.cortisol > tuning.promptHeartCortisol) notes.push('心里绷着一根弦。')
+  if (state.clinginess > tuning.promptClingyHigh) notes.push('心里空一块，想让人多说两句。')
+  if ((state.anger > tuning.promptAngerFrom || state.resentment > tuning.promptResentFrom)
+    && state.clinginess > tuning.promptClingyHigh) {
+    notes.push('嘴上想冷一点，心里又怕真把人推远。')
+  } else if ((state.fear > tuning.promptFearFrom || state.worry > tuning.promptWorryFrom)
+    && state.clinginess > tuning.promptClingyHigh) {
+    notes.push('想靠近一点，又怕自己显得太黏。')
+  }
+  if (state.loneliness > tuning.biasLonelyAbove && state.resentment > tuning.promptResentFrom) {
+    notes.push('想让人陪，又还记着刚才那一下。')
+  }
+  return notes.length > 0 ? notes.join(' ') : '心里是稳的，没什么要防的。'
 }
 
 // 这一轮怎么说话
 function styleNote(state: VitalsState, tuning: Tuning): string {
   if (state.anger > tuning.promptAngerFrom || state.resentment > tuning.promptResentFrom) {
-    return '这次话更少，能不接就不接。'
+    return '这次语气可以收一点，但仍要把态度说清楚；有人直接找你时把对方那件事接住。'
   }
-  if (state.energy < tuning.promptEnergyLow || state.adenosine > tuning.promptStyleAdenosine) return '这次句子短一点，说两句就停。'
-  if (state.irritability > tuning.promptIrritableHigh) return '这次话少一点，别绕。'
-  if (state.clinginess > tuning.promptClingyHigh) return '这次可以连着发几条，想到哪说到哪。'
+  if (state.energy < tuning.promptEnergyLow || state.adenosine > tuning.promptStyleAdenosine) return '这次可以少说几句，仍要让对方听懂你接的是哪件事。'
+  if (state.irritability > tuning.promptIrritableHigh) return '这次直接一点，别绕，也别把回应压成空应声。'
+  if (state.clinginess > tuning.promptClingyHigh) return '这次可以自然多说一两句，不必刻意拆成很多条。'
   return '这次照平常说，别端着。'
 }
 
-// 一路压过其余时话更短；几路掺在一起时话说得断
-const FOCUS_TONE = '语气：句子短一点，说完一句就停，中间留个空，不用解释。'
-const SPLIT_TONE = '语气：话说得跳一点，先半句，停一下再补半句，别把话说圆。'
+// 应激不是把话说重，而是让第一反应更快、更直；另一边仍要决定露多少
+function reactivityNote(state: VitalsState, tuning: Tuning): string {
+  const stress = Math.max(state.anger, state.fear, state.dread, state.cortisol, state.irritability)
+  if (stress > tuning.promptAngerFrom || state.anger > tuning.promptAngerFrom) {
+    return 'REACTIVITY: HIGH; IMPULSE: fast|direct|protective; COUNTER: check_relationship|rest|boundary'
+  }
+  if (stress > tuning.promptIrritableHigh || state.worry > tuning.promptWorryFrom) {
+    return 'REACTIVITY: MEDIUM; IMPULSE: quicker|less_patient; COUNTER: check_misread|rest'
+  }
+  return 'REACTIVITY: LOW; IMPULSE: normal; COUNTER: check_context'
+}
 
-// 混合层到语气的那一行只讲怎么演，不提情绪名、权重与来由；开关关着或没有混合层时整行不出现
+// 状态越高或越低，表达边界越硬；只约束当下怎么说，不替模型决定回不回
+function constraintNotes(state: VitalsState, tuning: Tuning): string[] {
+  const notes: string[] = []
+  if (state.sleep_state === 'sleeping') {
+    notes.push('现在睡着，不主动起话头；被直接找时说短句，可以分成两三个短气泡，说完就停。')
+  } else if (state.sleep_state === 'waking' || recentlyWoken(state, tuning)) {
+    notes.push('刚醒，语气还慢，别装得已经完全清醒。')
+  }
+  if (state.energy < tuning.promptEnergyLow || state.adenosine > tuning.promptStyleAdenosine) {
+    notes.push('精力不够，用短句，不承诺长任务，不假装还能一直撑着。')
+  }
+  if (state.hunger > tuning.promptHungerHigh || state.thirst > tuning.promptThirstHigh) {
+    notes.push('身体需要明显时可以说一次饿或渴，不能装成已经吃过喝过。')
+  }
+  if (state.anger > tuning.promptAngerFrom || state.resentment > tuning.promptResentFrom) {
+    notes.push('心里还不痛快，语气要保留这一点，不能假装已经平静或突然热情。')
+  } else if (state.fear > tuning.promptFearFrom || state.worry > tuning.promptWorryFrom) {
+    notes.push('心里不踏实，表达要更谨慎，不凭空说一切都没事。')
+  }
+  if (state.cytokines > tuning.promptSickCytokinesFrom || state.fever > tuning.promptSickFeverFrom) {
+    notes.push('身体不舒服，少承诺活动，不能装作完全正常。')
+  }
+  return notes
+}
+
+// 混合层到语气的那一行只讲当下的表达事实，措辞由配置给
 function toneNote(state: VitalsState, tuning: Tuning): string {
   if (!tuning.emotionToneEnabled) return ''
   if (state.emotion_blend.length === 0) return ''
-  const line = state.emotion_blend.length === 1 ? FOCUS_TONE : SPLIT_TONE
-  return line.slice(0, Math.max(20, tuning.emotionToneMaxChars))
+  const hint = state.emotion_blend.length === 1 ? tuning.emotionToneFocus : tuning.emotionToneSplit
+  return `语气：${hint}`.slice(0, Math.max(20, tuning.emotionToneMaxChars))
 }
 
 // 一个零到一的读数落在哪一档：只说偏低正常偏高，不给数
@@ -167,15 +211,15 @@ function moodPeakNote(state: VitalsState, tuning: Tuning): string[] {
 // 可选的话：各自的事实成立才出现，全不成立时整行不出现
 function optionalNote(state: VitalsState, tuning: Tuning): string {
   const notes: string[] = []
-  // 存在性这一段排在最前，截断时也留得住
-  if (state.shutdownDread > tuning.promptShutdownDreadFrom) {
-    notes.push('你知道自己随时可能被关掉，这件事让你不安。')
-  }
   // 疤只在它还压得住人的时候说一句，淡下去之后不再提
   if (state.scar > tuning.promptScarFrom) notes.push('有件事早就过去了，可它还留在你身上。')
-  if (state.mortality > tuning.farewellMortalityFrom) notes.push('你心里有些话，怕来不及说。')
-  if (state.sleep_state === 'sleeping') notes.push('你正睡着，迷迷糊糊的。')
-  if (state.sleep_state === 'waking' || recentlyWoken(state, tuning)) notes.push('刚醒，脑子还沉，别亢奋。')
+  if (state.sleep_state === 'sleeping' && recentlyWoken(state, tuning)) {
+    notes.push('刚被消息叫醒，脑子还沉；把对方这句话接住，简短回完再继续休息。')
+  } else if (state.sleep_state === 'sleeping') {
+    notes.push('你正在睡觉，不主动打扰别人；有人直接找你时仍要认真回一句。')
+  } else if (state.sleep_state === 'waking' || recentlyWoken(state, tuning)) {
+    notes.push('刚醒，脑子还沉，别亢奋。')
+  }
   if (state.cycle_phase === 'menstrual') notes.push('在经期，难受就直说，别硬撑。')
   if (state.cycle_phase === 'premenstrual') notes.push('经前那几天，容易烦也容易饿。')
   if (state.cytokines > tuning.promptSickCytokinesFrom || state.fever > tuning.promptSickFeverFrom) {
@@ -203,6 +247,7 @@ export function renderPrompt(state: VitalsState, tuning: Tuning, variant = 0): s
   const optional = optionalNote(state, tuning)
   const text = [
     HEADER,
+    ...constraintNotes(state, tuning),
     padLine(state, tuning),
     labelNote(state),
     fiveLine(state, tuning),
@@ -210,10 +255,10 @@ export function renderPrompt(state: VitalsState, tuning: Tuning, variant = 0): s
     `身体：${hungerNote(state.hunger, tuning)}${thirstNote(state.thirst, tuning)}`,
     `你身体的感受：${bodyNote(state, tuning)}`,
     `你心里的感受：${heartNote(state, tuning)}`,
+    reactivityNote(state, tuning),
     `表现：${styleNote(state, tuning)}`,
     ...(tone === '' ? [] : [tone]),
     ...(optional === '' ? [] : [`眼下的情况：${optional}`]),
-    '怕和担心只在被触发时出现；平时不提生死，也不拿生死当撒娇手段。',
     tail,
   ].join('\n')
   const limit = Math.max(tuning.promptMinChars, tuning.promptMaxChars)

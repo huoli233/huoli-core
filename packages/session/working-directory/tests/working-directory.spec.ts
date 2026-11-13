@@ -38,6 +38,15 @@ async function fixture(config?: (root: string) => WorkingDirectoryConfig) {
 }
 
 describe('Session working directories', () => {
+  it('can keep directory service available without exposing cwd in model context', async () => {
+    await using f = await fixture(root => ({ defaultDirectory: root, promptContext: false }))
+
+    const assembly = await f.ctx.systemPrompt.assemble({ agent: f.agent })
+
+    expect(f.ctx.workingDirectory.get(f.agent.session)).toBe(f.root)
+    expect(assembly.contexts.some(context => context.name === 'working-directory:current')).toBe(false)
+  })
+
   it('keeps origin metadata and other Sessions independent while logging the changed directory', async () => {
     await using f = await fixture()
     const child = join(f.root, 'child')

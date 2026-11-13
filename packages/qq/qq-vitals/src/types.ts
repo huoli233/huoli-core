@@ -333,6 +333,10 @@ export interface EmotionBlendTuning {
   emotionBlendWeightFrom: number
   /** 语气提示那一行最多多少字，默认 60，至少留 20 字 */
   emotionToneMaxChars: number
+  /** 单一感受压过其余时给模型看的表达提示 */
+  emotionToneFocus: string
+  /** 几种感受掺在一起时给模型看的表达提示 */
+  emotionToneSplit: string
 }
 
 /** 反向压制：一个触发条件配几条压下去的系数，全部是标签打分的乘数 */

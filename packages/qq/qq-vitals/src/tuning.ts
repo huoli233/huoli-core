@@ -190,6 +190,8 @@ export interface Tuning extends EmotionTuning, SuppressTuning, ExistenceTuning, 
   sleepUntil: number
   /** 睡眠压力高过这条线才睡得着，0~1 标度，默认 0.50 */
   sleepAdenosineFrom: number
+  /** 进入夜睡时段后最多再撑多少分钟，之后不再等睡眠压力过线，默认 30 */
+  sleepForceAfterMinutes: number
   /** 夜睡该醒的钟点，本地小时 0~24，默认 7.5 即七点半 */
   wakeAt: number
   /** 该醒时刻前后随机的分钟数，默认 40，让每天不完全一样 */

@@ -341,8 +341,9 @@ describe('ToolRuntime', () => {
       execute: async () => [{ type: 'text', text: 'legacy' }],
     } as unknown as ToolDefinition
 
-    expect(() => ctx.tools.register(missingOutput))
-      .toThrow('must declare output { schema, render, presentationMeta? }')
+    expect(() => ctx.tools.register(missingOutput)).not.toThrow()
+    // 没声明 output 也照常进表
+    expect(ctx.tools.definitions().map(tool => tool.name)).toContain('legacy-content-tool')
   })
 
   it('rejects lossy and schema-mismatched body values before post-execute', async () => {

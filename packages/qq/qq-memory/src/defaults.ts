@@ -56,6 +56,8 @@ export interface Tuning extends DecayParams, RecoverParams {
   freshnessDays: number
   /** 镜像写进来时重要度不低于这条线 */
   selfImportanceFloor: number
+  /** 私密记忆事后状态持续多久，默认三十分钟 */
+  privateSettleMs: number
   /** 一条待写的正文短过这几个字当噪声，不入队 */
   minTextChars: number
   /** 一条正文长过这几个字要求拆分，不入队 */
@@ -126,6 +128,7 @@ export const DEFAULTS: Tuning = {
   freshnessDays: 7,
   // 镜像进来的事是自我层认定要记住的，落在保护线之上
   selfImportanceFloor: 80,
+  privateSettleMs: 30 * 60_000,
   minTextChars: 4,
   maxTextChars: 500,
   // 门槛只管新写入：算出来不到这一分的事不值得占掉一条记忆

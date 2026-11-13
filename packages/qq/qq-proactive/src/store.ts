@@ -154,7 +154,9 @@ export function createProactiveStore(options: PendingStoreOptions): ProactiveSto
       return data.items.filter(item => item.chatKey === chatKey)
     },
     put(item) {
-      const rest = data.items.filter(existing => existing.id !== item.id)
+      // 同会话同理由的旧冲动先清掉：每轮重新生成一次，别攒成几百条一样的话
+      const rest = data.items.filter(existing => existing.id !== item.id
+        && !(existing.chatKey === item.chatKey && existing.why.trim() === item.why.trim()))
       data = { ...data, items: [...rest, item] }
       persist()
     },

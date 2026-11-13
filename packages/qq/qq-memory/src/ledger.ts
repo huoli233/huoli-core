@@ -69,6 +69,31 @@ export interface LedgerReport {
 /** 记录表能做的三件事 */
 export type LedgerAction = 'init' | 'sync' | 'verify'
 
+/** 合并整理后，把已移除和已改写的旧指纹换成当前事实 */
+export function reconcileMaintenanceBook(
+  file: string,
+  items: readonly MemoryItem[],
+): LedgerRunResult {
+  const current = readBook(file)
+  if (current.status === 'broken') {
+    return { action: 'sync', report: verifyBook(current.book, items, current.status), added: [], entries: 0 }
+  }
+  const present = new Set(items.map(item => item.id))
+  const kept: Record<string, LedgerEntry> = {}
+  for (const [id, entry] of Object.entries(current.book.entries)) {
+    if (!present.has(id)) continue
+    const item = items.find(one => one.id === id)
+    if (item === undefined) continue
+    kept[id] = item.state === 'forgotten' && entry.state === 'retired'
+      ? entry
+      : entryOf(item)
+  }
+  const synced = syncBook({ schemaVersion: current.book.schemaVersion, entries: kept }, items)
+  const book = { schemaVersion: LEDGER_SCHEMA_VERSION, entries: synced.book.entries }
+  writeBook(file, book)
+  return { action: 'sync', report: verifyBook(book, items), added: synced.added, entries: countEntries(book) }
+}
+
 /** 跑一次记录表要的东西 */
 export interface LedgerRunOptions {
   /** 记录表文件 */

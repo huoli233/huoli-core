@@ -17,9 +17,9 @@ import { panelStateOf } from '../src/panel-state.ts'
 import { createSelfStore } from '../src/store.ts'
 import type { PanelState, PanelVitals } from '../src/types.ts'
 
-const AT = Date.parse('2026-11-04T03:33:13.000Z')
+const AT = Date.now()
 const BODY = '【自我】\n此刻：嗓子发干。\n我可以说不，也可以说不知道。'
-const STAMP = '2026-11-04T03:33:13.000Z'
+const STAMP = new Date(AT).toISOString()
 
 // 造出来的东西一律记下来，测完删干净
 const roots: string[] = []
@@ -261,7 +261,155 @@ describe('三个路由', () => {
   })
 })
 
+describe('面板急停', () => {
+  it('能在本机页面停止和恢复全局运行', async () => {
+    let state = { active: false, at: 0, reason: '' }
+    const started = await startPanelHttp({
+      port: 0,
+      state: () => STATE,
+      warn: () => {},
+      control: {
+        state: () => state,
+        stop(reason) {
+          state = { active: true, at: Date.now(), reason }
+        },
+        resume() {
+          state = { active: false, at: 0, reason: '' }
+        },
+      },
+    })
+    if (started === undefined) throw new Error('面板没起来')
+    opened.push(started)
+
+    const page = await (await get(started.port, '/')).text()
+    expect(page).toContain('运行控制')
+    expect(page).toContain('id="emergency-stop"')
+    const stopped = await (await get(started.port, '/api/emergency-stop?reason=面板急停', { method: 'POST' })).json() as typeof state
+    expect(stopped).toMatchObject({ active: true, reason: '面板急停' })
+    const resumed = await (await get(started.port, '/api/emergency-resume', { method: 'POST' })).json() as typeof state
+    expect(resumed.active).toBe(false)
+  })
+})
+
+describe('面板互动模式', () => {
+  it('显示三种模式，切换后回写当前模式，乱填的值拒绝', async () => {
+    let mode = 'autonomous'
+    const options = [
+      { value: 'probability', label: '概率闲聊' },
+      { value: 'heartflow', label: '心流模式' },
+      { value: 'autonomous', label: '完整拟人自主' },
+    ] as const
+    const started = await startPanelHttp({
+      port: 0,
+      state: () => STATE,
+      warn: () => {},
+      control: {
+        state: () => ({ active: false, at: 0, reason: '' }),
+        stop: () => {},
+        resume: () => {},
+        mode: {
+          state: () => ({ mode, changedAt: 1 }),
+          options,
+          set(next) {
+            if (!options.some(option => option.value === next)) throw new Error('bad mode')
+            mode = next
+          },
+        },
+      },
+    })
+    if (started === undefined) throw new Error('面板没起来')
+    opened.push(started)
+
+    const page = await (await get(started.port, '/')).text()
+    expect(page).toContain('id="mode-select"')
+    expect(page).toContain('完整拟人自主')
+    const changed = await (await get(started.port, '/api/mode?value=heartflow', { method: 'POST' })).json() as { mode: string }
+    expect(changed.mode).toBe('heartflow')
+    expect((await get(started.port, '/api/mode?value=wrong', { method: 'POST' })).status).toBe(400)
+  })
+
+  it('面板先起来、模式控制后接上时仍能显示并切换', async () => {
+    const port = await freePort()
+    const { seam } = await mountFiber({ enabled: true, dir: tempDir(), mainChatKey: 'group:1', panelPort: port })
+    await waitPort(seam, port)
+    let mode = 'autonomous'
+    seam.useModeControl({
+      state: () => ({ mode, changedAt: 1 }),
+      options: [
+        { value: 'probability', label: '概率闲聊' },
+        { value: 'heartflow', label: '心流模式' },
+        { value: 'autonomous', label: '完整拟人自主' },
+      ],
+      set(next) {
+        mode = next
+      },
+    })
+
+    expect(await (await get(port, '/')).text()).toContain('id="mode-select"')
+    const changed = await (await get(port, '/api/mode?value=heartflow', { method: 'POST' })).json() as { mode: string }
+    expect(changed.mode).toBe('heartflow')
+  })
+})
+
+describe('面板角色与 QQ 诊断', () => {
+  it('能选角色、按会话绑定、查关系和时间线', async () => {
+    let activeId = 'gentle'
+    let bound = ''
+    const started = await startPanelHttp({
+      port: 0,
+      state: () => STATE,
+      warn: () => {},
+      control: {
+        state: () => ({ active: false, at: 0, reason: '' }),
+        stop: () => {},
+        resume: () => {},
+        personas: {
+          list: () => [{ id: 'gentle', name: '温和角色' }, { id: 'lively', name: '活泼角色' }],
+          activeId: () => activeId,
+          setActive(id) {
+            activeId = id
+          },
+          bind(chatKey, id) {
+            bound = `${chatKey}:${id}`
+          },
+        },
+        qq: {
+          relation: personId => ({ found: true, personId }),
+          timeline: (traceId, limit) => [{ traceId, kind: 'inbound_received', limit }],
+        },
+      },
+    })
+    if (started === undefined) throw new Error('面板没起来')
+    opened.push(started)
+
+    const page = await (await get(started.port, '/')).text()
+    expect(page).toContain('id="persona-select"')
+    expect(page).toContain('id="relation-query"')
+    expect(page).toContain('id="trace-query"')
+    const changed = await (await get(started.port, '/api/persona-active?value=lively', { method: 'POST' })).json() as {
+      ok: boolean
+      activeId: string
+    }
+    expect(changed).toMatchObject({ ok: true, activeId: 'lively' })
+    expect(activeId).toBe('lively')
+    await get(started.port, '/api/persona-bind?chatKey=group%3A1&value=lively', { method: 'POST' })
+    expect(bound).toBe('group:1:lively')
+    expect(await (await get(started.port, '/api/relation?personId=u1&chatKey=group%3A1')).json())
+      .toMatchObject({ found: true, personId: 'u1' })
+    expect(await (await get(started.port, '/api/timeline?traceId=group%3A1%23msg-2&limit=5')).json())
+      .toMatchObject([{ traceId: 'group:1#msg-2', limit: 5 }])
+  })
+})
+
 describe('页面', () => {
+  it('窄屏下内容列可收缩，不保留固定的宽条最小值', () => {
+    const page = panelPage({ ...STATE, vitals: VITALS })
+
+    expect(page).toContain('@media (max-width:520px)')
+    expect(page).toContain('grid-template-columns:5.5em minmax(0,1fr)')
+    expect(page).toContain('canvas{max-width:100%}')
+  })
+
   it('原话里的尖括号一律转义，不许当标签跑', () => {
     const page = panelPage({ ...STATE, panel: { body: '<script>alert(1)</script>', generatedAt: '' } })
 
@@ -496,20 +644,169 @@ describe('内容边界', () => {
     const settings = resolveSettings()
     const store = createSelfStore({ dir, settings })
 
-    const state = panelStateOf({
+    const base = {
       store,
       settings,
       now: AT,
       panel: '',
       generatedAt: '',
       ledger: createLedger({ store, settings }).summary(AT),
-    })
+    }
+    const state = panelStateOf(base)
 
     expect(Object.hasOwn(state, 'identity')).toBe(false)
     expect(state.days).toEqual([])
     expect(state.ledger).toEqual({ drive: 0, agency: 0, recentAgency: 0 })
     expect(state.health).toContain('近七天写了 0 天')
     expect(state.health).toContain('缺 7 天')
+  })
+
+  it('本机 /api/state 会显示 ASR Provider 与准备阶段', async () => {
+    const dir = tempDir()
+    seed(dir)
+    const port = await freePort()
+    const { seam } = await mountFiber({ enabled: true, dir, mainChatKey: 'group:1', panelPort: port })
+    await waitPort(seam, port)
+    seam.useQqPanel({
+      relation: () => ({ found: false }),
+      timeline: () => undefined,
+      asrStatus: () => ({ transport: 'managed', providerId: 'sensevoice-local', phase: 'unprepared' }),
+    })
+
+    const state = JSON.parse(await (await get(port, '/api/state')).text()) as PanelState
+
+    expect(state.asr).toEqual({ transport: 'managed', providerId: 'sensevoice-local', phase: 'unprepared' })
+  })
+})
+
+describe('现场那一格', () => {
+  // 一份时间线：先收到一条私聊，接着模型在第 2 步写着，中途主动开口被挡了一次
+  function timelineOf(rows: readonly Record<string, unknown>[]): string {
+    return `${rows.map(row => JSON.stringify(row)).join('\n')}\n`
+  }
+
+  function stateWithTimeline(file: string): PanelState {
+    const dir = tempDir()
+    const settings = resolveSettings()
+    const store = createSelfStore({ dir, settings })
+    return panelStateOf({
+      store,
+      settings,
+      now: AT,
+      panel: '',
+      generatedAt: '',
+      ledger: createLedger({ store, settings }).summary(AT),
+      timelineFile: file,
+    })
+  }
+
+  it('从时间线末尾算出正在写、刚收到与叫醒判断', () => {
+    const dir = tempDir()
+    fs.mkdirSync(dir, { recursive: true })
+    const file = path.join(dir, 'qq-timeline.jsonl')
+    fs.writeFileSync(file, timelineOf([
+      { kind: 'inbound_received', at: AT, chatKey: 'private:555' },
+      { kind: 'followup_queued', at: AT + 1, chatKey: 'private:555', traceId: 't1' },
+      { kind: 'model_step', at: AT + 2, chatKey: 'private:555', traceId: 't1', step: 2 },
+      { kind: 'wake_skipped', at: AT + 3, chatKey: 'group:1', reason: 'timed_rest' },
+      { kind: 'model_reply', at: AT + 4, chatKey: 'private:555', traceId: 't1', hasText: true },
+      { kind: 'turn_finished', at: AT + 5, chatKey: 'group:1', traceId: 't2', outcome: 'completed' },
+    ]))
+
+    const live = stateWithTimeline(file).live
+
+    expect(live).toMatchObject({
+      typing: { chatKey: 'private:555', since: AT + 1, step: 2 },
+      inbound: { chatKey: 'private:555', at: AT, count: 1 },
+      proactive: { blocked: true, reason: 'timed_rest', at: AT + 3 },
+    })
+  })
+
+  it('面板现场只显示主人称呼，不带主人账号', () => {
+    const dir = tempDir()
+    fs.mkdirSync(dir, { recursive: true })
+    const file = path.join(dir, 'qq-timeline.jsonl')
+    fs.writeFileSync(file, timelineOf([
+      { kind: 'inbound_received', at: AT, chatKey: 'private:777' },
+      { kind: 'model_step', at: AT + 1, chatKey: 'private:777', traceId: 'owner-trace', step: 1 },
+    ]))
+    const before = process.env.QQ_CREATOR_ID
+    process.env.QQ_CREATOR_ID = '777'
+    try {
+      const live = stateWithTimeline(file).live
+      expect(live?.inbound?.chatKey).toBe('主人私聊')
+      expect(live?.typing?.chatKey).toBe('主人私聊')
+      expect(JSON.stringify(live)).not.toContain('777')
+    } finally {
+      if (before === undefined) delete process.env.QQ_CREATOR_ID
+      else process.env.QQ_CREATOR_ID = before
+    }
+  })
+
+  it('一轮收尾之后就不再算在写', () => {
+    const dir = tempDir()
+    fs.mkdirSync(dir, { recursive: true })
+    const file = path.join(dir, 'qq-timeline.jsonl')
+    fs.writeFileSync(file, timelineOf([
+      { kind: 'followup_request', at: AT, chatKey: 'private:555', traceId: 't1' },
+      { kind: 'model_step', at: AT + 1, chatKey: 'private:555', traceId: 't1', step: 2 },
+      { kind: 'turn_finished', at: AT + 2, chatKey: 'private:555', traceId: 't1', outcome: 'completed' },
+    ]))
+
+    const live = stateWithTimeline(file).live
+
+    expect(live?.typing).toBeUndefined()
+    expect(live?.proactive).toMatchObject({ blocked: false, reason: 'followup_request' })
+  })
+
+  it('时间线读不到时只留时刻，不给这一格时整块省掉', () => {
+    const dir = tempDir()
+    const settings = resolveSettings()
+    const store = createSelfStore({ dir, settings })
+    const base = {
+      store,
+      settings,
+      now: AT,
+      panel: '',
+      generatedAt: '',
+      ledger: createLedger({ store, settings }).summary(AT),
+    }
+
+    expect(Object.hasOwn(panelStateOf(base), 'live')).toBe(false)
+    expect(Object.hasOwn(panelStateOf({ ...base, timelineFile: path.join(dir, 'qq-timeline.jsonl') }), 'live')).toBe(true)
+    expect(panelStateOf({ ...base, timelineFile: path.join(dir, 'qq-timeline.jsonl') }).live).toEqual({ at: AT })
+  })
+
+  it('页面与 /api/state 都带出现场那一格', async () => {
+    const dir = tempDir()
+    seed(dir)
+    const data = path.join(dir, 'data')
+    fs.mkdirSync(data, { recursive: true })
+    fs.writeFileSync(path.join(data, 'qq-timeline.jsonl'), timelineOf([
+      { kind: 'merge_flushed', at: AT, chatKey: 'group:1', count: 2 },
+      { kind: 'followup_request', at: AT + 1, chatKey: 'group:1', traceId: 't1' },
+      { kind: 'model_step', at: AT + 2, chatKey: 'group:1', traceId: 't1', step: 3 },
+    ]))
+    const port = await freePort()
+    const { seam } = await mountFiber({
+      enabled: true,
+      dir,
+      mainChatKey: 'group:1',
+      panelPort: port,
+      memoryFile: path.join(data, 'qq-memory.json'),
+    })
+    await waitPort(seam, port)
+
+    const state = JSON.parse(await (await get(port, '/api/state')).text()) as PanelState
+    const page = await (await get(port, '/')).text()
+
+    expect(state.live).toMatchObject({
+      typing: { chatKey: 'group:1', step: 3 },
+      inbound: { chatKey: 'group:1', count: 2 },
+    })
+    expect(page).toContain('<h3>现场</h3>')
+    expect(page).toContain('live-line')
+    expect(page).toContain('正在写 group:1 第 3 步')
   })
 })
 

@@ -289,6 +289,8 @@ export class ReactLoopAgent implements Agent {
     if (selection === undefined) {
       throw new Error(`agent "${this.id}" has no provider/model: set AgentOptions.provider and AgentOptions.model or record a model selection`)
     }
+    await this.dispatch.serial('agent/tools-resolving', position)
+    signal.throwIfAborted()
     const toolSet = await this.loopCtx.tools.resolve({ agent: this, modelSelection: selection, signal })
     try {
       const assembly = await this.loopCtx.systemPrompt.assemble({ ...assembleContextFor(this, signal), modelSelection: selection, toolSet })
@@ -297,7 +299,7 @@ export class ReactLoopAgent implements Agent {
         'agent/pre-step', { messages: claimed, ...position, signal, modelSelection: selection },
         (): Promise<PreStepDecision> => {
           const sections = renderContextSections(assembly)
-          const context = this.runtimeContext.project(joinContextSections(sections), sections)
+          const context = this.runtimeContext.project(joinContextSections(sections), sections)?.message
           return Promise.resolve<PreStepDecision>({
             kind: 'enter',
             messages: context === undefined ? claimed : [...claimed, context],
@@ -464,7 +466,7 @@ export class ReactLoopAgent implements Agent {
         for (const message of decision.messages) {
           if (message.source.kind === 'runtime-context') {
             if (context !== undefined && !contextAdmitted) {
-              this.session.append('user/message', context, { surfaceOp: 'append' })
+              this.session.append('user/message', context.message, context.intent)
               contextAdmitted = true
             }
           } else {
@@ -473,7 +475,7 @@ export class ReactLoopAgent implements Agent {
         }
       }
       if (context !== undefined && !contextAdmitted) {
-        this.session.append('user/message', context, { surfaceOp: 'append' })
+        this.session.append('user/message', context.message, context.intent)
       }
       firstAttempt = false
       const request = this.buildRequest(config, preparedCall, assembly.tools, { turn, step }, startsRequestSeries, signal)

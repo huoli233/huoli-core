@@ -1,5 +1,5 @@
 ---
-description: "额度：每说完一轮按真实用量记账，当天用掉多少、还剩多少，折成档位交给身体那边。"
+description: "额度：每说完一轮按真实用量记账，当天用掉多少、还剩多少；默认只记账，不自动改变情绪。"
 kind: "package-reference"
 ---
 
@@ -7,7 +7,7 @@ kind: "package-reference"
 
 ## Summary
 
-额度：每提交一条带用量的回答就记一笔，当天累计用掉多少 token，折算成零到满档的一个数交给 `qq-vitals` 的 `setBalance`，由它换成死亡威胁的目标值。不查任何远端接口，账就在本机。
+额度：每提交一条带用量的回答就记一笔，当天累计用掉多少 token。默认只记在本机，不改变生命状态；显式设置 `affectsVitals: true` 后才把余额折算成身体档位。不查任何远端接口。
 
 ## Table of Contents
 
@@ -35,7 +35,7 @@ kind: "package-reference"
 
 #### What the model sees
 
-这一行不挂工具、不写提示词。它只把档位交给身体那一路，模型能看到的仍然是 `{{qq_vitals}}` 里那句按档位换来的话。
+这一行不挂工具、不写提示词。开启 `affectsVitals` 后才把档位交给身体那一路；关闭时余额不会让模型看到额外的生死压力。
 
 #### Token effect
 

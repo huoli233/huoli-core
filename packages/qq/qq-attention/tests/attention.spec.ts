@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { Context } from '@huoli/cordis'
 import type { ToolDefinition, ToolRunContext } from '@huoli/huoli-tools'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { apply, qqAttentionOf, type QqAttentionSeam } from '../src/index.ts'
 import { renderAttentionFacts } from '../src/facts.ts'
 
@@ -62,6 +62,81 @@ afterEach(() => {
 })
 
 describe('看清消息', () => {
+  it('撤回事实留在收件箱，但不冒充一条新的真人发言', () => {
+    const { seam } = mount(tempFile())
+    seam.inbox.push('group:1', { senderId: 'u1', text: '原本那句' })
+    const before = seam.signals('group:1').ambient.humanCount
+
+    seam.inbox.push('group:1', { senderId: 'u1', text: '[撤回] 收回刚才那句', isRecall: true })
+    const after = seam.signals('group:1')
+
+    expect(seam.inbox.recent('group:1', 2)).toHaveLength(2)
+    expect(after.ambient.humanCount).toBe(before)
+    expect(after.fun.signals).not.toContain('是中长消息')
+  })
+
+  it('话痨度随反馈收紧并落盘，下一次装配还能读到', () => {
+    const file = tempFile()
+    const first = mount(file)
+
+    expect(first.seam.noteTalkativeness('group:1', 0.15, 0.5)).toBeLessThan(0.5)
+    expect(mount(file).seam.talkativeness('group:1')).toBeLessThan(0.5)
+  })
+
+  it('话痨度会随时间向基准回落，不会一次调低后永久沉默', () => {
+    vi.useFakeTimers()
+    try {
+      vi.setSystemTime(new Date(2026, 10, 10, 3, 0, 0))
+      const { seam } = mount(tempFile())
+      seam.noteTalkativeness('group:1', 0.15, 1)
+
+      vi.advanceTimersByTime(30 * 60_000)
+      const half = seam.talkativeness('group:1')
+      vi.advanceTimersByTime(30 * 60_000)
+      const later = seam.talkativeness('group:1')
+
+      expect(half).toBeCloseTo(0.325, 2)
+      expect(later).toBeGreaterThan(half)
+      expect(later).toBeLessThan(0.5)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('成功发言时刻会落盘并在重启后保留', () => {
+    const file = tempFile()
+    const first = mount(file)
+    first.seam.noteSelfSpoke('group:1', 1234)
+
+    expect(mount(file).seam.store.of('group:1').lastSelfSpokeAt).toBe(1234)
+  })
+
+  it('自己连说会累计，真人开口后清零且重启保留', () => {
+    const file = tempFile()
+    const first = mount(file)
+    const initialTalk = first.seam.talkativeness('group:1')
+    first.seam.noteSelfSpoke('group:1', 1000, 2)
+    expect(first.seam.store.of('group:1').selfTalkStreak).toBe(2)
+    expect(first.seam.store.of('group:1').talkativeness).toBeLessThan(initialTalk)
+
+    first.seam.noteHumanSpoke('group:1', 2000)
+    expect(first.seam.store.of('group:1').selfTalkStreak).toBe(0)
+    expect(first.seam.store.of('group:1').talkativeness).toBeGreaterThan(0.2)
+
+    first.seam.noteSelfSpoke('group:1', 3000)
+    expect(mount(file).seam.store.of('group:1').selfTalkStreak).toBe(1)
+  })
+
+  it('本来就没有连续自说时，人声清零不重写状态', () => {
+    const file = tempFile()
+    const { seam } = mount(file)
+    expect(fs.existsSync(file)).toBe(false)
+
+    seam.noteHumanSpoke('group:1', 1000)
+
+    expect(fs.existsSync(file)).toBe(false)
+  })
+
   it('读消息返回的水位是这次读到的最后一条', async () => {
     const { seam, tool } = mount(tempFile())
     fill(seam, 'group:1')
@@ -197,6 +272,25 @@ describe('采集到的事实', () => {
     expect(signals.candidates.length).toBeGreaterThan(0)
   })
 
+  it('配置的昵称只形成可能被叫到的信号', () => {
+    const { seam } = mount(tempFile(), ['大肥鱼', '小金鱼'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '大肥鱼你看这个' })
+
+    const signals = seam.signals('group:1')
+
+    expect(signals.addressee).toMatchObject({ named: true, recentCount: 1, confidence: 0.5 })
+    expect(signals.candidates).toContainEqual({ kind: 'reply', why: '文本里出现名字，可能在叫它' })
+    expect(Object.hasOwn(signals, 'shouldSpeak')).toBe(false)
+  })
+
+  it('近期反复叫名字会累计成一条现场事实', () => {
+    const { seam } = mount(tempFile(), ['肥鱼', '大肥鱼'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '臭肥鱼' })
+    seam.inbox.push('group:1', { senderId: 'u3', text: '大肥鱼' })
+
+    expect(seam.signals('group:1').addressee).toMatchObject({ matchedName: '大肥鱼', recentCount: 2 })
+  })
+
   it('候选只有种类与理由，没有权重', () => {
     const { seam } = mount(tempFile(), ['小岸'])
     seam.inbox.push('group:1', { senderId: 'u3', text: '@小岸 你在吗？' })
@@ -258,6 +352,17 @@ describe('采集到的事实', () => {
     expect(Object.hasOwn(set.triggers, 'probability')).toBe(false)
     expect(Object.hasOwn(seam.store.of('group:1').triggers, 'probability')).toBe(false)
   })
+
+  it('定时休息回执带本地醒点和收口前提示', async () => {
+    const { tool } = mount(tempFile())
+    const set = await call<{ wakeAt: string; notice: string }>(
+      tool('set_wake_config'), { sleepMs: 60_000 }, execOf('private:1'),
+    )
+
+    expect(set.wakeAt).not.toBe('')
+    expect(set.notice).toContain('收口前先发一句')
+    expect(set.notice).toContain(set.wakeAt)
+  })
 })
 
 describe('推消息时带来的指向事实', () => {
@@ -301,7 +406,7 @@ describe('提示词里的注意力事实', () => {
 
     const text = renderAttentionFacts({ signals, wake: { wakeMode: 'infinite', triggers: { atMention: true } } })
 
-    expect(text).toContain('你设了每条消息都醒')
+    expect(text).toContain('你设了持续监听，但不是每条消息都叫醒')
     expect(text).toContain('你设了只在这几种情况醒：被直接点到')
     expect(text).not.toMatch(/该不该|要不要|建议醒|应该醒/)
   })
@@ -328,6 +433,89 @@ describe('提示词里的注意力事实', () => {
     expect(plain).not.toContain('你设了')
   })
 
+  it('所有消息都醒时不再重复写成只在这几种情况醒', () => {
+    const { seam } = mount(tempFile())
+    const text = renderAttentionFacts({
+      signals: seam.signals('group:1'),
+      wake: {
+        wakeMode: 'infinite',
+        triggers: { anyMessage: true, atMention: true, poke: true },
+      },
+    })
+
+    expect(text).toContain('所有新消息都会叫醒你')
+    expect(text).not.toContain('只在这几种情况醒：任意一条消息')
+    expect(text).toContain('另外：被直接点到、被戳一下')
+  })
+
+  it('多人接话时同时给出消息条数和参与人数', () => {
+    const { seam } = mount(tempFile())
+    const now = Date.now()
+    seam.inbox.push('group:1', { senderId: 'u1', text: '我觉得可以', at: now - 2_000 })
+    seam.inbox.push('group:1', { senderId: 'u2', text: '不一定', at: now - 1_000 })
+    seam.inbox.push('group:1', { senderId: 'u1', text: '那你说', at: now })
+
+    const signals = seam.signals('group:1')
+    const text = renderAttentionFacts({ signals, now })
+
+    expect(signals.ambient).toMatchObject({ humanCount: 3, speakerCount: 2 })
+    expect(text).toContain('3 条真人发言，来自 2 个人')
+    expect(signals.candidates.find(item => item.kind === 'join')?.why).toContain('来自 2 个人')
+  })
+
+  it('多人快速接话时把密度作为现场事实', () => {
+    const { seam } = mount(tempFile())
+    const now = Date.now()
+    for (let index = 0; index < 60; index += 1) {
+      seam.inbox.push('group:1', {
+        senderId: `u${index % 3}`,
+        text: `第 ${index} 条`,
+        at: now - index * 1_000,
+      })
+    }
+
+    const text = renderAttentionFacts({ signals: seam.signals('group:1'), now })
+
+    expect(text).toContain('好几个人在并行接话')
+    expect(text).toContain('群里消息刷得很快')
+  })
+
+  it('把当前话痨倾向和上次成功发言时间作为事实提供', () => {
+    const { seam } = mount(tempFile())
+    seam.noteSelfSpoke('group:1', 40_000)
+    const text = renderAttentionFacts({
+      signals: seam.signals('group:1'),
+      talkativeness: 0.8,
+      ...(seam.store.of('group:1').lastSelfSpokeAt === undefined
+        ? {}
+        : { lastSelfSpokeAt: seam.store.of('group:1').lastSelfSpokeAt }),
+      selfTalkStreak: 2,
+      now: 100_000,
+    })
+
+    expect(text).toContain('你最近说话偏活跃')
+    expect(text).toContain('你上次在这里成功发言是刚刚')
+    expect(text).toContain('你刚在群里连发了 2 个气泡')
+  })
+
+  it('私聊连发时只要求收短当前回复，群聊则先停一轮', () => {
+    const group = renderAttentionFacts({
+      signals: {
+        ...mount(tempFile()).seam.signals('group:1'),
+      },
+      selfTalkStreak: 3,
+    })
+    const priv = renderAttentionFacts({
+      signals: {
+        ...mount(tempFile()).seam.signals('private:1'),
+      },
+      selfTalkStreak: 3,
+    })
+
+    expect(group).toContain('先停一轮')
+    expect(priv).toContain('下一条只回当前这句话')
+  })
+
   it('状态可直接当偏好传入，工具设过的条件能渲染出来', async () => {
     const { seam, tool } = mount(tempFile())
     await tool('set_wake_config').execute({ triggers: { poke: true } }, execOf('group:1'))
@@ -335,5 +523,67 @@ describe('提示词里的注意力事实', () => {
     const text = renderAttentionFacts({ signals: seam.signals('group:1'), wake: seam.store.of('group:1') })
 
     expect(text).toContain('被戳一下')
+  })
+})
+
+describe('情绪档位只当事实', () => {
+  it('传了情绪就在事实里补一行，档位与说法都带上', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '@小岸 你在吗？' })
+
+    const text = renderAttentionFacts({
+      signals: seam.signals('group:1'),
+      emotion: { tier: 'high', label: '有点上火' },
+    })
+
+    expect(text).toContain('你现在的情绪：有点上火（偏重）')
+  })
+
+  it('档位是峰值时程度词更重，轻微时更轻', () => {
+    const { seam } = mount(tempFile())
+    const signals = seam.signals('group:1')
+
+    expect(renderAttentionFacts({ signals, emotion: { tier: 'peak', label: '在生气' } }))
+      .toContain('你现在的情绪：在生气（很重）')
+    expect(renderAttentionFacts({ signals, emotion: { tier: 'mild', label: '有点闷' } }))
+      .toContain('你现在的情绪：有点闷（刚起头）')
+  })
+
+  it('没给情绪就不写这一行，这是负例', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '@小岸 你在吗？' })
+
+    const text = renderAttentionFacts({ signals: seam.signals('group:1') })
+
+    expect(text).toContain('文本里出现名字：小岸')
+    expect(text).not.toContain('你现在的情绪')
+  })
+
+  it('说法为空时也不写这一行', () => {
+    const { seam } = mount(tempFile())
+
+    const text = renderAttentionFacts({
+      signals: seam.signals('group:1'),
+      emotion: { tier: 'calm', label: '' },
+    })
+
+    expect(text).not.toContain('你现在的情绪')
+  })
+
+  it('加了情绪只多那一行，候选与现场事实一个字都没动', () => {
+    const { seam } = mount(tempFile(), ['小岸'])
+    seam.inbox.push('group:1', { senderId: 'u3', text: '@小岸 你在吗？' })
+    seam.inbox.push('group:1', { senderId: 'u1', text: '我觉得可以' })
+    const signals = seam.signals('group:1')
+
+    const plain = renderAttentionFacts({ signals })
+    const withEmotion = renderAttentionFacts({ signals, emotion: { tier: 'peak', label: '在生气' } })
+
+    expect(withEmotion.split('\n').filter(line => !line.startsWith('你现在的情绪')))
+      .toEqual(plain.split('\n'))
+    expect(signals.candidates.length).toBeGreaterThan(0)
+    for (const candidate of signals.candidates) {
+      expect(Object.keys(candidate).sort()).toEqual(['kind', 'why'])
+    }
   })
 })

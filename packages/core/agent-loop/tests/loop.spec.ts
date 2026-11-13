@@ -673,7 +673,7 @@ describe('agent loop', () => {
     }
   })
 
-  it('materializes changed runtime context at the history tail without rewriting the system header', async () => {
+  it('replaces changed runtime context at its retained position without rewriting the system header', async () => {
     const adapter = new MockAdapter([
       textResponse('one'),
       textResponse('two'),
@@ -707,10 +707,37 @@ describe('agent loop', () => {
     send(agent, 'changed')
     await waitForIdle(ctx, agent)
     expect(contextEvents()).toHaveLength(2)
+    expect(contextEvents()[1]).toMatchObject({
+      surfaceOp: { op: 'replace', startSeq: contextEvents()[0]?.seq, endSeq: contextEvents()[0]?.seq },
+      sourceEventSeqs: [contextEvents()[0]?.seq],
+    })
+    expect(contextEvents().flatMap(event => event.data.content)
+      .flatMap(block => block.type === 'text' ? [block.text] : []))
+      .toEqual(expect.arrayContaining([
+        'Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nMode: read-only.',
+        'Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nMode: danger-full-access.',
+      ]))
     const changedBlock = contextEvents()[1]?.data.content[0]
     expect(changedBlock?.type).toBe('text')
     if (changedBlock?.type !== 'text') throw new Error('changed runtime context is not text')
     expect(changedBlock.text).toContain('danger-full-access')
+    expect(agent.session.deriveMessages().filter(message => (
+      message.role === 'user' && message.source?.kind === 'runtime-context'
+    ))).toHaveLength(1)
+    expect(agent.session.deriveMessages().filter(message => (
+      message.role === 'user' && message.source?.kind === 'user'
+    ))).toHaveLength(3)
+    expect(adapter.requests[2]?.messages.filter(message => (
+      message.role === 'user' && message.source?.kind === 'runtime-context'
+    ))).toHaveLength(1)
+    expect(adapter.requests[2]?.messages.filter(message => (
+      message.role === 'user' && message.source?.kind === 'user'
+    ))).toHaveLength(3)
+    expect(adapter.requests[2]?.messages.some(message => (
+      message.role === 'user'
+      && message.source?.kind === 'runtime-context'
+      && message.content.some(block => block.type === 'text' && block.text.includes('Mode: read-only.'))
+    ))).toBe(false)
 
     dispose()
     send(agent, 'cleared')
@@ -720,14 +747,40 @@ describe('agent loop', () => {
       type: 'text',
       text: 'Current runtime context: none. Earlier runtime-context snapshots no longer apply.',
     }])
+    expect(contextEvents()[2]).toMatchObject({
+      surfaceOp: { op: 'replace', startSeq: contextEvents()[1]?.seq, endSeq: contextEvents()[1]?.seq },
+      sourceEventSeqs: [contextEvents()[1]?.seq],
+    })
 
     send(agent, 'still clear')
     await waitForIdle(ctx, agent)
     expect(contextEvents()).toHaveLength(3)
+    const retainedContexts = agent.session.deriveMessages().filter(message => (
+      message.role === 'user' && message.source?.kind === 'runtime-context'
+    ))
+    expect(retainedContexts).toHaveLength(1)
+    expect(retainedContexts[0]?.content).toEqual([{
+      type: 'text',
+      text: 'Current runtime context: none. Earlier runtime-context snapshots no longer apply.',
+    }])
+    expect(agent.session.deriveMessages().filter(message => (
+      message.role === 'user' && message.source?.kind === 'user'
+    ))).toHaveLength(5)
+    expect(adapter.requests[4]?.messages.filter(message => (
+      message.role === 'user' && message.source?.kind === 'runtime-context'
+    ))).toHaveLength(1)
+    expect(adapter.requests[4]?.messages.filter(message => (
+      message.role === 'user' && message.source?.kind === 'user'
+    ))).toHaveLength(5)
+    expect(adapter.requests[4]?.messages.some(message => (
+      message.role === 'user'
+      && message.source?.kind === 'runtime-context'
+      && message.content.some(block => block.type === 'text' && block.text.includes('danger-full-access'))
+    ))).toBe(false)
     expect(adapter.requests.map(systemOf)).toEqual(Array(5).fill(systemOf(adapter.requests[0])))
     expect(agent.session.snapshotEvents().filter(event => event.type === 'system/message')).toHaveLength(1)
     expect(agent.session.snapshotEvents().flatMap(event =>
-      event.type === 'request/header' ? [event.data.reason] : [])).toEqual(['initial'])
+      event.type === 'request/header' ? [event.data.reason] : [])).toEqual(['initial', 'series', 'series'])
   })
 
   it('re-emits unchanged runtime context when a surface replacement removed the retained snapshot', async () => {

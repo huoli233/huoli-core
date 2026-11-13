@@ -30,6 +30,9 @@ export interface MountOptions {
   vectorDir?: string
   /** 嵌入服务：用例里用一个假服务器顶上 */
   embedding?: EmbeddingConfig
+  /** 档案最多几条、多少字 */
+  profileMaxItems?: number
+  profileMaxChars?: number
 }
 
 const tempDirs: string[] = []
@@ -87,6 +90,8 @@ export function mount(options: MountOptions): Mounted {
     ...options.vectorStore !== undefined ? { vectorStore: options.vectorStore } : {},
     ...options.vectorDir !== undefined ? { vectorDir: options.vectorDir } : {},
     ...options.embedding !== undefined ? { embedding: options.embedding } : {},
+    ...options.profileMaxItems !== undefined ? { profileMaxItems: options.profileMaxItems } : {},
+    ...options.profileMaxChars !== undefined ? { profileMaxChars: options.profileMaxChars } : {},
   })
   const seam = qqMemoryOf(ctx)
   if (seam === undefined) throw new Error('记忆没有装配')
